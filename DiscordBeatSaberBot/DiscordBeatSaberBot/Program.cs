@@ -40,6 +40,7 @@ namespace DiscordBeatSaberBot
             {
                 if (message.Content.Substring(0, 3).Contains("!bs"))
                 {
+                    await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = 20 });
                     if (message.Content.Contains(" top10"))
                     {
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTop10Players());
@@ -55,17 +56,32 @@ namespace DiscordBeatSaberBot
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetPlayer(message.Content.Substring(11)));
                     }
 
+                    if (message.Content.Contains(" ranks"))
+                    {
+                        var builderList = await BeatSaberInfoExtension.GetRanks();
+                        foreach(var builder in builderList)
+                        {
+                            await message.Channel.SendMessageAsync("", false, builder);
+                        }
+                    }
+
                     if (message.Content.Contains(" songs"))
                     {
-                        try
+                        var builderList = await BeatSaberInfoExtension.GetSongs(message.Content.Substring(10));
+                        if(builderList.Count > 6)
                         {
-                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetSongs(message.Content.Substring(10)));
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Search term to wide", "I can not post more as 6 songs. " +
+                                "\n Try searching with a more specific word please. \n" +
+                                ":rage:", null,null));
                         }
-                        catch
+                        else
                         {
-                            await message.Channel.SendMessageAsync("Error, Search term is too wide");
-                        }
+                            foreach (var builder in builderList)
+                            {
 
+                                await message.Channel.SendMessageAsync("", false, builder);
+                            }
+                        }
                     }
 
                     if (message.Content.Contains(" help"))

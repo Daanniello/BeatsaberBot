@@ -11,5 +11,20 @@ namespace DiscordBeatSaberBot
         {
             return null;
         }
+
+        public static EmbedBuilder NullEmbed(string Title, string description, string contentTitle, string content)
+        {
+            var builder = new EmbedBuilder();
+            builder.WithTitle(Title);
+            builder.WithDescription(description);
+            if (contentTitle != null || content != null)
+            {
+                builder.AddInlineField(contentTitle, content);
+            }
+            builder.Timestamp = DateTimeOffset.Now;
+
+            builder.WithColor(Color.DarkRed);
+            return builder;
+        }
     }
 }
