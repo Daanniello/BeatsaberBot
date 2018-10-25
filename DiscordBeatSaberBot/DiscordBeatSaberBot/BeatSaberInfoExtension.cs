@@ -143,7 +143,7 @@ namespace DiscordBeatSaberBot
             var rankValue = ranks[0].Split('#')[1].Replace(",", "");
             var rankInt = int.Parse(rankValue);
             var rankColor = Rank.GetRankColor(rankInt);
-            builder.WithColor(rankColor);
+            builder.WithColor(await rankColor);
             return builder;
         }
 
@@ -173,6 +173,13 @@ namespace DiscordBeatSaberBot
                         .ToList())
                     .ToList();
 
+            }
+
+            if (songs.Count <= 0)
+            {
+                var returnList = new List<EmbedBuilder>();
+                returnList.Add(EmbedBuilderExtension.NullEmbed("No songs found", "Sorry, I did not find any songs with the term: " + search, null, null));
+                return returnList;
             }
 
             var songNameList = new List<string>();
@@ -239,6 +246,8 @@ namespace DiscordBeatSaberBot
             var TopSongInfo = new List<string>();
             var TopSongUrl = new List<List<string>>();
             var topSongUrlString = "";
+            var topSongImg = new List<List<string>>();
+            var topSongImgString = "";
             var topList = new List<List<string>>();
             var url = "https://scoresaber.com/top";
             using (var client = new HttpClient())
@@ -255,12 +264,20 @@ namespace DiscordBeatSaberBot
                         .ToList()).First()
                     .ToList();
 
+                topSongImg = table.Descendants("tr")
+                    .Skip(1)
+                    .Select(tr => tr.Descendants("img")
+                        .Select(img => WebUtility.HtmlDecode(img.GetAttributeValue("src","")))
+                        .ToList())
+                    .ToList();
+
                 TopSongUrl = table.Descendants("tr").Skip(1)
                     .Select(tr => tr.Descendants("a")
                         .Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", "")))
                         .ToList())
                     .ToList();
                 topSongUrlString = TopSongUrl.First().First();
+                topSongImgString = "https://scoresaber.com" + topSongImg.First().First();
             }
 
             using (var client = new HttpClient())
@@ -277,10 +294,21 @@ namespace DiscordBeatSaberBot
                         .ToList())
                     .ToList();
             }
+            
+            var songName = TopSongInfo[0].Replace("\r\n", "").Trim();
+            var songDifficulty = TopSongInfo[2];
+            var songStar = TopSongInfo[4];
+            var songPlays = TopSongInfo[3];
+
 
             var builder = new EmbedBuilder();
-            builder.WithTitle("Most Played Song Top List");
-            builder.WithDescription("All songs that contains " + search);
+            builder.WithTitle(songName.ToString());
+            builder.WithDescription(
+                "Difficulty: " + songDifficulty + "\n" +
+                "Star rate: " + songStar + "\n" +
+                "Plays last 24H: " + songPlays
+                );
+            builder.WithThumbnailUrl(topSongImgString);
             var output = "";
             for (var x = 1; x <= 10; x++)
             {
@@ -299,37 +327,37 @@ namespace DiscordBeatSaberBot
 
             var builder = new EmbedBuilder();
             builder.WithTitle("Top " + Rank.rankMaster.ToString());
-            builder.WithColor(Rank.GetRankColor(Rank.rankMaster));
+            builder.WithColor(await Rank.GetRankColor(Rank.rankMaster));
             builderList.Add(builder);
 
             builder = new EmbedBuilder();
             builder.WithTitle("<" + Rank.rankChallenger.ToString());
-            builder.WithColor(Rank.GetRankColor(Rank.rankChallenger));
+            builder.WithColor(await Rank.GetRankColor(Rank.rankChallenger));
             builderList.Add(builder);
 
             builder = new EmbedBuilder();
             builder.WithTitle("<" + Rank.rankDiamond.ToString());
-            builder.WithColor(Rank.GetRankColor(Rank.rankDiamond));
+            builder.WithColor(await Rank.GetRankColor(Rank.rankDiamond));
             builderList.Add(builder);
 
             builder = new EmbedBuilder();
             builder.WithTitle("<" + Rank.rankPlatinum.ToString());
-            builder.WithColor(Rank.GetRankColor(Rank.rankPlatinum));
+            builder.WithColor(await Rank.GetRankColor(Rank.rankPlatinum));
             builderList.Add(builder);
 
             builder = new EmbedBuilder();
             builder.WithTitle("<" + Rank.rankGold.ToString());
-            builder.WithColor(Rank.GetRankColor(Rank.rankGold));
+            builder.WithColor(await Rank.GetRankColor(Rank.rankGold));
             builderList.Add(builder);
 
             builder = new EmbedBuilder();
             builder.WithTitle("<" + Rank.rankSilver.ToString());
-            builder.WithColor(Rank.GetRankColor(Rank.rankSilver));
+            builder.WithColor(await Rank.GetRankColor(Rank.rankSilver));
             builderList.Add(builder);
 
             builder = new EmbedBuilder();
             builder.WithTitle("+" + Rank.rankSilver);
-            builder.WithColor(Rank.GetRankColor(9999999));
+            builder.WithColor(await Rank.GetRankColor(9999999));
             builderList.Add(builder);
 
             return builderList;

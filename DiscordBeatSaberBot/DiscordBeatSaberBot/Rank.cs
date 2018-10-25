@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Discord;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot
 {
@@ -22,7 +23,7 @@ namespace DiscordBeatSaberBot
         public static int rankGold = 40000;
         public static int rankSilver = 80000;
 
-        static public Color GetRankColor(int rank)
+        static public async Task<Color> GetRankColor(int rank)
         {
             if (rank <= 10)
             {

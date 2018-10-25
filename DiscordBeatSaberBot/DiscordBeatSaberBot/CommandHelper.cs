@@ -13,6 +13,7 @@ namespace DiscordBeatSaberBot
         private static string searchPlayer = "Search [Username] => (Gets information about [Username])";
         private static string searchSongs = "Songs [Songname] => (gives all available songs with information)";
         private static string topSong = "topsong => (gets the current most played song and shows the top 10 players)";
+        private static string ranks = "ranks => (gets all ranks with colors and range)";
 
         static CommandHelper()
         {
@@ -21,6 +22,7 @@ namespace DiscordBeatSaberBot
             helpCommands.Add(searchPlayer);
             helpCommands.Add(searchSongs);
             helpCommands.Add(topSong);
+            helpCommands.Add(ranks);
         }
 
         public static List<string> Help()
