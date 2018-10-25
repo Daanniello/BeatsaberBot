@@ -65,6 +65,7 @@ namespace DiscordBeatSaberBot
         {
 
             var playerInfo = (List<List<string>>)null;
+            var playerId = (List<List<string>>)null;
             var playerInfoToTell = "";
             var url = "https://scoresaber.com/global?search=" + playerName.Replace(" ", "+");
 
@@ -75,6 +76,13 @@ namespace DiscordBeatSaberBot
                 doc.LoadHtml(html);
 
                 var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
+                playerInfo = table.Descendants("tr")
+                    .Skip(1)
+                    .Select(tr => tr.Descendants("td")
+                        .Select(td => WebUtility.HtmlDecode(td.InnerText))
+                        .ToList())
+                    .ToList();
+
                 playerInfo = table.Descendants("tr")
                     .Skip(1)
                     .Select(tr => tr.Descendants("td")
