@@ -55,11 +55,7 @@ namespace DiscordBeatSaberBot
             var builder = new EmbedBuilder();
             builder.WithTitle("Top 10 Beatsaber Players");
             builder.WithDescription("Top 10 best beatsaber players");
-            foreach (var player in top10)
-            {
-                builder.AddInlineField("Top10", player);
-            }
-            
+            builder.AddInlineField("Players", topInfo);
 
             builder.WithColor(Color.Red);
             return builder;

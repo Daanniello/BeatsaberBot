@@ -9,3 +9,14 @@ C:\Users\Ron\source\repos\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netc
 C:\Users\Ron\source\repos\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.pdb
 C:\Users\Ron\source\repos\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.dll
 C:\Users\Ron\source\repos\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.pdb
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.deps.json
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.runtimeconfig.json
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.runtimeconfig.dev.json
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.dll
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.pdb
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.csprojAssemblyReference.cache
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.csproj.CoreCompileInputs.cache
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.AssemblyInfoInputs.cache
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.AssemblyInfo.cs
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.dll
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.pdb

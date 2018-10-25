@@ -30,28 +30,32 @@ namespace DiscordBeatSaberBot
             return Task.CompletedTask;
         }
 
-        private async Task MessageReceived(SocketMessage message)
+        private async Task<Task> MessageReceived(SocketMessage message)
         {
+            if (message.Author.Username == "BeatSaber Bot")
+            {
+                return Task.CompletedTask;
+            }
             try
             {
                 if (message.Content.Substring(0, 3).Contains("!bs"))
                 {
-                    if (message.Content.Contains(" top10 "))
+                    if (message.Content.Contains(" top10"))
                     {
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTop10Players());
                     }
 
-                    if (message.Content.Contains(" topsong "))
+                    if (message.Content.Contains(" topsong"))
                     {
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopSongList(message.Content));
                     }
 
-                    if (message.Content.Contains(" search "))
+                    if (message.Content.Contains(" search"))
                     {
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetPlayer(message.Content.Substring(11)));
                     }
 
-                    if (message.Content.Contains(" songs "))
+                    if (message.Content.Contains(" songs"))
                     {
                         try
                         {
@@ -64,7 +68,7 @@ namespace DiscordBeatSaberBot
 
                     }
 
-                    if (message.Content.Contains(" help "))
+                    if (message.Content.Contains(" help"))
                     {
                         var helpMessage = "";
                         var builder = new EmbedBuilder();
@@ -78,6 +82,7 @@ namespace DiscordBeatSaberBot
                         builder.WithColor(Color.Red);
 
                         await message.Channel.SendMessageAsync("", false, builder);
+                        return Task.CompletedTask;
                     }
                 }
             }
@@ -86,6 +91,7 @@ namespace DiscordBeatSaberBot
                 await message.Channel.SendMessageAsync("Command is not working at the moment! please try again later");
             }
                 await log(message.ToString());
+            return Task.CompletedTask;
         }      
     }
 }
