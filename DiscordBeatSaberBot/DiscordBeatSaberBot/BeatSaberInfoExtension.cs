@@ -65,6 +65,8 @@ namespace DiscordBeatSaberBot
         {
 
             var playerInfo = (List<List<string>>)null;
+            var playerInfo2 = (List<List<string>>)null;
+            var playerImg = (List<List<string>>)null;
             var playerId = (List<List<string>>)null;
             var playerInfoToTell = "";
             var url = "https://scoresaber.com/global?search=" + playerName.Replace(" ", "+");
@@ -76,46 +78,62 @@ namespace DiscordBeatSaberBot
                 doc.LoadHtml(html);
 
                 var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
-                playerInfo = table.Descendants("tr")
-                    .Skip(1)
-                    .Select(tr => tr.Descendants("td")
-                        .Select(td => WebUtility.HtmlDecode(td.InnerText))
-                        .ToList())
-                    .ToList();
 
-                playerInfo = table.Descendants("tr")
+                playerId = table.Descendants("tr")
                     .Skip(1)
-                    .Select(tr => tr.Descendants("td")
-                        .Select(td => WebUtility.HtmlDecode(td.InnerText))
+                    .Select(tr => tr.Descendants("a")
+                        .Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", "")))
                         .ToList())
                     .ToList();
             }
 
-            foreach (var player in playerInfo)
+            url = "https://scoresaber.com" + playerId.First().First();
+            using (var client = new HttpClient())
             {
-                foreach (var result in playerInfo)
-                {
-                    var infoToTell = "";
-                    foreach (var value in result)
-                    {
-                        var item = value.Replace(@"\r\n", " ").Trim();
-                        if (!string.IsNullOrEmpty(item))
-                        {
-                            infoToTell += item + "/";
-                        }
-                    }
-                    playerInfoToTell += infoToTell + "\n";
-                }
+                var html = await client.GetStringAsync(url);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(html);
+
+                var table = doc.DocumentNode.SelectSingleNode("//div[@class='columns']");
+
+                playerInfo = table.Descendants("div")
+                    .Skip(1)
+                    .Select(tr => tr.Descendants("a")
+                        .Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", "")))
+                        .ToList())
+                    .ToList();
+                playerInfo2 = table.Descendants("div")
+                    .Skip(1)
+                    .Select(tr => tr.Descendants("li")
+                        .Select(a => WebUtility.HtmlDecode(a.InnerText))
+                        .ToList())
+                    .ToList();
+                playerImg = table.Descendants("div")
+                    .Select(tr => tr.Descendants("img")
+                        .Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("src", "")))
+                        .ToList())
+                    .ToList();
             }
-            var playerInfoToTellArray = playerInfoToTell.Split("/");
+
+            var steam = playerInfo.First()[0];
+            var country = playerInfo.First()[2].Replace("/global?country=", "");
+            var rank = playerInfo2.First()[0].Replace(@"\r\n", "");
+            var pp = playerInfo2.First()[1].Replace(@"\r\n", "");
+            var playCount = playerInfo2.First()[2].Replace(@"\r\n", "");
+            var totalScore = playerInfo2.First()[3].Replace(@"\r\n", "");
 
             var builder = new EmbedBuilder();
             builder.WithTitle("Player Information");
             builder.WithDescription("All Information about " + playerName);
             builder.AddInlineField("Player",
-                "Name: " + playerInfoToTellArray[1] + "\n" +
-                "Rank: " + playerInfoToTellArray[0] + "\n" +              
-                "Peformance points: " + playerInfoToTellArray[2] + "\n");
+                "Name: " + playerName + "\n" +
+                rank + "\n" +
+                "Country: " + country + "\n" +
+                playCount +
+                totalScore +
+                pp + "\n" +
+                "Steam: " + steam + "\n");
+            builder.ThumbnailUrl = playerImg.First().First();
 
             builder.WithColor(Color.Red);
             return builder;
@@ -146,6 +164,7 @@ namespace DiscordBeatSaberBot
                         .Select(img => WebUtility.HtmlDecode(img.GetAttributeValue("src", "")))
                         .ToList())
                     .ToList();
+
             }
 
             var songNameList = new List<string>();
