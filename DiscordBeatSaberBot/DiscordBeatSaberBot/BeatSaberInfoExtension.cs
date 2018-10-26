@@ -69,30 +69,20 @@ namespace DiscordBeatSaberBot
             var playerInfo = (List<List<string>>)null;
             var playerInfo2 = (List<List<string>>)null;
             var playerImg = (List<List<string>>)null;
-            var playerId = (List<List<string>>)null;
+            var playerId = "";
+            var playerTopSongImg = "";
+            var playerTopSongLink = "";
+            var playerTopSongName = "";
             var url = "https://scoresaber.com/global?search=" + playerName.Replace(" ", "+");
-            using (var client = new HttpClient())
-            {
-                var html = await client.GetStringAsync(url);
-                var doc = new HtmlAgilityPack.HtmlDocument();
-                doc.LoadHtml(html);
 
-                var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
+            playerId = await GetPlayerId(playerName);
 
-                playerId = table.Descendants("tr")
-                    .Skip(1)
-                    .Select(tr => tr.Descendants("a")
-                        .Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", "")))
-                        .ToList())
-                    .ToList();
-            }
-
-            if (playerId.Count <= 0)
+            if (string.IsNullOrEmpty(playerId))
             {
                 return EmbedBuilderExtension.NullEmbed("No Results", "I am sorry, I could not find any person named: " + playerName, null, null);
             }
 
-            url = "https://scoresaber.com" + playerId.First().First();
+            url = "https://scoresaber.com" + playerId;
             using (var client = new HttpClient())
             {
                 var html = await client.GetStringAsync(url);
@@ -120,6 +110,7 @@ namespace DiscordBeatSaberBot
                     .ToList();
             }
 
+
             var steam = playerInfo.First()[0];
             var country = playerInfo.First()[2].Replace("/global?country=", "");
             var rank = playerInfo2.First()[0].Replace("\r\n", "").Trim();
@@ -137,7 +128,7 @@ namespace DiscordBeatSaberBot
                 playCount + "\n\n" +
                 totalScore + "\n\n" +
                 pp + "\n\n" +
-                "Steam: " + steam + "\n\n");
+                "Steam: " + steam + "\n"+"\n");
             builder.ThumbnailUrl = playerImg.First().First();
             builder.Timestamp = DateTimeOffset.Now;
             var rankValue = ranks[0].Split('#')[1].Replace(",", "");
@@ -243,6 +234,12 @@ namespace DiscordBeatSaberBot
 
         public static async Task<EmbedBuilder> GetTopSongList(string search)
         {
+            if (search != "!bs topsong")
+            {
+                var build = await GetBestSongWithId(await GetPlayerId(search));
+                build.WithTitle("Top song from " + search);
+                return build;
+            }
             var TopSongInfo = new List<string>();
             var TopSongUrl = new List<List<string>>();
             var topSongUrlString = "";
@@ -368,6 +365,132 @@ namespace DiscordBeatSaberBot
             var builder = new EmbedBuilder();
             builder.WithTitle("Invitation Link");
             builder.WithDescription(Configuration.inviteLink);
+            return builder;
+        }
+
+        public static async Task<string> GetImageUrlFromId(string playerId)
+        {
+            var playerImgUrl = "";
+            using (var client = new HttpClient())
+            {
+                var url = "https://scoresaber.com" + playerId;
+                var html = await client.GetStringAsync(url);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(html);
+
+                playerImgUrl = doc.DocumentNode.SelectSingleNode("//img[@class='image is-96x96']").GetAttributeValue("src","");
+
+            }
+
+            return playerImgUrl;
+        }
+
+        public static async Task<string> GetPlayerId(string search)
+        {
+            var playerId = "";
+            var url = "https://scoresaber.com/global?search=" + search.Replace(" ", "+");
+            using (var client = new HttpClient())
+            {
+                var html = await client.GetStringAsync(url);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(html);
+
+                var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
+
+                try
+                {
+                    playerId = table.Descendants("tr").Skip(1).Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList().First().First();
+                }
+                catch
+                {
+                    return "";
+                }
+            }
+
+            return playerId;
+        }
+
+        public static async Task<EmbedBuilder> GetBestSongWithId(string playerId)
+        {
+            var playerTopSongImg = "";
+            var playerTopSongLink = "";
+            var playerTopSongName = "";
+            var playerTopSongPP = "";
+            var playerTopSongAcc = "";
+            var songName = "";
+            var songDifficulty = "";
+            var songAuthor = "";
+
+            var url = "https://scoresaber.com" + playerId;
+            using (var client = new HttpClient())
+            {
+                var html = await client.GetStringAsync(url);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(html);
+
+                var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking songs']");
+                playerTopSongImg = "https://scoresaber.com" + table.Descendants("tbody").Select(tr => tr.Descendants("img").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("src", ""))).ToList()).ToList().First().First();
+                playerTopSongLink = table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList().First().First();
+                playerTopSongName = table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()).ToList().First().First();
+                playerTopSongPP = doc.DocumentNode.SelectSingleNode("//span[@class='scoreTop ppValue']").InnerText;
+                playerTopSongAcc = doc.DocumentNode.SelectSingleNode("//span[@class='scoreBottom']").InnerText;
+                songName = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").InnerText;
+                songDifficulty = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").Descendants("span").First().InnerText;
+                songAuthor = doc.DocumentNode.SelectSingleNode("//span[@class='songTop mapper']").InnerText;
+
+            }
+            var builder = new EmbedBuilder();
+            builder.AddInlineField("Song", "name: " + songName + "\n" +
+                                           "difficulty: " + songDifficulty + "\n" +
+                                           "Author: " + songAuthor + "\n" +
+                                               "pp from this song: " +playerTopSongPP + "\n" +
+                                               playerTopSongAcc + "\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
+            builder.WithImageUrl(playerTopSongImg);
+            builder.WithThumbnailUrl(await GetImageUrlFromId(playerId));
+            return builder;
+        }
+
+        public static async Task<EmbedBuilder> GetRecentSongWithId(string playerId)
+        {
+            var playerTopSongImg = "";
+            var playerTopSongLink = "";
+            var playerTopSongName = "";
+            var playerTopSongPP = "";
+            var playerTopSongAcc = "";
+            var songName = "";
+            var songDifficulty = "";
+            var songAuthor = "";
+
+            var url = "https://scoresaber.com" + playerId + "&sort=2";
+            using (var client = new HttpClient())
+            {
+                var html = await client.GetStringAsync(url);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(html);
+
+                var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking songs']");
+                playerTopSongImg = "https://scoresaber.com" + table.Descendants("tbody").Select(tr => tr.Descendants("img").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("src", ""))).ToList()).ToList().First().First();
+                playerTopSongLink = table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList().First().First();
+                playerTopSongName = table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()).ToList().First().First();
+                playerTopSongPP = doc.DocumentNode.SelectSingleNode("//span[@class='scoreTop ppValue']").InnerText;
+                playerTopSongAcc = doc.DocumentNode.SelectSingleNode("//span[@class='scoreBottom']").InnerText;
+                songName = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").InnerText;
+                songDifficulty = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").Descendants("span").First().InnerText;
+                songAuthor = doc.DocumentNode.SelectSingleNode("//span[@class='songTop mapper']").InnerText;
+
+            }
+
+            var songDetails = playerTopSongName;
+            
+
+            var builder = new EmbedBuilder();
+            builder.AddInlineField("Song", "name: " + songName + "\n" +
+                                           "difficulty: " + songDifficulty + "\n" +
+                                           "Author: " + songAuthor + "\n" +
+                                               "pp from this song: " + playerTopSongPP + "\n" +
+                                               playerTopSongAcc + "\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
+            builder.WithImageUrl(playerTopSongImg);
+            builder.WithThumbnailUrl(await GetImageUrlFromId(playerId));
             return builder;
         }
     }
