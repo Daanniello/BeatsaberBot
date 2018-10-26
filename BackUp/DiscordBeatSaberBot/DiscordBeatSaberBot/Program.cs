@@ -48,7 +48,14 @@ namespace DiscordBeatSaberBot
 
                     if (message.Content.Contains(" topsong"))
                     {
-                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopSongList(message.Content));
+                        if (message.Content.Length == 11)
+                        {
+                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopSongList(message.Content));
+                        }
+                        else
+                        {
+                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopSongList(message.Content.Substring(12)));
+                        }
                     }
 
                     if (message.Content.Contains(" search"))
@@ -59,6 +66,11 @@ namespace DiscordBeatSaberBot
                     if (message.Content.Contains(" invite"))
                     {
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetInviteLink());
+                    }
+
+                    if (message.Content.Contains(" recentsong"))
+                    {
+                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetRecentSongWithId(await BeatSaberInfoExtension.GetPlayerId(message.Content.Substring(15))));
                     }
 
                     if (message.Content.Contains(" ranks"))
