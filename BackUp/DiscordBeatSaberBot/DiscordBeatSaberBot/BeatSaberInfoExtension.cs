@@ -1,4 +1,6 @@
 ﻿using Discord;
+using Discord.WebSocket;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -68,9 +70,7 @@ namespace DiscordBeatSaberBot
             var playerInfo2 = (List<List<string>>)null;
             var playerImg = (List<List<string>>)null;
             var playerId = (List<List<string>>)null;
-            var playerInfoToTell = "";
             var url = "https://scoresaber.com/global?search=" + playerName.Replace(" ", "+");
-
             using (var client = new HttpClient())
             {
                 var html = await client.GetStringAsync(url);
@@ -85,6 +85,11 @@ namespace DiscordBeatSaberBot
                         .Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", "")))
                         .ToList())
                     .ToList();
+            }
+
+            if (playerId.Count <= 0)
+            {
+                return EmbedBuilderExtension.NullEmbed("No Results", "I am sorry, I could not find any person named: " + playerName, null, null);
             }
 
             url = "https://scoresaber.com" + playerId.First().First();
@@ -117,29 +122,32 @@ namespace DiscordBeatSaberBot
 
             var steam = playerInfo.First()[0];
             var country = playerInfo.First()[2].Replace("/global?country=", "");
-            var rank = playerInfo2.First()[0].Replace(@"\r\n", "");
-            var pp = playerInfo2.First()[1].Replace(@"\r\n", "");
-            var playCount = playerInfo2.First()[2].Replace(@"\r\n", "");
-            var totalScore = playerInfo2.First()[3].Replace(@"\r\n", "");
+            var rank = playerInfo2.First()[0].Replace("\r\n", "").Trim();
+            var pp = playerInfo2.First()[1].Replace("\r\n", "").Trim();
+            var playCount = playerInfo2.First()[2].Replace("\r\n", "").Trim();
+            var totalScore = playerInfo2.First()[3].Replace("\r\n", "").Trim();
+
+            var ranks = rank.Split('-');
 
             var builder = new EmbedBuilder();
-            builder.WithTitle("Player Information");
-            builder.WithDescription("All Information about " + playerName);
-            builder.AddInlineField("Player",
-                "Name: " + playerName + "\n" +
-                rank + "\n" +
-                "Country: " + country + "\n" +
-                playCount +
-                totalScore +
-                pp + "\n" +
-                "Steam: " + steam + "\n");
+            builder.AddInlineField(playerName,
+                ranks[0] + "\n\n" +
+                "Country Ranking: " + ranks[1].Replace("(", "").Replace(")", "") + "\n\n" +
+                "Country: " + country.ToUpper() + " :flag_" + country+":" + "\n\n" +
+                playCount + "\n\n" +
+                totalScore + "\n\n" +
+                pp + "\n\n" +
+                "Steam: " + steam + "\n\n");
             builder.ThumbnailUrl = playerImg.First().First();
-
-            builder.WithColor(Color.Red);
+            builder.Timestamp = DateTimeOffset.Now;
+            var rankValue = ranks[0].Split('#')[1].Replace(",", "");
+            var rankInt = int.Parse(rankValue);
+            var rankColor = Rank.GetRankColor(rankInt);
+            builder.WithColor(await rankColor);
             return builder;
         }
 
-        public static async Task<EmbedBuilder> GetSongs(string search)
+        public static async Task<List<EmbedBuilder>> GetSongs(string search)
         {
             var songs = (List<List<string>>)null;
             var pictureUrl = new List<List<string>>();
@@ -155,7 +163,7 @@ namespace DiscordBeatSaberBot
                 songs = table.Descendants("tr")
                     .Skip(1)
                     .Select(tr => tr.Descendants("td")
-                        .Select(td => WebUtility.HtmlDecode(td.InnerText + td.InnerHtml))
+                        .Select(td => WebUtility.HtmlDecode(td.InnerHtml))
                         .ToList())
                     .ToList();
 
@@ -165,6 +173,13 @@ namespace DiscordBeatSaberBot
                         .ToList())
                     .ToList();
 
+            }
+
+            if (songs.Count <= 0)
+            {
+                var returnList = new List<EmbedBuilder>();
+                returnList.Add(EmbedBuilderExtension.NullEmbed("No songs found", "Sorry, I did not find any songs with the term: " + search, null, null));
+                return returnList;
             }
 
             var songNameList = new List<string>();
@@ -210,16 +225,20 @@ namespace DiscordBeatSaberBot
                 }
             }
 
-            var builder = new EmbedBuilder();
-            builder.WithTitle("Song Info");
-            builder.WithDescription("All songs that contains " + search);
+            var builderList = new List<EmbedBuilder>();
             for (int i = 0; i < pictureFilter.Count; i++)
             {
-                builder.AddInlineField(songNameList[i], "\n" + difficultiesList[i] + "\n" + authorList[i] + "\n" + "\nSong image link:\n" + pictureFilter[i] + "\nDownload Link\n" + downloadLinkList[i] + "\n \n ");
+                var builder = new EmbedBuilder();
+                builder.WithTitle("Song Info");
+                builder.WithThumbnailUrl(pictureFilter[i]);
+                builder.WithDescription("All songs that contains " + search);
+                builder.AddInlineField(songNameList[i], "\n" + difficultiesList[i] + "\n" + authorList[i] + "\n" + "\nDownload Link\n" + downloadLinkList[i] + "\n \n ");
+                builder.WithColor(Color.Red);
+                builderList.Add(builder);
             }
 
-            builder.WithColor(Color.Red);
-            return builder;
+            
+            return builderList;
         }
 
         public static async Task<EmbedBuilder> GetTopSongList(string search)
@@ -227,6 +246,8 @@ namespace DiscordBeatSaberBot
             var TopSongInfo = new List<string>();
             var TopSongUrl = new List<List<string>>();
             var topSongUrlString = "";
+            var topSongImg = new List<List<string>>();
+            var topSongImgString = "";
             var topList = new List<List<string>>();
             var url = "https://scoresaber.com/top";
             using (var client = new HttpClient())
@@ -243,12 +264,20 @@ namespace DiscordBeatSaberBot
                         .ToList()).First()
                     .ToList();
 
+                topSongImg = table.Descendants("tr")
+                    .Skip(1)
+                    .Select(tr => tr.Descendants("img")
+                        .Select(img => WebUtility.HtmlDecode(img.GetAttributeValue("src","")))
+                        .ToList())
+                    .ToList();
+
                 TopSongUrl = table.Descendants("tr").Skip(1)
                     .Select(tr => tr.Descendants("a")
                         .Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", "")))
                         .ToList())
                     .ToList();
                 topSongUrlString = TopSongUrl.First().First();
+                topSongImgString = "https://scoresaber.com" + topSongImg.First().First();
             }
 
             using (var client = new HttpClient())
@@ -265,10 +294,21 @@ namespace DiscordBeatSaberBot
                         .ToList())
                     .ToList();
             }
+            
+            var songName = TopSongInfo[0].Replace("\r\n", "").Trim();
+            var songDifficulty = TopSongInfo[2];
+            var songStar = TopSongInfo[4];
+            var songPlays = TopSongInfo[3];
+
 
             var builder = new EmbedBuilder();
-            builder.WithTitle("Most Played Song Top List");
-            builder.WithDescription("All songs that contains " + search);
+            builder.WithTitle(songName.ToString());
+            builder.WithDescription(
+                "Difficulty: " + songDifficulty + "\n" +
+                "Star rate: " + songStar + "\n" +
+                "Plays last 24H: " + songPlays
+                );
+            builder.WithThumbnailUrl(topSongImgString);
             var output = "";
             for (var x = 1; x <= 10; x++)
             {
@@ -278,6 +318,56 @@ namespace DiscordBeatSaberBot
             builder.AddInlineField("Top Players", output);
 
             builder.WithColor(Color.Red);
+            return builder;
+        }
+
+        public static async Task<List<EmbedBuilder>> GetRanks()
+        {
+            var builderList = new List<EmbedBuilder>();
+
+            var builder = new EmbedBuilder();
+            builder.WithTitle("Top " + Rank.rankMaster.ToString());
+            builder.WithColor(await Rank.GetRankColor(Rank.rankMaster));
+            builderList.Add(builder);
+
+            builder = new EmbedBuilder();
+            builder.WithTitle("<" + Rank.rankChallenger.ToString());
+            builder.WithColor(await Rank.GetRankColor(Rank.rankChallenger));
+            builderList.Add(builder);
+
+            builder = new EmbedBuilder();
+            builder.WithTitle("<" + Rank.rankDiamond.ToString());
+            builder.WithColor(await Rank.GetRankColor(Rank.rankDiamond));
+            builderList.Add(builder);
+
+            builder = new EmbedBuilder();
+            builder.WithTitle("<" + Rank.rankPlatinum.ToString());
+            builder.WithColor(await Rank.GetRankColor(Rank.rankPlatinum));
+            builderList.Add(builder);
+
+            builder = new EmbedBuilder();
+            builder.WithTitle("<" + Rank.rankGold.ToString());
+            builder.WithColor(await Rank.GetRankColor(Rank.rankGold));
+            builderList.Add(builder);
+
+            builder = new EmbedBuilder();
+            builder.WithTitle("<" + Rank.rankSilver.ToString());
+            builder.WithColor(await Rank.GetRankColor(Rank.rankSilver));
+            builderList.Add(builder);
+
+            builder = new EmbedBuilder();
+            builder.WithTitle("+" + Rank.rankSilver);
+            builder.WithColor(await Rank.GetRankColor(9999999));
+            builderList.Add(builder);
+
+            return builderList;
+        }
+
+        public static async Task<EmbedBuilder> GetInviteLink()
+        {
+            var builder = new EmbedBuilder();
+            builder.WithTitle("Invitation Link");
+            builder.WithDescription(Configuration.inviteLink);
             return builder;
         }
     }

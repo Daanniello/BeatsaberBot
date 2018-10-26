@@ -14,6 +14,7 @@ namespace DiscordBeatSaberBot
         private static string searchSongs = "Songs [Songname] => (gives all available songs with information)";
         private static string topSong = "topsong => (gets the current most played song and shows the top 10 players)";
         private static string ranks = "ranks => (gets all ranks with colors and range)";
+        private static string invitationLink = "invite => (gets the invitationLink for the Beatsaber bot)";
 
         static CommandHelper()
         {
@@ -23,6 +24,7 @@ namespace DiscordBeatSaberBot
             helpCommands.Add(searchSongs);
             helpCommands.Add(topSong);
             helpCommands.Add(ranks);
+            helpCommands.Add(invitationLink);
         }
 
         public static List<string> Help()

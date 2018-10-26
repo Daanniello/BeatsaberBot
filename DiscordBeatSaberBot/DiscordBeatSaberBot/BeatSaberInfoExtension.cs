@@ -362,5 +362,13 @@ namespace DiscordBeatSaberBot
 
             return builderList;
         }
+
+        public static async Task<EmbedBuilder> GetInviteLink()
+        {
+            var builder = new EmbedBuilder();
+            builder.WithTitle("Invitation Link");
+            builder.WithDescription(Configuration.inviteLink);
+            return builder;
+        }
     }
 }

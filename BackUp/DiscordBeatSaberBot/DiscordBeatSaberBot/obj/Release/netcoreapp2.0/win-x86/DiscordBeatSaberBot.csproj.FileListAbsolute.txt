@@ -1,0 +1,13 @@
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.0\win-x86\hostpolicy.dll
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.0\win-x86\hostfxr.dll
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.exe
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.deps.json
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.runtimeconfig.json
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.runtimeconfig.dev.json
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.dll
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.pdb
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.csproj.CoreCompileInputs.cache
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.AssemblyInfoInputs.cache
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.AssemblyInfo.cs
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.dll
+C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.pdb

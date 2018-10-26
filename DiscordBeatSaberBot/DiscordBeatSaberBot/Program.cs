@@ -56,6 +56,11 @@ namespace DiscordBeatSaberBot
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetPlayer(message.Content.Substring(11)));
                     }
 
+                    if (message.Content.Contains(" invite"))
+                    {
+                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetInviteLink());
+                    }
+
                     if (message.Content.Contains(" ranks"))
                     {
                         var builderList = await BeatSaberInfoExtension.GetRanks();
@@ -92,7 +97,7 @@ namespace DiscordBeatSaberBot
                         builder.WithDescription("All Commands to be used");
                         foreach (var helpCommand in CommandHelper.Help())
                         {
-                            helpMessage += helpCommand + "\n";
+                            helpMessage += helpCommand + "\n\n";
                         }
                         builder.AddInlineField("Commands", helpMessage);
                         builder.WithColor(Color.Red);
