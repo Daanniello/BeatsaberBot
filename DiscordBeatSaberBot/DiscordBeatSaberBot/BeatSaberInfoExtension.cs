@@ -493,5 +493,31 @@ namespace DiscordBeatSaberBot
             builder.WithThumbnailUrl(await GetImageUrlFromId(playerId));
             return builder;
         }
+
+        public static async Task<EmbedBuilder> GetTopxCountry(string search)
+        {
+            var input = search.Split(" ");
+            var tab = 1;
+            var count = int.Parse(input[1]);
+            var Names = new List<string>();
+            var url = "https://scoresaber.com/global/1&country=" + input[0];
+            using (var client = new HttpClient())
+            {
+                var html = await client.GetStringAsync(url);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(html);
+
+                var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
+                Names = table.Descendants("tr").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList();
+            }
+
+            var builder = new EmbedBuilder();
+            var output = "";
+            for (var x = 0; x < count; x++) {
+                output += Names[x] + "\n";
+            }
+            builder.AddInlineField("Song", "");
+            return builder;
+        }
     }
 }

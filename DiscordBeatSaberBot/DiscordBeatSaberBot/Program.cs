@@ -68,6 +68,11 @@ namespace DiscordBeatSaberBot
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetInviteLink());
                     }
 
+                    if (message.Content.Contains(" country"))
+                    {
+                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopxCountry(message.Content.Substring(12)));
+                    }
+
                     if (message.Content.Contains(" recentsong"))
                     {
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetRecentSongWithId(await BeatSaberInfoExtension.GetPlayerId(message.Content.Substring(15))));
@@ -121,7 +126,7 @@ namespace DiscordBeatSaberBot
             }
             catch
             {
-                await message.Channel.SendMessageAsync("Command is not working at the moment! please try again later");
+                await log(message.ToString());
             }
                 await log(message.ToString());
             return Task.CompletedTask;
