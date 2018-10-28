@@ -23,7 +23,7 @@ namespace DiscordBeatSaberBot
 
             await Task.Delay(-1);
         }
-
+        
         private Task log(string message)
         {
             Console.WriteLine(message);
@@ -66,6 +66,11 @@ namespace DiscordBeatSaberBot
                     if (message.Content.Contains(" invite"))
                     {
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetInviteLink());
+                    }
+
+                    if (message.Content.Contains(" addrole"))
+                    {
+                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.AddRole(message));
                     }
 
                     if (message.Content.Contains(" country"))

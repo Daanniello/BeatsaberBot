@@ -475,6 +475,7 @@ namespace DiscordBeatSaberBot
             var songName = "";
             var songDifficulty = "";
             var songAuthor = "";
+            var playerName = "";
 
             var url = "https://scoresaber.com" + playerId + "&sort=2";
             using (var client = new HttpClient())
@@ -492,6 +493,7 @@ namespace DiscordBeatSaberBot
                 songName = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").InnerText;
                 songDifficulty = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").Descendants("span").First().InnerText;
                 songAuthor = doc.DocumentNode.SelectSingleNode("//span[@class='songTop mapper']").InnerText;
+                playerName = doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']").InnerText;
 
             }
 
@@ -499,7 +501,7 @@ namespace DiscordBeatSaberBot
             
 
             var builder = new EmbedBuilder();
-            builder.AddInlineField("Song", "name: " + songName + "\n" +
+            builder.AddInlineField(playerName, "name: " + songName + "\n" +
                                            "difficulty: " + songDifficulty + "\n" +
                                            "Author: " + songAuthor + "\n" +
                                                "pp from this song: " + playerTopSongPP + "\n" +
@@ -507,6 +509,43 @@ namespace DiscordBeatSaberBot
             builder.WithImageUrl(playerTopSongImg);
             builder.WithThumbnailUrl(await GetImageUrlFromId(playerId));
             return builder;
+        }
+
+        public static async Task<(string, string)> GetRecentSongInfoWithId(string playerId)
+        {
+            var playerTopSongImg = "";
+            var playerTopSongLink = "";
+            var playerTopSongName = "";
+            var playerTopSongPP = "";
+            var playerTopSongAcc = "";
+            var songName = "";
+            var songDifficulty = "";
+            var songAuthor = "";
+            var playerName = "";
+
+            var url = "https://scoresaber.com" + playerId + "&sort=2";
+            using (var client = new HttpClient())
+            {
+                var html = await client.GetStringAsync(url);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(html);
+
+                var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking songs']");
+                playerTopSongImg = "https://scoresaber.com" + table.Descendants("tbody").Select(tr => tr.Descendants("img").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("src", ""))).ToList()).ToList().First().First();
+                playerTopSongLink = table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList().First().First();
+                playerTopSongName = table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()).ToList().First().First();
+                playerTopSongPP = doc.DocumentNode.SelectSingleNode("//span[@class='scoreTop ppValue']").InnerText;
+                playerTopSongAcc = doc.DocumentNode.SelectSingleNode("//span[@class='scoreBottom']").InnerText;
+                songName = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").InnerText;
+                songDifficulty = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").Descendants("span").First().InnerText;
+                songAuthor = doc.DocumentNode.SelectSingleNode("//span[@class='songTop mapper']").InnerText;
+                playerName = doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']").InnerText;
+
+            }
+
+            var songDetails = playerTopSongName;
+
+            return (playerName,songName);
         }
 
         public static async Task<EmbedBuilder> GetTopxCountry(string search)
@@ -641,6 +680,75 @@ namespace DiscordBeatSaberBot
                         .ToList()).ToList();
                  }
             return playerInfo.First()[2].Replace("/global?country=", "") + playerInfo2.First()[0].Replace("\r\n", "").Trim();
+        }
+
+        public static async Task<EmbedBuilder> AddRole(SocketMessage message)
+        {
+            var name = message.Content.Substring(12);
+            var id = await GetPlayerId(name);
+            var guild = message.Channel as SocketGuildChannel;
+            if (string.IsNullOrEmpty(id))
+            {
+                return EmbedBuilderExtension.NullEmbed("Soryy", "This name does not exist", null, null);
+            }
+
+            var (playerName, songName) = await GetRecentSongInfoWithId(id);
+        
+            if (songName == "Tycho - Spectre")
+            {
+                var user = message.Author;
+                var guildUser = user as IGuildUser;
+
+                string rankcountry = await GetPlayerCountryRank(name);
+                var rankcountryList = rankcountry.Split("-");
+                rankcountry = rankcountryList[1].Replace("(","").Replace(")", "").Replace("#", "").Trim();
+
+                var rank = int.Parse(rankcountry);
+                if (rank == 1)
+                {
+                    await guildUser.AddRoleAsync(GetRole("Nummer 1"));
+                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 1", null, null);
+                }
+                else if (rank <= 3)
+                {
+                    await guildUser.AddRoleAsync(GetRole("Top 3"));
+                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 3", null, null);
+                }
+                else if (rank <= 10)
+                {
+                    await guildUser.AddRoleAsync(GetRole("Top 10"));
+                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 10", null, null);
+                }
+                else if (rank <= 25)
+                {
+                    await guildUser.AddRoleAsync(GetRole("Top 25"));
+                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 25", null, null);
+                }
+                else if (rank <= 50)
+                {
+                    await guildUser.AddRoleAsync(GetRole("Top 50"));
+                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 50", null, null);
+                }
+                else if (rank <= 100)
+                {
+                    await guildUser.AddRoleAsync(GetRole("Top 100"));
+                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 100", null, null);
+                }
+                else if (rank > 100)
+                {
+                    await guildUser.AddRoleAsync(GetRole("Top 501+"));
+                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 501 +", null, null);
+                }
+
+                SocketRole GetRole(string botname)
+                {
+                    var role = guild.Guild.Roles.FirstOrDefault(x => x.Name == botname);
+                    return role;
+                }
+
+            }
+
+            return EmbedBuilderExtension.NullEmbed("Soryy", "Discord can not be linked because the recent song is not [Tycho - Spectre] \n Please play this song with 0 points to register", null, null);
         }
     }
 }

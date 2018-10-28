@@ -16,6 +16,7 @@ namespace DiscordBeatSaberBot
         private static string ranks = "ranks => (gets all ranks with colors and range)";
         private static string invitationLink = "invite => (gets the invitationLink for the Beatsaber bot)";
         private static string recentsong = "recentsong [Username] => (gets the most recent song that a user has played)";
+        private static string addrole = "addrole [Username] => (adds role of your rank (if your recent played song is [Tycho - Spectre]))";
 
         static CommandHelper()
         {
@@ -26,7 +27,7 @@ namespace DiscordBeatSaberBot
             helpCommands.Add(topSong);
             helpCommands.Add(ranks);
             helpCommands.Add(invitationLink);
-            helpCommands.Add(recentsong);
+            helpCommands.Add(addrole);
         }
 
         public static List<string> Help()
