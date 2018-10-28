@@ -121,15 +121,30 @@ namespace DiscordBeatSaberBot
             var ranks = rank.Split('-');
 
             var builder = new EmbedBuilder();
-            builder.AddInlineField(playerName,
+            
+            if (steam != "#")
+            {
+                builder.ThumbnailUrl = playerImg.First().First();
+                builder.AddInlineField(playerName,
                 ranks[0] + "\n\n" +
                 "Country Ranking: " + ranks[1].Replace("(", "").Replace(")", "") + "\n\n" +
-                "Country: " + country.ToUpper() + " :flag_" + country+":" + "\n\n" +
+                "Country: " + country.ToUpper() + " :flag_" + country + ":" + "\n\n" +
                 playCount + "\n\n" +
                 totalScore + "\n\n" +
                 pp + "\n\n" +
-                "Steam: " + steam + "\n"+"\n");
-            builder.ThumbnailUrl = playerImg.First().First();
+                "Steam: " + steam + "\n" + "\n");
+            }
+            else
+            {
+                builder.AddInlineField(playerName,
+                ranks[0] + "\n\n" +
+                "Country Ranking: " + ranks[1].Replace("(", "").Replace(")", "") + "\n\n" +
+                "Country: " + country.ToUpper() + " :flag_" + country + ":" + "\n\n" +
+                playCount + "\n\n" +
+                totalScore + "\n\n" +
+                pp + "\n\n" + "Oculus user");
+            }
+            
             builder.Timestamp = DateTimeOffset.Now;
             var rankValue = ranks[0].Split('#')[1].Replace(",", "");
             var rankInt = int.Parse(rankValue);
@@ -497,27 +512,135 @@ namespace DiscordBeatSaberBot
         public static async Task<EmbedBuilder> GetTopxCountry(string search)
         {
             var input = search.Split(" ");
-            var tab = 1;
+            if (!input[1].Any(char.IsDigit))
+            {
+                var name = search;
+                var countryrank = await GetPlayerCountryRank(name);
+                return await GetTopCountryWithName(countryrank);
+            }
+            if (int.Parse(input[1]) > 50)
+            {
+                return EmbedBuilderExtension.NullEmbed("Sorry", "Search amount is too big", null, null);
+            }
+            decimal t = int.Parse(input[1]) / 50;
+            var tab = Math.Ceiling(t) + 1;
             var count = int.Parse(input[1]);
             var Names = new List<string>();
-            var url = "https://scoresaber.com/global/1&country=" + input[0];
+            var ids = new List<string>();
+            
+            for (var x = 1; x <= tab; x++)
+            {
+                var url = "https://scoresaber.com/global/" + x + "&country=" + input[0];
+                using (var client = new HttpClient())
+                {
+                    var html = await client.GetStringAsync(url);
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(html);
+
+                    var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
+                    Names.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList());
+
+                    table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
+                    ids = table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList();
+                }
+            }
+            
+            var topx = new List<string>();
+            for (var x = 0; x < int.Parse(input[1]); x++)
+            {
+                var add = Names[x].Replace("\r\n", " ").Replace("&nbsp&nbsp", "");
+                add = add.Trim();
+                topx.Add(add);
+            }
+
+            var builder = new EmbedBuilder();
+            var output = "";
+            var counter = 1;
+            foreach (var rank in topx) {
+
+                    output += "#" + counter+ " " + rank + "\n";
+                
+                counter += 1;
+            }
+
+            builder.AddInlineField("Top " + input[1] + " " + input[0].ToUpper() + " :flag_" + input[0] + ":", output);
+            return builder;
+        }
+
+        public static async Task<EmbedBuilder> GetTopCountryWithName(string search)
+        {
+            //TODO replace search
+            var input = search.Split(" ");
+            decimal t = int.Parse(input[1]) / 50;
+            var tab = Math.Ceiling(t) + 1;
+            var count = int.Parse(input[1]);
+            var Names = new List<string>();
+            var ids = new List<string>();
+
+                var url = "https://scoresaber.com/global/" + tab + "&country=" + input[0];
+                using (var client = new HttpClient())
+                {
+                    var html = await client.GetStringAsync(url);
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(html);
+
+                    var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
+                    Names.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList());
+
+                    table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
+                    ids = table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList();
+                }
+
+            var topx = new List<string>();
+            for (var x = 0; x < 21; x++)
+            {
+                var add = Names[x].Replace("\r\n", " ").Replace("&nbsp&nbsp", "");
+                add = add.Trim();
+                topx.Add(add);
+            }
+
+            var builder = new EmbedBuilder();
+            var output = "";
+            var counter = 1;
+            foreach (var rank in topx)
+            {
+
+                output += "#" + counter + " " + rank + "\n";
+
+                counter += 1;
+            }
+
+            builder.AddInlineField("Top " + input[1] + " " + input[0].ToUpper() + " :flag_" + input[0] + ":", output);
+            return builder;
+        }
+
+        public static async Task<string> GetPlayerCountryRank(string name)
+        {
+            var playerInfo = (List<List<string>>)null;
+            var playerInfo2 = (List<List<string>>)null;
+            var url = "https://scoresaber.com" + await GetPlayerId(name);
             using (var client = new HttpClient())
             {
                 var html = await client.GetStringAsync(url);
                 var doc = new HtmlAgilityPack.HtmlDocument();
                 doc.LoadHtml(html);
 
-                var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
-                Names = table.Descendants("tr").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList();
-            }
+                var table = doc.DocumentNode.SelectSingleNode("//div[@class='columns']");
 
-            var builder = new EmbedBuilder();
-            var output = "";
-            for (var x = 0; x < count; x++) {
-                output += Names[x] + "\n";
-            }
-            builder.AddInlineField("Song", "");
-            return builder;
+                playerInfo = table.Descendants("div")
+                    .Skip(1)
+                    .Select(tr => tr.Descendants("a")
+                        .Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", "")))
+                        .ToList())
+                    .ToList();
+
+                playerInfo2 = table.Descendants("div")
+                    .Skip(1)
+                    .Select(tr => tr.Descendants("li")
+                        .Select(a => WebUtility.HtmlDecode(a.InnerText))
+                        .ToList()).ToList();
+                 }
+            return playerInfo.First()[2].Replace("/global?country=", "") + playerInfo2.First()[0].Replace("\r\n", "").Trim();
         }
     }
 }
