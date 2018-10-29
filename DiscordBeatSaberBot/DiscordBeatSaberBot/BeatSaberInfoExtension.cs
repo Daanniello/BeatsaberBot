@@ -65,89 +65,46 @@ namespace DiscordBeatSaberBot
 
         public static async Task<EmbedBuilder> GetPlayer(string playerName)
         {
-
-            var playerInfo = (List<List<string>>)null;
-            var playerInfo2 = (List<List<string>>)null;
-            var playerImg = (List<List<string>>)null;
-            var playerId = "";
-            var playerTopSongImg = "";
-            var playerTopSongLink = "";
-            var playerTopSongName = "";
             var url = "https://scoresaber.com/global?search=" + playerName.Replace(" ", "+");
 
-            playerId = await GetPlayerId(playerName);
+            var playerId = await GetPlayerId(playerName);
 
             if (string.IsNullOrEmpty(playerId))
             {
                 return EmbedBuilderExtension.NullEmbed("No Results", "I am sorry, I could not find any person named: " + playerName, null, null);
             }
 
-            url = "https://scoresaber.com" + playerId;
-            using (var client = new HttpClient())
-            {
-                var html = await client.GetStringAsync(url);
-                var doc = new HtmlAgilityPack.HtmlDocument();
-                doc.LoadHtml(html);
-
-                var table = doc.DocumentNode.SelectSingleNode("//div[@class='columns']");
-
-                playerInfo = table.Descendants("div")
-                    .Skip(1)
-                    .Select(tr => tr.Descendants("a")
-                        .Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", "")))
-                        .ToList())
-                    .ToList();
-                playerInfo2 = table.Descendants("div")
-                    .Skip(1)
-                    .Select(tr => tr.Descendants("li")
-                        .Select(a => WebUtility.HtmlDecode(a.InnerText))
-                        .ToList())
-                    .ToList();
-                playerImg = table.Descendants("div")
-                    .Select(tr => tr.Descendants("img")
-                        .Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("src", "")))
-                        .ToList())
-                    .ToList();
-            }
-
-
-            var steam = playerInfo.First()[0];
-            var country = playerInfo.First()[2].Replace("/global?country=", "");
-            var rank = playerInfo2.First()[0].Replace("\r\n", "").Trim();
-            var pp = playerInfo2.First()[1].Replace("\r\n", "").Trim();
-            var playCount = playerInfo2.First()[2].Replace("\r\n", "").Trim();
-            var totalScore = playerInfo2.First()[3].Replace("\r\n", "").Trim();
-
-            var ranks = rank.Split('-');
+            var player = await GetPlayerInfo(playerName);
 
             var builder = new EmbedBuilder();
-            
-            if (steam != "#")
+            string countryNameSmall = player.countryName;
+            if (player.steamLink != "#")
             {
-                builder.ThumbnailUrl = playerImg.First().First();
+                builder.ThumbnailUrl = player.imgLink;
                 builder.AddInlineField(playerName,
-                ranks[0] + "\n\n" +
-                "Country Ranking: " + ranks[1].Replace("(", "").Replace(")", "") + "\n\n" +
-                "Country: " + country.ToUpper() + " :flag_" + country + ":" + "\n\n" +
-                playCount + "\n\n" +
-                totalScore + "\n\n" +
-                pp + "\n\n" +
-                "Steam: " + steam + "\n" + "\n");
+                    "Global Ranking: #" + player.rank + "\n\n" +
+                    "Country Ranking: #" + player.countryRank + "\n\n" +
+                    "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" +
+                    "Play Count: " + player.playCount + "\n\n" +
+                    "Total Score: " + player.totalScore + "\n\n" +
+                    "Performance Points: " + player.pp + "\n\n" +
+                    "Steam: " + player.steamLink + "\n" + "\n");
             }
             else
             {
                 builder.AddInlineField(playerName,
-                ranks[0] + "\n\n" +
-                "Country Ranking: " + ranks[1].Replace("(", "").Replace(")", "") + "\n\n" +
-                "Country: " + country.ToUpper() + " :flag_" + country + ":" + "\n\n" +
-                playCount + "\n\n" +
-                totalScore + "\n\n" +
-                pp + "\n\n" + "Oculus user");
+                    "Global Ranking: #" + player.rank + "\n\n" +
+                    "Country Ranking: #" + player.countryRank + "\n\n" +
+                    "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" +
+                    "Play Count: " + player.playCount + "\n\n" +
+                    "Total Score: " + player.totalScore + "\n\n" +
+                    "Performance Points: " + player.pp + "\n\n" +
+                    "Oculus user");
             }
             
             builder.Timestamp = DateTimeOffset.Now;
-            var rankValue = ranks[0].Split('#')[1].Replace(",", "");
-            var rankInt = int.Parse(rankValue);
+            //var rankValue = player.rank.Split('#')[1].Replace(",", "");
+            var rankInt = player.rank;
             var rankColor = Rank.GetRankColor(rankInt);
             builder.WithColor(await rankColor);
             return builder;
@@ -402,7 +359,9 @@ namespace DiscordBeatSaberBot
 
         public static async Task<string> GetPlayerId(string search)
         {
-            var playerId = "";
+            var realPlayerIdList = new List<string>();
+            var playerIdList = new List<List<string>>();
+            var playerNameList = new List<string>();
             var url = "https://scoresaber.com/global?search=" + search.Replace(" ", "+");
             using (var client = new HttpClient())
             {
@@ -414,15 +373,25 @@ namespace DiscordBeatSaberBot
 
                 try
                 {
-                    playerId = table.Descendants("tr").Skip(1).Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList().First().First();
+                    playerIdList = table.Descendants("tr").Skip(1).Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList();
+                    playerNameList = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']").Descendants("span").Where(span => span.GetAttributeValue("class", "") == "songTop pp").Select(span => WebUtility.HtmlDecode(span.InnerText)).ToList();
+                    var counter = 0;
+                    foreach (var playerId in playerIdList)
+                    {
+                        if (playerNameList[counter] == search)
+                        {
+                            realPlayerIdList.Add(playerId[0]);
+                        }
+                        counter++;
+                    }
                 }
                 catch
                 {
-                    return "";
+                    return null;
                 }
             }
 
-            return playerId;
+            return realPlayerIdList.First();
         }
 
         public static async Task<EmbedBuilder> GetBestSongWithId(string playerId)
@@ -749,6 +718,65 @@ namespace DiscordBeatSaberBot
             }
 
             return EmbedBuilderExtension.NullEmbed("Soryy", "Discord can not be linked because the recent song is not [Tycho - Spectre] \n Please play this song with 0 points to register", null, null);
+        }
+
+        public static async Task<Player> GetPlayerInfo(string playerName)
+        {
+            var player = new Player();
+
+
+            var playerInfo = (List<List<string>>)null;
+            var playerInfo2 = (List<List<string>>)null;
+            var playerImg = (List<List<string>>)null;
+            var playerId = "";
+            var url = "https://scoresaber.com/global?search=" + playerName.Replace(" ", "+");
+
+            playerId = await GetPlayerId(playerName);
+
+            url = "https://scoresaber.com" + playerId;
+            using (var client = new HttpClient())
+            {
+                var html = await client.GetStringAsync(url);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(html);
+
+                var table = doc.DocumentNode.SelectSingleNode("//div[@class='columns']");
+
+                playerInfo = table.Descendants("div")
+                    .Skip(1)
+                    .Select(tr => tr.Descendants("a")
+                        .Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", "")))
+                        .ToList())
+                    .ToList();
+                playerInfo2 = table.Descendants("div")
+                    .Skip(1)
+                    .Select(tr => tr.Descendants("li")
+                        .Select(a => WebUtility.HtmlDecode(a.InnerText))
+                        .ToList())
+                    .ToList();
+                playerImg = table.Descendants("div")
+                    .Select(tr => tr.Descendants("img")
+                        .Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("src", "")))
+                        .ToList())
+                    .ToList();
+            }
+
+            var rank = playerInfo2.First()[0].Replace("\r\n", "").Trim();
+            var ranks = rank.Split('-');
+
+            player.rank = int.Parse(ranks[0].Replace("Player Ranking: #", "").Trim());
+            player.steamLink = playerInfo.First()[0];
+            player.countryName = playerInfo.First()[2].Replace("/global?country=", "").ToUpper();
+            player.countryRank = int.Parse(ranks[1].Replace("(", "").Replace(")", "").Replace("#",""));
+            var pp = playerInfo2.First()[1].Replace("\r\n", "").Replace("Performance Points: ", "").Replace(",","").Replace("pp","").Trim();
+            player.pp = pp;
+            player.playCount = int.Parse(playerInfo2.First()[2].Replace("\r\n", "").Replace("Play Count: ", "").Trim());
+            player.totalScore = playerInfo2.First()[3].Replace("\r\n", "").Replace("Total Score: ","").Trim();
+            player.countryIcon = ":flag_" + player.countryName + ":";
+            player.imgLink = playerImg.First().First();
+            player.name = playerName;
+
+            return player;
         }
     }
 }

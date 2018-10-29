@@ -1,0 +1,11 @@
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.1\DiscordBeatSaberBot.deps.json
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.1\DiscordBeatSaberBot.runtimeconfig.json
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.1\DiscordBeatSaberBot.runtimeconfig.dev.json
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.1\DiscordBeatSaberBot.dll
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Release\netcoreapp2.1\DiscordBeatSaberBot.pdb
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.1\DiscordBeatSaberBot.csprojAssemblyReference.cache
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.1\DiscordBeatSaberBot.csproj.CoreCompileInputs.cache
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.1\DiscordBeatSaberBot.AssemblyInfoInputs.cache
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.1\DiscordBeatSaberBot.AssemblyInfo.cs
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.1\DiscordBeatSaberBot.dll
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.1\DiscordBeatSaberBot.pdb
