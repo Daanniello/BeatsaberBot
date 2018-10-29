@@ -60,7 +60,11 @@ namespace DiscordBeatSaberBot
 
                     if (message.Content.Contains(" search"))
                     {
-                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetPlayer(message.Content.Substring(11)));
+                        foreach (var embed in await BeatSaberInfoExtension.GetPlayer(message.Content.Substring(11)))
+                        {
+                            await message.Channel.SendMessageAsync("", false, embed);
+                        }
+                        
                     }
 
                     if (message.Content.Contains(" invite"))
@@ -80,7 +84,8 @@ namespace DiscordBeatSaberBot
 
                     if (message.Content.Contains(" recentsong"))
                     {
-                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetRecentSongWithId(await BeatSaberInfoExtension.GetPlayerId(message.Content.Substring(15))));
+                        var id = await BeatSaberInfoExtension.GetPlayerId(message.Content.Substring(15));
+                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetRecentSongWithId(id[0]));
                     }
 
                     if (message.Content.Contains(" ranks"))
