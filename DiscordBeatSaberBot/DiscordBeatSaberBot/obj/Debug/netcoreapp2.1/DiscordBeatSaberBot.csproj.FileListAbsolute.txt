@@ -19,3 +19,4 @@ C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaber
 C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.1\DiscordBeatSaberBot.AssemblyInfo.cs
 C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.1\DiscordBeatSaberBot.dll
 C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.1\DiscordBeatSaberBot.pdb
+C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.1\DiscordBeatSaberBot.csprojResolveAssemblyReference.cache

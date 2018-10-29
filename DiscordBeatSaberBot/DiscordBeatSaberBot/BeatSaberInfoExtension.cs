@@ -764,10 +764,10 @@ namespace DiscordBeatSaberBot
             var rank = playerInfo2.First()[0].Replace("\r\n", "").Trim();
             var ranks = rank.Split('-');
 
-            player.rank = int.Parse(ranks[0].Replace("Player Ranking: #", "").Trim());
+            player.rank = int.Parse(ranks[0].Replace("Player Ranking: #", "").Replace(",","").Trim());
             player.steamLink = playerInfo.First()[0];
             player.countryName = playerInfo.First()[2].Replace("/global?country=", "").ToUpper();
-            player.countryRank = int.Parse(ranks[1].Replace("(", "").Replace(")", "").Replace("#",""));
+            player.countryRank = int.Parse(ranks[1].Replace("(", "").Replace(")", "").Replace("#","").Replace(",",""));
             var pp = playerInfo2.First()[1].Replace("\r\n", "").Replace("Performance Points: ", "").Replace(",","").Replace("pp","").Trim();
             player.pp = pp;
             player.playCount = int.Parse(playerInfo2.First()[2].Replace("\r\n", "").Replace("Play Count: ", "").Trim());
