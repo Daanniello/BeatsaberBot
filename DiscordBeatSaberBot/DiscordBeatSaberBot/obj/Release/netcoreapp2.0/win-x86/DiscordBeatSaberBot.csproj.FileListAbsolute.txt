@@ -11,3 +11,5 @@ C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberB
 C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.AssemblyInfo.cs
 C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.dll
 C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.pdb
+C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.dll
+C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Release\netcoreapp2.0\win-x86\DiscordBeatSaberBot.pdb
