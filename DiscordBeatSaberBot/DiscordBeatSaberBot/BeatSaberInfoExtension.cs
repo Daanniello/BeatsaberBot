@@ -378,7 +378,7 @@ namespace DiscordBeatSaberBot
                     var counter = 0;
                     foreach (var playerId in playerIdList)
                     {
-                        if (playerNameList[counter] == search)
+                        if (playerNameList[counter].ToUpper() == search.ToUpper())
                         {
                             realPlayerIdList.Add(playerId[0]);
                         }
