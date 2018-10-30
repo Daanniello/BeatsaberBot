@@ -7,8 +7,7 @@ namespace DiscordBeatSaberBot
 {
     public class Program
     {
-        public static void Main(string[] args)
-            => new Program().MainAsync().GetAwaiter().GetResult();
+        public static void Main(string[] args) => new Program().MainAsync().GetAwaiter().GetResult();
 
         public async Task MainAsync()
         {
@@ -23,7 +22,7 @@ namespace DiscordBeatSaberBot
 
             await Task.Delay(-1);
         }
-        
+
         private Task log(string message)
         {
             Console.WriteLine(message);
@@ -36,18 +35,20 @@ namespace DiscordBeatSaberBot
             {
                 return Task.CompletedTask;
             }
+
             try
             {
                 if (message.Content.Substring(0, 3).Contains("!bs"))
                 {
-                    await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = 20 });
+                    
                     if (message.Content.Contains(" top10"))
                     {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTop10Players());
                     }
-
-                    if (message.Content.Contains(" topsong"))
+                    else if (message.Content.Contains(" topsong"))
                     {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
                         if (message.Content.Length == 11)
                         {
                             await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopSongList(message.Content));
@@ -57,67 +58,63 @@ namespace DiscordBeatSaberBot
                             await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopSongList(message.Content.Substring(12)));
                         }
                     }
-
-                    if (message.Content.Contains(" search"))
+                    else if (message.Content.Contains(" search"))
                     {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
                         foreach (var embed in await BeatSaberInfoExtension.GetPlayer(message.Content.Substring(11)))
                         {
                             await message.Channel.SendMessageAsync("", false, embed);
                         }
-                        
                     }
-
-                    if (message.Content.Contains(" invite"))
+                    else if (message.Content.Contains(" invite"))
                     {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetInviteLink());
                     }
-
-                    if (message.Content.Contains(" addrole"))
+                    else if (message.Content.Contains(" addrole"))
                     {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.AddRole(message));
                     }
-
-                    if (message.Content.Contains(" country"))
+                    else if (message.Content.Contains(" country"))
                     {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopxCountry(message.Content.Substring(12)));
                     }
-
-                    if (message.Content.Contains(" recentsong"))
+                    else if (message.Content.Contains(" recentsong"))
                     {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
                         var id = await BeatSaberInfoExtension.GetPlayerId(message.Content.Substring(15));
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetRecentSongWithId(id[0]));
                     }
-
-                    if (message.Content.Contains(" ranks"))
+                    else if (message.Content.Contains(" ranks"))
                     {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
                         var builderList = await BeatSaberInfoExtension.GetRanks();
-                        foreach(var builder in builderList)
+                        foreach (var builder in builderList)
                         {
                             await message.Channel.SendMessageAsync("", false, builder);
                         }
                     }
-
-                    if (message.Content.Contains(" songs"))
+                    else if (message.Content.Contains(" songs"))
                     {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
                         var builderList = await BeatSaberInfoExtension.GetSongs(message.Content.Substring(10));
-                        if(builderList.Count > 6)
+                        if (builderList.Count > 6)
                         {
-                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Search term to wide", "I can not post more as 6 songs. " +
-                                "\n Try searching with a more specific word please. \n" +
-                                ":rage:", null,null));
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Search term to wide", "I can not post more as 6 songs. " + "\n Try searching with a more specific word please. \n" + ":rage:", null, null));
                         }
                         else
                         {
                             foreach (var builder in builderList)
                             {
-
                                 await message.Channel.SendMessageAsync("", false, builder);
                             }
                         }
                     }
-
-                    if (message.Content.Contains(" help"))
+                    else if (message.Content.Contains(" help"))
                     {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = 20 });
                         var helpMessage = "";
                         var builder = new EmbedBuilder();
                         builder.WithTitle("Help");
@@ -126,20 +123,27 @@ namespace DiscordBeatSaberBot
                         {
                             helpMessage += helpCommand + "\n\n";
                         }
+
                         builder.AddInlineField("Commands", helpMessage);
                         builder.WithColor(Color.Red);
 
                         await message.Channel.SendMessageAsync("", false, builder);
                         return Task.CompletedTask;
                     }
+                    else
+                    {
+                        EmbedBuilderExtension.NullEmbed("Oops", "There is no command like that, try something else", null, null);
+                    }
+                    
                 }
             }
             catch
             {
                 await log(message.ToString());
             }
-                await log(message.ToString());
+
+            await log(message.ToString());
             return Task.CompletedTask;
-        }      
+        }
     }
 }

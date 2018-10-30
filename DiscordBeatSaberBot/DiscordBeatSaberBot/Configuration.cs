@@ -7,5 +7,8 @@ namespace DiscordBeatSaberBot
     static class Configuration
     {
         public static string inviteLink = "https://discordapp.com/oauth2/authorize?&client_id=504633036902498314&scope=bot&permissions=0";
+
+        public static int TypingTimeOut = 10;
+
     }
 }
