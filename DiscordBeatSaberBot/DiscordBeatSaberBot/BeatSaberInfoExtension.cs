@@ -486,7 +486,7 @@ namespace DiscordBeatSaberBot
                 return await GetTopCountryWithName(countryrank, countryName, search);
             }
 
-            if (input[1].Any(char.IsDigit))
+            if (!input[1].Any(char.IsDigit))
             {
                 var name = search;
                 var player = await GetPlayerInfo(name);
@@ -585,13 +585,13 @@ namespace DiscordBeatSaberBot
                 }
             }
 
-            if (rankOnTab < 4)
+            if (rankOnTab < 4 && rankOnTab != 0 && tab != 1)
             {
                 url = "https://scoresaber.com/global/" + (tab - 1) + "&country=" + country;
                 await GetNames(url, 1);
             }
 
-            if (rankOnTab > 47)
+            if (rankOnTab > 47 || rankOnTab == 0)
             {
                 url = "https://scoresaber.com/global/" + (tab + 2) + "&country=" + country;
                 await GetNames(url, 2);
