@@ -593,7 +593,7 @@ namespace DiscordBeatSaberBot
 
             if (rankOnTab > 47 || rankOnTab == 0)
             {
-                url = "https://scoresaber.com/global/" + (tab + 2) + "&country=" + country;
+                url = "https://scoresaber.com/global/" + (tab + 1) + "&country=" + country;
                 await GetNames(url, 2);
             }
 
