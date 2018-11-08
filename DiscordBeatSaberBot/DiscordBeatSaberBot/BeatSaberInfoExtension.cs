@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-
 namespace DiscordBeatSaberBot
 {
     static class BeatSaberInfoExtension
@@ -37,18 +36,12 @@ namespace DiscordBeatSaberBot
                 foreach (var result in player)
                 {
                     var item = result.Replace(@"\r\n", " ").Trim();
-                    if (!string.IsNullOrEmpty(item))
-                    {
-                        infoToTell += item + " ";
-                    }
+                    if (!string.IsNullOrEmpty(item)) { infoToTell += item + " "; }
                 }
 
                 topInfo += infoToTell + "\n";
                 counter++;
-                if (counter >= 10)
-                {
-                    break;
-                }
+                if (counter >= 10) { break; }
             }
 
             var builder = new EmbedBuilder();
@@ -64,7 +57,7 @@ namespace DiscordBeatSaberBot
         {
             var playerId = await GetPlayerId(playerName);
 
-            if (string.IsNullOrEmpty(playerId.First()))
+            if (playerId.Count == 0)
             {
                 var embedList = new List<EmbedBuilder>();
                 embedList.Add(EmbedBuilderExtension.NullEmbed("No Results", "I am sorry, I could not find any person named: " + playerName, null, null));
@@ -82,18 +75,9 @@ namespace DiscordBeatSaberBot
                 if (player.steamLink != "#")
                 {
                     builder.ThumbnailUrl = player.imgLink;
-                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" 
-                                                       + "Country Ranking: #" + player.countryRank + "\n\n" 
-                                                       + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" 
-                                                       + "Play Count: " + player.playCount + "\n\n" 
-                                                       + "Total Score: " + player.totalScore + "\n\n" 
-                                                       + "Performance Points: " + player.pp + "\n\n" 
-                                                       + "Steam: " + player.steamLink + "\n" + "\n");
+                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Steam: " + player.steamLink + "\n" + "\n");
                 }
-                else
-                {
-                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user");
-                }
+                else { builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user"); }
 
                 builder.Timestamp = DateTimeOffset.Now;
                 //var rankValue = player.rank.Split('#')[1].Replace(",", "");
@@ -140,20 +124,11 @@ namespace DiscordBeatSaberBot
             {
                 foreach (var info in songInfo)
                 {
-                    if (info.Contains("Song"))
-                    {
-                        songNameList.Add(info);
-                    }
+                    if (info.Contains("Song")) { songNameList.Add(info); }
 
-                    if (info.Contains("Author"))
-                    {
-                        authorList.Add(info);
-                    }
+                    if (info.Contains("Author")) { authorList.Add(info); }
 
-                    if (info.Contains("Difficulties"))
-                    {
-                        difficultiesList.Add(info);
-                    }
+                    if (info.Contains("Difficulties")) { difficultiesList.Add(info); }
 
                     if (info.Contains("href"))
                     {
@@ -168,10 +143,7 @@ namespace DiscordBeatSaberBot
             {
                 foreach (var picture in pictureList)
                 {
-                    if (!string.IsNullOrEmpty(picture))
-                    {
-                        pictureFilter.Add(picture);
-                    }
+                    if (!string.IsNullOrEmpty(picture)) { pictureFilter.Add(picture); }
                 }
             }
 
@@ -246,10 +218,7 @@ namespace DiscordBeatSaberBot
             builder.WithDescription("Difficulty: " + songDifficulty + "\n" + "Star rate: " + songStar + "\n" + "Plays last 24H: " + songPlays);
             builder.WithThumbnailUrl(topSongImgString);
             var output = "";
-            for (var x = 1; x <= 10; x++)
-            {
-                output += "#" + x + topList[x].First() + "\n";
-            }
+            for (var x = 1; x <= 10; x++) { output += "#" + x + topList[x].First() + "\n"; }
 
             builder.AddInlineField("Top Players", output);
 
@@ -344,18 +313,12 @@ namespace DiscordBeatSaberBot
                     var counter = 0;
                     foreach (var playerId in playerIdList)
                     {
-                        if (playerNameList[counter].ToUpper() == search.ToUpper())
-                        {
-                            realPlayerIdList.Add(playerId[0]);
-                        }
+                        if (playerNameList[counter].ToUpper() == search.ToUpper()) { realPlayerIdList.Add(playerId[0]); }
 
                         counter++;
                     }
                 }
-                catch
-                {
-                    return null;
-                }
+                catch { return null; }
             }
 
             return realPlayerIdList;
@@ -495,10 +458,7 @@ namespace DiscordBeatSaberBot
                 return await GetTopCountryWithName(countryrank, countryName, search);
             }
 
-            if (int.Parse(input[1]) > 50)
-            {
-                return EmbedBuilderExtension.NullEmbed("Sorry", "Search amount is too big", null, null);
-            }
+            if (int.Parse(input[1]) > 50) { return EmbedBuilderExtension.NullEmbed("Sorry", "Search amount is too big", null, null); }
 
             decimal t = int.Parse(input[1]) / 50;
             var tab = Math.Ceiling(t) + 1;
@@ -545,7 +505,9 @@ namespace DiscordBeatSaberBot
             return builder;
         }
 
-        public static async Task<EmbedBuilder> GetTopCountryWithName(int Rank, string country, string playerName)
+        public static async Task<EmbedBuilder> GetTopCountryWithName(int Rank,
+            string country,
+            string playerName)
         {
             //TODO replace search + and - 3 players
             var countryName = country;
@@ -561,7 +523,8 @@ namespace DiscordBeatSaberBot
             var url = "https://scoresaber.com/global/" + tab + "&country=" + country;
             await GetNames(url);
 
-            async Task GetNames(string infoUrl, int otherPage = 0)
+            async Task GetNames(string infoUrl,
+                int otherPage = 0)
             {
                 using (var client = new HttpClient())
                 {
@@ -570,18 +533,9 @@ namespace DiscordBeatSaberBot
                     doc.LoadHtml(html);
 
                     var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
-                    if (otherPage == 1 )
-                    {
-                        namesBottom.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList());
-                    }
-                    else if(otherPage == 2)
-                    {
-                        namesTop.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList());
-                    }
-                    else
-                    {
-                        Names.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList());
-                    }
+                    if (otherPage == 1) { namesBottom.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()); }
+                    else if (otherPage == 2) { namesTop.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()); }
+                    else { Names.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()); }
                 }
             }
 
@@ -600,12 +554,12 @@ namespace DiscordBeatSaberBot
             var topx = new List<string>();
             for (var x = 0; x < 50; x++)
             {
-                if (x < (rankOnTab + 3) && x > (rankOnTab - 3) )
+                if (x < (rankOnTab + 3) && x > (rankOnTab - 3))
                 {
                     var add = Names[x].Replace("\r\n", " ").Replace("&nbsp&nbsp", "");
                     add = add.Trim();
                     topx.Add(add);
-                }               
+                }
             }
 
             var outputList = new List<string>();
@@ -620,15 +574,10 @@ namespace DiscordBeatSaberBot
             {
                 if (counter > Rank - 4 && counter < Rank + 4)
                 {
-                    if (counter == Rank)
-                    {
-                        output += "#" + counter + " " + rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim() + "\n";
-                    }
-                    else
-                    {
-                        output += "#" + counter + " " + rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim() + "\n";
-                    }                   
+                    if (counter == Rank) { output += "#" + counter + " " + rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim() + "\n"; }
+                    else { output += "#" + counter + " " + rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim() + "\n"; }
                 }
+
                 counter += 1;
             }
 
@@ -664,14 +613,11 @@ namespace DiscordBeatSaberBot
             var id = await GetPlayerId(name);
 
             var guild = message.Channel as SocketGuildChannel;
-            if (string.IsNullOrEmpty(id.First()))
-            {
-                return EmbedBuilderExtension.NullEmbed("Soryy", "This name does not exist", null, null);
-            }
+            if (string.IsNullOrEmpty(id.First())) { return EmbedBuilderExtension.NullEmbed("Soryy", "This name does not exist", null, null); }
 
             var (playerName, songName) = await GetRecentSongInfoWithId(id.First());
 
-            if (songName == "Tycho - Spectre")
+            if (songName == "Hi - Hi Easy")
             {
                 var user = message.Author;
                 var guildUser = user as IGuildUser;
@@ -799,29 +745,14 @@ namespace DiscordBeatSaberBot
             //    "PP" + "\n" +
             //    "TotalScore" + "\n");
 
-            builder.AddInlineField(splitting[0] + " " + player1.countryIcon.ToLower(), 
-                "#"+ player1.rank + "\n" +
-                "#" + player1.countryRank + "\n" +
-                player1.playCount + "\n" +
-                player1.pp + "\n" +
-                player1.totalScore + "\n");
+            builder.AddInlineField(splitting[0] + " " + player1.countryIcon.ToLower(), "#" + player1.rank + "\n" + "#" + player1.countryRank + "\n" + player1.playCount + "\n" + player1.pp + "\n" + player1.totalScore + "\n");
 
-            builder.AddInlineField("Difference",
-                 (Math.Abs(player1.rank - player2.rank)) + "\n" +
-                 (Math.Abs(player1.countryRank - player2.countryRank)) + "\n" +
-                 (Math.Abs(player1.playCount - player2.playCount)) + "\n" +
-                 (player1.pp + player2.pp) + "\n" +
-                 (Math.Abs((int.Parse(player1.totalScore.Replace(",","")) - int.Parse(player2.totalScore.Replace(",", "")))) + "\n"));
+            builder.AddInlineField("Difference", (Math.Abs(player1.rank - player2.rank)) + "\n" + (Math.Abs(player1.countryRank - player2.countryRank)) + "\n" + (Math.Abs(player1.playCount - player2.playCount)) + "\n" + (player1.pp + player2.pp) + "\n" + (Math.Abs((int.Parse(player1.totalScore.Replace(",", "")) - int.Parse(player2.totalScore.Replace(",", "")))) + "\n"));
 
-            builder.AddInlineField(splitting[1] + " " + player2.countryIcon.ToLower(),
-                "#" + player2.rank + "\n" +
-                "#" + player2.countryRank + "\n" +
-                player2.playCount + "\n" +
-                player2.pp + "\n" +
-                player2.totalScore + "\n");
+            builder.AddInlineField(splitting[1] + " " + player2.countryIcon.ToLower(), "#" + player2.rank + "\n" + "#" + player2.countryRank + "\n" + player2.playCount + "\n" + player2.pp + "\n" + player2.totalScore + "\n");
 
-            
+
             return builder;
-        } 
+        }
     }
 }
