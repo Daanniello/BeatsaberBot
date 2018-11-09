@@ -670,7 +670,7 @@ namespace DiscordBeatSaberBot
                 }
             }
 
-            return EmbedBuilderExtension.NullEmbed("Soryy", "Discord can not be linked because the recent song is not [Tycho - Spectre] \n Please play this song with 0 points to register", null, null);
+            return EmbedBuilderExtension.NullEmbed("Soryy", "Discord can not be linked because the recent song is not [Hi - Hi Easy] \n Please play this song with 0 points to register", null, null);
         }
 
         public static async Task<List<Player>> GetPlayerInfo(string playerName)
