@@ -71,6 +71,11 @@ namespace DiscordBeatSaberBot
                         await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetInviteLink());
                     }
+                    else if (message.Content.Contains(" compare"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
+                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.PlayerComparer(message.Content.Substring(12)));
+                    }
                     else if (message.Content.Contains(" addrole"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
