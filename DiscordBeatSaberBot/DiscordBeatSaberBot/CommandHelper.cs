@@ -21,6 +21,7 @@ namespace DiscordBeatSaberBot
         private static string addrole = "addrole [Username] => (adds role of your rank (if your recent played song is [Tycho - Spectre]))";
         private static string country1 = "country *Username => (gets rank list of 3 above and underneath this player)";
         private static string country2 = "country [countryPrefix] [x] => (gets the top x country list)";
+        private static string pplist = "pplist (Gives an link to google spreadsheet with all info from ranked songs)";
 
         static CommandHelper()
         {
@@ -31,11 +32,13 @@ namespace DiscordBeatSaberBot
             helpCommands.Add(searchPlayer);
             helpCommands.Add(searchSongs);
             helpCommands.Add(topSong);
+            helpCommands.Add(recentsong);
             helpCommands.Add(ranks);
             helpCommands.Add(invitationLink);
             helpCommands.Add(addrole);
             helpCommands.Add(country1);
             helpCommands.Add(country2);
+            helpCommands.Add(pplist);
         }
 
         public static List<string> Help()
