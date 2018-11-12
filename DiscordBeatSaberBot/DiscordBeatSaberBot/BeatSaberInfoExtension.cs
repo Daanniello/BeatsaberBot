@@ -745,11 +745,15 @@ namespace DiscordBeatSaberBot
             //    "PP" + "\n" +
             //    "TotalScore" + "\n");
 
-            builder.AddInlineField(splitting[0] + " " + player1.countryIcon.ToLower(), "#" + player1.rank + "\n" + "#" + player1.countryRank + "\n" + player1.playCount + "\n" + player1.pp + "\n" + player1.totalScore + "\n");
+            builder.AddInlineField(splitting[0] + " " + player1.countryIcon.ToLower(), "#" + player1.rank + "\n" + "#" + player1.countryRank + "\n" + player1.playCount + "\n" + player1.pp + "pp" + "\n" + player1.totalScore + "\n");
 
-            builder.AddInlineField("Difference", (Math.Abs(player1.rank - player2.rank)) + "\n" + (Math.Abs(player1.countryRank - player2.countryRank)) + "\n" + (Math.Abs(player1.playCount - player2.playCount)) + "\n" + (player1.pp + player2.pp) + "\n" + (Math.Abs((int.Parse(player1.totalScore.Replace(",", "")) - int.Parse(player2.totalScore.Replace(",", "")))) + "\n"));
+            var pp1 = int.Parse(player1.pp.Split(".")[0]);
+            var pp2 = int.Parse(player2.pp.Split(".")[0]);
+            var ppDifference = Math.Abs(pp1 - pp2);
 
-            builder.AddInlineField(splitting[1] + " " + player2.countryIcon.ToLower(), "#" + player2.rank + "\n" + "#" + player2.countryRank + "\n" + player2.playCount + "\n" + player2.pp + "\n" + player2.totalScore + "\n");
+            builder.AddInlineField("Difference", (Math.Abs(player1.rank - player2.rank)) + "\n" + (Math.Abs(player1.countryRank - player2.countryRank)) + "\n" + (Math.Abs(player1.playCount - player2.playCount)) + "pp" + "\n" + ppDifference + "\n" + (Math.Abs((int.Parse(player1.totalScore.Replace(",", "")) - int.Parse(player2.totalScore.Replace(",", "")))) + "\n"));
+
+            builder.AddInlineField(splitting[1] + " " + player2.countryIcon.ToLower(), "#" + player2.rank + "\n" + "#" + player2.countryRank + "\n" + player2.playCount + "\n" + player2.pp + "pp" + "\n" + player2.totalScore + "\n");
 
 
             return builder;
