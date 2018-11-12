@@ -36,11 +36,13 @@ namespace DiscordBeatSaberBot
                 return Task.CompletedTask;
             }
 
+            await MessageDelete.DeleteMessageCheck(message);
+            
+
             try
             {
                 if (message.Content.Substring(0, 3).Contains("!bs"))
                 {
-                    
                     if (message.Content.Contains(" top10"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });

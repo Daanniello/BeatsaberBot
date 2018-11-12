@@ -16,7 +16,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.runtimeconfig.json" target="lib\netcoreapp2.0\DiscordBeatSaberBot.runtimeconfig.json" />
-    <file src="C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.dll" target="lib\netcoreapp2.0\DiscordBeatSaberBot.dll" />
+    <file src="C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.runtimeconfig.json" target="lib\netcoreapp2.0\DiscordBeatSaberBot.runtimeconfig.json" />
+    <file src="C:\Users\Ron\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.dll" target="lib\netcoreapp2.0\DiscordBeatSaberBot.dll" />
   </files>
 </package>
