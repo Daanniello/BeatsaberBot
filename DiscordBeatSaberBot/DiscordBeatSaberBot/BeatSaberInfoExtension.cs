@@ -294,34 +294,8 @@ namespace DiscordBeatSaberBot
 
         public static async Task<List<string>> GetPlayerId(string search)
         {
-            var realPlayerIdList = new List<string>();
-            var playerIdList = new List<List<string>>();
-            var playerNameList = new List<string>();
-            var url = "https://scoresaber.com/global?search=" + search.Replace(" ", "+");
-            using (var client = new HttpClient())
-            {
-                var html = await client.GetStringAsync(url);
-                var doc = new HtmlAgilityPack.HtmlDocument();
-                doc.LoadHtml(html);
-
-                var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
-
-                try
-                {
-                    playerIdList = table.Descendants("tr").Skip(1).Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList();
-                    playerNameList = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']").Descendants("span").Where(span => span.GetAttributeValue("class", "") == "songTop pp").Select(span => WebUtility.HtmlDecode(span.InnerText)).ToList();
-                    var counter = 0;
-                    foreach (var playerId in playerIdList)
-                    {
-                        if (playerNameList[counter].ToUpper() == search.ToUpper()) { realPlayerIdList.Add(playerId[0]); }
-
-                        counter++;
-                    }
-                }
-                catch { return null; }
-            }
-
-            return realPlayerIdList;
+            var player = new Player(search);
+            return await player.GetPlayerId();
         }
 
         public static async Task<EmbedBuilder> GetBestSongWithId(string playerId)
@@ -509,7 +483,6 @@ namespace DiscordBeatSaberBot
             string country,
             string playerName)
         {
-            //TODO replace search + and - 3 players
             var countryName = country;
             double countryRank = Rank;
             double t = countryRank / 50;
@@ -687,7 +660,7 @@ namespace DiscordBeatSaberBot
             var counter = 0;
             foreach (var id in ids)
             {
-                var player = new Player();
+                var player = new Player(playerName);
 
                 url = "https://scoresaber.com" + playerId[counter];
                 using (var client = new HttpClient())
@@ -716,7 +689,7 @@ namespace DiscordBeatSaberBot
                 player.totalScore = playerInfo2.First()[3].Replace("\r\n", "").Replace("Total Score: ", "").Trim();
                 player.countryIcon = ":flag_" + player.countryName + ":";
                 player.imgLink = playerImg.First().First();
-                player.name = playerName;
+                player.name = player.name;
                 players.Add(player);
                 counter++;
             }
