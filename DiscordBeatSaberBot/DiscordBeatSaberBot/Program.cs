@@ -2,22 +2,28 @@
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord.Rest;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace DiscordBeatSaberBot
 {
     public class Program
     {
         private List<SavedMessages> messageCache;
+        private DiscordSocketClient discordSocketClient;
 
         public static void Main(string[] args) => new Program().MainAsync().GetAwaiter().GetResult();
 
         public async Task MainAsync()
         {
-            var discordSocketClient = new DiscordSocketClient();
+            TimerRunning(new CancellationToken());
+            discordSocketClient = new DiscordSocketClient();
             await log("Logging into Discord");
             await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
             await discordSocketClient.StartAsync();
@@ -140,6 +146,58 @@ namespace DiscordBeatSaberBot
                         await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
                         await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Mods Installer", "https://github.com/Umbranoxio/BeatSaberModInstaller/releases/download/2.1.6/BeatSaberModManager.exe", null, null));
                     }
+                    else if (message.Content.Contains(" addFeed"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
+
+                        List<ulong[]> _data = new List<ulong[]>();
+
+                        using (StreamReader r = new StreamReader("FeedChannels.txt"))
+                        {
+                            string json = r.ReadToEnd();
+                            _data = JsonConvert.DeserializeObject<List<ulong[]>>(json);
+                        }
+
+                        var channel = message.Channel as SocketGuildChannel;
+
+                        if (_data == null)
+                        {
+                            _data = new List<ulong[]>();
+                            _data.Add(new ulong[] { channel.Id, channel.Guild.Id });
+                            using (StreamWriter file = File.CreateText("FeedChannels.txt"))
+                            {
+                                JsonSerializer serializer = new JsonSerializer();
+                                serializer.Serialize(file, _data);
+                            }
+                        }
+
+                        var isDouble = false;
+                        foreach (var ids in _data)
+                        {
+                            if (ids.Contains(channel.Id) && ids.Contains(channel.Guild.Id)) { isDouble = true; }
+                        }
+
+                        if (!isDouble)
+                        {
+                            _data.Add(new ulong[] { channel.Id, channel.Guild.Id });
+
+                            using (StreamWriter file = File.CreateText("FeedChannels.txt"))
+                            {
+                                JsonSerializer serializer = new JsonSerializer();
+                                serializer.Serialize(file, _data);
+                            }
+
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Beat Saber Feed", "Successfully added the beat saber feed to this channel, I will post new beat saber updates directly into this channel.", null, null));
+
+                        }
+                        else
+                        {
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Beat Saber Feed", "Unsuccessfully added the beat saber feed to this channel, This channel is already in the list", null, null));
+                        }
+
+
+
+                    }
                     else if (message.Content.Contains(" pplist"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
@@ -208,6 +266,23 @@ namespace DiscordBeatSaberBot
 
             await log(message.ToString());
             return Task.CompletedTask;
+        }
+
+        async void TimerRunning(CancellationToken token)
+        {
+            //var startTime = DateTime.Now;
+            var watch = Stopwatch.StartNew();
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    Console.WriteLine("News Feed Updated");
+                    await Task.Delay(600000 - (int) (watch.ElapsedMilliseconds % 1000), token);
+                    await Feed.UpdateCheck(discordSocketClient);
+                    
+                }
+                catch (TaskCanceledException) { }
+            }
         }
     }
 }

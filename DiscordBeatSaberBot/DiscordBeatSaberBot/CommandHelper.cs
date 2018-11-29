@@ -24,6 +24,7 @@ namespace DiscordBeatSaberBot
         private static string country2 = "country [countryPrefix] [x] => (gets the top x country list)";
         private static string comparer = "comparer [username] vs [username2] => (gets the top x country list)";
         private static string pplist = "pplist (Gives an link to google spreadsheet with all info from ranked songs)";
+        private static string feed = "addFeed (Add the current channel in de feedlist so the bot will post beatsaber news)";
 
         static CommandHelper()
         {
@@ -37,12 +38,13 @@ namespace DiscordBeatSaberBot
             helpCommands.Add(recentsong);
             helpCommands.Add(ranks);
             helpCommands.Add(invitationLink);
-            helpCommands.Add(mod);
+            //helpCommands.Add(mod);
             helpCommands.Add(addrole);
             helpCommands.Add(country1);
             helpCommands.Add(country2);
             helpCommands.Add(comparer);
             helpCommands.Add(pplist);
+            helpCommands.Add(feed);
         }
 
         public static List<string> Help()
