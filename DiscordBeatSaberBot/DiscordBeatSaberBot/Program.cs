@@ -146,6 +146,53 @@ namespace DiscordBeatSaberBot
                         await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
                         await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Mods Installer", "https://github.com/Umbranoxio/BeatSaberModInstaller/releases/download/2.1.6/BeatSaberModManager.exe", null, null));
                     }
+                    else if (message.Content.Contains(" addRankFeed"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
+                        var filePath = "RankFeedPlayers.txt";
+                        var _data = new Dictionary<ulong, string[]>();
+
+                        using (StreamReader r = new StreamReader(filePath))
+                        {
+                            string json = r.ReadToEnd();
+                            _data = JsonConvert.DeserializeObject<Dictionary<ulong, string[]>>(json);
+                        }
+
+                        var player = message.Content.Substring(16);
+                        var playerObject = await BeatSaberInfoExtension.GetPlayerInfo(player);
+                        if (playerObject.Count == 0) { return null; }
+
+                        var firstItem = false;
+                        if (_data == null)
+                        {
+                            _data = new Dictionary<ulong, string[]>();
+                            _data.Add(message.Author.Id, new string[]
+                            {
+                                player, (playerObject.First().rank).ToString()
+                            });
+                            using (StreamWriter file = File.CreateText(filePath))
+                            {
+                                JsonSerializer serializer = new JsonSerializer();
+                                serializer.Serialize(file, _data);
+                            }
+
+                            firstItem = true;
+                        }
+
+                        if (_data.ContainsKey(message.Author.Id) && !firstItem)
+                        {
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Already contains this player", "Player is already in the RankFeedList", null, null));
+                        }
+
+                        
+                        _data.Add(message.Author.Id, new string[]{player, (playerObject.First().rank).ToString() });
+
+                        using (StreamWriter file = File.CreateText(filePath))
+                        {
+                            JsonSerializer serializer = new JsonSerializer();
+                            serializer.Serialize(file, _data);
+                        }
+                    }
                     else if (message.Content.Contains(" addFeed"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions { Timeout = Configuration.TypingTimeOut });
@@ -277,9 +324,10 @@ namespace DiscordBeatSaberBot
                 try
                 {
                     Console.WriteLine("News Feed Updated");
-                    await Task.Delay(600000 - (int) (watch.ElapsedMilliseconds % 1000), token);
+                    await Task.Delay(10000 - (int) (watch.ElapsedMilliseconds % 1000), token);
                     await Feed.UpdateCheck(discordSocketClient);
-                    
+                    await Feed.RanksInfoFeed(discordSocketClient);
+
                 }
                 catch (TaskCanceledException) { }
             }

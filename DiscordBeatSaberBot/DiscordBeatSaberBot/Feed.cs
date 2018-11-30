@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
@@ -34,6 +35,70 @@ namespace DiscordBeatSaberBot
             }
 
             return Link;
+        }
+
+        private static async Task MessagePlayer(DiscordSocketClient discord, ulong discordId, string content)
+        {
+            var guilds = discord.Guilds;
+            var members = new List<SocketUser>();
+            SocketUser userToSendTo = null;
+            foreach (var guild in guilds)
+            {
+                foreach (var channel in guild.Channels)
+                {
+                    foreach (var user in channel.Users)
+                    {
+                        if (user.Id == discordId) { userToSendTo = user; }
+                    }
+                }
+            }
+
+            await Discord.UserExtensions.SendMessageAsync(userToSendTo, content);
+        }
+
+        public static async Task RanksInfoFeed(DiscordSocketClient discord)
+        {
+            var filePath = "RankFeedPlayers.txt";
+            var content = "";
+            var _data = new Dictionary<ulong, string[]>();
+            using (StreamReader r = new StreamReader(filePath))
+            {
+                string json = r.ReadToEnd();
+                _data = JsonConvert.DeserializeObject<Dictionary<ulong, string[]>>(json);
+            }
+
+            if (_data == null) { return; }
+
+            foreach (var keyValue in _data)
+            {
+                var rankValue = await RankCheck(keyValue.Value[0], keyValue.Value[1]);
+                if (rankValue.Item1 == 0) { return; }
+                else if(rankValue.Item1 > 0) { content = "Congrats! you have a new rank. Your rank is now " + rankValue.Item2 + " and was " + (rankValue.Item2 + rankValue.Item1); }
+                else
+                {
+                    content = "Same on you! you have a new rank. Your rank is now " + rankValue.Item2 + " and was " + (rankValue.Item2 - rankValue.Item1);
+                }
+
+                try
+                {
+                    await MessagePlayer(discord, keyValue.Key, content); 
+
+                }
+                catch
+                {
+
+                }
+                
+            }
+
+        }
+
+        public static async Task<(int,int)> RankCheck(string username, string oldRank)
+        {
+            var playerInfo = await BeatSaberInfoExtension.GetPlayerInfo(username);
+            var rank = playerInfo.First().rank;
+            var rankValue = int.Parse(oldRank) - rank;
+            return (rankValue,rank);
         }
 
         public static async Task<EmbedBuilder> UpdateCheck(DiscordSocketClient discordSocketClient)
@@ -68,5 +133,6 @@ namespace DiscordBeatSaberBot
             System.IO.File.WriteAllText(filePath, await TwitterInfo());
             return null;
         }
+
     }
 }
