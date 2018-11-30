@@ -324,8 +324,8 @@ namespace DiscordBeatSaberBot
                 try
                 {
                     Console.WriteLine("News Feed Updated");
-                    await Task.Delay(10000 - (int) (watch.ElapsedMilliseconds % 1000), token);
-                    await Feed.UpdateCheck(discordSocketClient);
+                    await Task.Delay(3000000 - (int) (watch.ElapsedMilliseconds % 1000), token);
+                    //await Feed.UpdateCheck(discordSocketClient);
                     await Feed.RanksInfoFeed(discordSocketClient);
 
                 }
