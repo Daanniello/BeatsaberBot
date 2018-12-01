@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System;
+using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -72,10 +73,10 @@ namespace DiscordBeatSaberBot
                 var threshold = RankThresHold(rank);
 
                 if (rankValue.Item1 == 0) { return; }
-                else if (rankValue.Item1 < threshold) { content = "Congrats! you have a new rank. Your rank is now " + rankValue.Item2 + " and was " + (rankValue.Item2 - rankValue.Item1); }
-                else if (rankValue.Item1 > (threshold * -1))
+                else if (rankValue.Item1 < (threshold * -1)) { content = "Congrats! you have a better rank. Your rank is now " + rank + " and was " + (rank + Math.Abs(rankValue.Item1)); }
+                else if (rankValue.Item1 > threshold)
                 {
-                    content = "Shame on you! you have a new rank. Your rank is now " + rankValue.Item2 + " and was " + (rankValue.Item2 + rankValue.Item1);
+                    content = "Ohhh noo! you have been deranked. Your rank is now " + rank + " and was " + (rank - rankValue.Item1);
                 }
                 else { return; }
 

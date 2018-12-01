@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord.Rest;
 using System.IO;
+using System.Reflection.Metadata.Ecma335;
 using Newtonsoft.Json;
 
 namespace DiscordBeatSaberBot
@@ -182,6 +183,7 @@ namespace DiscordBeatSaberBot
                         if (_data.ContainsKey(message.Author.Id) && !firstItem)
                         {
                             await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Already contains this player", "Player is already in the RankFeedList", null, null));
+                            return Task.CompletedTask;
                         }
 
                         
@@ -192,6 +194,10 @@ namespace DiscordBeatSaberBot
                             JsonSerializer serializer = new JsonSerializer();
                             serializer.Serialize(file, _data);
                         }
+
+                        await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Successfully added to the Ranking Feed", "You will now be updated in DM when you lose or gain too many ranks, based on your beat saber rank.", null, null));
+
+
                     }
                     else if (message.Content.Contains(" addFeed"))
                     {
@@ -324,7 +330,7 @@ namespace DiscordBeatSaberBot
                 try
                 {
                     Console.WriteLine("News Feed Updated");
-                    await Task.Delay(3000000 - (int) (watch.ElapsedMilliseconds % 1000), token);
+                    await Task.Delay(300000 - (int) (watch.ElapsedMilliseconds % 1000), token);
                     //await Feed.UpdateCheck(discordSocketClient);
                     await Feed.RanksInfoFeed(discordSocketClient);
 
