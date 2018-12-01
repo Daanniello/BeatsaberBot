@@ -182,7 +182,7 @@ namespace DiscordBeatSaberBot
 
                         if (_data.ContainsKey(message.Author.Id) && !firstItem)
                         {
-                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Already contains this player", "Player is already in the RankFeedList", null, null));
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Already contains this Discord user", "Sorry, you can only follow one beat saber player on the moment attached to your discord", null, null));
                             return Task.CompletedTask;
                         }
 
