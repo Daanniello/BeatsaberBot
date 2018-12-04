@@ -66,8 +66,17 @@ namespace DiscordBeatSaberBot
             foreach (var keyValue in _data)
             {
                 var rankValue = await RankCheck(keyValue.Value[0], keyValue.Value[1]);
+                var currentRankPlayer = new List<Player>();
 
-                var currentRankPlayer = await BeatSaberInfoExtension.GetPlayerInfo(keyValue.Value[0]);
+                try
+                {
+                    currentRankPlayer = await BeatSaberInfoExtension.GetPlayerInfo(keyValue.Value[0]);
+
+                }
+                catch
+                {
+                    return;
+                }
                 var rank = currentRankPlayer.First().rank;
                 var threshold = RankThresHold(rank);
 
@@ -97,7 +106,16 @@ namespace DiscordBeatSaberBot
                     {
                         if (player.Key == keyValue.Key)
                         {
-                            var info = await BeatSaberInfoExtension.GetPlayerInfo(player.Value[0]);
+                            var info = new List<Player>();
+                            try
+                            {
+                                info = await BeatSaberInfoExtension.GetPlayerInfo(player.Value[0]);
+
+                            }
+                            catch
+                            {
+                                return;
+                            }
                             player.Value[1] = info.First().rank.ToString();
                         }
                     }
@@ -119,7 +137,16 @@ namespace DiscordBeatSaberBot
 
         public static async Task<(int, int)> RankCheck(string username, string oldRank)
         {
-            var playerInfo = await BeatSaberInfoExtension.GetPlayerInfo(username);
+            var playerInfo = new List<Player>();
+            try
+            {
+                playerInfo = await BeatSaberInfoExtension.GetPlayerInfo(username);
+
+            }
+            catch
+            {
+                return (0,0);
+            }
             var rank = playerInfo.First().rank;
             var rankValue = int.Parse(oldRank) - rank;
             return (rankValue, rank);
