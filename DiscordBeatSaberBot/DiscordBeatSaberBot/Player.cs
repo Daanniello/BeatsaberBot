@@ -27,6 +27,10 @@ namespace DiscordBeatSaberBot
 
         public string imgLink { get; set; }
 
+        public Player Next { get; set; }
+
+        public Player Before { get; set; }
+
         public Player(string name)
         {
             this.name = name;
@@ -64,6 +68,8 @@ namespace DiscordBeatSaberBot
 
             return realPlayerIdList;
         }
+
+
 
     }
 }

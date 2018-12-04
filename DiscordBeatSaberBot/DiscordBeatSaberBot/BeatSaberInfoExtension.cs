@@ -73,11 +73,12 @@ namespace DiscordBeatSaberBot
                 var builder = new EmbedBuilder();
                 string countryNameSmall = player.countryName;
                 if (player.steamLink != "#")
+
                 {
                     builder.ThumbnailUrl = player.imgLink;
-                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Steam: " + player.steamLink + "\n" + "\n");
+                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Steam: " + player.steamLink + "\n\n" + "Player above: " + player.Next.name + "\n\n" + "PP till UpRank: " + Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp)) + "\n\n" + "PP till DeRank: " + Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp)));
                 }
-                else { builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user"); }
+                else { builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user" + "\n\n" + "Player above: " + player.Next.name + "\n\n" + "PP till UpRank: " + Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp)) + "\n\n" + "PP till DeRank: " + Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp))); }
 
                 builder.Timestamp = DateTimeOffset.Now;
                 //var rankValue = player.rank.Split('#')[1].Replace(",", "");
@@ -558,6 +559,83 @@ namespace DiscordBeatSaberBot
             return builder;
         }
 
+        public static async Task<(string, string)> RankedNeighbours(string playerName, int recursionLoop = 0)
+        {
+            var playerInfo = await GetPlayerInfo(playerName, recursionLoop);
+            double Rank = playerInfo.First().rank;
+            double t = Rank / 50;
+            var tab = Math.Ceiling(t);
+            var rankOnTab = Rank % 50;
+            var count = Rank;
+            var Names = new List<string>();
+            var namesTop = new List<string>();
+            var namesBottom = new List<string>();
+
+            var url = "https://scoresaber.com/global/" + tab;
+            await GetNames(url);
+
+            async Task GetNames(string infoUrl,
+                int otherPage = 0)
+            {
+                using (var client = new HttpClient())
+                {
+                    var html = await client.GetStringAsync(infoUrl);
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(html);
+
+                    var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
+                    if (otherPage == 1) { namesBottom.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()); }
+                    else if (otherPage == 2) { namesTop.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()); }
+                    else { Names.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()); }
+                }
+            }
+
+            if (rankOnTab < 4 && rankOnTab != 0 && tab != 1)
+            {
+                url = "https://scoresaber.com/global/" + (tab - 1);
+                await GetNames(url, 1);
+            }
+
+            if (rankOnTab > 47 || rankOnTab == 0)
+            {
+                url = "https://scoresaber.com/global/" + (tab + 1);
+                await GetNames(url, 2);
+            }
+
+            var topx = new List<string>();
+            for (var x = 0; x < 50; x++)
+            {
+                if (x < (rankOnTab + 3) && x > (rankOnTab - 3))
+                {
+                    var add = Names[x].Replace("\r\n", " ").Replace("&nbsp&nbsp", "");
+                    add = add.Trim();
+                    topx.Add(add);
+                }
+            }
+
+            var outputList = new List<string>();
+            outputList.AddRange(namesBottom);
+            outputList.AddRange(Names);
+            outputList.AddRange(namesTop);
+
+            var builder = new EmbedBuilder();
+            var output = new List<string>();
+            var counter = 1;
+            foreach (var rank in outputList)
+            {
+                if (counter > rankOnTab - 2 && counter < rankOnTab + 2)
+                {
+                    if (counter == rankOnTab) { output.Add(rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim()); }
+                    else { output.Add(rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim()); }
+                }
+
+                counter += 1;
+            }
+
+            
+            return (output[0], output[2]);
+        }
+
         public static async Task<string> GetPlayerCountryRank(string name)
         {
             var playerInfo = (List<List<string>>) null;
@@ -646,8 +724,10 @@ namespace DiscordBeatSaberBot
             return EmbedBuilderExtension.NullEmbed("Soryy", "Discord can not be linked because the recent song is not [Hi - Hi Easy] \n Please play this song with 0 points to register", null, null);
         }
 
-        public static async Task<List<Player>> GetPlayerInfo(string playerName)
+        public static async Task<List<Player>> GetPlayerInfo(string playerName, int recursionLoop = 0)
         {
+            var recursionCounter = recursionLoop;
+
             var players = new List<Player>();
 
             var playerInfo = (List<List<string>>) null;
@@ -690,6 +770,16 @@ namespace DiscordBeatSaberBot
                 player.countryIcon = ":flag_" + player.countryName + ":";
                 player.imgLink = playerImg.First().First();
                 player.name = player.name;
+
+                if (!(recursionCounter >= 1))
+                {
+                    var nextAndBefore = await RankedNeighbours(playerName, 1);
+                    var playerNext = await GetPlayerInfo(nextAndBefore.Item1, 1);
+                    var playerBefore = await GetPlayerInfo(nextAndBefore.Item2, 1);
+                    player.Next = playerNext.First();
+                    player.Before = playerBefore.First();
+                }
+
                 players.Add(player);
                 counter++;
             }

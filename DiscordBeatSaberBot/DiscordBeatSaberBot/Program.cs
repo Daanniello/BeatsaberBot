@@ -160,8 +160,22 @@ namespace DiscordBeatSaberBot
                         }
 
                         var player = message.Content.Substring(16);
-                        var playerObject = await BeatSaberInfoExtension.GetPlayerInfo(player);
-                        if (playerObject.Count == 0) { return null; }
+                        var playerObject = new List<Player>();
+                        try
+                        {
+                            playerObject = await BeatSaberInfoExtension.GetPlayerInfo(player);
+                        }
+                        catch (Exception ex)
+                        {
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", ex.ToString(), null, null));
+                            return Task.CompletedTask;
+                        }
+
+                        if (playerObject.Count == 0)
+                        {
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Player found with the name " + player, "Try again with a different name", null, null));
+                            return Task.CompletedTask;
+                        }
 
                         var firstItem = false;
                         if (_data == null)
@@ -186,8 +200,15 @@ namespace DiscordBeatSaberBot
                             return Task.CompletedTask;
                         }
 
-                        
-                        _data.Add(message.Author.Id, new string[]{player, (playerObject.First().rank).ToString() });
+                        try
+                        {
+                            _data.Add(message.Author.Id, new string[] { player, (playerObject.First().rank).ToString() });
+                        }
+                        catch 
+                        {
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Could not add player into the RankList. Player: " + player + " DiscordId: " + message.Author.Id + " Rank: " + playerObject.First().rank, null, null));
+                            return Task.CompletedTask;
+                        }
 
                         using (StreamWriter file = File.CreateText(filePath))
                         {
@@ -330,7 +351,7 @@ namespace DiscordBeatSaberBot
                 try
                 {
                     Console.WriteLine("News Feed Updated");
-                    await Task.Delay(300000 - (int) (watch.ElapsedMilliseconds % 1000), token);
+                    await Task.Delay(1000000 - (int) (watch.ElapsedMilliseconds % 1000), token);
                     //await Feed.UpdateCheck(discordSocketClient);
                     await Feed.RanksInfoFeed(discordSocketClient);
 
