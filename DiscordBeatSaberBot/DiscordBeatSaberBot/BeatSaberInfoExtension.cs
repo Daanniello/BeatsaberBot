@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot
 {
-    static class BeatSaberInfoExtension
+    internal static class BeatSaberInfoExtension
     {
         public static async Task<List<List<string>>> GetPlayers()
         {
@@ -59,8 +59,10 @@ namespace DiscordBeatSaberBot
 
             if (playerId.Count == 0)
             {
-                var embedList = new List<EmbedBuilder>();
-                embedList.Add(EmbedBuilderExtension.NullEmbed("No Results", "I am sorry, I could not find any person named: " + playerName, null, null));
+                var embedList = new List<EmbedBuilder>
+                {
+                    EmbedBuilderExtension.NullEmbed("No Results", "I am sorry, I could not find any person named: " + playerName, null, null)
+                };
                 return embedList;
             }
 
@@ -94,7 +96,7 @@ namespace DiscordBeatSaberBot
 
         public static async Task<List<EmbedBuilder>> GetSongs(string search)
         {
-            var songs = (List<List<string>>) null;
+            var songs = (List<List<string>>)null;
             var pictureUrl = new List<List<string>>();
             var url = "https://beatsaver.com/search/all/" + search.Replace(" ", "%20");
 
@@ -112,8 +114,10 @@ namespace DiscordBeatSaberBot
 
             if (songs.Count <= 0)
             {
-                var returnList = new List<EmbedBuilder>();
-                returnList.Add(EmbedBuilderExtension.NullEmbed("No songs found", "Sorry, I did not find any songs with the term: " + search, null, null));
+                var returnList = new List<EmbedBuilder>
+                {
+                    EmbedBuilderExtension.NullEmbed("No songs found", "Sorry, I did not find any songs with the term: " + search, null, null)
+                };
                 return returnList;
             }
 
@@ -621,25 +625,28 @@ namespace DiscordBeatSaberBot
             var builder = new EmbedBuilder();
             var output = new List<string>();
             var counter = 1;
+
+            if (outputList.Count >= 100) { rankOnTab += 50; }
+
             foreach (var rank in outputList)
             {
                 if (counter > rankOnTab - 2 && counter < rankOnTab + 2)
                 {
-                    if (counter == rankOnTab) { output.Add(rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim()); }
+                    if (rank.ToLower().Contains(playerName.ToLower())) { output.Add(rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim()); }
                     else { output.Add(rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim()); }
                 }
 
                 counter += 1;
             }
 
-            
+
             return (output[0], output[2]);
         }
 
         public static async Task<string> GetPlayerCountryRank(string name)
         {
-            var playerInfo = (List<List<string>>) null;
-            var playerInfo2 = (List<List<string>>) null;
+            var playerInfo = (List<List<string>>)null;
+            var playerInfo2 = (List<List<string>>)null;
             var playerId = await GetPlayerId(name);
             var url = "https://scoresaber.com" + playerId.First();
             using (var client = new HttpClient())
@@ -730,9 +737,9 @@ namespace DiscordBeatSaberBot
 
             var players = new List<Player>();
 
-            var playerInfo = (List<List<string>>) null;
-            var playerInfo2 = (List<List<string>>) null;
-            var playerImg = (List<List<string>>) null;
+            var playerInfo = (List<List<string>>)null;
+            var playerInfo2 = (List<List<string>>)null;
+            var playerImg = (List<List<string>>)null;
             var url = "https://scoresaber.com/global?search=" + playerName.Replace(" ", "+");
             var ids = await GetPlayerId(playerName);
             var playerId = ids;
@@ -816,7 +823,7 @@ namespace DiscordBeatSaberBot
 
             var totalPointsDifference = Math.Abs((int.Parse(player1.totalScore.Replace(",", "")) - int.Parse(player2.totalScore.Replace(",", ""))));
 
-            builder.AddInlineField(":heavy_minus_sign:", (Math.Abs(player1.rank - player2.rank)) + "\n" + (Math.Abs(player1.countryRank - player2.countryRank)) + "\n" + (Math.Abs(player1.playCount - player2.playCount)) + "\n" + ppDifference + " pp" + "\n" + totalPointsDifference.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("us")) );
+            builder.AddInlineField(":heavy_minus_sign:", (Math.Abs(player1.rank - player2.rank)) + "\n" + (Math.Abs(player1.countryRank - player2.countryRank)) + "\n" + (Math.Abs(player1.playCount - player2.playCount)) + "\n" + ppDifference + " pp" + "\n" + totalPointsDifference.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("us")));
 
             builder.AddInlineField(splitting[1] + " " + player2.countryIcon.ToLower(), "#" + player2.rank + "\n" + "#" + player2.countryRank + "\n" + player2.playCount + "\n" + player2.pp + "pp" + "\n" + player2.totalScore + "\n");
 
