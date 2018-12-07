@@ -1,0 +1,17 @@
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Unit Tests.deps.json
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Unit Tests.runtimeconfig.json
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Unit Tests.runtimeconfig.dev.json
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Unit Tests.dll
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Unit Tests.pdb
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\DiscordBeatSaberBot.dll
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\DiscordBeatSaberBot.pdb
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.csprojAssemblyReference.cache
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.csproj.CoreCompileInputs.cache
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.AssemblyInfoInputs.cache
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.AssemblyInfo.cs
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.csproj.CopyComplete
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.dll
+C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.pdb

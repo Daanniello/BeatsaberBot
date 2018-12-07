@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ using Newtonsoft.Json;
 
 namespace DiscordBeatSaberBot
 {
-    static class DutchRankFeed
+    public static class DutchRankFeed
     {
         public static async Task<(List<string>,List<string>,List<string>)> GetDutchRankList()
         {
@@ -31,8 +32,8 @@ namespace DiscordBeatSaberBot
                     var doc = new HtmlAgilityPack.HtmlDocument();
                     doc.LoadHtml(html);
 
-                    var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
-                    playerImg.AddRange(table.Descendants("figure").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("src", ""))).ToList());
+                    var table = doc.DocumentNode.SelectNodes("//figure[@class='image is-24x24']");
+                    playerImg.AddRange(table.Descendants("img").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("src", ""))).ToList());
 
                     var ranks = doc.DocumentNode.SelectNodes("//td[@class='rank']");
                     playerRank.AddRange(ranks.Select(a => WebUtility.HtmlDecode(a.InnerText).Replace("#", "").Replace(@"\r\n", "").Trim()).ToList());
@@ -47,7 +48,7 @@ namespace DiscordBeatSaberBot
 
         public static async Task<Dictionary<int, List<string>>> GetOldRankList()
         {
-            var filePath = "DutchRankList.txt";
+            var filePath = "../../../DutchRankList.txt";
 
             var data = new Dictionary<int, List<string>>();
             try
@@ -66,9 +67,9 @@ namespace DiscordBeatSaberBot
             return data;
         }
 
-        public static async Task UpdateDutchRankList()
+        public static async Task<Dictionary<int, List<string>>> UpdateDutchRankList()
         {
-            var filePath = "DutchRankList.txt";
+            var filePath = "../../../DutchRankList.txt";
             var rankList = await GetDutchRankList();
             var newData = new Dictionary<int, List<string>>();
 
@@ -81,7 +82,9 @@ namespace DiscordBeatSaberBot
             {
                 var serializer = new JsonSerializer();
                 serializer.Serialize(file, newData);
-            }           
+            }
+
+            return newData;
         }
 
         public static async Task<List<EmbedBuilder>> MessagesToSend()
@@ -89,31 +92,34 @@ namespace DiscordBeatSaberBot
             var embedBuilders = new List<EmbedBuilder>();
 
             var oldRankList = await GetOldRankList();
-            var newRankList = await GetDutchRankList();
             await UpdateDutchRankList();
+            var newRankList = await GetDutchRankList();
+            
 
             var oldCache = new List<string>();
 
             var counter = 0;
             foreach (var player in oldRankList)
             {
-                    //OldList                NewList                       OldList            NewList
-                if (player.Key.ToString() != newRankList.Item2[counter] && player.Value[0] != newRankList.Item3[counter])
+                //player.Key.ToString() != newRankList.Item2[counter] 
+                //OldList                NewList                       OldList            NewList
+                if (player.Value[0] != newRankList.Item3[counter])
                 {
                     if (!oldCache.Contains(newRankList.Item3[counter]))
                     {
                         // No Message
-                    }
-                    else
-                    {
-                        // New Message 
                         embedBuilders.Add(new EmbedBuilder
                         {
                             Title = "Congrats, " + newRankList.Item3[counter],
                             Description = newRankList.Item3[counter] + " is nu rank #" + newRankList.Item2[counter] + " van de Nederlandse beat saber spelers",
-                            ThumbnailUrl = newRankList.Item1[counter],
+                            ThumbnailUrl = newRankList.Item1[counter].Replace("\"", ""),
 
                         });
+                    }
+                    else
+                    {
+                        // New Message 
+                        
                     }                  
                 }
 

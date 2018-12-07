@@ -356,10 +356,10 @@ namespace DiscordBeatSaberBot
                 try
                 {
                     Console.WriteLine("News Feed Updated");
-                    await Task.Delay(150000 - (int) (watch.ElapsedMilliseconds % 1000), token);
+                    await Task.Delay(1500 - (int) (watch.ElapsedMilliseconds % 1000), token);
                     //await Feed.UpdateCheck(discordSocketClient);
-                    await Feed.RanksInfoFeed(discordSocketClient);
-                    await DutchRankFeed.DutchRankingFeed(discordSocketClient);
+                    //await Feed.RanksInfoFeed(discordSocketClient);
+                   await DutchRankFeed.DutchRankingFeed(discordSocketClient);
                 }
                 catch (TaskCanceledException) { }
         }
