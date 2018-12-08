@@ -78,9 +78,9 @@ namespace DiscordBeatSaberBot
 
                 {
                     builder.ThumbnailUrl = player.imgLink;
-                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Steam: " + player.steamLink + "\n\n" + "Player above: " + player.Next.name + "\n\n" + "PP till UpRank: " + Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp)) + "\n\n" + "PP till DeRank: " + Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp)));
+                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Steam: " + player.steamLink + "\n\n" + "Player above: " + player.Next.name + "\n\n" + "PP till UpRank: " + Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp),0) + "\n\n" + "PP till DeRank: " + Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp)));
                 }
-                else { builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user" + "\n\n" + "Player above: " + player.Next.name + "\n\n" + "PP till UpRank: " + Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp)) + "\n\n" + "PP till DeRank: " + Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp))); }
+                else { builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user" + "\n\n" + "Player above: " + player.Next.name + "\n\n" + "PP till UpRank: " + Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp),0) + "\n\n" + "PP till DeRank: " + Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp))); }
 
                 builder.Timestamp = DateTimeOffset.Now;
                 //var rankValue = player.rank.Split('#')[1].Replace(",", "");
@@ -771,8 +771,8 @@ namespace DiscordBeatSaberBot
                 player.countryName = playerInfo.First()[2].Replace("/global?country=", "").ToUpper();
                 player.countryRank = int.Parse(ranks[1].Replace("(", "").Replace(")", "").Replace("#", "").Replace(",", ""));
                 var pp = playerInfo2.First()[1].Replace("\r\n", "").Replace("Performance Points: ", "").Replace(",", "").Replace("pp", "").Trim();
-                player.pp = pp;
-                player.playCount = int.Parse(playerInfo2.First()[2].Replace("\r\n", "").Replace("Play Count: ", "").Trim());
+                player.pp = pp.Split('.')[0];
+                player.playCount = int.Parse(playerInfo2.First()[2].Replace("\r\n", "").Replace(",", "").Replace("Play Count: ", "").Trim());
                 player.totalScore = playerInfo2.First()[3].Replace("\r\n", "").Replace("Total Score: ", "").Trim();
                 player.countryIcon = ":flag_" + player.countryName + ":";
                 player.imgLink = playerImg.First().First();

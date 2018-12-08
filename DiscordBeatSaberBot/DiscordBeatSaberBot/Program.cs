@@ -355,11 +355,19 @@ namespace DiscordBeatSaberBot
             while (!token.IsCancellationRequested)
                 try
                 {
-                    Console.WriteLine("News Feed Updated");
-                    await Task.Delay(1500 - (int) (watch.ElapsedMilliseconds % 1000), token);
+                    Console.WriteLine("Updating news feed...");
+                    await Task.Delay(60000 - (int) (watch.ElapsedMilliseconds % 1000), token);
                     //await Feed.UpdateCheck(discordSocketClient);
                     //await Feed.RanksInfoFeed(discordSocketClient);
-                   await DutchRankFeed.DutchRankingFeed(discordSocketClient);
+                    try
+                    {
+                        await DutchRankFeed.DutchRankingFeed(discordSocketClient);
+                    }
+                    catch
+                    {
+
+                    }
+                    Console.WriteLine("News Feed Updated");
                 }
                 catch (TaskCanceledException) { }
         }

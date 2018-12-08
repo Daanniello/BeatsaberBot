@@ -107,12 +107,19 @@ namespace DiscordBeatSaberBot
                 {
                     if (!oldCache.Contains(newRankList.Item3[counter]))
                     {
+                        var imgUrl = newRankList.Item1[counter].Replace("\"", "");
+                        if (imgUrl == "/imports/images/oculus.png")
+                        {
+                            imgUrl = "https://scoresaber.com/imports/images/oculus.png";
+                        }
+
                         // No Message
                         embedBuilders.Add(new EmbedBuilder
                         {
                             Title = "Congrats, " + newRankList.Item3[counter],
                             Description = newRankList.Item3[counter] + " is nu rank #" + newRankList.Item2[counter] + " van de Nederlandse beat saber spelers",
-                            ThumbnailUrl = newRankList.Item1[counter].Replace("\"", ""),
+
+                            ThumbnailUrl = newRankList.Item1[counter].Replace("\"", "")
 
                         });
                     }
@@ -133,13 +140,13 @@ namespace DiscordBeatSaberBot
 
         public static async Task DutchRankingFeed(DiscordSocketClient discord)
         {
-            //var guilds = discord.Guilds.Where(x => x.Id == 439514151040057344);
+            var guilds = discord.Guilds.Where(x => x.Id == 439514151040057344);
             //var channels = guilds.First().Channels.Where(x => x.Id == 504392851229114369);
             //channels.First().
             var embeds = await MessagesToSend();
             foreach (var embed in embeds)
             {
-                await discord.GetGuild(505485680344956928).GetTextChannel(505732796245868564).SendMessageAsync("", false, embed);
+                await discord.GetGuild(505485680344956928).GetTextChannel(520613984668221440).SendMessageAsync("", false, embed);
             }
             
 
