@@ -117,9 +117,11 @@ namespace DiscordBeatSaberBot
                         embedBuilders.Add(new EmbedBuilder
                         {
                             Title = "Congrats, " + newRankList.Item3[counter],
-                            Description = newRankList.Item3[counter] + " is nu rank #" + newRankList.Item2[counter] + " van de Nederlandse beat saber spelers",
+                            Description = newRankList.Item3[counter] + " is nu rank **#" + newRankList.Item2[counter] + "** van de Nederlandse beat saber spelers",
 
-                            ThumbnailUrl = newRankList.Item1[counter].Replace("\"", "")
+                            ThumbnailUrl = newRankList.Item1[counter].Replace("\"", ""),
+                            Color = GetColorFromRank(int.Parse(newRankList.Item2[counter])),
+                            
 
                         });
                     }
@@ -161,6 +163,41 @@ namespace DiscordBeatSaberBot
             //var channelToMessageTo = channels.Select(x => x.)                                            
 
 
+        }
+
+        private static Color GetColorFromRank(int rank)
+        {
+            if (rank < 1)
+            {
+                 return Color.Red;
+            }else if (rank <= 3)
+            {
+                return Color.Blue;
+            }
+            else if (rank <= 10)
+            {
+                return Color.Green;
+            }
+            else if (rank <= 25)
+            {
+                return Color.Orange;
+            }
+            else if (rank <= 50)
+            {
+                return Color.Purple;
+            }
+            else if (rank <= 100)
+            {
+                return Color.DarkPurple;
+            }
+            else if (rank <= 250)
+            {
+                return Color.DarkRed;
+            }
+            else
+            {
+                return Color.Default;
+            }
         }
     }
 }
