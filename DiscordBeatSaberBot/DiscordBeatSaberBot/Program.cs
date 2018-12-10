@@ -362,6 +362,7 @@ namespace DiscordBeatSaberBot
                     try
                     {
                         await DutchRankFeed.DutchRankingFeed(discordSocketClient);
+                        await USRankFeed.USRankingFeed(discordSocketClient);
                     }
                     catch
                     {

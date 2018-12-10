@@ -14,9 +14,9 @@ using Newtonsoft.Json;
 
 namespace DiscordBeatSaberBot
 {
-    public static class DutchRankFeed
+    public static class USRankFeed
     {
-        public static async Task<(List<string>,List<string>,List<string>)> GetDutchRankList()
+        public static async Task<(List<string>,List<string>,List<string>)> GetUSRankList()
         {
             var tab = 5;
             var playerImg = new List<string>();
@@ -25,7 +25,7 @@ namespace DiscordBeatSaberBot
 
             for (var x = 1; x <= tab; x++)
             {
-                var url = "https://scoresaber.com/global/" + x + "&country=nl";
+                var url = "https://scoresaber.com/global/" + x + "&country=us";
                 using (var client = new HttpClient())
                 {
                     var html = await client.GetStringAsync(url);
@@ -48,7 +48,7 @@ namespace DiscordBeatSaberBot
 
         public static async Task<Dictionary<int, List<string>>> GetOldRankList()
         {
-            var filePath = "../../../DutchRankList.txt";
+            var filePath = "../../../USRankList.txt";
 
             var data = new Dictionary<int, List<string>>();
             try
@@ -67,10 +67,10 @@ namespace DiscordBeatSaberBot
             return data;
         }
 
-        public static async Task<Dictionary<int, List<string>>> UpdateDutchRankList()
+        public static async Task<Dictionary<int, List<string>>> UpdateUSRankList()
         {
-            var filePath = "../../../DutchRankList.txt";
-            var rankList = await GetDutchRankList();
+            var filePath = "../../../USRankList.txt";
+            var rankList = await GetUSRankList();
             var newData = new Dictionary<int, List<string>>();
 
             for (var x = 0; x < rankList.Item1.Count; x++)
@@ -92,8 +92,8 @@ namespace DiscordBeatSaberBot
             var embedBuilders = new List<EmbedBuilder>();
 
             var oldRankList = await GetOldRankList();
-            await UpdateDutchRankList();
-            var newRankList = await GetDutchRankList();
+            await UpdateUSRankList();
+            var newRankList = await GetUSRankList();
             
 
             var oldCache = new List<string>();
@@ -117,14 +117,14 @@ namespace DiscordBeatSaberBot
                         embedBuilders.Add(new EmbedBuilder
                         {
                             Title = "Congrats, " + newRankList.Item3[counter],
-                            Description = newRankList.Item3[counter] + " is nu rank **#" + newRankList.Item2[counter] + "** van de Nederlandse beat saber spelers",
+                            Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the US beat saber spelers",
 
                             ThumbnailUrl = newRankList.Item1[counter].Replace("\"", ""),
-                            Color = GetColorFromRank(int.Parse(newRankList.Item2[counter])),
+                            //Color = GetColorFromRank(int.Parse(newRankList.Item2[counter])),
                             
 
                         });
-                        Console.WriteLine("Feed NL - Message:" + newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the US beat saber spelers");
+                        Console.WriteLine("Feed US - Message:" + newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the US beat saber spelers");
                     }
                     else
                     {
@@ -141,7 +141,7 @@ namespace DiscordBeatSaberBot
             return embedBuilders;
         }
 
-        public static async Task DutchRankingFeed(DiscordSocketClient discord)
+        public static async Task USRankingFeed(DiscordSocketClient discord)
         {
             var guilds = discord.Guilds.Where(x => x.Id == 439514151040057344);
             //var channels = guilds.First().Channels.Where(x => x.Id == 504392851229114369);
@@ -149,19 +149,16 @@ namespace DiscordBeatSaberBot
             var embeds = await MessagesToSend();
             foreach (var embed in embeds)
             {
-                await discord.GetGuild(505485680344956928).GetTextChannel(520613984668221440).SendMessageAsync("", false, embed);
+                await discord.GetGuild(509146143985500160).GetTextChannel(521717100381863967).SendMessageAsync("", false, embed);
             }
-            
 
-
-            //NL Server 
-            //505485680344956928
-            //505732796245868564
+            //US Server
+            //509146143985500160
+            //521717100381863967
 
             // test bot server
             //439514151040057344 guild
-            //504392851229114369 channel
-            //var channelToMessageTo = channels.Select(x => x.)                                            
+            //504392851229114369 channel                                            
 
 
         }
