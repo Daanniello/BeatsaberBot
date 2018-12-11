@@ -363,10 +363,11 @@ namespace DiscordBeatSaberBot
                     {
                         await DutchRankFeed.DutchRankingFeed(discordSocketClient);
                         await USRankFeed.USRankingFeed(discordSocketClient);
+                        await CNDRankFeed.CNDRankingFeed(discordSocketClient);
                     }
                     catch
                     {
-
+                        Console.WriteLine("News Feed Crashed");
                     }
                     Console.WriteLine("News Feed Updated");
                 }
