@@ -344,7 +344,7 @@ namespace DiscordBeatSaberBot
                 await log(message.ToString());
             }
 
-            await log(message.ToString());
+            
             return Task.CompletedTask;
         }
 

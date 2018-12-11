@@ -18,7 +18,7 @@ namespace DiscordBeatSaberBot
     {
         public static async Task<(List<string>,List<string>,List<string>)> GetCNDRankList()
         {
-            var tab = 5;
+            var tab = 4;
             var playerImg = new List<string>();
             var playerRank = new List<string>();
             var playerName = new List<string>();
