@@ -783,8 +783,15 @@ namespace DiscordBeatSaberBot
                     var nextAndBefore = await RankedNeighbours(playerName, 1);
                     var playerNext = await GetPlayerInfo(nextAndBefore.Item1, 1);
                     var playerBefore = await GetPlayerInfo(nextAndBefore.Item2, 1);
-                    player.Next = playerNext.First();
-                    player.Before = playerBefore.First();
+                    try
+                    {
+                        player.Next = playerNext.First();
+                        player.Before = playerBefore.First();
+                    }
+                    catch
+                    {
+                        Console.WriteLine(nextAndBefore.Item1 + " or " + nextAndBefore.Item2 + " is not found");
+                    }
                 }
 
                 players.Add(player);
