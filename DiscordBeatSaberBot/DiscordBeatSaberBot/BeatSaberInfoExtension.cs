@@ -74,13 +74,30 @@ namespace DiscordBeatSaberBot
             {
                 var builder = new EmbedBuilder();
                 string countryNameSmall = player.countryName;
+
+                var ppNext = "";
+                var ppBefore = "";
+                try
+                {
+                    ppNext = (Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp), 0)).ToString();
+                    ppBefore = (Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp), 0)).ToString();
+                }
+                catch
+                {
+
+                }
+
                 if (player.steamLink != "#")
 
                 {
                     builder.ThumbnailUrl = player.imgLink;
-                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Steam: " + player.steamLink + "\n\n" + "Player above: " + player.Next.name + "\n\n" + "PP till UpRank: " + Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp),0) + "\n\n" + "PP till DeRank: " + Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp)));
+                    
+                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Steam: " + player.steamLink + "\n\n" + "Player above: " + (player.Next.name ?? "Not Found o.o") + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore);
                 }
-                else { builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user" + "\n\n" + "Player above: " + player.Next.name + "\n\n" + "PP till UpRank: " + Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp),0) + "\n\n" + "PP till DeRank: " + Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp))); }
+                else
+                {
+                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user" + "\n\n" + "Player above: " + player.Next.name + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore);
+                }
 
                 builder.Timestamp = DateTimeOffset.Now;
                 //var rankValue = player.rank.Split('#')[1].Replace(",", "");
