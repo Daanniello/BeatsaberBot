@@ -73,7 +73,7 @@ namespace DiscordBeatSaberBot
             var rankList = await GetCNDRankList();
             var newData = new Dictionary<int, List<string>>();
 
-            for (var x = 0; x < rankList.Item1.Count; x++)
+            for (var x = 0; x < 75; x++)
             {
                  newData.Add(int.Parse(rankList.Item2[x]), new List<string>{rankList.Item3[x], rankList.Item1[x]});
             }

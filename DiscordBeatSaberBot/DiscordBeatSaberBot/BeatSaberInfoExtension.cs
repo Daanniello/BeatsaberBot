@@ -75,12 +75,16 @@ namespace DiscordBeatSaberBot
                 var builder = new EmbedBuilder();
                 string countryNameSmall = player.countryName;
 
-                var ppNext = "";
-                var ppBefore = "";
+                var ppNext = "-";
+                var ppBefore = "-";
+                var playerNextName = "Not Found o.o";
                 try
                 {
-                    ppNext = (Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp), 0)).ToString();
-                    ppBefore = (Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp), 0)).ToString();
+                    var ppNextDouble = Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp), 0);
+                    var ppBeforeDouble = Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp), 0);
+                    ppNext = ppNextDouble.ToString();
+                    ppBefore = ppBeforeDouble.ToString();
+                    playerNextName = player.Next.name;
                 }
                 catch
                 {
@@ -92,11 +96,11 @@ namespace DiscordBeatSaberBot
                 {
                     builder.ThumbnailUrl = player.imgLink;
                     
-                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Steam: " + player.steamLink + "\n\n" + "Player above: " + (player.Next.name ?? "Not Found o.o") + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore);
+                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Steam: " + player.steamLink + "\n\n" + "Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore);
                 }
                 else
                 {
-                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user" + "\n\n" + "Player above: " + player.Next.name + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore);
+                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user" + "\n\n" + "Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore);
                 }
 
                 builder.Timestamp = DateTimeOffset.Now;
