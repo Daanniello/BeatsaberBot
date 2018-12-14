@@ -361,9 +361,13 @@ namespace DiscordBeatSaberBot
                     //await Feed.RanksInfoFeed(discordSocketClient);
                     try
                     {
+                        Console.WriteLine(".");
                         await DutchRankFeed.DutchRankingFeed(discordSocketClient);
+                        Console.WriteLine("..");
                         await USRankFeed.USRankingFeed(discordSocketClient);
+                        Console.WriteLine("...");
                         await CNDRankFeed.CNDRankingFeed(discordSocketClient);
+                        Console.WriteLine("....");
                     }
                     catch
                     {
