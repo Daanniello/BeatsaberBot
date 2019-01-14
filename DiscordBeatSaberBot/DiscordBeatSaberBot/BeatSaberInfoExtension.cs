@@ -356,7 +356,14 @@ namespace DiscordBeatSaberBot
             var builder = new EmbedBuilder();
             builder.AddInlineField("Song", "name: " + songName + "\n" + "difficulty: " + songDifficulty + "\n" + "Author: " + songAuthor + "\n" + "pp from this song: " + playerTopSongPP + "\n" + playerTopSongAcc + "\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
             builder.WithImageUrl(playerTopSongImg);
-            builder.WithThumbnailUrl(await GetImageUrlFromId(playerId));
+            try
+            {
+                builder.WithThumbnailUrl(await GetImageUrlFromId(playerId));
+            }
+            catch
+            {
+
+            }
             return builder;
         }
 
@@ -397,7 +404,15 @@ namespace DiscordBeatSaberBot
             var builder = new EmbedBuilder();
             builder.AddInlineField(playerName, "name: " + songName + "\n" + "difficulty: " + songDifficulty + "\n" + "Author: " + songAuthor + "\n" + "pp from this song: " + playerTopSongPP + "\n" + playerTopSongAcc + "\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
             builder.WithImageUrl(playerTopSongImg);
-            builder.WithThumbnailUrl(await GetImageUrlFromId(playerId));
+            try
+            {
+                builder.WithThumbnailUrl(await GetImageUrlFromId(playerId));
+            }
+            catch
+            {
+
+            }
+            
             return builder;
         }
 
