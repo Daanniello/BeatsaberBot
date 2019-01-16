@@ -364,14 +364,16 @@ namespace DiscordBeatSaberBot
                         Console.WriteLine(".");
                         await DutchRankFeed.DutchRankingFeed(discordSocketClient);
                         Console.WriteLine("..");
-                        await USRankFeed.USRankingFeed(discordSocketClient);
+                        //await USRankFeed.USRankingFeed(discordSocketClient);
                         Console.WriteLine("...");
                         await CNDRankFeed.CNDRankingFeed(discordSocketClient);
                         Console.WriteLine("....");
+                        await GbRankFeed.GbRankingFeed(discordSocketClient);
+                        Console.WriteLine(".....");
                     }
-                    catch
+                    catch(Exception ex)
                     {
-                        Console.WriteLine("News Feed Crashed");
+                        Console.WriteLine("News Feed Crashed" + ex);
                     }
                     Console.WriteLine("News Feed Updated");
                 }
