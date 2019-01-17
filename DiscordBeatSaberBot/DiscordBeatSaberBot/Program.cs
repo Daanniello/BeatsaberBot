@@ -359,22 +359,39 @@ namespace DiscordBeatSaberBot
                     await Task.Delay(90000 - (int) (watch.ElapsedMilliseconds % 1000), token);
                     //await Feed.UpdateCheck(discordSocketClient);
                     //await Feed.RanksInfoFeed(discordSocketClient);
-                    try
-                    {
+ 
                         Console.WriteLine(".");
-                        await DutchRankFeed.DutchRankingFeed(discordSocketClient);
+                        try
+                        {
+                            await DutchRankFeed.DutchRankingFeed(discordSocketClient);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("News Feed Crashed" + ex + "NL");
+                        }
                         Console.WriteLine("..");
                         //await USRankFeed.USRankingFeed(discordSocketClient);
                         Console.WriteLine("...");
-                        await CNDRankFeed.CNDRankingFeed(discordSocketClient);
+                        try
+                        {
+                            await CNDRankFeed.CNDRankingFeed(discordSocketClient);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("News Feed Crashed" + ex + "CND");
+                        }
                         Console.WriteLine("....");
-                        await GbRankFeed.GbRankingFeed(discordSocketClient);
+                        try
+                        {
+                            await GbRankFeed.GbRankingFeed(discordSocketClient);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("News Feed Crashed" + ex + "GB");
+                        }
                         Console.WriteLine(".....");
-                    }
-                    catch(Exception ex)
-                    {
-                        Console.WriteLine("News Feed Crashed" + ex);
-                    }
+                    
+
                     Console.WriteLine("News Feed Updated");
                 }
                 catch (TaskCanceledException) { }

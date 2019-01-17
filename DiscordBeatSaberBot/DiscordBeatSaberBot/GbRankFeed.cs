@@ -18,7 +18,7 @@ namespace DiscordBeatSaberBot
     {
         public static async Task<(List<string>,List<string>,List<string>)> GetGbRankList()
         {
-            var tab = 2;
+            var tab = 5;
             var playerImg = new List<string>();
             var playerRank = new List<string>();
             var playerName = new List<string>();
@@ -120,7 +120,7 @@ namespace DiscordBeatSaberBot
                             Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the GB beat saber spelers",
 
                             ThumbnailUrl = newRankList.Item1[counter].Replace("\"", ""),
-                            //Color = GetColorFromRank(int.Parse(newRankList.Item2[counter])),
+                            Color = GetColorFromRank(int.Parse(newRankList.Item2[counter])),
                             
 
                         });
@@ -147,9 +147,18 @@ namespace DiscordBeatSaberBot
             //var channels = guilds.First().Channels.Where(x => x.Id == 504392851229114369);
             //channels.First().
             var embeds = await MessagesToSend();
+            var guild = discord.GetGuild(483482746824687616);
+            var channel = guild.GetTextChannel(535187354122584070);
             foreach (var embed in embeds)
             {
-                await discord.GetGuild(483482746824687616).GetTextChannel(521717100381863967).SendMessageAsync("", false, embed);
+                try
+                {               
+                    await channel.SendMessageAsync("", false, embed);
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(embed.ToString() + " EX: " + ex);
+                }
             }
 
             //GB Server
@@ -167,30 +176,26 @@ namespace DiscordBeatSaberBot
         {
             if (rank < 1)
             {
-                 return Color.Red;
-            }else if (rank <= 3)
+                 return Color.Purple;
+            }else if (rank <= 10)
             {
-                return Color.Blue;
-            }
-            else if (rank <= 10)
-            {
-                return Color.Green;
+                return Color.Red;
             }
             else if (rank <= 25)
             {
-                return Color.Orange;
+                return Color.Green;
             }
             else if (rank <= 50)
             {
-                return Color.Purple;
+                return Color.Blue;
             }
             else if (rank <= 100)
             {
-                return Color.DarkPurple;
+                return Color.Gold;
             }
             else if (rank <= 250)
             {
-                return Color.DarkRed;
+                return Color.Magenta;
             }
             else
             {
