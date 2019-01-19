@@ -120,6 +120,15 @@ namespace DiscordBeatSaberBot
                         });
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetInviteLink());
                     }
+                    else if (message.Content.Contains(" poll"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        var poll = new QuickPoll(message);
+                        poll.CreatePoll();
+                    }
                     else if (message.Content.Contains(" compare"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions
