@@ -27,10 +27,12 @@ namespace DiscordBeatSaberBot
                 ThumbnailUrl = @"https://i.ibb.co/Y08zHnb/Pika.png"
             };
             Embed embed = builder.Build();
-
+            
             var completedMessage = await _messageInfo.Channel.SendMessageAsync("", false, embed);
             await completedMessage.AddReactionAsync(new Emoji("⬅"));
             await completedMessage.AddReactionAsync(new Emoji("➡"));
+            await _messageInfo.DeleteAsync();
+
         }
     }
 }
