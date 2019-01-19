@@ -584,12 +584,38 @@ namespace DiscordBeatSaberBot
             var builder = new EmbedBuilder();
             var output = "";
             var counter = 1;
+            
             foreach (var rank in outputList)
             {
                 if (counter > Rank - 4 && counter < Rank + 4)
                 {
-                    if (counter == Rank) { output += "#" + counter + " " + rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim() + "\n"; }
-                    else { output += "#" + counter + " " + rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim() + "\n"; }
+                    if (counter == Rank) {
+                        var name = rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim();
+                        var player = new Player(name);
+                        try
+                        {
+                            var temp = await GetPlayerInfo(name);
+                            player = temp.First();
+                        }
+                        catch
+                        {
+
+                        }
+                        output += "***#" + counter + " " + name + "\t" + player.pp + "*** \n"; }
+                    else {
+                        var name = rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim();
+                        var player = new Player(name);
+                        try
+                        {
+                            var temp = await GetPlayerInfo(name);
+                            player = temp.First();
+                        }
+                        catch
+                        {
+
+                        }
+                        
+                        output += "#" + counter + " " + name + "\t" + player.pp + "\n"; }
                 }
 
                 counter += 1;

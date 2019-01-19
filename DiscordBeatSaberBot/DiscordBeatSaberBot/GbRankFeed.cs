@@ -117,14 +117,14 @@ namespace DiscordBeatSaberBot
                         embedBuilders.Add(new EmbedBuilder
                         {
                             Title = "Congrats, " + newRankList.Item3[counter],
-                            Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the GB beat saber spelers",
+                            Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the GB beat saber players",
 
                             ThumbnailUrl = newRankList.Item1[counter].Replace("\"", ""),
                             Color = GetColorFromRank(int.Parse(newRankList.Item2[counter])),
                             
 
                         });
-                        Console.WriteLine("Feed GB - Message:" + newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the GB beat saber spelers");
+                        Console.WriteLine("Feed GB - Message:" + newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the GB beat saber players");
                     }
                     else
                     {
