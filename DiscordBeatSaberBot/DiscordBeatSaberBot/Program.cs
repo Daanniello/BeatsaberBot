@@ -127,7 +127,15 @@ namespace DiscordBeatSaberBot
                             Timeout = Configuration.TypingTimeOut
                         });
                         var poll = new QuickPoll(message);
-                        poll.CreatePoll();
+                        await poll.CreatePoll();
+                    }
+                    else if (message.Content.Contains(" playerbase"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        await message.Channel.SendMessageAsync("", false, await Rank.GetPlayerbaseCount(message));
                     }
                     else if (message.Content.Contains(" compare"))
                     {
