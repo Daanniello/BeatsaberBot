@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -31,7 +32,7 @@ namespace DiscordBeatSaberBot
             await log("Discord Bot is now live");
 
             messageCache = new List<SavedMessages>();
-
+            
             //Events
             discordSocketClient.MessageReceived += MessageReceived;
             discordSocketClient.ReactionAdded += ReactionAdded;
@@ -50,16 +51,33 @@ namespace DiscordBeatSaberBot
             ISocketMessageChannel channel,
             SocketReaction reaction)
         {
-            if (reaction.Emote.ToString() == "⬅")
-                await messageCache.First().message.ModifyAsync(msg =>
+            //var t = new Server(discordSocketClient, "");
+            //await t.AddVRroleMessage();
+            //510227606822584330
+
+            if (channel.Id == 510227606822584330)
+            {
+                var guild = discordSocketClient.GetGuild(505485680344956928);
+                var user = guild.GetUser(reaction.UserId);
+                //await (user as IGuildUser).AddRoleAsync(new role);
+                if (reaction.Emote.ToString() == "⬅")
+                {                   
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Vive");
+                    await (user as IGuildUser).AddRoleAsync(role);                  
+                }
+
+                if (reaction.Emote.ToString() == "➡")
                 {
-                    msg.Content = "";
-                    msg.Embed = messageCache.First().Embedbuilders.First().Build();
-                });
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Oculus");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
 
-            if (reaction.Emote.ToString() == "➡") { }
-
-
+                if (reaction.Emote.ToString() == "🚫")
+                {
+                    await (user as IGuildUser).RemoveRolesAsync(guild.Roles.Where(x => x.Name == "Oculus" || x.Name == "Vive"));
+                }
+                //{🚫}
+            }
             return Task.CompletedTask;
         }
 
@@ -145,13 +163,17 @@ namespace DiscordBeatSaberBot
                         });
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.PlayerComparer(message.Content.Substring(12)));
                     }
-                    else if (message.Content.Contains(" addrole"))
+                    else if (message.Content.Contains(" Addvrrolemessage"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.AddRole(message));
+                        //504634632369602560
+                        
+                        Server server = new Server(discordSocketClient, "test");
+                        await server.AddVRroleMessage(message);
+                        //await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.AddRole(message));
                     }
                     else if (message.Content.Contains(" country"))
                     {
