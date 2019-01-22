@@ -119,7 +119,7 @@ namespace DiscordBeatSaberBot
                             Title = "Congrats, " + newRankList.Item3[counter],
                             Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the GB beat saber players",
 
-                            ThumbnailUrl = newRankList.Item1[counter].Replace("\"", ""),
+                            ThumbnailUrl = imgUrl,
                             Color = GetColorFromRank(int.Parse(newRankList.Item2[counter])),
                             
 

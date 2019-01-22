@@ -30,7 +30,7 @@ namespace DiscordBeatSaberBot
             await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
             await discordSocketClient.StartAsync();
             await log("Discord Bot is now live");
-
+            
             messageCache = new List<SavedMessages>();
             
             //Events
@@ -163,7 +163,7 @@ namespace DiscordBeatSaberBot
                         });
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.PlayerComparer(message.Content.Substring(12)));
                     }
-                    else if (message.Content.Contains(" Addvrrolemessage"))
+                    else if (message.Content.Contains(" addvrrolemessage"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions
                         {
