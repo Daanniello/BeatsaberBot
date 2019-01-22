@@ -36,6 +36,7 @@ namespace DiscordBeatSaberBot
             //Events
             discordSocketClient.MessageReceived += MessageReceived;
             discordSocketClient.ReactionAdded += ReactionAdded;
+            discordSocketClient.ReactionRemoved += ReactionRemoved;
 
 
             await Task.Delay(-1);
@@ -54,35 +55,64 @@ namespace DiscordBeatSaberBot
             //var t = new Server(discordSocketClient, "");
             //await t.AddVRroleMessage();
             //510227606822584330
+            //{<:vive:537368500277084172>}
+            //{<:oculus:537368385206616075>}
 
             if (channel.Id == 510227606822584330)
             {
                 var guild = discordSocketClient.GetGuild(505485680344956928);
                 var user = guild.GetUser(reaction.UserId);
                 //await (user as IGuildUser).AddRoleAsync(new role);
-                if (reaction.Emote.ToString() == "⬅")
+                if (reaction.Emote.ToString() == "<:vive:537368500277084172>")
                 {                   
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Vive");
                     await (user as IGuildUser).AddRoleAsync(role);                  
                 }
 
-                if (reaction.Emote.ToString() == "➡")
+                if (reaction.Emote.ToString() == "<:oculus:537368385206616075>")
                 {
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Oculus");
                     await (user as IGuildUser).AddRoleAsync(role);
                 }
-
-                if (reaction.Emote.ToString() == "🚫")
-                {
-                    await (user as IGuildUser).RemoveRolesAsync(guild.Roles.Where(x => x.Name == "Oculus" || x.Name == "Vive"));
-                }
-                //{🚫}
             }
+            return Task.CompletedTask;
+        }
+
+        private async Task<Task> ReactionRemoved(Cacheable<IUserMessage, ulong> cache,
+            ISocketMessageChannel channel,
+            SocketReaction reaction)
+        {
+            //var t = new Server(discordSocketClient, "");
+            //await t.AddVRroleMessage();
+            //510227606822584330
+            //{<:vive:537368500277084172>}
+            //{<:oculus:537368385206616075>}
+
+            if (channel.Id == 510227606822584330)
+            {
+                var guild = discordSocketClient.GetGuild(505485680344956928);
+                var user = guild.GetUser(reaction.UserId);
+                //await (user as IGuildUser).AddRoleAsync(new role);
+                if (reaction.Emote.ToString() == "<:vive:537368500277084172>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Vive");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+
+                if (reaction.Emote.ToString() == "<:oculus:537368385206616075>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Oculus");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+            }
+        
             return Task.CompletedTask;
         }
 
         private async Task<Task> MessageReceived(SocketMessage message)
         {
+            //Server s = new Server(discordSocketClient, "");
+            //await s.AddVRroleMessage(null, true);
             if (message.Author.Username == "BeatSaber Bot") return Task.CompletedTask;
 
             await MessageDelete.DeleteMessageCheck(message);

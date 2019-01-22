@@ -20,23 +20,36 @@ namespace DiscordBeatSaberBot
         }
 
 
-        public async Task AddVRroleMessage(SocketMessage user)
+        public async Task AddVRroleMessage(SocketMessage user, bool vip = false)
         {
-
-            if (user.Author.Id == 138439306774577152)
+            ulong id = 0;
+            if (user == null)
+            {
+                id = 138439306774577152;
+            }
+            if (vip == true || id == 138439306774577152)
             {
 
 
                 var channelId = "510227606822584330";
                 var embedBuilder = new EmbedBuilder
                 {
-                    Title = "Vive Or Oculus?", Description = "Kies een reactie om je role toe te voegen", Color = Color.Gold
+                    Title = "***Role Toevoegen***", Description = "Kies een reactie om een role toe te voegen \n \n" +
+                    "***Headsets*** \n" +
+                    "<:vive:537368500277084172> Vive \n" +
+                    "<:oculus:537368385206616075> Oculus \n" +
+                    "\n" +
+                    "\n" +
+                    "\n" +
+                    "\n" +
+                    "\n" +
+                    "\n", Color = Color.Gold
                 };
-
-                var message = await _discord.GetGuild(505485680344956928).GetTextChannel(510227606822584330).SendMessageAsync("", false, embedBuilder.Build());
-                await message.AddReactionAsync(new Emoji("⬅"));
-                await message.AddReactionAsync(new Emoji("➡"));
-                await message.AddReactionAsync(new Emoji("🚫"));
+                var guild = _discord.GetGuild(505485680344956928);
+                var channel = guild.GetTextChannel(510227606822584330);
+                var message = await channel.SendMessageAsync("", false, embedBuilder.Build());
+                await message.AddReactionAsync(new Emoji("<:vive:537368500277084172>"));
+                await message.AddReactionAsync(new Emoji("<:oculus:537368385206616075>"));
             }
         }
 
