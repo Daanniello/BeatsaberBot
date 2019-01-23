@@ -57,6 +57,20 @@ namespace DiscordBeatSaberBot
             //510227606822584330
             //{<:vive:537368500277084172>}
             //{<:oculus:537368385206616075>}
+            //x
+            //b
+            //v
+            //k
+            //r
+            //f
+            //c
+            //p
+            //t
+            //o
+            //{<:vrchat:537413837100548115>}
+            //🗺
+            //{<:terebilo:508313942297280518>}
+            //{💻}
 
             if (channel.Id == 510227606822584330)
             {
@@ -68,10 +82,84 @@ namespace DiscordBeatSaberBot
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Vive");
                     await (user as IGuildUser).AddRoleAsync(role);                  
                 }
-
                 if (reaction.Emote.ToString() == "<:oculus:537368385206616075>")
                 {
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Oculus");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇽")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "X-Grip");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇧")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "B-Grip");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇻")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "V-Grip");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇰")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "K-Grip");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇷")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "R-Grip");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇫")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "F-Grip");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇨")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Claw-Grip");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇵")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Palm-Grip");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇹")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Tracker Sabers");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🆕")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Overige-Grip");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "<:terebilo:508313942297280518>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Normale-Grip");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "💻")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Modder");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🗺")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Mapper");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "<:vrchat:537413837100548115>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Vrchat");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
                     await (user as IGuildUser).AddRoleAsync(role);
                 }
             }
@@ -98,10 +186,84 @@ namespace DiscordBeatSaberBot
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Vive");
                     await (user as IGuildUser).RemoveRoleAsync(role);
                 }
-
                 if (reaction.Emote.ToString() == "<:oculus:537368385206616075>")
                 {
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Oculus");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇽")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "X-Grip");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇧")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "B-Grip");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇻")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "V-Grip");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇰")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "K-Grip");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇷")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "R-Grip");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇫")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "F-Grip");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇨")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Claw-Grip");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇵")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Palm-Grip");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🇹")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Tracker Sabers");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🆕")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Overige-Grip");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "<:terebilo:508313942297280518>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Normale-Grip");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "💻")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Modder");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "🗺")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Mapper");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "<:vrchat:537413837100548115>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Vrchat");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
                     await (user as IGuildUser).RemoveRoleAsync(role);
                 }
             }
@@ -115,7 +277,7 @@ namespace DiscordBeatSaberBot
             //await s.AddVRroleMessage(null, true);
             if (message.Author.Username == "BeatSaber Bot") return Task.CompletedTask;
 
-            await MessageDelete.DeleteMessageCheck(message);
+            //await MessageDelete.DeleteMessageCheck(message);
             if (message.Content.Length <= 3)
             {
                 return Task.CompletedTask;
