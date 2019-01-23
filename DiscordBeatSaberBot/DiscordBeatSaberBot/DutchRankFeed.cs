@@ -110,7 +110,7 @@ namespace DiscordBeatSaberBot
                         var imgUrl = newRankList.Item1[counter].Replace("\"", "");
                         if (imgUrl == "/imports/images/oculus.png")
                         {
-                            imgUrl = "https://scoresaber.com/imports/images/oculus.png";
+                            imgUrl = "https://i.ibb.co/s1Rf1Lt/oculus.png";
                         }
 
                         // No Message
