@@ -16,12 +16,13 @@ namespace DiscordBeatSaberBot
 {
     public static class GbRankFeed
     {
-        public static async Task<(List<string>,List<string>,List<string>)> GetGbRankList()
+        public static async Task<(List<string>,List<string>,List<string>, List<string>)> GetGbRankList()
         {
             var tab = 5;
             var playerImg = new List<string>();
             var playerRank = new List<string>();
             var playerName = new List<string>();
+            var playerId = new List<string>();
 
             for (var x = 1; x <= tab; x++)
             {
@@ -40,10 +41,11 @@ namespace DiscordBeatSaberBot
 
                     var names = doc.DocumentNode.SelectNodes("//td[@class='player']");
                     playerName.AddRange(names.Select(a => WebUtility.HtmlDecode(a.InnerText).Replace(@"\r\n", "").Trim()).ToList());
+                    playerId.AddRange(names.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList());
                 }
             }
 
-            return (playerImg, playerRank, playerName);
+            return (playerImg, playerRank, playerName, playerId);
         }
 
         public static async Task<Dictionary<int, List<string>>> GetOldRankList()
@@ -75,7 +77,7 @@ namespace DiscordBeatSaberBot
 
             for (var x = 0; x < rankList.Item1.Count; x++)
             {
-                 newData.Add(int.Parse(rankList.Item2[x]), new List<string>{rankList.Item3[x], rankList.Item1[x]});
+                 newData.Add(int.Parse(rankList.Item2[x]), new List<string>{rankList.Item3[x], rankList.Item4[x], rankList.Item1[x]});
             }
 
             using (var file = File.CreateText(filePath))
@@ -103,9 +105,9 @@ namespace DiscordBeatSaberBot
             {
                 //player.Key.ToString() != newRankList.Item2[counter] 
                 //OldList                NewList                       OldList            NewList
-                if (player.Value[0] != newRankList.Item3[counter])
+                if (player.Value[1] != newRankList.Item4[counter])
                 {
-                    if (!oldCache.Contains(newRankList.Item3[counter]))
+                    if (!oldCache.Contains(newRankList.Item4[counter]))
                     {
                         var imgUrl = newRankList.Item1[counter].Replace("\"", "");
                         if (imgUrl == "/imports/images/oculus.png")
@@ -133,7 +135,7 @@ namespace DiscordBeatSaberBot
                     }                  
                 }
 
-                oldCache.Add(player.Value[0]);
+                oldCache.Add(player.Value[1]);
 
                 counter++;
             }
