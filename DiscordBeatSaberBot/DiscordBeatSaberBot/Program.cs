@@ -605,7 +605,7 @@ namespace DiscordBeatSaberBot
                         Console.WriteLine("...");
                         try
                         {
-                            await CNDRankFeed.CNDRankingFeed(discordSocketClient);
+                            //await CNDRankFeed.CNDRankingFeed(discordSocketClient);
                         }
                         catch (Exception ex)
                         {
