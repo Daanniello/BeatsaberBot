@@ -71,12 +71,18 @@ namespace DiscordBeatSaberBot
             //🗺
             //{<:terebilo:508313942297280518>}
             //{💻}
+            //{<:megaotherway:526402963372245012>}
 
             if (channel.Id == 510227606822584330)
             {
                 var guild = discordSocketClient.GetGuild(505485680344956928);
                 var user = guild.GetUser(reaction.UserId);
                 //await (user as IGuildUser).AddRoleAsync(new role);
+                if (reaction.Emote.ToString() == "<:megaotherway:526402963372245012>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Event");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
                 if (reaction.Emote.ToString() == "<:vive:537368500277084172>")
                 {                   
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Vive");
@@ -181,6 +187,11 @@ namespace DiscordBeatSaberBot
                 var guild = discordSocketClient.GetGuild(505485680344956928);
                 var user = guild.GetUser(reaction.UserId);
                 //await (user as IGuildUser).AddRoleAsync(new role);
+                if (reaction.Emote.ToString() == "<:megaotherway:526402963372245012>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Event");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
                 if (reaction.Emote.ToString() == "<:vive:537368500277084172>")
                 {
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Vive");
