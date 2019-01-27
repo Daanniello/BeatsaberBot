@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
@@ -65,9 +66,39 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public async Task AddRole()
+        public async Task UserJoinedMessage(SocketGuildUser guildUser)
         {
+            //Welkom message voor de nederlandse beat saber discord.
+            if (guildUser.Guild.Id == 505485680344956928)
+            {
+                var user = _discord.GetUser(guildUser.Id);
+                var welkomChannel = guildUser.Guild.Channels.FirstOrDefault(x => x.Name == "welkom") as ISocketMessageChannel;
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
 
+                var embedBuilder = new EmbedBuilder
+                {
+                    Title = "***Welkom in de Nederlandse Beat saber Discord!***",
+                    Description = "Je bent zojuist de nl beat saber discord gejoined. \n"
+                        + "In de discord zijn verschillende activiteiten te doen. \n"
+                        + "Vergeet niet eerst in #Info te kijken voor meer informatie. \n"
+                        + "In #role-toevoegen kun je rolen toevoegen voor de server.\n\n"
+                        + "Om de twee weken wordt er een beat saber multiplayer event gehouden. \n"
+                        + "Om de maand wordt er een vrchat event gehouden samen met het beat saber event \n"
+                        + "Join de general chat om een praatje te maken, je bent meer dan welkom! \n",
+                    ThumbnailUrl = "//cdn.discordapp.com/avatars/504633036902498314/8640cf47aeac6cf7fd071e111467cac5.png?size=256"
+                };
+                var embed = embedBuilder.Build();
+
+                await dmChannel.SendMessageAsync("", false, embed);
+
+                embedBuilder = new EmbedBuilder
+                {
+                    Title = "Welkom " + "***" + user.Username + "!***",
+                    ThumbnailUrl = user.GetAvatarUrl()
+                };
+
+                await welkomChannel.SendMessageAsync("", false, embedBuilder);
+            }
         }
     }
 }
