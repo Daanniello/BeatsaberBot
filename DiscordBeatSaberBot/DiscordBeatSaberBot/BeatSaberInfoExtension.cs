@@ -473,7 +473,7 @@ namespace DiscordBeatSaberBot
                 return await GetTopCountryWithName(countryrank, countryName, search);
             }
 
-            if (int.Parse(input[1]) > 50) { return EmbedBuilderExtension.NullEmbed("Sorry", "Search amount is too big", null, null); }
+            if (int.Parse(input[1]) > 100) { return EmbedBuilderExtension.NullEmbed("Sorry", "Search amount is too big", null, null); }
 
             decimal t = int.Parse(input[1]) / 50;
             var tab = Math.Ceiling(t) + 1;

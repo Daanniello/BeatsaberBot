@@ -154,7 +154,7 @@ namespace DiscordBeatSaberBot
                 }
                 if (reaction.Emote.ToString() == "<:vrchat:537413837100548115>")
                 {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Vrchat");
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "VRChat");
                     await (user as IGuildUser).AddRoleAsync(role);
                 }
                 if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
@@ -258,7 +258,7 @@ namespace DiscordBeatSaberBot
                 }
                 if (reaction.Emote.ToString() == "<:vrchat:537413837100548115>")
                 {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Vrchat");
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "VRChat");
                     await (user as IGuildUser).RemoveRoleAsync(role);
                 }
                 if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
