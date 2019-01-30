@@ -24,15 +24,17 @@ namespace DiscordBeatSaberBot
 
         public async Task MainAsync()
         {
-            TimerRunning(new CancellationToken());
+            
             discordSocketClient = new DiscordSocketClient();
             await log("Logging into Discord");
             await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
             await discordSocketClient.StartAsync();
             await log("Discord Bot is now live");
-            
+            TimerRunning(new CancellationToken());
             messageCache = new List<SavedMessages>();
-            
+            var memeFeed = new MemeFeed(discordSocketClient);
+            memeFeed.TimerRunning(new CancellationToken());
+
             //Events
             discordSocketClient.MessageReceived += MessageReceived;
             discordSocketClient.ReactionAdded += ReactionAdded;
