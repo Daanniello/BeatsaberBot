@@ -66,7 +66,7 @@ namespace DiscordBeatSaberBot
                 return embedList;
             }
 
-            var players = await GetPlayerInfo(playerName);
+            var players = await GetPlayerInfo(playerName, 0);
 
             var builders = new List<EmbedBuilder>();
 
@@ -793,7 +793,7 @@ namespace DiscordBeatSaberBot
             return EmbedBuilderExtension.NullEmbed("Soryy", "Discord can not be linked because the recent song is not [Hi - Hi Easy] \n Please play this song with 0 points to register", null, null);
         }
 
-        public static async Task<List<Player>> GetPlayerInfo(string playerName, int recursionLoop = 0)
+        public static async Task<List<Player>> GetPlayerInfo(string playerName, int recursionLoop = 0, bool skipNeighbour = false)
         {
             var recursionCounter = recursionLoop;
 
@@ -809,6 +809,11 @@ namespace DiscordBeatSaberBot
             var counter = 0;
             foreach (var id in ids)
             {
+                if (counter >= 3)
+                {
+                    counter++;
+                    continue;                    
+                }
                 var player = new Player(playerName);
 
                 url = "https://scoresaber.com" + playerId[counter];
@@ -840,22 +845,24 @@ namespace DiscordBeatSaberBot
                 player.imgLink = playerImg.First().First();
                 player.name = player.name;
 
-                if (!(recursionCounter >= 1))
+                if (!skipNeighbour)
                 {
-                    var nextAndBefore = await RankedNeighbours(playerName, 1);
-                    var playerNext = await GetPlayerInfo(nextAndBefore.Item1, 1);
-                    var playerBefore = await GetPlayerInfo(nextAndBefore.Item2, 1);
-                    try
+                    if (!(recursionCounter >= 1))
                     {
-                        player.Next = playerNext.First();
-                        player.Before = playerBefore.First();
+                        var nextAndBefore = await RankedNeighbours(playerName, 1);
+                        var playerNext = await GetPlayerInfo(nextAndBefore.Item1, 1, true);
+                        var playerBefore = await GetPlayerInfo(nextAndBefore.Item2, 1, true);
+                        try
+                        {
+                            player.Next = playerNext.First();
+                            player.Before = playerBefore.First();
+                        }
+                        catch
+                        {
+                            Console.WriteLine(nextAndBefore.Item1 + " or " + nextAndBefore.Item2 + " is not found");
+                        }
                     }
-                    catch
-                    {
-                        Console.WriteLine(nextAndBefore.Item1 + " or " + nextAndBefore.Item2 + " is not found");
-                    }
-                }
-
+                }               
                 players.Add(player);
                 counter++;
             }
@@ -870,6 +877,17 @@ namespace DiscordBeatSaberBot
 
             var player1List = await GetPlayerInfo(splitting[0].Trim());
             var player2List = await GetPlayerInfo(splitting[1].Trim());
+
+            if (player1List.Count == 0)
+            {
+                return EmbedBuilderExtension.NullEmbed("No search results", "The name " + splitting[0] + " could not be found.", null, null);
+
+            }
+            if (player2List.Count == 0)
+            {
+                return EmbedBuilderExtension.NullEmbed("No search results", "The name " + splitting[1] + " could not be found.", null, null);
+
+            }
 
             var player1 = player1List.First();
             var player2 = player2List.First();

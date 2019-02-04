@@ -22,7 +22,7 @@ namespace DiscordBeatSaberBot
             _discord = Discord;
         }
 
-        public async Task TimerRunning(CancellationToken token)
+        public async void TimerRunning(CancellationToken token)
         {
             var watch = Stopwatch.StartNew();
             while (!token.IsCancellationRequested)
@@ -31,8 +31,8 @@ namespace DiscordBeatSaberBot
                     // 60000 = 1 min
                     // 600000 = 10 min
                     // 3600000 = 60 min
-                    var threeHour = 60000 * 60 * 5;
-                    await Task.Delay(threeHour - (int)(watch.ElapsedMilliseconds % 1000), token);
+                    var Hour = 60000 * 60 * 8;
+                    await Task.Delay(Hour - (int)(watch.ElapsedMilliseconds % 1000), token);
                     await GetLatestMeme();
                 }
                 catch
@@ -42,8 +42,9 @@ namespace DiscordBeatSaberBot
 
         public async Task GetLatestMeme()
         {
-            var url = "https://www.reddit.com/r/memes/rising";
+            var url = "https://www.reddit.com/r/dankmemes/hot/";
             var img = "";
+            var text = "";
             using (var client = new HttpClient())
             {
                 var html = await client.GetStringAsync(url);
@@ -53,7 +54,7 @@ namespace DiscordBeatSaberBot
                 //https://preview.redd.it/60bywofgjkd21.jpg?width=640&crop=smart&auto=webp&s=37c92a299ca5f91d3d6242c566dc52b2013b37a9
                 var table = doc.DocumentNode.SelectNodes("//img[@class='_2_tDEnGMLxpM6uOa2kaDB3 media-element']");
                 img = WebUtility.HtmlDecode(table.First().GetAttributeValue("src", ""));
-
+                text = doc.DocumentNode.SelectNodes("//h2[@class='s1okktje-0 kVQyNs']").Skip(2).First().InnerText;
 
             }
 
@@ -73,12 +74,12 @@ namespace DiscordBeatSaberBot
             using (var client = new WebClient())
             {
                 
-                client.DownloadFile(img, @"bin\Debug\netcoreapp2.0\img.jpg");
+                client.DownloadFile(img, @"img.jpg");
                 var t = client.BaseAddress;
                 
                 //C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\img.jpg
                 string r = AppDomain.CurrentDomain.BaseDirectory;
-                await channel.SendFileAsync(r + "\\img.jpg", null);
+                await channel.SendFileAsync(r + "\\img.jpg", "**" + text + "**");
             }
 
             
