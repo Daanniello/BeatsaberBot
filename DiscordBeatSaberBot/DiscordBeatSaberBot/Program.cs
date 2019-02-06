@@ -39,6 +39,7 @@ namespace DiscordBeatSaberBot
             discordSocketClient.MessageReceived += MessageReceived;
             discordSocketClient.ReactionAdded += ReactionAdded;
             discordSocketClient.ReactionRemoved += ReactionRemoved;
+            discordSocketClient.UserJoined += OnUserJoined;
 
 
             await Task.Delay(-1);
@@ -48,6 +49,12 @@ namespace DiscordBeatSaberBot
         {
             Console.WriteLine(message);
             return Task.CompletedTask;
+        }
+
+        private async Task OnUserJoined(SocketGuildUser guildUser)
+        {
+            var server = new Server(discordSocketClient, "");
+            await server.UserJoinedMessage(guildUser);
         }
 
         private async Task<Task> ReactionAdded(Cacheable<IUserMessage, ulong> cache,
