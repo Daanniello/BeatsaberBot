@@ -81,6 +81,8 @@ namespace DiscordBeatSaberBot
             //{<:terebilo:508313942297280518>}
             //{💻}
             //{<:megaotherway:526402963372245012>}
+            //{<:AYAYA:509158069809315850>}
+            //{❕}
 
             if (channel.Id == 510227606822584330)
             {
@@ -175,6 +177,16 @@ namespace DiscordBeatSaberBot
                 if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
                 {
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "<:AYAYA:509158069809315850>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Anime");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "❕")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "NSFW");
                     await (user as IGuildUser).AddRoleAsync(role);
                 }
             }
@@ -284,6 +296,16 @@ namespace DiscordBeatSaberBot
                 if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
                 {
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "<:AYAYA:509158069809315850>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Anime");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "❕")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "NSFW");
                     await (user as IGuildUser).RemoveRoleAsync(role);
                 }
             }

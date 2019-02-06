@@ -1,11 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace DiscordBeatSaberBot
 {
     static class DiscordBotCode
     {
-        public const string discordBotCode = "NTA0NjMzMDM2OTAyNDk4MzE0.DrH4WA.pDiRyfDpYLdFVi6Q3RSRgS4GE10";
+        public static string discordBotCode = ReadFromDesktop("BotCode.txt");
+
+        private static string ReadFromDesktop(string fileName)
+        {
+   
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string fullName = System.IO.Path.Combine(desktopPath, fileName);
+            using (StreamReader steamReader = new StreamReader(fullName))
+            {
+                return steamReader.ReadToEnd();
+            }
+        }
     }
 }
