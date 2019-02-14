@@ -82,8 +82,24 @@ namespace DiscordBeatSaberBot
                 {
                     var ppNextDouble = Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp), 0);
                     var ppBeforeDouble = Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp), 0);
-                    ppNext = ppNextDouble.ToString();
-                    ppBefore = ppBeforeDouble.ToString();
+                    if (player.Before.pp == "0")
+                    {
+                        ppBefore = "No Search results";
+                    }
+                    else
+                    {
+                        ppBefore = ppBeforeDouble.ToString();
+                    }
+                    if (player.Next.pp == "0")
+                    {
+                        ppNext = "No Search results";
+                    }
+                    else
+                    {
+                        ppNext = ppNextDouble.ToString();
+                    }
+                    
+                    
                     playerNextName = player.Next.name;
                 }
                 catch
@@ -891,6 +907,10 @@ namespace DiscordBeatSaberBot
                 doc.LoadHtml(html);
 
                 var PP = doc.DocumentNode.SelectSingleNode("//span[@class='scoreTop ppValue']");
+                if (PP == null)
+                {
+                    return "0";
+                }
                 var pp = PP.InnerText.Replace("\r\n", "").Replace("Performance Points: ", "").Replace(",", "").Replace("pp", "").Trim();
                 return pp.Split('.')[0];
             }
