@@ -119,7 +119,7 @@ namespace DiscordBeatSaberBot
                         embedBuilders.Add(new EmbedBuilder
                         {
                             Title = "Congrats, " + newRankList.Item3[counter],
-                            Description = newRankList.Item3[counter] + " is nu rank **#" + newRankList.Item2[counter] + "** van de Nederlandse beat saber spelers",
+                            Description = newRankList.Item3[counter] + " is nu rank **#" + newRankList.Item2[counter] + "** van de Nederlandse beat saber spelers \n" + GetRankUpNotify(int.Parse(newRankList.Item2[counter])),
 
                             ThumbnailUrl = imgUrl,
                                         
@@ -188,7 +188,7 @@ namespace DiscordBeatSaberBot
             }
             else if (rank <= 50)
             {
-                return Color.Purple;
+                return Color.DarkMagenta;
             }
             else if (rank <= 100)
             {
@@ -202,6 +202,40 @@ namespace DiscordBeatSaberBot
             {
                 return Color.Default;
             }
+        }
+
+        private static string GetRankUpNotify(int rank)
+        {
+            string message = "";
+            if (rank == 1)
+            {
+                message = "<@&505486321595187220> Een nieuwe #1 ;O update zn role nu! praise the new King";
+            }
+            else if (rank == 3)
+            {
+                message = "<@&505486321595187220> Een nieuwe top #3 makker GGGGGGGGG";
+            }
+            else if (rank == 10)
+            {
+                message = "<@&505486321595187220> Een nieuwe top #10 gamer, Kolonisatie bitches!!";
+            }
+            else if (rank == 25)
+            {
+                message = "<@&505486321595187220> Een nieuwe top #25, grats!! watch out tho, iemand komt zn rank weer terug halen";
+            }
+            else if (rank == 50)
+            {
+                message = "<@&505486321595187220> Een nieuwe top #50!!!, YAY stuur een invite voor de discord >;d nU!";
+            }
+            else if (rank == 100)
+            {
+                message = "Een nieuwe top #100, het begin van een nieuwe pro";
+            }
+            else if (rank == 250)
+            {
+                message = "Een nieuwe top #250, Welkom nieuwkomer ;O";
+            }
+            return message;
         }
     }
 }

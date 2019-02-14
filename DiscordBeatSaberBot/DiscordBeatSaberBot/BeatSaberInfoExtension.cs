@@ -693,9 +693,17 @@ namespace DiscordBeatSaberBot
             {
                 if (x < (rankOnTab + 3) && x > (rankOnTab - 3))
                 {
-                    var add = Names[x].Replace("\r\n", " ").Replace("&nbsp&nbsp", "");
-                    add = add.Trim();
-                    topx.Add(add);
+                    try
+                    {
+                        var add = Names[x].Replace("\r\n", " ").Replace("&nbsp&nbsp", "");
+                        add = add.Trim();
+                        topx.Add(add);
+                    }
+                    catch
+                    {
+                        topx.Add("NoResults");
+                    }
+                    
                 }
             }
 
@@ -721,6 +729,13 @@ namespace DiscordBeatSaberBot
                 counter += 1;
             }
 
+            if (output.Count != 3)
+            {
+                do
+                {
+                    output.Add("PlayerNotFound");
+                } while (output.Count < 3);
+            }
 
             return (output[0], output[2]);
         }
