@@ -82,8 +82,24 @@ namespace DiscordBeatSaberBot
                 {
                     var ppNextDouble = Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp), 0);
                     var ppBeforeDouble = Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp), 0);
-                    ppNext = ppNextDouble.ToString();
-                    ppBefore = ppBeforeDouble.ToString();
+                    if (player.Before.pp == "0")
+                    {
+                        ppBefore = "No Search results";
+                    }
+                    else
+                    {
+                        ppBefore = ppBeforeDouble.ToString();
+                    }
+                    if (player.Next.pp == "0")
+                    {
+                        ppNext = "No Search results";
+                    }
+                    else
+                    {
+                        ppNext = ppNextDouble.ToString();
+                    }
+                    
+                    
                     playerNextName = player.Next.name;
                 }
                 catch
@@ -95,7 +111,7 @@ namespace DiscordBeatSaberBot
 
                 {
                     builder.ThumbnailUrl = player.imgLink;
-                    
+
                     builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Steam: " + player.steamLink + "\n\n" + "Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore);
                 }
                 else
@@ -412,7 +428,7 @@ namespace DiscordBeatSaberBot
             {
 
             }
-            
+
             return builder;
         }
 
@@ -584,12 +600,13 @@ namespace DiscordBeatSaberBot
             var builder = new EmbedBuilder();
             var output = "";
             var counter = 1;
-            
+
             foreach (var rank in outputList)
             {
                 if (counter > Rank - 4 && counter < Rank + 4)
                 {
-                    if (counter == Rank) {
+                    if (counter == Rank)
+                    {
                         var name = rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim();
                         var player = new Player(name);
                         try
@@ -601,8 +618,10 @@ namespace DiscordBeatSaberBot
                         {
 
                         }
-                        output += "***#" + counter + " " + name + "\t" + player.pp + "*** \n"; }
-                    else {
+                        output += "***#" + counter + " " + name + "\t" + player.pp + "*** \n";
+                    }
+                    else
+                    {
                         var name = rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim();
                         var player = new Player(name);
                         try
@@ -614,8 +633,9 @@ namespace DiscordBeatSaberBot
                         {
 
                         }
-                        
-                        output += "#" + counter + " " + name + "\t" + player.pp + "\n"; }
+
+                        output += "#" + counter + " " + name + "\t" + player.pp + "\n";
+                    }
                 }
 
                 counter += 1;
@@ -625,10 +645,10 @@ namespace DiscordBeatSaberBot
             return builder;
         }
 
-        public static async Task<(string, string)> RankedNeighbours(string playerName, int recursionLoop = 0)
+        public static async Task<(string, string)> RankedNeighbours(string playerName, int playerRank, int recursionLoop = 0)
         {
-            var playerInfo = await GetPlayerInfo(playerName, recursionLoop);
-            double Rank = playerInfo.First().rank;
+            //var playerInfo = await GetPlayerInfo(playerName, recursionLoop);
+            double Rank = playerRank;
             double t = Rank / 50;
             var tab = Math.Ceiling(t);
             var rankOnTab = Rank % 50;
@@ -673,9 +693,17 @@ namespace DiscordBeatSaberBot
             {
                 if (x < (rankOnTab + 3) && x > (rankOnTab - 3))
                 {
-                    var add = Names[x].Replace("\r\n", " ").Replace("&nbsp&nbsp", "");
-                    add = add.Trim();
-                    topx.Add(add);
+                    try
+                    {
+                        var add = Names[x].Replace("\r\n", " ").Replace("&nbsp&nbsp", "");
+                        add = add.Trim();
+                        topx.Add(add);
+                    }
+                    catch
+                    {
+                        topx.Add("NoResults");
+                    }
+                    
                 }
             }
 
@@ -701,6 +729,13 @@ namespace DiscordBeatSaberBot
                 counter += 1;
             }
 
+            if (output.Count != 3)
+            {
+                do
+                {
+                    output.Add("PlayerNotFound");
+                } while (output.Count < 3);
+            }
 
             return (output[0], output[2]);
         }
@@ -795,16 +830,23 @@ namespace DiscordBeatSaberBot
 
         public static async Task<List<Player>> GetPlayerInfo(string playerName, int recursionLoop = 0, bool skipNeighbour = false)
         {
-            var recursionCounter = recursionLoop;
-
             var players = new List<Player>();
+            await ScrapPlayerInfo(playerName, recursionLoop, skipNeighbour, players);
+            return players;
+        }
+
+        private static async Task ScrapPlayerInfo(string playerName, int recursionLoop, bool skipNeighbour, List<Player> players)
+        {
+
+            var ids = await GetPlayerId(playerName);
+
+            var recursionCounter = recursionLoop;
 
             var playerInfo = (List<List<string>>)null;
             var playerInfo2 = (List<List<string>>)null;
             var playerImg = (List<List<string>>)null;
             var url = "https://scoresaber.com/global?search=" + playerName.Replace(" ", "+");
-            var ids = await GetPlayerId(playerName);
-            var playerId = ids;
+
 
             var counter = 0;
             foreach (var id in ids)
@@ -812,11 +854,11 @@ namespace DiscordBeatSaberBot
                 if (counter >= 3)
                 {
                     counter++;
-                    continue;                    
+                    continue;
                 }
                 var player = new Player(playerName);
 
-                url = "https://scoresaber.com" + playerId[counter];
+                url = "https://scoresaber.com" + ids[counter];
                 using (var client = new HttpClient())
                 {
                     var html = await client.GetStringAsync(url);
@@ -845,30 +887,48 @@ namespace DiscordBeatSaberBot
                 player.imgLink = playerImg.First().First();
                 player.name = player.name;
 
-                if (!skipNeighbour)
+                var nextAndBefore = await RankedNeighbours(playerName, player.rank, 1);
+                var playerNext = new Player(nextAndBefore.Item1)
                 {
-                    if (!(recursionCounter >= 1))
-                    {
-                        var nextAndBefore = await RankedNeighbours(playerName, 1);
-                        var playerNext = await GetPlayerInfo(nextAndBefore.Item1, 1, true);
-                        var playerBefore = await GetPlayerInfo(nextAndBefore.Item2, 1, true);
-                        try
-                        {
-                            player.Next = playerNext.First();
-                            player.Before = playerBefore.First();
-                        }
-                        catch
-                        {
-                            Console.WriteLine(nextAndBefore.Item1 + " or " + nextAndBefore.Item2 + " is not found");
-                        }
-                    }
-                }               
+                    pp = await GetPlayerPP(nextAndBefore.Item1)
+                };
+                var playerBefore = new Player(nextAndBefore.Item2)
+                {
+                    pp = await GetPlayerPP(nextAndBefore.Item2)
+                };
+
+                try
+                {
+                    player.Next = playerNext;
+                    player.Before = playerBefore;
+                }
+                catch
+                {
+                    Console.WriteLine(nextAndBefore.Item1 + " or " + nextAndBefore.Item2 + " is not found");
+                }
+
                 players.Add(player);
                 counter++;
             }
+        }
 
+        public static async Task<string> GetPlayerPP(string Name)
+        {
+            var url = "https://scoresaber.com/global?search=" + Name;
+            using (var client = new HttpClient())
+            {
+                var html = await client.GetStringAsync(url);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(html);
 
-            return players;
+                var PP = doc.DocumentNode.SelectSingleNode("//span[@class='scoreTop ppValue']");
+                if (PP == null)
+                {
+                    return "0";
+                }
+                var pp = PP.InnerText.Replace("\r\n", "").Replace("Performance Points: ", "").Replace(",", "").Replace("pp", "").Trim();
+                return pp.Split('.')[0];
+            }
         }
 
         public static async Task<EmbedBuilder> PlayerComparer(string message)

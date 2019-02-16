@@ -57,7 +57,8 @@ namespace DiscordBeatSaberBot
                     var counter = 0;
                     foreach (var playerId in playerIdList)
                     {
-                        if (playerNameList[counter].ToUpper() == name.ToUpper())
+                
+                        if (playerNameList[counter].ToUpper() == name.ToUpper() && realPlayerIdList.Count <= 3)
                         { realPlayerIdList.Add(playerId[0]); }
 
                         counter++;
