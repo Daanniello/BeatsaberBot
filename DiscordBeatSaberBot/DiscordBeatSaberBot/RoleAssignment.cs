@@ -21,14 +21,15 @@ namespace DiscordBeatSaberBot
         public async void MakeRequest(SocketMessage message)
         {
             //command: requestrole
+            //command: requestverification
             //Request comes in with DiscordId + ScoresaberID
-            var parameters = message.Content.Substring(22).Split(" ");
-            var DiscordId = parameters[0];
-            var ScoresaberId = parameters[1];
+    
+            var DiscordId = message.Author.Id;
+            var ScoresaberId = message.Content.Substring(24);
 
             //GuildID AND ChannelID
-            var guild_id = (ulong)7887;
-            var guild_channel_id = (ulong)34234;
+            var guild_id = (ulong)505485680344956928;
+            var guild_channel_id = (ulong)546386157965934592;
 
             var guild = _discordSocketClient.Guilds.FirstOrDefault(x => x.Id == guild_id);
             var channel = guild.Channels.First(x => x.Id == guild_channel_id) as IMessageChannel;
@@ -40,7 +41,9 @@ namespace DiscordBeatSaberBot
                 Description = "" +
                 "**Scoresaber ID:** " + ScoresaberId + "\n" +
                 "**Discord ID:** " + DiscordId + "\n" +
-                "**Scoresaber link:** https://scoresaber.com/u/" + ScoresaberId,
+                "**Scoresaber link:** https://scoresaber.com/u/" + ScoresaberId + " \n" +
+                "*Waiting for approval by a Staff*" + " \n\n" +
+                "***(Reminder) Type !bs requestverification [Scoresaber ID]***",
 
 
             };
@@ -51,15 +54,15 @@ namespace DiscordBeatSaberBot
 
         }
 
-        public void LinkAccount(SocketMessage message)
+        public async void LinkAccount(SocketMessage message)
         {
             bool authenticationCheck()
             {
-                var guild = _discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)34324);
+                var guild = _discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
                 var userRoles = guild.GetUser(message.Author.Id).Roles;
                 foreach (var role in userRoles)
                 {
-                    if (role.Name == "staff")
+                    if (role.Name == "Staff")
                     {
                         return true;
                     }
@@ -74,7 +77,7 @@ namespace DiscordBeatSaberBot
             var filePath = "../../../account.txt";
 
             //command: linkaccount
-            var parameters = message.Content.Substring(22).Split(" ");
+            var parameters = message.Content.Substring(30).Split(" ");
             var DiscordId = parameters[0];
             var ScoresaberId = parameters[1];
 
@@ -86,8 +89,15 @@ namespace DiscordBeatSaberBot
                 account = JsonConvert.DeserializeObject<List<string[]>>(json);
             }
 
+            if (account == null || account.Count == 0)
+            {
+                account = new List<string[]>();
+           
+            }
+
             if (account.Contains(new string[] { DiscordId, ScoresaberId}))
             {
+                await message.Channel.SendMessageAsync("You already linked your discord");
                 return; 
             }
             account.Add(new string[] { DiscordId, ScoresaberId });
@@ -97,6 +107,32 @@ namespace DiscordBeatSaberBot
                 var serializer = new JsonSerializer();
                 serializer.Serialize(file, account);
             }
+            await message.DeleteAsync();
+            await message.Channel.SendMessageAsync("Done! Linked " + DiscordId + " with " + ScoresaberId);
+        }
+
+        public ulong GetDiscordIdWithScoresaberId(string scoresaberId)
+        {
+            var filePath = "../../../account.txt";
+            var account = new List<string[]>();
+            using (var r = new StreamReader(filePath))
+            {
+                var json = r.ReadToEnd();
+                account = JsonConvert.DeserializeObject<List<string[]>>(json);
+            }
+
+            if (account == null || account.Count == 0)
+            {
+                return 0;
+            }
+            foreach (var player in account)
+            {
+                if (player[1] == scoresaberId)
+                {
+                    return ulong.Parse(player[0]);
+                }
+            }
+            return 0;
         }
 
     }

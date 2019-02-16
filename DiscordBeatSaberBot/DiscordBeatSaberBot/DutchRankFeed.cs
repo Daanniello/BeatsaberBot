@@ -16,6 +16,8 @@ namespace DiscordBeatSaberBot
 {
     public static class DutchRankFeed
     {
+        private static DiscordSocketClient _discord;
+
         public static async Task<(List<string>,List<string>,List<string>, List<string>)> GetDutchRankList()
         {
             var tab = 5;
@@ -119,7 +121,7 @@ namespace DiscordBeatSaberBot
                         embedBuilders.Add(new EmbedBuilder
                         {
                             Title = "Congrats, " + newRankList.Item3[counter],
-                            Description = newRankList.Item3[counter] + " is nu rank **#" + newRankList.Item2[counter] + "** van de Nederlandse beat saber spelers \n" + GetRankUpNotify(int.Parse(newRankList.Item2[counter])),
+                            Description = newRankList.Item3[counter] + " is nu rank **#" + newRankList.Item2[counter] + "** van de Nederlandse beat saber spelers \n" + GetRankUpNotify(int.Parse(newRankList.Item2[counter]), oldRankList.FirstOrDefault(x => x.Value[1] == newRankList.Item4[counter]).Key, ulong.Parse(newRankList.Item4[counter].Replace("/u/", ""))),
 
                             ThumbnailUrl = imgUrl,
                                         
@@ -146,6 +148,7 @@ namespace DiscordBeatSaberBot
 
         public static async Task DutchRankingFeed(DiscordSocketClient discord)
         {
+            _discord = discord;
             var guilds = discord.Guilds.Where(x => x.Id == 439514151040057344);
             //var channels = guilds.First().Channels.Where(x => x.Id == 504392851229114369);
             //channels.First().
@@ -204,38 +207,78 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        private static string GetRankUpNotify(int rank)
+        private static string GetRankUpNotify(int rank, int oldRank, ulong scoresaberId)
         {
             string message = "";
-            if (rank == 1)
+            if (rank == 1 && oldRank > 1)
             {
-                message = "<@&505486321595187220> Een nieuwe #1 ;O update zn role nu! praise the new King";
+                GiveRole(scoresaberId.ToString(), "Nummer 1");
+                message = "Een nieuwe #1 ;O praise the new King";
             }
-            else if (rank == 3)
+            else if (rank <= 3 && oldRank > 3)
             {
-                message = "<@&505486321595187220> Een nieuwe top #3 makker GGGGGGGGG";
+                GiveRole(scoresaberId.ToString(), "Top 3");
+                message = "Een nieuwe top #3 makker GGGGGGGGG";
             }
-            else if (rank == 10)
+            else if (rank <= 10 && oldRank > 10)
             {
-                message = "<@&505486321595187220> Een nieuwe top #10 gamer, Kolonisatie bitches!!";
+                GiveRole(scoresaberId.ToString(), "Top 10");
+                message = "Een nieuwe top #10 gamer, Kolonisatie bitches!!";
             }
-            else if (rank == 25)
+            else if (rank <= 25 && oldRank > 25)
             {
-                message = "<@&505486321595187220> Een nieuwe top #25, grats!! watch out tho, iemand komt zn rank weer terug halen";
+                GiveRole(scoresaberId.ToString(), "Top 25");
+                message = "Een nieuwe top #25, grats!! watch out tho, iemand komt zn rank weer terug halen";
             }
-            else if (rank == 50)
+            else if (rank <= 50 && oldRank > 50)
             {
-                message = "<@&505486321595187220> Een nieuwe top #50!!!, YAY stuur een invite voor de discord >;d nU!";
+                GiveRole(scoresaberId.ToString(), "Top 50");
+                message = "Een nieuwe top #50!!!, YAY stuur een invite voor de discord >;d nU!";
             }
-            else if (rank == 100)
+            else if (rank <= 100 && oldRank > 100)
             {
+                GiveRole(scoresaberId.ToString(), "Top 100");
                 message = "Een nieuwe top #100, het begin van een nieuwe pro";
             }
-            else if (rank == 250)
+            else if (rank <= 250 && oldRank > 250)
             {
                 message = "Een nieuwe top #250, Welkom nieuwkomer ;O";
+                GiveRole(scoresaberId.ToString(), "Top 250");
             }
             return message;
         }
+
+        private async static void GiveRole(string scoresaberId ,string roleName)
+        {
+            var rolenames = new string[]
+            {
+                "nummer 1",
+                "Top 3",
+                "Top 10",
+                "Top 25",
+                "Top 50",
+                "Top 100",
+                "Top 250",
+            };
+            RoleAssignment r = new RoleAssignment(_discord);
+            var userDiscordId = r.GetDiscordIdWithScoresaberId(scoresaberId);
+            if (userDiscordId != 0)
+            {
+
+                var guild_id = (ulong)505485680344956928;
+                var guild = _discord.Guilds.FirstOrDefault(x => x.Id == guild_id);
+                var user = guild.GetUser(userDiscordId);
+
+                foreach (var userRole in user.Roles)
+                {
+                    if (rolenames.Contains(userRole.Name))
+                    {
+                        await user.RemoveRoleAsync(userRole);
+                    }
+                }
+                var role = guild.Roles.FirstOrDefault(x => x.Name == roleName);
+                await user.AddRoleAsync(role);
+            }
+        }      
     }
 }

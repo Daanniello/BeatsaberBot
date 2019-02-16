@@ -397,6 +397,24 @@ namespace DiscordBeatSaberBot
                         });
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.PlayerComparer(message.Content.Substring(12)));
                     }
+                    else if (message.Content.Contains(" requestverification"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        RoleAssignment r = new RoleAssignment(discordSocketClient);
+                        r.MakeRequest(message);
+                    }
+                    else if (message.Content.Contains(" approveverification"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        RoleAssignment r = new RoleAssignment(discordSocketClient);
+                        r.LinkAccount(message);
+                    }
                     else if (message.Content.Contains(" country"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions
