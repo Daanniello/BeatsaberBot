@@ -319,7 +319,7 @@ namespace DiscordBeatSaberBot
             //await s.AddVRroleMessage(null, true);
             if (message.Author.Username == "BeatSaber Bot") return Task.CompletedTask;
 
-            //await MessageDelete.DeleteMessageCheck(message);
+            await MessageDelete.DeleteMessageCheck(message);
             if (message.Content.Length <= 3)
             {
                 return Task.CompletedTask;

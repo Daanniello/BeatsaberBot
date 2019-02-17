@@ -49,7 +49,7 @@ namespace DiscordBeatSaberBot
             };
 
             await channel.SendMessageAsync("", false, embedBuilder.Build());
-            await message.DeleteAsync();
+            //await message.DeleteAsync();
 
 
         }
@@ -77,7 +77,7 @@ namespace DiscordBeatSaberBot
             var filePath = "../../../account.txt";
 
             //command: linkaccount
-            var parameters = message.Content.Substring(30).Split(" ");
+            var parameters = message.Content.Substring(24).Split(" ");
             var DiscordId = parameters[0];
             var ScoresaberId = parameters[1];
 
@@ -94,11 +94,15 @@ namespace DiscordBeatSaberBot
                 account = new List<string[]>();
            
             }
-
-            if (account.Contains(new string[] { DiscordId, ScoresaberId}))
+            
+           
+            foreach (var acc in account)
             {
-                await message.Channel.SendMessageAsync("You already linked your discord");
-                return; 
+                if (acc[0] == DiscordId && acc[1] == ScoresaberId)
+                {
+                    await message.Channel.SendMessageAsync("You already linked your discord");
+                    return;
+                }
             }
             account.Add(new string[] { DiscordId, ScoresaberId });
 
@@ -107,7 +111,7 @@ namespace DiscordBeatSaberBot
                 var serializer = new JsonSerializer();
                 serializer.Serialize(file, account);
             }
-            await message.DeleteAsync();
+            //await message.DeleteAsync();
             await message.Channel.SendMessageAsync("Done! Linked " + DiscordId + " with " + ScoresaberId);
         }
 

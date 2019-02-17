@@ -14,14 +14,10 @@ namespace DiscordBeatSaberBot
         {
             //509230042753138689
             // role @everyone (505485680344956928)
-            if (message.Channel.Id == 510227606822584330)
+            if (message.Channel.Id == 546386157965934592)
             {
-                if (message.Content.Substring(0, 3).Contains("!bs"))
-                {
-                    await message.Channel.SendMessageAsync(message.Author.Mention);
-                    await message.Channel.SendMessageAsync("<@&505486321595187220>");
-                }
-                await Task.Delay(4000);
+           
+                //await Task.Delay(4000);
                 await message.DeleteAsync();               
             }
         }
