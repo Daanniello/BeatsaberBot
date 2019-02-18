@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot
 {
@@ -20,10 +21,11 @@ namespace DiscordBeatSaberBot
 
         public async void MakeRequest(SocketMessage message)
         {
+            
             //command: requestrole
             //command: requestverification
             //Request comes in with DiscordId + ScoresaberID
-    
+
             var DiscordId = message.Author.Id;
             var ScoresaberId = message.Content.Substring(24);
 
@@ -44,42 +46,28 @@ namespace DiscordBeatSaberBot
                 "**Scoresaber link:** https://scoresaber.com/u/" + ScoresaberId + " \n" +
                 "*Waiting for approval by a Staff*" + " \n\n" +
                 "***(Reminder) Type !bs requestverification [Scoresaber ID]***",
-
+                Color = Color.Orange
 
             };
 
-            await channel.SendMessageAsync("", false, embedBuilder.Build());
+            var sendMessage = await channel.SendMessageAsync("", false, embedBuilder.Build());
+            await sendMessage.AddReactionAsync(new Emoji("✅"));
+            await sendMessage.AddReactionAsync(new Emoji("⛔"));
+            
             //await message.DeleteAsync();
 
 
         }
 
-        public async void LinkAccount(SocketMessage message)
+        public async Task<bool> LinkAccount(string discordId, string scoresaberId)
         {
-            bool authenticationCheck()
-            {
-                var guild = _discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
-                var userRoles = guild.GetUser(message.Author.Id).Roles;
-                foreach (var role in userRoles)
-                {
-                    if (role.Name == "Staff")
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            if (!authenticationCheck())
-            {
-                return;
-            }
+            
 
             var filePath = "../../../account.txt";
 
             //command: linkaccount
-            var parameters = message.Content.Substring(24).Split(" ");
-            var DiscordId = parameters[0];
-            var ScoresaberId = parameters[1];
+            var DiscordId = discordId;
+            var ScoresaberId = scoresaberId;
 
             var account = new List<string[]>();
 
@@ -100,8 +88,8 @@ namespace DiscordBeatSaberBot
             {
                 if (acc[0] == DiscordId && acc[1] == ScoresaberId)
                 {
-                    await message.Channel.SendMessageAsync("You already linked your discord");
-                    return;
+                    
+                    return false;
                 }
             }
             account.Add(new string[] { DiscordId, ScoresaberId });
@@ -112,7 +100,8 @@ namespace DiscordBeatSaberBot
                 serializer.Serialize(file, account);
             }
             //await message.DeleteAsync();
-            await message.Channel.SendMessageAsync("Done! Linked " + DiscordId + " with " + ScoresaberId);
+            return true;
+
         }
 
         public ulong GetDiscordIdWithScoresaberId(string scoresaberId)

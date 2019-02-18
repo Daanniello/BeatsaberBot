@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -61,6 +62,7 @@ namespace DiscordBeatSaberBot
             ISocketMessageChannel channel,
             SocketReaction reaction)
         {
+            //var message = await reaction.Channel.GetMessageAsync(reaction.MessageId);
             //var t = new Server(discordSocketClient, "");
             //await t.AddVRroleMessage();
             //510227606822584330
@@ -83,6 +85,74 @@ namespace DiscordBeatSaberBot
             //{<:megaotherway:526402963372245012>}
             //{<:AYAYA:509158069809315850>}
             //{❕}
+
+            if (channel.Id == 546386157965934592)
+            {
+                bool authenticationCheck()
+                {
+                    var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
+                    var userRoles = guild.GetUser(reaction.User.Value.Id).Roles;
+                    foreach (var role in userRoles)
+                    {
+                        if (role.Name == "Staff")
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                if (authenticationCheck())
+                {
+                    //{✅}
+                    //{⛔}
+                    // vinkje = status veranderen en actie uitvoeren om er in te zetten
+                    // denied is status veranderen en user mention gebruiken
+                    var messageFromReaction = await reaction.Channel.GetMessageAsync(reaction.MessageId);
+                    var casted = (IUserMessage)messageFromReaction;
+                    var usedEmbed = casted.Embeds.First();
+                    if (reaction.Emote.Name == "⛔")
+                    {
+                        //need staff check
+                        
+                        var deniedEmbed = new EmbedBuilder
+                        {
+                            Title = usedEmbed.Title,
+                            Description = usedEmbed.Description.Replace("Waiting for approval", "Denied"),
+                            ThumbnailUrl = usedEmbed.Thumbnail.Value.Url,
+                            Color = Color.Red
+                        };
+                        await casted.ModifyAsync(msg => msg.Embed = deniedEmbed.Build());
+                        await casted.RemoveAllReactionsAsync();
+
+                    }
+                    if (reaction.Emote.Name == "✅")
+                    {
+                        Regex digitsOnly = new Regex(@"[^\d]");
+                        Regex oneSpace = new Regex("[ ]{2,}");
+                        var IDS = oneSpace.Replace(digitsOnly.Replace(usedEmbed.Description, " "), "-").Split("-");
+                        var discordId = IDS[2];
+                        var scoresaberId = IDS[1];
+
+                        var approvedEmbed = new EmbedBuilder
+                        {
+                            Title = usedEmbed.Title,
+                            Description = usedEmbed.Description.Replace("Waiting for approval", "Approved"),
+                            ThumbnailUrl = usedEmbed.Thumbnail.Value.Url,
+                            Color = Color.Green
+                        };
+
+                        var check = await new RoleAssignment(discordSocketClient).LinkAccount(discordId, scoresaberId);
+                        if (check)
+                        {
+                            await casted.ModifyAsync(msg => msg.Embed = approvedEmbed.Build());
+                            await casted.RemoveAllReactionsAsync();
+                        }
+                        
+                    }
+                }
+                
+
+            }
 
             if (channel.Id == 510227606822584330)
             {
@@ -319,7 +389,7 @@ namespace DiscordBeatSaberBot
             //await s.AddVRroleMessage(null, true);
             if (message.Author.Username == "BeatSaber Bot") return Task.CompletedTask;
 
-            await MessageDelete.DeleteMessageCheck(message);
+            //await MessageDelete.DeleteMessageCheck(message);
             if (message.Content.Length <= 3)
             {
                 return Task.CompletedTask;
@@ -406,15 +476,7 @@ namespace DiscordBeatSaberBot
                         RoleAssignment r = new RoleAssignment(discordSocketClient);
                         r.MakeRequest(message);
                     }
-                    else if (message.Content.Contains(" approveverification"))
-                    {
-                        await message.Channel.TriggerTypingAsync(new RequestOptions
-                        {
-                            Timeout = Configuration.TypingTimeOut
-                        });
-                        RoleAssignment r = new RoleAssignment(discordSocketClient);
-                        r.LinkAccount(message);
-                    }
+               
                     else if (message.Content.Contains(" country"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions
