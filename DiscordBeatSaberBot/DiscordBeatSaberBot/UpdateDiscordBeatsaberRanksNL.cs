@@ -40,7 +40,7 @@ namespace DiscordBeatSaberBot
                     doc.LoadHtml(html);
 
                     var rankUnfixed = doc.DocumentNode.SelectSingleNode("//a[@href='/global?country=nl']").InnerText;
-                    rank = int.Parse(rankUnfixed.Replace("(", "").Replace(")", "").Replace("#", "").Trim());
+                    rank = int.Parse(rankUnfixed.Replace("(", "").Replace(")", "").Replace("#", "").Replace(",", "").Trim());
                 }
 
                 if (rank == 1)
