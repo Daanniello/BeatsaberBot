@@ -42,6 +42,7 @@ namespace DiscordBeatSaberBot
             discordSocketClient.ReactionRemoved += ReactionRemoved;
             discordSocketClient.UserJoined += OnUserJoined;
 
+            
 
             await Task.Delay(-1);
         }
@@ -62,6 +63,7 @@ namespace DiscordBeatSaberBot
             ISocketMessageChannel channel,
             SocketReaction reaction)
         {
+            
             //var message = await reaction.Channel.GetMessageAsync(reaction.MessageId);
             //var t = new Server(discordSocketClient, "");
             //await t.AddVRroleMessage();
@@ -422,18 +424,34 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        var savedMessage = new SavedMessages(message as SocketUserMessage);
-
-                        foreach (var embed in await BeatSaberInfoExtension.GetPlayer(message.Content.Substring(11)))
+                        var r = new RoleAssignment(discordSocketClient);
+                        
+                        if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 10)
                         {
-                            var completedMessage = await message.Channel.SendMessageAsync("", false, embed);
-                            savedMessage.AddEmbed(embed);
-                            //await completedMessage.AddReactionAsync(new Emoji("⬅"));
-                            //await completedMessage.AddReactionAsync(new Emoji("➡"));
+                            var scoresaberId = r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.SearchLinkedPlayer(scoresaberId));
                         }
+                        else
+                        {
+                            foreach (var embed in await BeatSaberInfoExtension.GetPlayer(message.Content.Substring(11)))
+                            {
+                                var completedMessage = await message.Channel.SendMessageAsync("", false, embed);
 
-                        messageCache.Add(savedMessage);
+                                //await completedMessage.AddReactionAsync(new Emoji("⬅"));
+                                //await completedMessage.AddReactionAsync(new Emoji("➡"));
+                            }
+                        }
                     }
+                    else if (message.Content.Contains(" updateroles"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        await UpdateDiscordBeatsaberRanksNL.UpdateNLAsync(discordSocketClient);
+                        await message.Channel.SendMessageAsync("Done");
+                    }
+                    
                     else if (message.Content.Contains(" invite"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions

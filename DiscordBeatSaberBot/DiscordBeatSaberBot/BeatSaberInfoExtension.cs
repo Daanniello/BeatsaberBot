@@ -119,7 +119,7 @@ namespace DiscordBeatSaberBot
                     builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user" + "\n\n" + "Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore);
                 }
 
-                builder.Timestamp = DateTimeOffset.Now;
+           
                 //var rankValue = player.rank.Split('#')[1].Replace(",", "");
                 var rankInt = player.rank;
                 var rankColor = Rank.GetRankColor(rankInt);
@@ -130,6 +130,91 @@ namespace DiscordBeatSaberBot
 
             return builders;
         }
+
+        public static async Task<EmbedBuilder> SearchLinkedPlayer(string ScoresaberId)
+        {
+            var url = "https://scoresaber.com/u/" + ScoresaberId;
+
+            var player = new Player("");
+            using (var client = new HttpClient())
+            {
+                var html = await client.GetStringAsync(url);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(html);
+
+                var playerName = doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']").InnerText.Replace("\n","").Replace("\r", "").Trim();
+                var playerList = await GetPlayerInfo(playerName);
+                player = playerList.First();
+            
+            }
+
+            string countryNameSmall = player.countryName;
+
+            var ppNext = "-";
+            var ppBefore = "-";
+            var playerNextName = "Not Found o.o";
+
+            var nextAndBefore = await RankedNeighbours(player.name, player.rank, 1);
+            var playerNext = new Player(nextAndBefore.Item1)
+            {
+                pp = await GetPlayerPP(nextAndBefore.Item1)
+            };
+            var playerBefore = new Player(nextAndBefore.Item2)
+            {
+                pp = await GetPlayerPP(nextAndBefore.Item2)
+            };
+
+            try
+            {
+                player.Next = playerNext;
+                player.Before = playerBefore;
+            }
+            catch
+            {
+                Console.WriteLine(nextAndBefore.Item1 + " or " + nextAndBefore.Item2 + " is not found");
+            }
+            var ppNextDouble = Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp), 0);
+            var ppBeforeDouble = Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp), 0);
+            if (player.Before.pp == "0")
+            {
+                ppBefore = "No Search results";
+            }
+            else
+            {
+                ppBefore = ppBeforeDouble.ToString();
+            }
+            if (player.Next.pp == "0")
+            {
+                ppNext = "No Search results";
+            }
+            else
+            {
+                ppNext = ppNextDouble.ToString();
+            }
+
+
+            playerNextName = player.Next.name;
+
+            var builder = new EmbedBuilder();
+
+            if (player.steamLink != "#")
+
+            {
+                builder.ThumbnailUrl = player.imgLink;
+
+                builder.AddInlineField(player.name, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Steam: " + player.steamLink + "\n\n" + "Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore);
+            }
+            else
+            {
+                builder.AddInlineField(player.name, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user" + "\n\n" + "Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore);
+            }
+
+
+            
+            var rankColor = Rank.GetRankColor(player.rank);
+            builder.WithColor(await rankColor);
+            return builder;
+        }    
 
         public static async Task<List<EmbedBuilder>> GetSongs(string search)
         {

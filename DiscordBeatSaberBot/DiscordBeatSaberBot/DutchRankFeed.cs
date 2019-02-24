@@ -248,7 +248,13 @@ namespace DiscordBeatSaberBot
             return message;
         }
 
-        private async static void GiveRole(string scoresaberId ,string roleName)
+        public async static Task GiveRole(string scoresaberId, string roleName, DiscordSocketClient discord)
+        {
+            _discord = discord;
+            await GiveRole(scoresaberId, roleName);
+        }
+
+        public async static Task GiveRole(string scoresaberId ,string roleName)
         {
             var rolenames = new string[]
             {

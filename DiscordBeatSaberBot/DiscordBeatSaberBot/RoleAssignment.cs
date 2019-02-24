@@ -128,5 +128,54 @@ namespace DiscordBeatSaberBot
             return 0;
         }
 
+        public bool CheckIfDiscordIdIsLinked(string DiscordId)
+        {
+            var filePath = "../../../account.txt";
+            var account = new List<string[]>();
+            using (var r = new StreamReader(filePath))
+            {
+                var json = r.ReadToEnd();
+                account = JsonConvert.DeserializeObject<List<string[]>>(json);
+            }
+
+            if (account == null || account.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (var player in account)
+            {
+                if (player[0] == DiscordId)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public string GetScoresaberIdWithDiscordId(string DiscordId)
+        {
+            var filePath = "../../../account.txt";
+            var account = new List<string[]>();
+            using (var r = new StreamReader(filePath))
+            {
+                var json = r.ReadToEnd();
+                account = JsonConvert.DeserializeObject<List<string[]>>(json);
+            }
+
+            if (account == null || account.Count == 0)
+            {
+                return "0";
+            }
+
+            foreach (var player in account)
+            {
+                if (player[0] == DiscordId)
+                {
+                    return player[1];
+                }
+            }
+            return "0";
+        }
     }
 }
