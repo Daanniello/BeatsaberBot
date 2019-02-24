@@ -31,7 +31,7 @@ namespace DiscordBeatSaberBot
 
             //GuildID AND ChannelID
             var guild_id = (ulong)505485680344956928;
-            var guild_channel_id = (ulong)546386157965934592;
+            var guild_channel_id = (ulong)549350982081970176;
 
             var guild = _discordSocketClient.Guilds.FirstOrDefault(x => x.Id == guild_id);
             var channel = guild.Channels.First(x => x.Id == guild_channel_id) as IMessageChannel;

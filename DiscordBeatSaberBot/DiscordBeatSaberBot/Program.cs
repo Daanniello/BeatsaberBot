@@ -57,13 +57,17 @@ namespace DiscordBeatSaberBot
         {
             var server = new Server(discordSocketClient, "");
             await server.UserJoinedMessage(guildUser);
+
+            var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
+            var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Nieuwkomer");
+            await guildUser.AddRoleAsync(addRole);
         }
 
         private async Task<Task> ReactionAdded(Cacheable<IUserMessage, ulong> cache,
             ISocketMessageChannel channel,
             SocketReaction reaction)
         {
-            
+
             //var message = await reaction.Channel.GetMessageAsync(reaction.MessageId);
             //var t = new Server(discordSocketClient, "");
             //await t.AddVRroleMessage();
@@ -87,8 +91,23 @@ namespace DiscordBeatSaberBot
             //{<:megaotherway:526402963372245012>}
             //{<:AYAYA:509158069809315850>}
             //{❕}
-
-            if (channel.Id == 546386157965934592)
+            if (channel.Id == 549343990957211658)
+            {
+                var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
+                var user = guild.GetUser(reaction.User.Value.Id);
+                var userRoles = user.Roles;
+                foreach (var role in userRoles)
+                {
+                    if (role.Name == "Nieuwkomer")
+                    {
+                        var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Rankloos");
+                        var deleteRole = guild.Roles.FirstOrDefault(x => x.Name == "Nieuwkomer");
+                        await user.AddRoleAsync(addRole);
+                        await user.RemoveRoleAsync(deleteRole);
+                    }
+                }
+            }
+            if (channel.Id == 549350982081970176)
             {
                 bool authenticationCheck()
                 {
@@ -391,7 +410,7 @@ namespace DiscordBeatSaberBot
             //await s.AddVRroleMessage(null, true);
             if (message.Author.Username == "BeatSaber Bot") return Task.CompletedTask;
 
-            //await MessageDelete.DeleteMessageCheck(message);
+            await MessageDelete.DeleteMessageCheck(message);
             if (message.Content.Length <= 3)
             {
                 return Task.CompletedTask;
@@ -493,6 +512,21 @@ namespace DiscordBeatSaberBot
                         });
                         RoleAssignment r = new RoleAssignment(discordSocketClient);
                         r.MakeRequest(message);
+
+                        var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
+                        var user = guild.GetUser(message.Author.Id);
+                        var userRoles = user.Roles;
+                        foreach (var role in userRoles)
+                        {
+                            if (role.Name == "Nieuwkomer")
+                            {
+                            
+                                var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Link my discord please");
+                                var deleteRole = guild.Roles.FirstOrDefault(x => x.Name == "Nieuwkomer");
+                                await user.RemoveRoleAsync(deleteRole);
+                                await user.AddRoleAsync(addRole);
+                            }
+                        }
                     }
                
                     else if (message.Content.Contains(" country"))
