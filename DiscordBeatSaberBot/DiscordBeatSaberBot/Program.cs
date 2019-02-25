@@ -511,7 +511,16 @@ namespace DiscordBeatSaberBot
                             Timeout = Configuration.TypingTimeOut
                         });
                         RoleAssignment r = new RoleAssignment(discordSocketClient);
-                        r.MakeRequest(message);
+                        if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
+                        {
+                            await message.Channel.SendMessageAsync("Je discord is al gelinked met je scoresaber, No worries " + message.Author.Username);
+
+                        }
+                        else
+                        {
+                            r.MakeRequest(message);
+                        }
+                        
 
                         var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
                         var user = guild.GetUser(message.Author.Id);
