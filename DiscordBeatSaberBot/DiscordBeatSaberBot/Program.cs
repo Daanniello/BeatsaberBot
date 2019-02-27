@@ -420,7 +420,28 @@ namespace DiscordBeatSaberBot
             {
                 if (message.Content.Substring(0, 3).Contains("!bs"))
                 {
-                    if (message.Content.Contains(" top10"))
+                    if (message.Content.Contains(" help"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = 20
+                        });
+                        var help = new CommandHelper();
+
+                        if (message.Content.Length == 8)
+                        {
+                            await message.Channel.SendMessageAsync("", false, help.GetHelpList());
+                        }
+                        else
+                        {
+                            var parameter = message.Content.Substring(9);
+                            await message.Channel.SendMessageAsync("", false, help.GetHelpObjectEmbed(parameter));
+                        }
+
+
+                        return Task.CompletedTask;
+                    }
+                    else if (message.Content.Contains(" top10"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions
                         {
@@ -434,8 +455,17 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        if (message.Content.Length == 11) await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopSongList(message.Content));
-                        else await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopSongList(message.Content.Substring(12)));
+                        var r = new RoleAssignment(discordSocketClient);
+                        if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 14)
+                        {
+                            var scoresaberId = r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetBestSongWithId(scoresaberId));
+                        }
+                        else
+                        {
+                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopSongList(message.Content.Substring(12)));
+                        }
+                      
                     }
                     else if (message.Content.Contains(" search"))
                     {
@@ -695,8 +725,17 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        var id = await BeatSaberInfoExtension.GetPlayerId(message.Content.Substring(15));
-                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetRecentSongWithId(id[0]));
+                        var r = new RoleAssignment(discordSocketClient);
+                        if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 14)
+                        {
+                            var scoresaberId = r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetRecentSongWithId(scoresaberId));
+                        }
+                        else
+                        {
+                            var id = await BeatSaberInfoExtension.GetPlayerId(message.Content.Substring(15));
+                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetRecentSongWithId(id[0]));
+                        }
                     }
                     else if (message.Content.Contains(" ranks"))
                     {
@@ -719,24 +758,7 @@ namespace DiscordBeatSaberBot
                             foreach (var builder in builderList)
                                 await message.Channel.SendMessageAsync("", false, builder);
                     }
-                    else if (message.Content.Contains(" help"))
-                    {
-                        await message.Channel.TriggerTypingAsync(new RequestOptions
-                        {
-                            Timeout = 20
-                        });
-                        var helpMessage = "";
-                        var builder = new EmbedBuilder();
-                        builder.WithTitle("Help");
-                        builder.WithDescription("All Commands to be used");
-                        foreach (var helpCommand in CommandHelper.Help()) helpMessage += helpCommand + "\n\n";
-
-                        builder.AddInlineField("Commands", helpMessage);
-                        builder.WithColor(Color.Red);
-
-                        await message.Channel.SendMessageAsync("", false, builder);
-                        return Task.CompletedTask;
-                    }
+                    
                     else { EmbedBuilderExtension.NullEmbed("Oops", "There is no command like that, try something else", null, null); }
                 }
             }

@@ -436,7 +436,7 @@ namespace DiscordBeatSaberBot
             var songDifficulty = "";
             var songAuthor = "";
 
-            var url = "https://scoresaber.com" + playerId;
+            var url = "https://scoresaber.com/u/" + playerId.Replace("/u/", "");
             using (var client = new HttpClient())
             {
                 var html = await client.GetStringAsync(url);
@@ -480,7 +480,7 @@ namespace DiscordBeatSaberBot
             var songAuthor = "";
             var playerName = "";
 
-            var url = "https://scoresaber.com" + playerId + "&sort=2";
+            var url = "https://scoresaber.com/u/" + playerId.Replace("/u/","") + "&sort=2";
             using (var client = new HttpClient())
             {
                 var html = await client.GetStringAsync(url);

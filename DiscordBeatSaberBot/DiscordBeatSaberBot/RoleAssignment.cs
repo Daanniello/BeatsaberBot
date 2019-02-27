@@ -29,6 +29,12 @@ namespace DiscordBeatSaberBot
             var DiscordId = message.Author.Id;
             var ScoresaberId = message.Content.Substring(24);
 
+            if (!Validation.IsDigitsOnly(ScoresaberId))
+            {
+                await message.Channel.SendMessageAsync("Scoresaber ID is verkeerd");
+                return;
+            }
+
             //GuildID AND ChannelID
             var guild_id = (ulong)505485680344956928;
             var guild_channel_id = (ulong)549350982081970176;
@@ -177,5 +183,6 @@ namespace DiscordBeatSaberBot
             }
             return "0";
         }
+
     }
 }
