@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +11,12 @@ namespace DiscordBeatSaberBot
     {
         private List<HelpObject> helpObjects = new List<HelpObject>();
         private static List<string> helpCommands = new List<string>();
+        private DiscordSocketClient Discord;
 
-        public CommandHelper()
+        public CommandHelper(DiscordSocketClient discord)
         {
+            Discord = discord;
+
             CreateHelpObject("Search", "Looks up a beat saber player", 
                 "!bs search <Playername> \n" +
                 "!bs search *If scoresaber is linked with discord");
@@ -96,7 +100,7 @@ namespace DiscordBeatSaberBot
             var embedFields = new List<EmbedFieldBuilder>();
             foreach (var help in helpObjects)
             {
-                
+
                 embedFields.Add(new EmbedFieldBuilder
                 {
                     Name = help.name,
@@ -104,12 +108,16 @@ namespace DiscordBeatSaberBot
                 });
             }
 
-            
+            var userCount = 0;
+            foreach (var x in Discord.Guilds)
+            {
+                userCount += x.MemberCount;
+            }
 
             var embedBuilder = new EmbedBuilder
             {
                 Title = ":question: Command List :question: \n" +
-                "***For more info, use !bs help <Command Name>*** \n \n",
+                "***For more info, use !bs help <Command Name>*** \n*Used by " + Discord.Guilds.Count + " servers with "+ userCount + " people*\n",
                 Fields = embedFields,
                 ThumbnailUrl = "https://cdn.discordapp.com/app-icons/504633036902498314/8640cf47aeac6cf7fd071e111467cac5.png?size=512",
                 Color = Color.Gold,
