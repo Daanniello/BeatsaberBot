@@ -22,7 +22,7 @@ namespace DiscordBeatSaberBot
                 "!bs search *If scoresaber is linked with discord");
 
             CreateHelpObject("Songs", "Looks up a beat saber song",
-                "!bs song <songname> \n");
+                "!bs songs <songname> \n");
 
             CreateHelpObject("TopSong", "Looks up the top pp song from a player",
                 "!bs topsong <playername> \n" +
@@ -116,8 +116,8 @@ namespace DiscordBeatSaberBot
 
             var embedBuilder = new EmbedBuilder
             {
-                Title = ":question: Command List :question: \n" +
-                "***For more info, use !bs help <Command Name>*** \n*Used by " + Discord.Guilds.Count + " servers with "+ userCount + " people*\n",
+                Title = "**Command List** :question: \n\n" +
+                "***For more info, use !bs help <Command Name>*** \n*Used by " + Discord.Guilds.Count + " servers with a total of "+ userCount + " users*\n",
                 Fields = embedFields,
                 ThumbnailUrl = "https://cdn.discordapp.com/app-icons/504633036902498314/8640cf47aeac6cf7fd071e111467cac5.png?size=512",
                 Color = Color.Gold,

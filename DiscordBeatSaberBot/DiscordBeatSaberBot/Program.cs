@@ -753,10 +753,10 @@ namespace DiscordBeatSaberBot
                             Timeout = Configuration.TypingTimeOut
                         });
                         var builderList = await BeatSaberInfoExtension.GetSongs(message.Content.Substring(10));
-                        if (builderList.Count > 6) await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Search term to wide", "I can not post more as 6 songs. " + "\n Try searching with a more specific word please. \n" + ":rage:", null, null));
+                        if (builderList.Count > 4) await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Search term to wide", "I can not post more as 6 songs. " + "\n Try searching with a more specific word please. \n" + ":rage:", null, null));
                         else
                             foreach (var builder in builderList)
-                                await message.Channel.SendMessageAsync("", false, builder);
+                                await message.Channel.SendMessageAsync("", false, builder.Build());
                     }
                     
                     else { EmbedBuilderExtension.NullEmbed("Oops", "There is no command like that, try something else", null, null); }

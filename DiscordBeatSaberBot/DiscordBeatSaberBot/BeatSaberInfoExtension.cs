@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot
@@ -218,9 +219,14 @@ namespace DiscordBeatSaberBot
 
         public static async Task<List<EmbedBuilder>> GetSongs(string search)
         {
-            var songs = (List<List<string>>)null;
-            var pictureUrl = new List<List<string>>();
-            var url = "https://beatsaver.com/search/all/" + search.Replace(" ", "%20");
+            var titles = new List<string>();
+            var songs = new List<string>();
+       
+    
+            var pics = new List<string>();
+
+
+            var url = "https://beatsaver.com/search/all/0?key=" + search.Replace(" ", "+");
 
             using (var client = new HttpClient())
             {
@@ -228,62 +234,37 @@ namespace DiscordBeatSaberBot
                 var doc = new HtmlAgilityPack.HtmlDocument();
                 doc.LoadHtml(html);
 
-                var table = doc.DocumentNode.SelectSingleNode("//div[@class='row']");
-                songs = table.Descendants("tr").Skip(1).Select(tr => tr.Descendants("td").Select(td => WebUtility.HtmlDecode(td.InnerHtml)).ToList()).ToList();
+                titles = doc.DocumentNode.SelectNodes("//a[@class='has-text-weight-semibold is-size-3']").Select(x => x.InnerText).ToList();
+                songs = doc.DocumentNode.SelectNodes("//table[@class='table is-fullwidth']").Select(x => WebUtility.HtmlDecode(x.InnerText)).ToList();
+                songs = songs.Select(x => x.Replace("\n", "")).ToList();
+                Regex regex = new Regex("[ ]{3,}");
+                songs = songs.Select(x => regex.Replace(x,"~").Trim()).ToList();
 
-                pictureUrl = table.Descendants("tr").Select(tr => tr.Descendants("img").Select(img => WebUtility.HtmlDecode(img.GetAttributeValue("src", ""))).ToList()).ToList();
+                pics = doc.DocumentNode.SelectNodes("//img").Skip(1).Select(x => x.GetAttributeValue("src","")).ToList();
+
             }
-
-            if (songs.Count <= 0)
-            {
-                var returnList = new List<EmbedBuilder>
-                {
-                    EmbedBuilderExtension.NullEmbed("No songs found", "Sorry, I did not find any songs with the term: " + search, null, null)
-                };
-                return returnList;
-            }
-
-            var songNameList = new List<string>();
-            var downloadLinkList = new List<string>();
-            var authorList = new List<string>();
-            var difficultiesList = new List<string>();
-            foreach (var songInfo in songs)
-            {
-                foreach (var info in songInfo)
-                {
-                    if (info.Contains("Song")) { songNameList.Add(info); }
-
-                    if (info.Contains("Author")) { authorList.Add(info); }
-
-                    if (info.Contains("Difficulties")) { difficultiesList.Add(info); }
-
-                    if (info.Contains("href"))
-                    {
-                        var addon = info.Split('"').Where(x => x.Contains("beatsaver"));
-                        downloadLinkList.Add(addon.First());
-                    }
-                }
-            }
-
-            var pictureFilter = new List<string>();
-            foreach (var pictureList in pictureUrl)
-            {
-                foreach (var picture in pictureList)
-                {
-                    if (!string.IsNullOrEmpty(picture)) { pictureFilter.Add(picture); }
-                }
-            }
-
+            
             var builderList = new List<EmbedBuilder>();
-            for (int i = 0; i < pictureFilter.Count; i++)
+
+            for (var x = 0; x < songs.Count; x++)
             {
-                var builder = new EmbedBuilder();
-                builder.WithTitle("Song Info");
-                builder.WithThumbnailUrl(pictureFilter[i]);
-                builder.WithDescription("All songs that contains " + search);
-                builder.AddInlineField(songNameList[i], "\n" + difficultiesList[i] + "\n" + authorList[i] + "\n" + "\nDownload Link\n" + downloadLinkList[i] + "\n \n ");
-                builder.WithColor(Color.Red);
-                builderList.Add(builder);
+                var attributes = songs[x].Split("~");
+                builderList.Add(new EmbedBuilder()
+                {
+                    Title = attributes[2],
+                    Fields = new List<EmbedFieldBuilder>()
+                    {
+                        new EmbedFieldBuilder(){ Name = attributes[4].Split(":")[0], Value = attributes[4].Split(":")[1]},
+                        new EmbedFieldBuilder(){ Name = attributes[3].Split(":")[0], Value = attributes[3].Split(":")[1]},
+                        new EmbedFieldBuilder(){ Name = attributes[1].Split(":")[0], Value = attributes[1].Split(":")[1] + ":"+attributes[1].Split(":")[2] +":"+ attributes[1].Split(":")[3]},
+                        new EmbedFieldBuilder(){ Name = attributes[5].Split(":")[0], Value = attributes[5].Split(":")[1]},
+                        new EmbedFieldBuilder(){ Name = "Stats", Value = attributes[6].Replace("||", "|")},
+                        new EmbedFieldBuilder(){ Name = attributes[7].Split(":")[0], Value = attributes[7].Split(":")[1]},
+                    },
+                    Color = Color.Blue,
+                    ThumbnailUrl = pics[x]
+                });
+                
             }
 
 
