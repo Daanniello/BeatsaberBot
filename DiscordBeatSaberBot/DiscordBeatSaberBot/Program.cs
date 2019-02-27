@@ -426,7 +426,7 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = 20
                         });
-                        var help = new CommandHelper();
+                        var help = new CommandHelper(discordSocketClient);
 
                         if (message.Content.Length == 8)
                         {
@@ -798,7 +798,7 @@ namespace DiscordBeatSaberBot
                         Console.WriteLine("...");
                         try
                         {
-                            //await CNDRankFeed.CNDRankingFeed(discordSocketClient);
+                            await AU_NZ_RankFeed.AU_NZRankingFeed(discordSocketClient);
                         }
                         catch (Exception ex)
                         {
