@@ -42,7 +42,7 @@ namespace DiscordBeatSaberBot
             discordSocketClient.ReactionRemoved += ReactionRemoved;
             discordSocketClient.UserJoined += OnUserJoined;
 
-            
+            await discordSocketClient.SetGameAsync("Beat Saber with Servant");
 
             await Task.Delay(-1);
         }
@@ -474,8 +474,22 @@ namespace DiscordBeatSaberBot
                             Timeout = Configuration.TypingTimeOut
                         });
                         var r = new RoleAssignment(discordSocketClient);
-                        
-                        if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 10)
+                        if (message.Content.Contains("@"))
+                        {
+                            var discordId = message.Content.Substring(11).Replace("<","").Replace(">", "").Replace("@", "");
+                            if (r.CheckIfDiscordIdIsLinked(discordId))
+                            {
+
+
+                                var scoresaberId = r.GetScoresaberIdWithDiscordId(discordId);
+                                await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.SearchLinkedPlayer(scoresaberId));
+                            }
+                            else
+                            {
+                                await message.Channel.SendMessageAsync("Discord user is not linked with scoresaber");
+                            }
+                        }
+                        else if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 10)
                         {
                             var scoresaberId = r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
                             await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.SearchLinkedPlayer(scoresaberId));
