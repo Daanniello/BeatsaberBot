@@ -42,9 +42,14 @@ namespace DiscordBeatSaberBot
             discordSocketClient.ReactionRemoved += ReactionRemoved;
             discordSocketClient.UserJoined += OnUserJoined;
 
-            await discordSocketClient.SetGameAsync("Beat Saber with Servant");
+            Init();
 
             await Task.Delay(-1);
+        }
+        private async void Init()
+        {
+            var settingData = JsonExtension.GetJsonData("BeatSaberSettings.txt");
+            await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
         }
 
         private Task log(string message)
@@ -514,7 +519,19 @@ namespace DiscordBeatSaberBot
                         await UpdateDiscordBeatsaberRanksNL.UpdateNLAsync(discordSocketClient);
                         await message.Channel.SendMessageAsync("Done");
                     }
-                    
+                    else if (message.Content.Contains(" playing"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        var msg = message.Content.Substring(12);
+                        //C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\BeatSaberSettings.txt
+                        JsonExtension.InsertJsonData(@"BeatSaberSettings.txt", "gamePlaying", msg);
+                        await discordSocketClient.SetGameAsync(msg);
+                        await message.Channel.SendMessageAsync("Game now set to " + msg);
+                    }
+
                     else if (message.Content.Contains(" invite"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions
