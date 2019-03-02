@@ -173,7 +173,11 @@ namespace DiscordBeatSaberBot
                             await casted.ModifyAsync(msg => msg.Embed = approvedEmbed.Build());
                             await casted.RemoveAllReactionsAsync();
                         }
-                        
+
+                        var player = await BeatSaberInfoExtension.GetPlayerInfoWithScoresaberId(scoresaberId);
+                        DutchRankFeed.GiveRoleWithRank(player.countryRank, scoresaberId);
+                        var m = new ModerationHelper(discordSocketClient, 505485680344956928);
+                        await m.DeleteRole("Link my discord please", m._guild.GetUser(reaction.UserId));       
                     }
                 }
                 
@@ -581,22 +585,15 @@ namespace DiscordBeatSaberBot
                         {
                             r.MakeRequest(message);
                         }
-                        
 
-                        var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
-                        var user = guild.GetUser(message.Author.Id);
-                        var userRoles = user.Roles;
-                        foreach (var role in userRoles)
+                        var moderationHelper = new ModerationHelper(discordSocketClient, 505485680344956928);
+
+                        var user = message.Author;
+                        if (moderationHelper.UserHasRole(user , "Nieuwkomer"))
                         {
-                            if (role.Name == "Nieuwkomer")
-                            {
-                            
-                                var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Link my discord please");
-                                var deleteRole = guild.Roles.FirstOrDefault(x => x.Name == "Nieuwkomer");
-                                await user.RemoveRoleAsync(deleteRole);
-                                await user.AddRoleAsync(addRole);
-                            }
-                        }
+                            await moderationHelper.AddRole("Link my discord please", user);
+                            await moderationHelper.DeleteRole("Nieuwkomer", user);
+                        }                       
                     }
                
                     else if (message.Content.Contains(" country"))

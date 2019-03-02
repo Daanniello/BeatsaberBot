@@ -130,6 +130,24 @@ namespace DiscordBeatSaberBot
 
             return builders;
         }
+        public static async Task<Player> GetPlayerInfoWithScoresaberId(string scoresaberId)
+        {
+            var url = "https://scoresaber.com/u/" + scoresaberId;
+
+            var player = new Player("");
+            using (var client = new HttpClient())
+            {
+                var html = await client.GetStringAsync(url);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(html);
+
+                var playerName = doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']").InnerText.Replace("\n", "").Replace("\r", "").Trim();
+                var playerList = await GetPlayerInfo(playerName);
+                player = playerList.First();
+
+            }
+            return player;
+        }
 
         public static async Task<EmbedBuilder> SearchLinkedPlayer(string ScoresaberId)
         {

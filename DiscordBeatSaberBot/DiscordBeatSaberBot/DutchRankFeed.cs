@@ -254,6 +254,20 @@ namespace DiscordBeatSaberBot
             await GiveRole(scoresaberId, roleName);
         }
 
+        public async static void GiveRoleWithRank(int rank, string scoresaberId)
+        {
+            if (rank <= 1) await GiveRole(scoresaberId, "Nummer 1");
+            else if (rank <= 3) await GiveRole(scoresaberId, "Top 3");
+            else if (rank <= 10) await GiveRole(scoresaberId, "Top 10");
+            else if (rank <= 25) await GiveRole(scoresaberId, "Top 25");
+            else if (rank <= 50) await GiveRole(scoresaberId, "Top 50");
+            else if (rank <= 100) await GiveRole(scoresaberId, "Top 100");
+            else if (rank <= 250) await GiveRole(scoresaberId, "Top 250");
+            else if (rank <= 500) await GiveRole(scoresaberId, "Top 500");
+            else if (rank > 500) await GiveRole(scoresaberId, "Top 501+");
+
+        }
+
         public async static Task GiveRole(string scoresaberId ,string roleName)
         {
             var rolenames = new string[]
