@@ -15,19 +15,3 @@ C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\
 C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.csproj.CopyComplete
 C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.dll
 C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.pdb
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Unit Tests.deps.json
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Unit Tests.runtimeconfig.json
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Unit Tests.runtimeconfig.dev.json
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Unit Tests.dll
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\Unit Tests.pdb
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\bin\Debug\netcoreapp2.1\DiscordBeatSaberBot.dll
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.csprojAssemblyReference.cache
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.csproj.CoreCompileInputs.cache
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.AssemblyInfoInputs.cache
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.AssemblyInfo.cs
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.csproj.CopyComplete
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.dll
-C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.pdb

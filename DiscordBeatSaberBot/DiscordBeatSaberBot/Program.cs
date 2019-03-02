@@ -48,7 +48,7 @@ namespace DiscordBeatSaberBot
         }
         private async void Init()
         {
-            var settingData = JsonExtension.GetJsonData("BeatSaberSettings.txt");
+            var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");
             await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
         }
 
@@ -527,7 +527,7 @@ namespace DiscordBeatSaberBot
                         });
                         var msg = message.Content.Substring(12);
                         //C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\BeatSaberSettings.txt
-                        JsonExtension.InsertJsonData(@"BeatSaberSettings.txt", "gamePlaying", msg);
+                        JsonExtension.InsertJsonData(@"../../../BeatSaberSettings.txt", "gamePlaying", msg);
                         await discordSocketClient.SetGameAsync(msg);
                         await message.Channel.SendMessageAsync("Game now set to " + msg);
                     }
