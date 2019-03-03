@@ -593,6 +593,7 @@ namespace DiscordBeatSaberBot
                         {
                             await moderationHelper.AddRole("Link my discord please", user);
                             await moderationHelper.DeleteRole("Nieuwkomer", user);
+                          
                         }                       
                     }
                

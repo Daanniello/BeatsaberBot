@@ -1,1 +1,1 @@
-{"gamePlaying":"with poo"}
+{"gamePlaying":"Beat Saber <prefix: !bs>"}

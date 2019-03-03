@@ -24,7 +24,7 @@ namespace DiscordBeatSaberBot
         {
             var guildUser = ConvertUserToGuildUser(user);       
             var userRoles = guildUser.Roles;
-            foreach (var role in userRoles)
+            foreach (var role in _guild.Roles)
             {
                 if (role.Name == roleName)
                 {
@@ -40,7 +40,7 @@ namespace DiscordBeatSaberBot
         {
             var guildUser = ConvertUserToGuildUser(user);       
             var userRoles = guildUser.Roles;
-            foreach (var role in userRoles)
+            foreach (var role in _guild.Roles)
             {
                 if (role.Id == roleId)
                 {
