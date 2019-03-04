@@ -207,6 +207,7 @@ namespace DiscordBeatSaberBot
                 discordNames.Add(user.Username);
                 
             }
+            discordNames.Sort();
             return discordNames;
 
         } 
@@ -240,7 +241,7 @@ namespace DiscordBeatSaberBot
                     nameListNotLinked.Add(user.Username);
                 }
             }
-
+            nameListNotLinked.Sort();
             return nameListNotLinked;
         }
 
