@@ -60,7 +60,7 @@ namespace DiscordBeatSaberBot
 
         private async Task OnUserJoined(SocketGuildUser guildUser)
         {
-            var server = new Server(discordSocketClient, "");
+            var server = new Server(discordSocketClient);
             await server.UserJoinedMessage(guildUser);
 
             var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
@@ -536,6 +536,30 @@ namespace DiscordBeatSaberBot
                         await UpdateDiscordBeatsaberRanksNL.UpdateNLAsync(discordSocketClient);
                         await message.Channel.SendMessageAsync("Done");
                     }
+                    else if (message.Content.Contains(" linkednames"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        if (new Server(discordSocketClient, 505485680344956928).IsStaffInGuild(message.Author.Id, 505486321595187220))
+                        {
+                            var embed = new RoleAssignment(discordSocketClient).GetLinkedDiscordNamesEmbed();
+                            await message.Channel.SendMessageAsync(embed);
+                        }                       
+                    }
+                    else if (message.Content.Contains(" notlinkednames"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        if (new Server(discordSocketClient, 505485680344956928).IsStaffInGuild(message.Author.Id, 505486321595187220))
+                        {
+                            var embed = new RoleAssignment(discordSocketClient).GetNotLinkedDiscordNamesInGuildEmbed(505485680344956928);
+                            await message.Channel.SendMessageAsync(embed);
+                        }
+                    }
                     else if (message.Content.Contains(" playing"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions
@@ -804,10 +828,10 @@ namespace DiscordBeatSaberBot
                     else { EmbedBuilderExtension.NullEmbed("Oops", "There is no command like that, try something else", null, null); }
                 }
             }
-            catch
+            catch(Exception ex)
             {
                 await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Something went wrong, try again later", null, null));
-                await log(message.ToString());
+                Console.WriteLine(ex);
             }
 
             

@@ -184,5 +184,80 @@ namespace DiscordBeatSaberBot
             return "0";
         }
 
+        public List<string> GetLinkedDiscordNames()
+        {
+            var discordNames = new List<string>();
+
+            var filePath = "../../../account.txt";
+            var account = new List<string[]>();
+            using (var r = new StreamReader(filePath))
+            {
+                var json = r.ReadToEnd();
+                account = JsonConvert.DeserializeObject<List<string[]>>(json);
+            }
+
+            if (account == null || account.Count == 0)
+            {
+                return new List<string>();
+            }
+            foreach (var player in account)
+            {
+                var discordId = player[0];
+                var user = _discordSocketClient.GetUser(ulong.Parse(discordId));
+                discordNames.Add(user.Username);
+                
+            }
+            return discordNames;
+
+        } 
+
+        public string GetLinkedDiscordNamesEmbed()
+        {
+            var discordNames = GetLinkedDiscordNames();
+            var namesAsString = "";
+            namesAsString += "``` Discord users linked with scoresaber List \n\n";
+            foreach (var name in discordNames)
+            {
+                namesAsString += name + "\n";
+            }
+            namesAsString += "Count: " + discordNames.Count;
+            namesAsString += "```";
+
+
+            return namesAsString;
+        }
+
+        public List<string> GetNotLinkedDiscordNamesInGuild(ulong guildId)
+        {
+            var nameList = GetLinkedDiscordNames();
+            var guild = _discordSocketClient.GetGuild(guildId);
+            var nameListNotLinked = new List<string>();
+
+            foreach (var user in guild.Users)
+            {
+                if (!nameList.Contains(user.Username))
+                {
+                    nameListNotLinked.Add(user.Username);
+                }
+            }
+
+            return nameListNotLinked;
+        }
+
+        public string GetNotLinkedDiscordNamesInGuildEmbed(ulong guildId)
+        {
+            var discordNames = GetNotLinkedDiscordNamesInGuild(guildId);
+            var namesAsString = "";
+            namesAsString += "``` Discord users Not linked with scoresaber List \n\n";
+            foreach (var name in discordNames)
+            {
+                namesAsString += name + "\n";
+            }
+            namesAsString += "Count: " + discordNames.Count;
+            namesAsString += "```";
+
+            return namesAsString;
+        }
+
     }
 }

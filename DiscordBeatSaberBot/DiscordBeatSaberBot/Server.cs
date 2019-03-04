@@ -12,11 +12,11 @@ namespace DiscordBeatSaberBot
     {
         private List<string> welkomMessages;
 
-        public string ServerId;
+        public ulong ServerId;
         private DiscordSocketClient _discord;
 
 
-        public Server(DiscordSocketClient discord, string serverId)
+        public Server(DiscordSocketClient discord, ulong serverId = 0)
         {
             
            
@@ -67,6 +67,20 @@ namespace DiscordBeatSaberBot
 
                 await welkomChannel.SendMessageAsync("", false, embedBuilder);
             }
+        }
+
+        public bool IsStaffInGuild(ulong discordId, ulong staffID)
+        {
+            var guild = _discord.GetGuild(ServerId);
+            var roles = guild.GetUser(discordId).Roles;
+            foreach (var role in roles)
+            {
+                if (role.Id == staffID)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
