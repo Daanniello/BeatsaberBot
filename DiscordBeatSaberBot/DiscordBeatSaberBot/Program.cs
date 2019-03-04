@@ -158,14 +158,27 @@ namespace DiscordBeatSaberBot
                         var IDS = oneSpace.Replace(digitsOnly.Replace(usedEmbed.Description, " "), "-").Split("-");
                         var discordId = IDS[2];
                         var scoresaberId = IDS[1];
-
-                        var approvedEmbed = new EmbedBuilder
+                        var approvedEmbed = new EmbedBuilder();
+                        try
                         {
-                            Title = usedEmbed.Title,
-                            Description = usedEmbed.Description.Replace("Waiting for approval", "Approved"),
-                            ThumbnailUrl = usedEmbed.Thumbnail.Value.Url,
-                            Color = Color.Green
-                        };
+                            approvedEmbed = new EmbedBuilder
+                            {
+                                Title = usedEmbed.Title,
+                                Description = usedEmbed.Description.Replace("Waiting for approval", "Approved"),
+                                ThumbnailUrl = usedEmbed.Thumbnail.Value.Url,
+                                Color = Color.Green
+                            };
+                        }
+                        catch
+                        {
+                            approvedEmbed = new EmbedBuilder
+                            {
+                                Title = usedEmbed.Title,
+                                Description = usedEmbed.Description.Replace("Waiting for approval", "Approved"),
+                                Color = Color.Green
+                            };
+                        }
+                        
 
                         var check = await new RoleAssignment(discordSocketClient).LinkAccount(discordId, scoresaberId);
                         if (check)
@@ -177,7 +190,7 @@ namespace DiscordBeatSaberBot
                         var player = await BeatSaberInfoExtension.GetPlayerInfoWithScoresaberId(scoresaberId);
                         DutchRankFeed.GiveRoleWithRank(player.countryRank, scoresaberId);
                         var m = new ModerationHelper(discordSocketClient, 505485680344956928);
-                        await m.DeleteRole("Link my discord please", m._guild.GetUser(reaction.UserId));       
+                        await m.DeleteRole("Link my discord please", m._guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));       
                     }
                 }
                 
