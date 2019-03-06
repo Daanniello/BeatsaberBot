@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot
@@ -28,6 +29,7 @@ namespace DiscordBeatSaberBot
 
             var DiscordId = message.Author.Id;
             var ScoresaberId = message.Content.Substring(24);
+            ScoresaberId = Regex.Replace(ScoresaberId, "[^0-9]", "");
 
             if (!Validation.IsDigitsOnly(ScoresaberId))
             {
@@ -239,6 +241,7 @@ namespace DiscordBeatSaberBot
                 if (!nameList.Contains(user.Username))
                 {
                     nameListNotLinked.Add(user.Username);
+                    //new ModerationHelper(_discordSocketClient, guildId).AddRole("Rankloos", user);
                 }
             }
             nameListNotLinked.Sort();
