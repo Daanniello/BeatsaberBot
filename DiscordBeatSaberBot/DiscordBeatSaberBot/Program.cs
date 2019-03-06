@@ -25,7 +25,9 @@ namespace DiscordBeatSaberBot
 
         public async Task MainAsync()
         {
+
             
+
             discordSocketClient = new DiscordSocketClient();
             await log("Logging into Discord");
             await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
@@ -48,8 +50,12 @@ namespace DiscordBeatSaberBot
         }
         private async void Init()
         {
+            await Task.Delay(5000);
             var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");
             await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
+            var danskbog = new Danskbog(discordSocketClient);
+
+
         }
 
         private Task log(string message)
