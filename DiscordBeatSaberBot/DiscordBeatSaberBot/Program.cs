@@ -111,7 +111,7 @@ namespace DiscordBeatSaberBot
                 {
                     if (role.Name == "Nieuwkomer")
                     {
-                        var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Rankloos");
+                        var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Koos Rankloos");
                         var deleteRole = guild.Roles.FirstOrDefault(x => x.Name == "Nieuwkomer");
                         await user.AddRoleAsync(addRole);
                         await user.RemoveRoleAsync(deleteRole);
@@ -308,6 +308,12 @@ namespace DiscordBeatSaberBot
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "NSFW");
                     await (user as IGuildUser).AddRoleAsync(role);
                 }
+                if (reaction.Emote.ToString() == "<:windows:553375150138195968>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "WMR");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
+                //{<:windows:553375150138195968>}
             }
             return Task.CompletedTask;
         }
@@ -425,6 +431,11 @@ namespace DiscordBeatSaberBot
                 if (reaction.Emote.ToString() == "❕")
                 {
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "NSFW");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
+                if (reaction.Emote.ToString() == "<:windows:553375150138195968>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "WMR");
                     await (user as IGuildUser).RemoveRoleAsync(role);
                 }
             }

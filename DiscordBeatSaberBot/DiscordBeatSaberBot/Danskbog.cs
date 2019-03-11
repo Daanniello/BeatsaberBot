@@ -61,43 +61,74 @@ namespace DiscordBeatSaberBot
 
         private async void TimerRunning(CancellationToken token)
         {
-            var watch = Stopwatch.StartNew();
-            while (!token.IsCancellationRequested)
+            try
             {
-                try
+                var watch = Stopwatch.StartNew();
+                while (!token.IsCancellationRequested)
                 {
-                    var sleep = GetNextMeal();
-                    Console.WriteLine("Waiting for next food time for danskbog <3...");
-                    await Task.Delay((int)(sleep.Item1.Negate().TotalMilliseconds) - (int)(watch.ElapsedMilliseconds % 1000), token);
-                    ISocketMessageChannel channel = (ISocketMessageChannel)discord.GetGuild(439514151040057344).GetChannel(552874394255360008);
-                    var guild = discord.GetGuild(439514151040057344);
-                    var channelid = guild.GetTextChannel(552874394255360008);
-                    await channelid.SendMessageAsync(scheduleMessage[sleep.Item2]);
+                    try
+                    {
+                        var sleep = GetNextMeal();
+                        Console.WriteLine("Waiting for next food time for danskbog <3...");
+                        await Task.Delay((int)(sleep.Item1.Negate().TotalMilliseconds) - (int)(watch.ElapsedMilliseconds % 1000), token);
+                        await Task.Delay(60000);
+                        ISocketMessageChannel channel = (ISocketMessageChannel)discord.GetGuild(439514151040057344).GetChannel(552874394255360008);
+                        var guild = discord.GetGuild(439514151040057344);
+                        var channelid = guild.GetTextChannel(552874394255360008);
+                        try
+                        {
+                            await channelid.SendMessageAsync(scheduleMessage[sleep.Item2]);
+                        }
+                        catch
+                        {
+                            await channelid.SendMessageAsync(scheduleMessage[0]);
+                        }
+                        
 
-                    Console.WriteLine("Food Time!");
-                }
-                catch (TaskCanceledException)
-                {
+                        Console.WriteLine("Food Time!");
 
+                    }
+                    catch (TaskCanceledException)
+                    {
+
+                    }
                 }
             }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            
         }
 
         private (TimeSpan, int) GetNextMeal()
         {
             var timeNow = new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Minute);
             TimeSpan temp = new TimeSpan();
+            TimeSpan temp2 = new TimeSpan(23,0,0);
             var count = 0;
+            Console.WriteLine(timeNow);
             foreach (var mealtime in schedule)
             {
                 var value = timeNow.Subtract(mealtime);
                 if (temp > value)
                 {
+                    Console.WriteLine(value);
                     return (value, count);
                 }
+                else
+                {
+                    if (temp2 > mealtime)
+                    {
+                        temp2 = value;
+                    }
+                  
+                }
+                
                 count++;
             }
-            return (new TimeSpan(), -1);
+            Console.WriteLine(temp2);
+            return (temp2, 0);
 
         }
     }
