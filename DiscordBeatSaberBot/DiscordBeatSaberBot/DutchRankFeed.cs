@@ -109,6 +109,10 @@ namespace DiscordBeatSaberBot
                 //OldList                NewList                       OldList            NewList
                 if (player.Value[1] != newRankList.Item4[counter])
                 {
+                    RankDownCheck(int.Parse(newRankList.Item2[counter]),
+                        oldRankList.FirstOrDefault(x => x.Value[1] == newRankList.Item4[counter]).Key,
+                        newRankList.Item4[counter].Replace("/u/", ""));
+
                     if (!oldCache.Contains(newRankList.Item4[counter]))
                     {
                         var imgUrl = newRankList.Item1[counter].Replace("\"", "");
@@ -207,7 +211,7 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        private static string GetRankUpNotify(int rank, int oldRank, ulong scoresaberId)
+        private static string GetRankUpNotify(int rank, int? oldRank, ulong scoresaberId)
         {
             string message = "";
             if (rank == 1 && oldRank > 1)
@@ -240,12 +244,45 @@ namespace DiscordBeatSaberBot
                 GiveRole(scoresaberId.ToString(), "Top 100");
                 message = "Een nieuwe top #100, het begin van een nieuwe pro";
             }
-            else if (rank <= 250 && oldRank > 250)
+            else if (rank <= 250 && oldRank == null)
             {
                 message = "Een nieuwe top #250, Welkom nieuwkomer ;O";
                 GiveRole(scoresaberId.ToString(), "Top 250");
             }
+
+            
+            //TODO if rank is bigger as 250
+
+
             return message;
+        }
+
+        public async static Task RankDownCheck(int rank, int oldRank, string scoresaberId)
+        {
+            if (rank > 1 && oldRank == 1 && rank <= 3)
+            {
+                GiveRole(scoresaberId.ToString(), "Top 3");
+            }
+            else if (rank > 3 && oldRank <= 3 && rank <= 10)
+            {
+                GiveRole(scoresaberId.ToString(), "Top 10");
+            }
+            else if (rank > 10 && oldRank <= 10 && rank <= 25)
+            {
+                GiveRole(scoresaberId.ToString(), "Top 25");
+            }
+            else if (rank > 25 && oldRank <= 25 && rank <= 50)
+            {
+                GiveRole(scoresaberId.ToString(), "Top 50");
+            }
+            else if (rank > 50 && oldRank <= 50 && rank <= 100)
+            {
+                GiveRole(scoresaberId.ToString(), "Top 100");
+            }
+            else if (rank > 100 && oldRank <= 100 && rank <= 250)
+            {
+                GiveRole(scoresaberId.ToString(), "Top 250");
+            }
         }
 
         public async static Task GiveRole(string scoresaberId, string roleName, DiscordSocketClient discord)
@@ -298,6 +335,7 @@ namespace DiscordBeatSaberBot
                 }
                 var role = guild.Roles.FirstOrDefault(x => x.Name == roleName);
                 await user.AddRoleAsync(role);
+                Console.WriteLine("User: " + user.Username + "| Added: " + role.Name);
             }
         }      
     }
