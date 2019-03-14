@@ -54,7 +54,7 @@ namespace DiscordBeatSaberBot
 
 
 
-            TimerRunning(new CancellationToken());
+            //TimerRunning(new CancellationToken());
 
 
         }
@@ -70,7 +70,14 @@ namespace DiscordBeatSaberBot
                     {
                         var sleep = GetNextMeal();
                         Console.WriteLine("Waiting for next food time for danskbog <3...");
-                        await Task.Delay((int)(sleep.Item1.Negate().TotalMilliseconds) - (int)(watch.ElapsedMilliseconds % 1000), token);
+                        try
+                        {
+                            await Task.Delay((int)(sleep.Item1.Negate().TotalMilliseconds) - (int)(watch.ElapsedMilliseconds % 1000), token);
+                        }
+                        catch
+                        {
+                            //await Task.Delay((int)(sleep.Item1.TotalMilliseconds) - (int)(watch.ElapsedMilliseconds % 1000), token);
+                        }
                         await Task.Delay(60000);
                         ISocketMessageChannel channel = (ISocketMessageChannel)discord.GetGuild(439514151040057344).GetChannel(552874394255360008);
                         var guild = discord.GetGuild(439514151040057344);
@@ -120,8 +127,9 @@ namespace DiscordBeatSaberBot
                 {
                     if (temp2 > mealtime)
                     {
-                        temp2 = value;
+                        return (timeNow.Subtract(new TimeSpan(24,0,0)).Add(new TimeSpan(10,0,0)), 0);
                     }
+                    
                   
                 }
                 
