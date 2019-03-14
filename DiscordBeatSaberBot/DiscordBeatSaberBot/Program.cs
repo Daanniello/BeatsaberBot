@@ -451,6 +451,11 @@ namespace DiscordBeatSaberBot
             //await s.AddVRroleMessage(null, true);
             if (message.Author.Username == "BeatSaber Bot") return Task.CompletedTask;
 
+            if (message.Author.Id == 546850627029041153 && message.Content.Contains("ur an idiot"))
+            {
+                await message.Channel.SendMessageAsync("hehe that is true <a:pika:555862077403824133>");
+            }
+
             await MessageDelete.DeleteMessageCheck(message);
             if (message.Content.Length <= 3)
             {

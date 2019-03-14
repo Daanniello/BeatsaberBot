@@ -477,6 +477,7 @@ namespace DiscordBeatSaberBot
             var songDifficulty = "";
             var songAuthor = "";
             var playerName = "";
+            var playerSongRank = "";
 
             var url = "https://scoresaber.com/u/" + playerId.Replace("/u/","") + "&sort=2";
             using (var client = new HttpClient())
@@ -495,13 +496,14 @@ namespace DiscordBeatSaberBot
                 songDifficulty = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").Descendants("span").First().InnerText;
                 songAuthor = doc.DocumentNode.SelectSingleNode("//span[@class='songTop mapper']").InnerText;
                 playerName = doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']").InnerText;
+                playerSongRank = doc.DocumentNode.SelectNodes("//th[@class='rank']")[1].InnerText;
             }
 
             var songDetails = playerTopSongName;
 
 
             var builder = new EmbedBuilder();
-            builder.AddInlineField(playerName, "name: " + songName + "\n" + "difficulty: " + songDifficulty + "\n" + "Author: " + songAuthor + "\n" + "pp from this song: " + playerTopSongPP + "\n" + playerTopSongAcc + "\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
+            builder.AddInlineField(playerName, "**name:** " + songName + "\n" + "**difficulty:** " + songDifficulty + "\n" + "**Author:** " + songAuthor + "\n" + "**pp from this song:** " + playerTopSongPP + "\n" + playerTopSongAcc + "\n" + "**Rank: " + playerSongRank +"**"+ "\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
             builder.WithImageUrl(playerTopSongImg);
             try
             {
