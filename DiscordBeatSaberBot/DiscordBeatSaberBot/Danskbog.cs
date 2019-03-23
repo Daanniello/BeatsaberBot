@@ -54,7 +54,7 @@ namespace DiscordBeatSaberBot
 
 
 
-            //TimerRunning(new CancellationToken());
+            TimerRunning(new CancellationToken());
 
 
         }
@@ -69,13 +69,14 @@ namespace DiscordBeatSaberBot
                     try
                     {
                         var sleep = GetNextMeal();
-                        Console.WriteLine("Waiting for next food time for danskbog <3...");
+                        Console.WriteLine("Waiting for next food time for danskbog <3..." + sleep);
                         try
                         {
                             await Task.Delay((int)(sleep.Item1.Negate().TotalMilliseconds) - (int)(watch.ElapsedMilliseconds % 1000), token);
                         }
                         catch
                         {
+                            await Task.Delay((int)(sleep.Item1.TotalMilliseconds) - (int)(watch.ElapsedMilliseconds % 1000), token);
                             //await Task.Delay((int)(sleep.Item1.TotalMilliseconds) - (int)(watch.ElapsedMilliseconds % 1000), token);
                         }
                         await Task.Delay(60000);
@@ -120,14 +121,22 @@ namespace DiscordBeatSaberBot
                 var value = timeNow.Subtract(mealtime);
                 if (temp > value)
                 {
-                    Console.WriteLine(value);
-                    return (value, count);
+                    if (timeNow > new TimeSpan(23,0,0))
+                    {
+
+                    }
+                    else
+                    {
+                        Console.WriteLine(value);
+                        return (value, count);
+                    }
+                    
                 }
                 else
                 {
-                    if (temp2 > mealtime)
+                    if (temp2 < timeNow)
                     {
-                        return (timeNow.Subtract(new TimeSpan(24,0,0)).Add(new TimeSpan(10,0,0)), 0);
+                        return (timeNow.Subtract(new TimeSpan(23,0,0)).Add(new TimeSpan(10,0,0)), 0);
                     }
                     
                   

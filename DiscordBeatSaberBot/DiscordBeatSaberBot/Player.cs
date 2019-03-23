@@ -25,6 +25,8 @@ namespace DiscordBeatSaberBot
 
         public string steamLink { get; set; }
 
+        //public string scoresaberLink { get; set; }
+
         public string imgLink { get; set; }
 
         public Player Next { get; set; }

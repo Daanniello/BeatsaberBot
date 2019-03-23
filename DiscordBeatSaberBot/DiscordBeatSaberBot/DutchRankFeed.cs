@@ -326,13 +326,17 @@ namespace DiscordBeatSaberBot
                 var guild = _discord.Guilds.FirstOrDefault(x => x.Id == guild_id);
                 var user = guild.GetUser(userDiscordId);
 
-                foreach (var userRole in user.Roles)
+                if (user.Id != 221373638979485696)
                 {
-                    if (rolenames.Contains(userRole.Name))
+                    foreach (var userRole in user.Roles)
                     {
-                        await user.RemoveRoleAsync(userRole);
+                        if (rolenames.Contains(userRole.Name))
+                        {
+                            await user.RemoveRoleAsync(userRole);
+                        }
                     }
                 }
+                
                 var role = guild.Roles.FirstOrDefault(x => x.Name == roleName);
                 await user.AddRoleAsync(role);
                 Console.WriteLine("User: " + user.Username + "| Added: " + role.Name);

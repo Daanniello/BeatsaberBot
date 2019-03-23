@@ -933,6 +933,7 @@ namespace DiscordBeatSaberBot
             var url = "https://scoresaber.com/global?search=" + playerName.Replace(" ", "+");
 
 
+
             var counter = 0;
             foreach (var id in ids)
             {
@@ -971,6 +972,7 @@ namespace DiscordBeatSaberBot
                 player.countryIcon = ":flag_" + player.countryName + ":";
                 player.imgLink = playerImg.First().First();
                 player.name = player.name;
+                //player.scoresaberLink = url;
 
                 var nextAndBefore = await RankedNeighbours(playerName, player.rank, 1);
                 var playerNext = new Player(nextAndBefore.Item1)

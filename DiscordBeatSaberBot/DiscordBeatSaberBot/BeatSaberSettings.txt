@@ -1,1 +1,1 @@
-{"gamePlaying":"Beat Saber <prefix: !bs>"}
+{"gamePlaying":"Beat saber w/ Servant"}

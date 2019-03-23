@@ -450,8 +450,13 @@ namespace DiscordBeatSaberBot
             //Server s = new Server(discordSocketClient, "");
             //await s.AddVRroleMessage(null, true);
             if (message.Author.Username == "BeatSaber Bot") return Task.CompletedTask;
-
-            if (message.Author.Id == 546850627029041153 && message.Content.Contains("ur an idiot"))
+            if (message.Author.Id != 546850627029041153 && message.Content.Contains("ur an idiot"))
+            {
+                var user = await message.Channel.GetUserAsync(138439306774577152);
+                var chn = await user.GetOrCreateDMChannelAsync();
+                await chn.SendMessageAsync(message.Author.Username + " was it!");
+            }
+                if (message.Author.Id == 546850627029041153 && message.Content.Contains("ur an idiot"))
             {
                 await message.Channel.SendMessageAsync("hehe that is true <a:pika:555862077403824133>");
             }
@@ -522,7 +527,7 @@ namespace DiscordBeatSaberBot
                         var r = new RoleAssignment(discordSocketClient);
                         if (message.Content.Contains("@"))
                         {
-                            var discordId = message.Content.Substring(11).Replace("<","").Replace(">", "").Replace("@", "");
+                            var discordId = message.Content.Substring(11).Replace("<","").Replace(">", "").Replace("@", "").Replace("!","");
                             if (r.CheckIfDiscordIdIsLinked(discordId))
                             {
 
