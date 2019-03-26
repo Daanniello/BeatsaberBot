@@ -112,14 +112,20 @@ namespace DiscordBeatSaberBot
 
                 {
                     builder.ThumbnailUrl = player.imgLink;
-                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Steam: " + player.steamLink + "\n\n" + "Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore);
+                    builder.Title = "**" + playerName.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
+                    builder.Url = "https://scoresaber.com" + playerId.First();
+                    builder.AddInlineField("`ID: "+playerId.First().Replace("/u/", "") +"`","```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "``` \n [Click here for steam link](" + player.steamLink + ")\n\n");
+ 
                 }
                 else
                 {
-                    builder.AddInlineField(playerName, "Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Country: " + player.countryName + " :flag_" + countryNameSmall.ToLower() + ":" + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Oculus user" + "\n\n" + "Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore);
+                    builder.ThumbnailUrl = "https://scoresaber.com/imports/images/oculus.png";
+                    builder.Title = "**" + playerName.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
+                    builder.Url = "https://scoresaber.com" + playerId.First();
+                    builder.AddInlineField("`ID: " + playerId.First().Replace("/u/", "") + "`", "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "```");
                 }
 
-           
+
                 //var rankValue = player.rank.Split('#')[1].Replace(",", "");
                 var rankInt = player.rank;
                 var rankColor = Rank.GetRankColor(rankInt);

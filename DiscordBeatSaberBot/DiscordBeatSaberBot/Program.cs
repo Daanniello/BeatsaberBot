@@ -507,7 +507,7 @@ namespace DiscordBeatSaberBot
                             Timeout = Configuration.TypingTimeOut
                         });
                         var r = new RoleAssignment(discordSocketClient);
-                        if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 14)
+                        if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Trim().Count() == 11)
                         {
                             var scoresaberId = r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
                             await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetBestSongWithId(scoresaberId));
