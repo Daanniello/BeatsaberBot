@@ -43,6 +43,7 @@ namespace DiscordBeatSaberBot
             discordSocketClient.ReactionAdded += ReactionAdded;
             discordSocketClient.ReactionRemoved += ReactionRemoved;
             discordSocketClient.UserJoined += OnUserJoined;
+            //discordSocketClient.GuildMemberUpdated += OnUserUpdated;
 
             Init();
 
@@ -62,6 +63,22 @@ namespace DiscordBeatSaberBot
         {
             Console.WriteLine(message);
             return Task.CompletedTask;
+        }
+
+        private async Task OnUserUpdated(SocketGuildUser userOld, SocketGuildUser userNew)
+        {
+            if (userNew.Id == 138439306774577152)
+            {
+
+            }
+            if (userOld.Nickname != userNew.Nickname)
+            {
+                var userInfo = new RoleAssignment(discordSocketClient);
+                var scoresaberId = userInfo.GetScoresaberIdWithDiscordId(userNew.Id.ToString());
+                var player = await BeatSaberInfoExtension.GetPlayerInfoWithScoresaberId(scoresaberId);
+                await userNew.ModifyAsync(x => x.Nickname = "[" + player.countryRank + "] " + userNew.Nickname);
+
+            }
         }
 
         private async Task OnUserJoined(SocketGuildUser guildUser)
