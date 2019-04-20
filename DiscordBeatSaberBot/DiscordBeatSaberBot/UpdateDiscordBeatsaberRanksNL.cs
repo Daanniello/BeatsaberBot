@@ -42,43 +42,48 @@ namespace DiscordBeatSaberBot
                     var rankUnfixed = doc.DocumentNode.SelectSingleNode("//a[@href='/global?country=nl']").InnerText;
                     rank = int.Parse(rankUnfixed.Replace("(", "").Replace(")", "").Replace("#", "").Replace(",", "").Trim());
                 }
+                try
+                {
+                    if (rank == 1)
+                    {
+                        await DutchRankFeed.GiveRole(account[1], "Nummer 1", discord);
 
-                if (rank == 1)
-                {
-                    await DutchRankFeed.GiveRole(account[1], "Nummer 1", discord);
-             
-                }
-                else if (rank <= 3)
-                {
-                    await DutchRankFeed.GiveRole(account[1], "Top 3", discord);
-                 
-                }
-                else if (rank <= 10)
-                {
-                    await DutchRankFeed.GiveRole(account[1], "Top 10", discord);
-                 
-                }
-                else if (rank <= 25)
-                {
-                    await DutchRankFeed.GiveRole(account[1], "Top 25", discord);
-                  
-                }
-                else if (rank <= 50)
-                {
-                    await DutchRankFeed.GiveRole(account[1], "Top 50", discord);
-                 
-                }
-                else if (rank <= 100)
-                {
-                    await DutchRankFeed.GiveRole(account[1], "Top 100", discord);
-              
-                }
-                else if (rank <= 250)
-                {
+                    }
+                    else if (rank <= 3)
+                    {
+                        await DutchRankFeed.GiveRole(account[1], "Top 3", discord);
 
-                    await DutchRankFeed.GiveRole(account[1], "Top 250", discord);
-                }
+                    }
+                    else if (rank <= 10)
+                    {
+                        await DutchRankFeed.GiveRole(account[1], "Top 10", discord);
 
+                    }
+                    else if (rank <= 25)
+                    {
+                        await DutchRankFeed.GiveRole(account[1], "Top 25", discord);
+
+                    }
+                    else if (rank <= 50)
+                    {
+                        await DutchRankFeed.GiveRole(account[1], "Top 50", discord);
+
+                    }
+                    else if (rank <= 100)
+                    {
+                        await DutchRankFeed.GiveRole(account[1], "Top 100", discord);
+
+                    }
+                    else if (rank <= 250)
+                    {
+
+                        await DutchRankFeed.GiveRole(account[1], "Top 250", discord);
+                    }
+                }
+                catch
+                {
+                    Console.WriteLine("Delete " + account[1] + "He left the discord");
+                }
 
             }
 

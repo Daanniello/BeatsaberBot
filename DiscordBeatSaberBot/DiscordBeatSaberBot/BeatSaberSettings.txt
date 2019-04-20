@@ -1,1 +1,1 @@
-{"gamePlaying":"Beat Saber /w Servant"}
+{"gamePlaying":"Beat Saber"}

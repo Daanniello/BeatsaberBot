@@ -19,20 +19,20 @@ namespace DiscordBeatSaberBot
         {
             this.discord = discord;
             timeNow = new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Minute);
-            var ontbijt = new TimeSpan(10, 00, 00);
-            var middag = new TimeSpan(12, 00, 00);
+            var ontbijt = new TimeSpan(11, 00, 00);
+            var middag = new TimeSpan(13, 00, 00);
             var voorAvond = new TimeSpan(15, 00, 00);
             var avond = new TimeSpan(19, 00, 00);
-            var nacht = new TimeSpan(21, 00, 00);
-            var slapen = new TimeSpan(23, 00, 00);
+            var nacht = new TimeSpan(22, 00, 00);
+            var slapen = new TimeSpan(01, 00, 00);
 
             var mention = "<@221373638979485696> <@138439306774577152>";
-            var ontbijtMessage = "**10:00** - Goeiemorgen <3, Je moet ontbijten ^^ Eet smakelijk " + mention;
-            var middagMessage = "**12:00** - Woaa het is middag, vergeet niet een tosti te nemen en wat te drinken " + mention;
+            var ontbijtMessage = "**11:00** - Gudmweningn <3, vergeet niet iets lichts te eten. Is goed voor je energie voor het begin van de dag =3 " + mention;
+            var middagMessage = "**13:00** - Hii dansk. hope you are doing ok ^^, vergeet je drankje niet en maybe een kleine snack" + mention;
             var voorAvondMessage = "**15:00** - -w- heheh middagsnack tijd!! neem een tosti en wat fruit :3 vergeet je drankje niet! " + mention;
-            var avondMessage = "**19:00** - nomnomnom avond eten =3 eetsmakelijk " + mention;
-            var nachtMessage = "**21:00** - nog ff goed eten voor je gaat slapen ^^ neem een tosti en vergeet je fruit/drankje niet :3 " + mention;
-            var slapenMessage = "**23:00** - nacht toetje hehehe ;3 en noten woahh... slaaplekker alvast <3 " + mention;
+            var avondMessage = "**19:00** - nomnomnom avond eten =3 maak er wat lekkers van eetsmakelijk. en je drankje niet vergeten" + mention;
+            var nachtMessage = "**22:00** - Je laatste drankje van de dag ^^ " + mention;
+            var slapenMessage = "**01:00** - nacht voedsel hehehe ;3 en noten woahh... slaaplekker alvast <3 " + mention;
 
 
             schedule = new List<TimeSpan>();
@@ -40,14 +40,14 @@ namespace DiscordBeatSaberBot
 
             schedule.Add(ontbijt);
             schedule.Add(middag);
-            schedule.Add(voorAvond);
+            //schedule.Add(voorAvond);
             schedule.Add(avond);
             schedule.Add(nacht);
             schedule.Add(slapen);
 
             scheduleMessage.Add(ontbijtMessage);
             scheduleMessage.Add(middagMessage);
-            scheduleMessage.Add(voorAvondMessage);
+            //scheduleMessage.Add(voorAvondMessage);
             scheduleMessage.Add(avondMessage);
             scheduleMessage.Add(nachtMessage);
             scheduleMessage.Add(slapenMessage);
@@ -113,7 +113,7 @@ namespace DiscordBeatSaberBot
         {
             var timeNow = new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Minute);
             TimeSpan temp = new TimeSpan();
-            TimeSpan temp2 = new TimeSpan(23,0,0);
+            TimeSpan temp2 = new TimeSpan(22,0,0);
             var count = 0;
             Console.WriteLine(timeNow);
             foreach (var mealtime in schedule)
@@ -121,7 +121,7 @@ namespace DiscordBeatSaberBot
                 var value = timeNow.Subtract(mealtime);
                 if (temp > value)
                 {
-                    if (timeNow > new TimeSpan(23,0,0))
+                    if (timeNow > new TimeSpan(22,0,0))
                     {
 
                     }
@@ -136,7 +136,7 @@ namespace DiscordBeatSaberBot
                 {
                     if (temp2 < timeNow)
                     {
-                        return (timeNow.Subtract(new TimeSpan(23,0,0)).Add(new TimeSpan(10,0,0)), 0);
+                        return (timeNow.Subtract(new TimeSpan(22,0,0)).Add(new TimeSpan(3,0,0)), 0);
                     }
                     
                   

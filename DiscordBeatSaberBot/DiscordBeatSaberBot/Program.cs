@@ -56,7 +56,6 @@ namespace DiscordBeatSaberBot
             await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
             var danskbog = new Danskbog(discordSocketClient);
 
-
         }
 
         private Task log(string message)
@@ -67,18 +66,18 @@ namespace DiscordBeatSaberBot
 
         private async Task OnUserUpdated(SocketGuildUser userOld, SocketGuildUser userNew)
         {
-            if (userNew.Id == 138439306774577152)
-            {
+            //if (userNew.Id == 138439306774577152)
+            //{
 
-            }
-            if (userOld.Nickname != userNew.Nickname)
-            {
-                var userInfo = new RoleAssignment(discordSocketClient);
-                var scoresaberId = userInfo.GetScoresaberIdWithDiscordId(userNew.Id.ToString());
-                var player = await BeatSaberInfoExtension.GetPlayerInfoWithScoresaberId(scoresaberId);
-                await userNew.ModifyAsync(x => x.Nickname = "[" + player.countryRank + "] " + userNew.Nickname);
+            //}
+            //if (userOld.Nickname != userNew.Nickname)
+            //{
+            //    var userInfo = new RoleAssignment(discordSocketClient);
+            //    var scoresaberId = userInfo.GetScoresaberIdWithDiscordId(userNew.Id.ToString());
+            //    var player = await BeatSaberInfoExtension.GetPlayerInfoWithScoresaberId(scoresaberId);
+            //    await userNew.ModifyAsync(x => x.Nickname = "[" + player.countryRank + "] " + userNew.Nickname);
 
-            }
+            //}
         }
 
         private async Task OnUserJoined(SocketGuildUser guildUser)
@@ -161,15 +160,28 @@ namespace DiscordBeatSaberBot
                     var usedEmbed = casted.Embeds.First();
                     if (reaction.Emote.Name == "⛔")
                     {
+                        var deniedEmbed = new EmbedBuilder();
                         //need staff check
-                        
-                        var deniedEmbed = new EmbedBuilder
+                        try
                         {
-                            Title = usedEmbed.Title,
-                            Description = usedEmbed.Description.Replace("Waiting for approval", "Denied"),
-                            ThumbnailUrl = usedEmbed.Thumbnail.Value.Url,
-                            Color = Color.Red
-                        };
+                            deniedEmbed = new EmbedBuilder
+                            {
+                                Title = usedEmbed.Title,
+                                Description = usedEmbed.Description.Replace("Waiting for approval", "Denied"),
+                                ThumbnailUrl = usedEmbed.Thumbnail.Value.Url,
+                                Color = Color.Red
+                            };
+                        }
+                        catch
+                        {
+                            deniedEmbed = new EmbedBuilder
+                            {
+                                Title = usedEmbed.Title,
+                                Description = usedEmbed.Description.Replace("Waiting for approval", "Denied"),
+                                Color = Color.Red
+                            };
+                        }
+                        
                         await casted.ModifyAsync(msg => msg.Embed = deniedEmbed.Build());
                         await casted.RemoveAllReactionsAsync();
 
