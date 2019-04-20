@@ -47,7 +47,7 @@ namespace DiscordBeatSaberBot
                     var t = new string[]{ "0", DateTime.Now.ToString() };
                     data = new Dictionary<ulong, string[]>();
                     data.Add(123456, t);
-                }
+                } 
 
                 var newData = new Dictionary<ulong, string[]>();
                 foreach (var discordId in data)
@@ -153,7 +153,7 @@ namespace DiscordBeatSaberBot
 
         }
 
-        public Embed GetTop25BeatSaberHours(SocketMessage message)
+        public Embed GetTop25BeatSaberHours(SocketMessage message, DiscordSocketClient discord)
         {
             var channel = message.Channel;
             var topdata = getData("../../../DiscordIDBeatsaberHourCounter.txt");
@@ -164,11 +164,14 @@ namespace DiscordBeatSaberBot
                 Footer = new EmbedFooterBuilder { Text = "Start Date: " + topdata.GetValueOrDefault((ulong)0000)[1]}
             };
             var counter = 0;
-            var sortedList = topdata.OrderByDescending(key => key.Value[0]);
+            topdata.Remove(0000);
+            var sortedList = topdata.OrderByDescending(key => int.Parse(key.Value[0]));
+            
             foreach (var top in sortedList)
             {
                 if (counter >= 25 || top.Value[0] == "Start date") continue;
-                embedBuilder.Description += "Discord ID: " + top.Key + "    Minutes played: " + top.Value[0] + "\n";
+                var name = discord.GetUser(top.Key).Username;
+                embedBuilder.Description += "Discord ID: " + top.Key + " Username: " + name + "    Minutes played: " + top.Value[0] + "\n";
                 counter++;
             }
 

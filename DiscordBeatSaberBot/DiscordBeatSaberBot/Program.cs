@@ -728,7 +728,7 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        await message.Channel.SendMessageAsync("", false, new BeatSaberHourCounter().GetTop25BeatSaberHours(message));
+                        await message.Channel.SendMessageAsync("", false, new BeatSaberHourCounter().GetTop25BeatSaberHours(message, discordSocketClient));
                     }
                     else if (message.Content.Contains(" addRankFeed"))
                     {
