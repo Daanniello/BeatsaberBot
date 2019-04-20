@@ -2038,11 +2038,10 @@
       ]
     },
     "Microsoft.NETCore.App/2.0.0": {
-      "sha512": "8Lrz5RgmfIUMtpTmGG1Z+nVlCr14bFco/aQdiNYfb7uys37vQ6dVtds9xPIFANVyf6HFePhD9nGmqFcfv5eKMQ==",
+      "sha512": "/mzXF+UtZef+VpzzN88EpvFq5U6z4rj54ZMq/J968H6pcvyLOmcupmTRpJ3CJm8ILoCGh9WI7qpDdiKtuzswrQ==",
       "type": "package",
       "path": "microsoft.netcore.app/2.0.0",
       "files": [
-        ".signature.p7s",
         "LICENSE.TXT",
         "Microsoft.NETCore.App.versions.txt",
         "THIRD-PARTY-NOTICES.TXT",
@@ -2317,11 +2316,10 @@
       ]
     },
     "Microsoft.NETCore.DotNetAppHost/2.0.0": {
-      "sha512": "dYQNVWNBsO9LldqAyJTt/wYUq2BScXq3ENBaNUjELS3sT53mwrgyPpmoLHsE7H10RzYOHEl5G0sg/jpZGlIAzA==",
+      "sha512": "L4GGkcI/Mxl8PKLRpFdGmLb5oI8sGIR05bDTGkzCoamAjdUl1Zhkov2swjEsZvKYT8kkdiz39LtwyGYuCJxm1A==",
       "type": "package",
       "path": "microsoft.netcore.dotnetapphost/2.0.0",
       "files": [
-        ".signature.p7s",
         "LICENSE.TXT",
         "THIRD-PARTY-NOTICES.TXT",
         "microsoft.netcore.dotnetapphost.2.0.0.nupkg.sha512",
@@ -2330,11 +2328,10 @@
       ]
     },
     "Microsoft.NETCore.DotNetHostPolicy/2.0.0": {
-      "sha512": "uYoVFwvMIp9KtOjW6huBedoBP+50Pny0aIrmJGPoaHJ9anAtrvCjS+iKFR5MIS8amJRKsLc3YEtpT/AYfYmIdA==",
+      "sha512": "rm7mMn0A93fwyAwVhbyOCcPuu2hZNL0A0dAur9sNG9pEkONPfCEQeF7m2mC8KpqZO0Ol6tpV5J0AF3HTXT3GXA==",
       "type": "package",
       "path": "microsoft.netcore.dotnethostpolicy/2.0.0",
       "files": [
-        ".signature.p7s",
         "LICENSE.TXT",
         "THIRD-PARTY-NOTICES.TXT",
         "microsoft.netcore.dotnethostpolicy.2.0.0.nupkg.sha512",
@@ -2343,11 +2340,10 @@
       ]
     },
     "Microsoft.NETCore.DotNetHostResolver/2.0.0": {
-      "sha512": "HYXxywd3EaAw1M2K5ox6oUu0NgG90oDIpyq70IBvOf2keNuMJWYTWZUAoTlpv8E0Ks09DA+gczoA64tCdII5Xw==",
+      "sha512": "uBbjpeSrwsaTCADZCzRk+3aBzNnMqkC4zftJWBsL+Zk+8u+W+/lMb2thM5Y4hiVrv1YQg9t6dKldXzOKkY+pQw==",
       "type": "package",
       "path": "microsoft.netcore.dotnethostresolver/2.0.0",
       "files": [
-        ".signature.p7s",
         "LICENSE.TXT",
         "THIRD-PARTY-NOTICES.TXT",
         "microsoft.netcore.dotnethostresolver.2.0.0.nupkg.sha512",
@@ -2356,10 +2352,12 @@
       ]
     },
     "Microsoft.NETCore.Platforms/2.0.0": {
-      "sha512": "VdLJOCXhZaEMY7Hm2GKiULmn7IEPFE4XC5LPSfBVCUIA8YLZVh846gtfBJalsPQF2PlzdD7ecX7DZEulJ402ZQ==",
+      "sha512": "5BdAWDgMNwf90L0J+C/eh6kfHDa37ViL1cBL1nv5zPA4TB2cGV51YiQyvzCEy9DBE0LwwMI4+PkUpIekKyocSA==",
       "type": "package",
       "path": "microsoft.netcore.platforms/2.0.0",
       "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
         "LICENSE.TXT",
         "THIRD-PARTY-NOTICES.TXT",
         "lib/netstandard1.0/_._",
@@ -2420,11 +2418,10 @@
       ]
     },
     "NETStandard.Library/2.0.0": {
-      "sha512": "sn4JwjEN5iNfqc0bd0Qje5oBZBB9wyuNn4GkQvEzfKVnZ3QH0HHoN9exxydlJGptiCMVdAZu7At9TNj0r8Z0yg==",
+      "sha512": "7jnbRU+L08FXKMxqUflxEXtVymWvNOrS8yHgu9s6EM8Anr6T/wIX4nZ08j/u3Asz+tCufp3YVwFSEvFTPYmBPA==",
       "type": "package",
       "path": "netstandard.library/2.0.0",
       "files": [
-        ".signature.p7s",
         "LICENSE.TXT",
         "THIRD-PARTY-NOTICES.TXT",
         "build/NETStandard.Library.targets",
@@ -3518,10 +3515,12 @@
       ]
     },
     "System.Interactive.Async/3.1.1": {
-      "sha512": "hZccYiIE5RS1/J9Tb/BNtosAGVggdlsJm4Ojdu+gDV0p4AIi+LUfUogMKkRacljQEJd2AG6vYzvcjhQFkqoZmw==",
+      "sha512": "x9y2omkjEudKbIVuhUzeWw7ZlouEzpk4W98woCEq1lq9gJxERBKRKDTHF5JPEws9E0f4/Uei/2vLxEy1IrfmMg==",
       "type": "package",
       "path": "system.interactive.async/3.1.1",
       "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
         "lib/net45/System.Interactive.Async.dll",
         "lib/net45/System.Interactive.Async.xml",
         "lib/net46/System.Interactive.Async.dll",
@@ -6117,23 +6116,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\DaanS\\.nuget\\packages\\": {},
+    "C:\\Users\\Ron\\.nuget\\packages\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\DaanS\\Documents\\GitHub\\BeatsaberBot\\DiscordBeatSaberBot\\DiscordBeatSaberBot\\DiscordBeatSaberBot.csproj",
+      "projectUniqueName": "C:\\Users\\Ron\\Documents\\GitHub\\BeatsaberBot\\DiscordBeatSaberBot\\DiscordBeatSaberBot\\DiscordBeatSaberBot.csproj",
       "projectName": "DiscordBeatSaberBot",
-      "projectPath": "C:\\Users\\DaanS\\Documents\\GitHub\\BeatsaberBot\\DiscordBeatSaberBot\\DiscordBeatSaberBot\\DiscordBeatSaberBot.csproj",
-      "packagesPath": "C:\\Users\\DaanS\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\DaanS\\Documents\\GitHub\\BeatsaberBot\\DiscordBeatSaberBot\\DiscordBeatSaberBot\\obj\\",
+      "projectPath": "C:\\Users\\Ron\\Documents\\GitHub\\BeatsaberBot\\DiscordBeatSaberBot\\DiscordBeatSaberBot\\DiscordBeatSaberBot.csproj",
+      "packagesPath": "C:\\Users\\Ron\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Ron\\Documents\\GitHub\\BeatsaberBot\\DiscordBeatSaberBot\\DiscordBeatSaberBot\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\DaanS\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Ron\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
