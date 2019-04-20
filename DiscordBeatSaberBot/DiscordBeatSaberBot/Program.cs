@@ -43,7 +43,7 @@ namespace DiscordBeatSaberBot
             discordSocketClient.ReactionAdded += ReactionAdded;
             discordSocketClient.ReactionRemoved += ReactionRemoved;
             discordSocketClient.UserJoined += OnUserJoined;
-            //discordSocketClient.GuildMemberUpdated += OnUserUpdated;
+            discordSocketClient.GuildMemberUpdated += OnUserUpdated;
 
             Init();
 
@@ -66,6 +66,11 @@ namespace DiscordBeatSaberBot
 
         private async Task OnUserUpdated(SocketGuildUser userOld, SocketGuildUser userNew)
         {
+            var HourCounter = new BeatSaberHourCounter();
+            //HourCounter.InsertAndResetAllDutchMembers(discordSocketClient);
+            HourCounter.TurnOnCounterForPlayer(userOld, userNew);
+
+
             //if (userNew.Id == 138439306774577152)
             //{
 
@@ -664,6 +669,15 @@ namespace DiscordBeatSaberBot
                         });
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.PlayerComparer(message.Content.Substring(12)));
                     }
+                    else if (message.Content.Contains(" resetdutchhours"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        new BeatSaberHourCounter().InsertAndResetAllDutchMembers(discordSocketClient);
+                        await message.Channel.SendMessageAsync("Reset completed");
+                    }
                     else if (message.Content.Contains(" requestverification"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions
@@ -707,6 +721,14 @@ namespace DiscordBeatSaberBot
                             Timeout = Configuration.TypingTimeOut
                         });
                         await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Mods Installer", "https://github.com/Umbranoxio/BeatSaberModInstaller/releases/download/2.1.6/BeatSaberModManager.exe", null, null));
+                    }
+                    else if (message.Content.Contains(" topdutchhours"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        await message.Channel.SendMessageAsync("", false, new BeatSaberHourCounter().GetTop25BeatSaberHours(message));
                     }
                     else if (message.Content.Contains(" addRankFeed"))
                     {
