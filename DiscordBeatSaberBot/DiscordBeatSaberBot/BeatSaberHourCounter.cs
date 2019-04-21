@@ -55,7 +55,7 @@ namespace DiscordBeatSaberBot
                     if (discordId.Key == userOld.Id)
                     {
                         var dateTime = discordId.Value[1];
-                        var totalHoursnew = DateTime.Now - DateTime.ParseExact(dateTime, "yyyy-MM-dd hh:mm:ss.fff", CultureInfo.InvariantCulture);
+                        var totalHoursnew = DateTime.Now - DateTime.Parse(dateTime);
 
                         var currentHours = int.Parse(discordId.Value[0]);
                         var totalHours = (int) totalHoursnew.TotalMinutes + currentHours;
@@ -91,7 +91,7 @@ namespace DiscordBeatSaberBot
                         var hourCount = discordId.Value[0];
                         var dateTime = DateTime.Now;
 
-                        var value = new string[] { hourCount, dateTime.ToString("yyyy-MM-dd hh:mm:ss.fff") };
+                        var value = new string[] { hourCount, dateTime.ToString() };
 
                         newData.Add(discordId.Key, value);
 
@@ -143,7 +143,7 @@ namespace DiscordBeatSaberBot
                 newList.Add(user.Id, new string[] { "0", "" });
             }
 
-            newList.Add(0000, new string[] { "Start date", DateTime.Now.ToShortDateString()});
+            newList.Add(0000, new string[] { "Start date", DateTime.Now.ToString()});
 
             using (var file = File.CreateText("../../../DiscordIDBeatsaberHourCounter.txt"))
             {
@@ -161,6 +161,7 @@ namespace DiscordBeatSaberBot
             var embedBuilder = new EmbedBuilder
             {
                 Title = "Top 25 Dutch Beat saber hours",
+                Description = "***Dit zijn de top25 makkers met de meeste uren in beat saber sinds " + topdata.GetValueOrDefault((ulong)0000)[1] + "\n De gene die na een week de meeste uren heeft krijgt de VERSLAAFD role*** \n\n **Naam--------------------Minuten** \n",
                 Footer = new EmbedFooterBuilder { Text = "Start Date: " + topdata.GetValueOrDefault((ulong)0000)[1]}
             };
             var counter = 0;
@@ -169,9 +170,9 @@ namespace DiscordBeatSaberBot
             
             foreach (var top in sortedList)
             {
-                if (counter >= 25 || top.Value[0] == "Start date") continue;
+                if (counter >= 25 || top.Value[0] == "Start date" || top.Value[0] == "0") continue;
                 var name = discord.GetUser(top.Key).Username;
-                embedBuilder.Description += "Discord ID: " + top.Key + " Username: " + name + "    Minutes played: " + top.Value[0] + "\n";
+                embedBuilder.Description += name + "    : " + top.Value[0] + "\n";
                 counter++;
             }
 
