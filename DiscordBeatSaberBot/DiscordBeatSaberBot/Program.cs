@@ -54,7 +54,7 @@ namespace DiscordBeatSaberBot
             await Task.Delay(5000);
             var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");
             await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
-            var danskbog = new Danskbog(discordSocketClient);
+            //var danskbog = new Danskbog(discordSocketClient);
 
         }
 

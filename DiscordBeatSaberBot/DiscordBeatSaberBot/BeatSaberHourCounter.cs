@@ -170,10 +170,18 @@ namespace DiscordBeatSaberBot
             
             foreach (var top in sortedList)
             {
-                if (counter >= 25 || top.Value[0] == "Start date" || top.Value[0] == "0") continue;
-                var name = discord.GetUser(top.Key).Username;
-                embedBuilder.Description += name + "    : " + top.Value[0] + "\n";
-                counter++;
+                try
+                {
+                    if (counter >= 25 || top.Value[0] == "Start date" || top.Value[0] == "0") continue;
+                    var name = discord.GetUser(top.Key).Username;
+                    embedBuilder.Description += name + "    : " + top.Value[0] + "\n";
+                    counter++;
+                }
+                catch
+                {
+                    Console.WriteLine("Error User" + top.Key + " not found!");
+                }
+                
             }
 
             return embedBuilder.Build();
