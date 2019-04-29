@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -40,14 +41,15 @@ namespace DiscordBeatSaberBot
                 userNewName = userNew.Game.Value.ToString();
             }
 
-            if (userOldName == "Beat Saber" && userNewName != "Beat Saber") //Finished Gaming
+            if (userOldName == "Beat Saber" && userNewName != "Beat Saber" || IsStreamingWithBeatsaber(userNew) == false && IsStreamingWithBeatsaber(userOld) ) //Finished Gaming
             {
                 var data = getData("../../../DiscordIDBeatsaberHourCounter.txt");
-                if (data.Count == 0) { // first input
-                    var t = new string[]{ "0", DateTime.Now.ToString() };
+                if (data.Count == 0)
+                { // first input
+                    var t = new string[] { "0", DateTime.Now.ToString() };
                     data = new Dictionary<ulong, string[]>();
                     data.Add(123456, t);
-                } 
+                }
 
                 var newData = new Dictionary<ulong, string[]>();
                 foreach (var discordId in data)
@@ -58,9 +60,9 @@ namespace DiscordBeatSaberBot
                         var totalHoursnew = DateTime.Now - DateTime.Parse(dateTime);
 
                         var currentHours = int.Parse(discordId.Value[0]);
-                        var totalHours = (int) totalHoursnew.TotalMinutes + currentHours;
+                        var totalHours = (int)totalHoursnew.TotalMinutes + currentHours;
 
-                        var value = new string[] { totalHours.ToString(), ""};
+                        var value = new string[] { totalHours.ToString(), "" };
 
                         newData.Add(discordId.Key, value);
                     }
@@ -74,7 +76,7 @@ namespace DiscordBeatSaberBot
                 setData("../../../DiscordIDBeatsaberHourCounter.txt", newData);
             }
 
-            if (userOldName != "Beat Saber" && userNewName == "Beat Saber") //Starting Gaming
+            if (userOldName != "Beat Saber" && userNewName == "Beat Saber" || IsStreamingWithBeatsaber(userNew)) //Starting Gaming
             {
                 var data = getData("../../../DiscordIDBeatsaberHourCounter.txt");
                 if (data.Count == 0)
@@ -100,7 +102,7 @@ namespace DiscordBeatSaberBot
                     {
                         newData.Add(discordId.Key, discordId.Value);
                     }
-                    
+
                 }
 
                 setData("../../../DiscordIDBeatsaberHourCounter.txt", newData);
@@ -129,7 +131,7 @@ namespace DiscordBeatSaberBot
                 }
             }
 
-            
+
         }
 
         public void InsertAndResetAllDutchMembers(DiscordSocketClient discord)
@@ -143,7 +145,7 @@ namespace DiscordBeatSaberBot
                 newList.Add(user.Id, new string[] { "0", "" });
             }
 
-            newList.Add(0000, new string[] { "Start date", DateTime.Now.ToString()});
+            newList.Add(0000, new string[] { "Start date", DateTime.Now.ToString() });
 
             using (var file = File.CreateText("../../../DiscordIDBeatsaberHourCounter.txt"))
             {
@@ -162,12 +164,12 @@ namespace DiscordBeatSaberBot
             {
                 Title = "Top 25 Dutch Beat saber hours",
                 Description = "***Dit zijn de top25 makkers met de meeste uren in beat saber sinds " + topdata.GetValueOrDefault((ulong)0000)[1] + "\n De gene die na een week de meeste uren heeft krijgt de VERSLAAFD role*** \n\n **Naam--------------------Minuten** \n",
-                Footer = new EmbedFooterBuilder { Text = "Start Date: " + topdata.GetValueOrDefault((ulong)0000)[1]}
+                Footer = new EmbedFooterBuilder { Text = "Start Date: " + topdata.GetValueOrDefault((ulong)0000)[1] }
             };
             var counter = 0;
             topdata.Remove(0000);
             var sortedList = topdata.OrderByDescending(key => int.Parse(key.Value[0]));
-            
+
             foreach (var top in sortedList)
             {
                 try
@@ -181,7 +183,7 @@ namespace DiscordBeatSaberBot
                 {
                     Console.WriteLine("Error User" + top.Key + " not found!");
                 }
-                
+
             }
 
             return embedBuilder.Build();
@@ -198,6 +200,52 @@ namespace DiscordBeatSaberBot
                 }
             }
 
+
+
+        }
+
+        public bool IsStreamingWithBeatsaber(SocketGuildUser userNew)
+        {
+            var TwitchUrl = "";
+            try
+            {
+                dynamic user = userNew;
+                var split = user.Game.StreamUrl.Split('/');
+                TwitchUrl = split[split.Length - 1];
+            }
+            catch
+            {
+                return false;
+            }
+                
+            //Beat saber id: 503116
+
+            try
+            {
+                var client = new RestClient();
+                client.BaseUrl = new Uri(" https://api.twitch.tv/helix/streams?user_login=" + TwitchUrl);
+                var request = new RestRequest();
+                request.Method = Method.GET;
+                //request.Resource = "SilverHaze420";
+                request.AddHeader("Client-ID", "iv0p2rfrqqqs6e23d12e1mr07a7h7h");
+                request.AddHeader("accept", "application/vnd.twitchtv.v3+json");
+                request.RequestFormat = DataFormat.Json;
+                var response = client.Execute(request);
+                var results = JsonConvert.DeserializeObject<dynamic>(response.Content);
+                string stringResult = results.ToString();
+
+                if (stringResult.Contains("503116"))
+                {
+                    return true;
+                }
+
+
+            }
+            catch
+            {
+                return false;
+            }
+            return false;
         }
     }
 }
