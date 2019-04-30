@@ -13,13 +13,17 @@ namespace DiscordBeatSaberBot
 {
     class BeatSaberHourCounter
     {
-        public BeatSaberHourCounter()
-        {
+        private DiscordSocketClient discord;
 
+        public BeatSaberHourCounter(DiscordSocketClient discord)
+        {
+            this.discord = discord;
+            UpdateCounterInServer();
         }
 
         public void TurnOnCounterForPlayer(SocketGuildUser userOld, SocketGuildUser userNew)
         {
+            
             var userOldName = "";
             var userNewName = "";
 
@@ -74,6 +78,7 @@ namespace DiscordBeatSaberBot
 
                 }
                 setData("../../../DiscordIDBeatsaberHourCounter.txt", newData);
+                UpdateCounterInServer();
             }
 
             if (userOldName != "Beat Saber" && userNewName == "Beat Saber" || IsStreamingWithBeatsaber(userNew)) //Starting Gaming
@@ -142,7 +147,13 @@ namespace DiscordBeatSaberBot
 
             foreach (var user in guild.Users)
             {
-                newList.Add(user.Id, new string[] { "0", "" });
+                var bo = true;
+                foreach (var role in user.Roles)
+                {
+                    if (role.Id == 572731208107294732) bo = false;
+                }
+                if(bo) newList.Add(user.Id, new string[] { "0", "" });
+
             }
 
             newList.Add(0000, new string[] { "Start date", DateTime.Now.ToString() });
@@ -153,11 +164,12 @@ namespace DiscordBeatSaberBot
                 serializer.Serialize(file, newList);
             }
 
+            UpdateCounterInServer();
         }
 
-        public Embed GetTop25BeatSaberHours(SocketMessage message, DiscordSocketClient discord)
+        public Embed GetTop25BeatSaberHours()
         {
-            var channel = message.Channel;
+
             var topdata = getData("../../../DiscordIDBeatsaberHourCounter.txt");
 
             var embedBuilder = new EmbedBuilder
@@ -246,6 +258,13 @@ namespace DiscordBeatSaberBot
                 return false;
             }
             return false;
+        }
+
+        private async void UpdateCounterInServer()
+        {
+            var dutchGuild = discord.GetGuild(505485680344956928);
+            var message = (IUserMessage) await dutchGuild.GetTextChannel(572721078359556097).GetMessageAsync(572721530262257675);
+            await message.ModifyAsync(x => { x.Embed = GetTop25BeatSaberHours();});
         }
     }
 }

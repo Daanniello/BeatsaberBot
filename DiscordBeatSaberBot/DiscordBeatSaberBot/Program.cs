@@ -17,6 +17,7 @@ namespace DiscordBeatSaberBot
     {
         private DiscordSocketClient discordSocketClient;
         private List<SavedMessages> messageCache;
+        private BeatSaberHourCounter DutchHourCounter;
 
         public static void Main(string[] args)
         {
@@ -54,6 +55,7 @@ namespace DiscordBeatSaberBot
             await Task.Delay(5000);
             var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");
             await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
+            DutchHourCounter = new BeatSaberHourCounter(discordSocketClient);
             //var danskbog = new Danskbog(discordSocketClient);
 
         }
@@ -66,10 +68,8 @@ namespace DiscordBeatSaberBot
 
         private async Task OnUserUpdated(SocketGuildUser userOld, SocketGuildUser userNew)
         {
-            var HourCounter = new BeatSaberHourCounter();
-            //HourCounter.InsertAndResetAllDutchMembers(discordSocketClient);
-            HourCounter.TurnOnCounterForPlayer(userOld, userNew);
-
+            DutchHourCounter.TurnOnCounterForPlayer(userOld, userNew);
+            
 
             //if (userNew.Id == 138439306774577152)
             //{
@@ -675,7 +675,7 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        new BeatSaberHourCounter().InsertAndResetAllDutchMembers(discordSocketClient);
+                        DutchHourCounter.InsertAndResetAllDutchMembers(discordSocketClient);
                         await message.Channel.SendMessageAsync("Reset completed");
                     }
                     else if (message.Content.Contains(" requestverification"))
@@ -728,7 +728,7 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        await message.Channel.SendMessageAsync("", false, new BeatSaberHourCounter().GetTop25BeatSaberHours(message, discordSocketClient));
+                        await message.Channel.SendMessageAsync("", false, DutchHourCounter.GetTop25BeatSaberHours());
                     }
                     else if (message.Content.Contains(" addRankFeed"))
                     {
