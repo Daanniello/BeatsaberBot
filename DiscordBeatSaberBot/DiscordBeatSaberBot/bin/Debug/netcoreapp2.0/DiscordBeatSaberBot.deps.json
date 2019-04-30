@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "f070683440c1418535cb5dac95c3af9e9f760e34"
+    "signature": "c745678a7203cdd4960191a922b7ca11dcf2b78e"
   },
   "compilationOptions": {},
   "targets": {
@@ -9,7 +9,8 @@
       "DiscordBeatSaberBot/1.0.0": {
         "dependencies": {
           "Discord.Net": "1.0.2",
-          "HtmlAgilityPack": "1.8.9"
+          "HtmlAgilityPack": "1.8.9",
+          "RestSharp": "106.6.9"
         },
         "runtime": {
           "DiscordBeatSaberBot.dll": {}
@@ -175,6 +176,14 @@
           "lib/netstandard1.3/Newtonsoft.Json.dll": {
             "assemblyVersion": "10.0.0.0",
             "fileVersion": "10.0.2.20802"
+          }
+        }
+      },
+      "RestSharp/106.6.9": {
+        "runtime": {
+          "lib/netstandard2.0/RestSharp.dll": {
+            "assemblyVersion": "106.6.9.0",
+            "fileVersion": "106.6.9.0"
           }
         }
       },
@@ -1253,6 +1262,13 @@
       "sha512": "sha512-vcX8ci+srBr5scnSKCUNNoFo5BQ6KjdfeJ5LCJQhvxncNkTy7w3pAWsnRJrsF9WBBdMiaQp0aOa3YRh1CDCc7A==",
       "path": "newtonsoft.json/10.0.2",
       "hashPath": "newtonsoft.json.10.0.2.nupkg.sha512"
+    },
+    "RestSharp/106.6.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-8RNSrGB8OJqkVnUno0amSL1dsTXGkqVjRvpgwhDR1cy4xhwc/6PWAJFiz6B5cnwmCB9aYMGaHrgKfTt6iMziqw==",
+      "path": "restsharp/106.6.9",
+      "hashPath": "restsharp.106.6.9.nupkg.sha512"
     },
     "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {
       "type": "package",
