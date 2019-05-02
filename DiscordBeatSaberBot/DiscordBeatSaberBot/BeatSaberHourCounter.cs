@@ -45,7 +45,7 @@ namespace DiscordBeatSaberBot
                 userNewName = userNew.Game.Value.ToString();
             }
 
-            if (userOldName == "Beat Saber" && userNewName != "Beat Saber" || IsStreamingWithBeatsaber(userNew) == false && IsStreamingWithBeatsaber(userOld) ) //Finished Gaming
+            if (IsStreamingWithBeatsaber(userNew) == false && IsStreamingWithBeatsaber(userOld) || userOldName == "Beat Saber" && userNewName != "Beat Saber" ) //Finished Gaming
             {
                 var data = getData("../../../DiscordIDBeatsaberHourCounter.txt");
                 if (data.Count == 0)
@@ -218,6 +218,10 @@ namespace DiscordBeatSaberBot
 
         public bool IsStreamingWithBeatsaber(SocketGuildUser userNew)
         {
+            if (userNew.Id == 138439306774577152)
+            {
+
+            }
             var TwitchUrl = "";
             try
             {

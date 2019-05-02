@@ -68,8 +68,11 @@ namespace DiscordBeatSaberBot
 
         private async Task OnUserUpdated(SocketGuildUser userOld, SocketGuildUser userNew)
         {
-            DutchHourCounter.TurnOnCounterForPlayer(userOld, userNew);
-            
+            if (discordSocketClient.GetGuild(505485680344956928).Users.Contains(userNew))
+            {
+                DutchHourCounter.TurnOnCounterForPlayer(userOld, userNew);
+            }
+
 
             //if (userNew.Id == 138439306774577152)
             //{
