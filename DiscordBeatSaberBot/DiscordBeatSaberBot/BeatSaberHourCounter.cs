@@ -66,6 +66,9 @@ namespace DiscordBeatSaberBot
                         var currentHours = int.Parse(discordId.Value[0]);
                         var totalHours = (int)totalHoursnew.TotalMinutes + currentHours;
 
+                        discord.GetGuild(505485680344956928).GetTextChannel(550288060919709706).SendMessageAsync("User: " + userNew.Username + " | current minutes:" + currentHours + " | Minutes to add: " + (int)totalHoursnew.TotalMinutes + " | Total now: " + totalHours + " | Start time: " + dateTime);
+                    
+
                         var value = new string[] { totalHours.ToString(), "" };
 
                         newData.Add(discordId.Key, value);

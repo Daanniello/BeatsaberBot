@@ -233,6 +233,7 @@ namespace DiscordBeatSaberBot
                         var player = await BeatSaberInfoExtension.GetPlayerInfoWithScoresaberId(scoresaberId);
                         DutchRankFeed.GiveRoleWithRank(player.countryRank, scoresaberId);
                         var m = new ModerationHelper(discordSocketClient, 505485680344956928);
+                        await m.AddRole("Verified", m._guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));
                         await m.DeleteRole("Link my discord please", m._guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));
                         await m.DeleteRole("Koos Rankloos", m._guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));
 
