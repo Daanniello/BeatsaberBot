@@ -56,7 +56,8 @@ namespace DiscordBeatSaberBot
             var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");
             await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
             DutchHourCounter = new BeatSaberHourCounter(discordSocketClient);
-            //var danskbog = new Danskbog(discordSocketClient);
+            
+            var updater = new UpdateTimer(discordSocketClient, 5);
 
         }
 

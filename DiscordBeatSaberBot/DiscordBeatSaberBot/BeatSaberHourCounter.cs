@@ -179,7 +179,8 @@ namespace DiscordBeatSaberBot
             {
                 Title = "Top 25 Dutch Beat saber hours",
                 Description = "***Dit zijn de top25 makkers met de meeste uren in beat saber sinds " + topdata.GetValueOrDefault((ulong)0000)[1] + "\n De gene die na een week de meeste uren heeft krijgt de VERSLAAFD role*** \n\n **Naam--------------------Minuten** \n",
-                Footer = new EmbedFooterBuilder { Text = "Start Date: " + topdata.GetValueOrDefault((ulong)0000)[1] }
+                Footer = new EmbedFooterBuilder { Text = "Start Date: " + topdata.GetValueOrDefault((ulong)0000)[1] },
+                Color = Color.Gold
             };
             var counter = 0;
             topdata.Remove(0000);
