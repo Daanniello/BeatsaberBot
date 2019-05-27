@@ -50,6 +50,7 @@ namespace DiscordBeatSaberBot
                     new EmbedFieldBuilder{Name = "Server gemaakt op", Value = guild.CreatedAt},
                     new EmbedFieldBuilder{Name = "Aantal emotes", Value = guild.Emotes.Count},
                 },
+                Footer = new EmbedFooterBuilder { Text = "Laatste update: " + DateTime.Now },
                 Color = Color.Red,
             };
 

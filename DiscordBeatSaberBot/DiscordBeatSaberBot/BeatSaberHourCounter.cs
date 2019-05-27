@@ -66,7 +66,7 @@ namespace DiscordBeatSaberBot
                         var currentHours = int.Parse(discordId.Value[0]);
                         var totalHours = (int)totalHoursnew.TotalMinutes + currentHours;
 
-                        discord.GetGuild(505485680344956928).GetTextChannel(550288060919709706).SendMessageAsync("User: " + userNew.Username + " | current minutes:" + currentHours + " | Minutes to add: " + (int)totalHoursnew.TotalMinutes + " | Total now: " + totalHours + " | Start time: " + dateTime);
+                        //discord.GetGuild(505485680344956928).GetTextChannel(550288060919709706).SendMessageAsync("User: " + userNew.Username + " | current minutes:" + currentHours + " | Minutes to add: " + (int)totalHoursnew.TotalMinutes + " | Total now: " + totalHours + " | Start time: " + dateTime);
                     
 
                         var value = new string[] { totalHours.ToString(), "" };
@@ -178,8 +178,8 @@ namespace DiscordBeatSaberBot
             var embedBuilder = new EmbedBuilder
             {
                 Title = "Top 25 Dutch Beat saber hours",
-                Description = "***Dit zijn de top25 makkers met de meeste uren in beat saber sinds " + topdata.GetValueOrDefault((ulong)0000)[1] + "\n De gene die na een week de meeste uren heeft krijgt de VERSLAAFD role*** \n\n **Naam--------------------Minuten** \n",
-                Footer = new EmbedFooterBuilder { Text = "Start Date: " + topdata.GetValueOrDefault((ulong)0000)[1] },
+                Description = "***Dit zijn de top25 makkers met de meeste uren in beat saber sinds\n " + topdata.GetValueOrDefault((ulong)0000)[1] + "\n De gene die na een week de meeste uren heeft krijgt de VERSLAAFD role*** \n\n **Naam--------------------Minuten** \n",
+                Footer = new EmbedFooterBuilder { Text = "Laatste update: " + DateTime.Now },
                 Color = Color.Gold
             };
             var counter = 0;
@@ -210,9 +210,18 @@ namespace DiscordBeatSaberBot
                 using (var r = new StreamReader(filePath))
                 {
                     var json = r.ReadToEnd();
-                    var data = JsonConvert.DeserializeObject<Dictionary<ulong, string[]>>(json);
-                    if (data == null) return new Dictionary<ulong, string[]>();
-                    return data;
+                    try
+                    {
+                        var data = JsonConvert.DeserializeObject<Dictionary<ulong, string[]>>(json);
+                        if (data == null) return new Dictionary<ulong, string[]>();
+                        return data;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                    return null; 
+                    
                 }
             }
 
@@ -271,8 +280,10 @@ namespace DiscordBeatSaberBot
         private async void UpdateCounterInServer()
         {
             var dutchGuild = discord.GetGuild(505485680344956928);
-            var message = (IUserMessage) await dutchGuild.GetTextChannel(572721078359556097).GetMessageAsync(572721530262257675);
-            await message.ModifyAsync(x => { x.Embed = GetTop25BeatSaberHours();});
+            var txtChannel = dutchGuild.GetTextChannel(572721078359556097);
+            var message = await txtChannel.GetMessageAsync(572721530262257675);
+            IUserMessage msg = message as IUserMessage;
+            await msg.ModifyAsync(x => { x.Embed = GetTop25BeatSaberHours();});
         }
     }
 }

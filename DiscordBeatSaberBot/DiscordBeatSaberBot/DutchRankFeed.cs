@@ -214,6 +214,10 @@ namespace DiscordBeatSaberBot
         private static string GetRankUpNotify(int rank, int? oldRank, ulong scoresaberId)
         {
             string message = "";
+            if (rank == 0 && oldRank > 0)
+            {
+                GiveRole(scoresaberId.ToString(), "Koos Rankloos");
+            }
             if (rank == 1 && oldRank > 1)
             {
                 GiveRole(scoresaberId.ToString(), "Nummer 1");
@@ -259,6 +263,7 @@ namespace DiscordBeatSaberBot
 
         public async static Task RankDownCheck(int rank, int oldRank, string scoresaberId)
         {
+ 
             if (rank > 1 && oldRank == 1 && rank <= 3)
             {
                 GiveRole(scoresaberId.ToString(), "Top 3");
@@ -293,6 +298,7 @@ namespace DiscordBeatSaberBot
 
         public async static void GiveRoleWithRank(int rank, string scoresaberId)
         {
+            if (rank == 0) return;
             if (rank <= 1) await GiveRole(scoresaberId, "Nummer 1");
             else if (rank <= 3) await GiveRole(scoresaberId, "Top 3");
             else if (rank <= 10) await GiveRole(scoresaberId, "Top 10");

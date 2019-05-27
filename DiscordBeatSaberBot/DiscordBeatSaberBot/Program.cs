@@ -45,8 +45,15 @@ namespace DiscordBeatSaberBot
             discordSocketClient.ReactionRemoved += ReactionRemoved;
             discordSocketClient.UserJoined += OnUserJoined;
             discordSocketClient.GuildMemberUpdated += OnUserUpdated;
-
-            Init();
+            try
+            {
+                Init();
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+         
 
             await Task.Delay(-1);
         }
@@ -71,7 +78,7 @@ namespace DiscordBeatSaberBot
         {
             if (discordSocketClient.GetGuild(505485680344956928).Users.Contains(userNew))
             {
-                DutchHourCounter.TurnOnCounterForPlayer(userOld, userNew);
+                if (DutchHourCounter != null) { DutchHourCounter.TurnOnCounterForPlayer(userOld, userNew); }
             }
 
 
@@ -334,6 +341,11 @@ namespace DiscordBeatSaberBot
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "VRChat");
                     await (user as IGuildUser).AddRoleAsync(role);
                 }
+                if (reaction.Emote.ToString() == "<:osu:578679882553491493>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Osu!");
+                    await (user as IGuildUser).AddRoleAsync(role);
+                }
                 if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
                 {
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
@@ -459,6 +471,11 @@ namespace DiscordBeatSaberBot
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "VRChat");
                     await (user as IGuildUser).RemoveRoleAsync(role);
                 }
+                if (reaction.Emote.ToString() == "<:osu:578679882553491493>")
+                {
+                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Osu!");
+                    await (user as IGuildUser).RemoveRoleAsync(role);
+                }
                 if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
                 {
                     var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
@@ -500,7 +517,7 @@ namespace DiscordBeatSaberBot
                 await message.Channel.SendMessageAsync("hehe that is true <a:pika:555862077403824133>");
             }
 
-            await MessageDelete.DeleteMessageCheck(message);
+            await MessageDelete.DeleteMessageCheck(message, discordSocketClient);
             if (message.Content.Length <= 3)
             {
                 return Task.CompletedTask;

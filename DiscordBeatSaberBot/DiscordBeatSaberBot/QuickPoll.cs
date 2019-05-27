@@ -31,7 +31,7 @@ namespace DiscordBeatSaberBot
             var completedMessage = await _messageInfo.Channel.SendMessageAsync("", false, embed);
             await completedMessage.AddReactionAsync(new Emoji("⬅"));
             await completedMessage.AddReactionAsync(new Emoji("➡"));
-            await _messageInfo.DeleteAsync();
+            //await _messageInfo.DeleteAsync();
 
         }
     }
