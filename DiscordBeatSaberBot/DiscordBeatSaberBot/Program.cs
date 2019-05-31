@@ -21,13 +21,27 @@ namespace DiscordBeatSaberBot
 
         public static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.UnhandledException += Unhandled_Exception;
+       
+
             new Program().MainAsync().GetAwaiter().GetResult();
+       
+        }
+
+        public static void Unhandled_ThreadException(object sender,ThreadExceptionEventArgs e)
+        {
+
+        }
+
+        public static void Unhandled_Exception( object sender, UnhandledExceptionEventArgs e)
+        {
+            Console.WriteLine(e);
         }
 
         public async Task MainAsync()
         {
 
-            
+
 
             discordSocketClient = new DiscordSocketClient();
             await log("Logging into Discord");
@@ -49,23 +63,29 @@ namespace DiscordBeatSaberBot
             {
                 Init();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
-         
+
 
             await Task.Delay(-1);
         }
         private async void Init()
         {
-            await Task.Delay(5000);
-            var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");
-            await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
-            DutchHourCounter = new BeatSaberHourCounter(discordSocketClient);
-            
-            var updater = new UpdateTimer(discordSocketClient, 5);
+            try
+            {
+                await Task.Delay(5000);
+                var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");
+                await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
+                DutchHourCounter = new BeatSaberHourCounter(discordSocketClient);
 
+                var updater = new UpdateTimer(discordSocketClient, 5);
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine(ex);
+            }
         }
 
         private Task log(string message)
@@ -76,24 +96,31 @@ namespace DiscordBeatSaberBot
 
         private async Task OnUserUpdated(SocketGuildUser userOld, SocketGuildUser userNew)
         {
-            if (discordSocketClient.GetGuild(505485680344956928).Users.Contains(userNew))
+            try
             {
-                if (DutchHourCounter != null) { DutchHourCounter.TurnOnCounterForPlayer(userOld, userNew); }
+                if (discordSocketClient.GetGuild(505485680344956928).Users.Contains(userNew))
+                {
+                    if (DutchHourCounter != null) { DutchHourCounter.TurnOnCounterForPlayer(userOld, userNew); }
+                }
+
+
+                //if (userNew.Id == 138439306774577152)
+                //{
+
+                //}
+                //if (userOld.Nickname != userNew.Nickname)
+                //{
+                //    var userInfo = new RoleAssignment(discordSocketClient);
+                //    var scoresaberId = userInfo.GetScoresaberIdWithDiscordId(userNew.Id.ToString());
+                //    var player = await BeatSaberInfoExtension.GetPlayerInfoWithScoresaberId(scoresaberId);
+                //    await userNew.ModifyAsync(x => x.Nickname = "[" + player.countryRank + "] " + userNew.Nickname);
+
+                //}
             }
-
-
-            //if (userNew.Id == 138439306774577152)
-            //{
-
-            //}
-            //if (userOld.Nickname != userNew.Nickname)
-            //{
-            //    var userInfo = new RoleAssignment(discordSocketClient);
-            //    var scoresaberId = userInfo.GetScoresaberIdWithDiscordId(userNew.Id.ToString());
-            //    var player = await BeatSaberInfoExtension.GetPlayerInfoWithScoresaberId(scoresaberId);
-            //    await userNew.ModifyAsync(x => x.Nickname = "[" + player.countryRank + "] " + userNew.Nickname);
-
-            //}
+            catch (Exception ex)
+            {
+                System.Console.WriteLine(ex);
+            }
         }
 
         private async Task OnUserJoined(SocketGuildUser guildUser)
@@ -110,263 +137,269 @@ namespace DiscordBeatSaberBot
             ISocketMessageChannel channel,
             SocketReaction reaction)
         {
-
-            //var message = await reaction.Channel.GetMessageAsync(reaction.MessageId);
-            //var t = new Server(discordSocketClient, "");
-            //await t.AddVRroleMessage();
-            //510227606822584330
-            //{<:vive:537368500277084172>}
-            //{<:oculus:537368385206616075>}
-            //x
-            //b
-            //v
-            //k
-            //r
-            //f
-            //c
-            //p
-            //t
-            //o
-            //{<:vrchat:537413837100548115>}
-            //🗺
-            //{<:terebilo:508313942297280518>}
-            //{💻}
-            //{<:megaotherway:526402963372245012>}
-            //{<:AYAYA:509158069809315850>}
-            //{❕}
-            if (channel.Id == 549343990957211658)
+            try
             {
-                var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
-                var user = guild.GetUser(reaction.User.Value.Id);
-                var userRoles = user.Roles;
-                foreach (var role in userRoles)
-                {
-                    if (role.Name == "Nieuwkomer")
-                    {
-                        var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Koos Rankloos");
-                        var deleteRole = guild.Roles.FirstOrDefault(x => x.Name == "Nieuwkomer");
-                        await user.AddRoleAsync(addRole);
-                        await user.RemoveRoleAsync(deleteRole);
-                    }
-                }
-            }
-            if (channel.Id == 549350982081970176)
-            {
-                bool authenticationCheck()
+                //var message = await reaction.Channel.GetMessageAsync(reaction.MessageId);
+                //var t = new Server(discordSocketClient, "");
+                //await t.AddVRroleMessage();
+                //510227606822584330
+                //{<:vive:537368500277084172>}
+                //{<:oculus:537368385206616075>}
+                //x
+                //b
+                //v
+                //k
+                //r
+                //f
+                //c
+                //p
+                //t
+                //o
+                //{<:vrchat:537413837100548115>}
+                //🗺
+                //{<:terebilo:508313942297280518>}
+                //{💻}
+                //{<:megaotherway:526402963372245012>}
+                //{<:AYAYA:509158069809315850>}
+                //{❕}
+                if (channel.Id == 549343990957211658)
                 {
                     var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
-                    var userRoles = guild.GetUser(reaction.User.Value.Id).Roles;
+                    var user = guild.GetUser(reaction.User.Value.Id);
+                    var userRoles = user.Roles;
                     foreach (var role in userRoles)
                     {
-                        if (role.Name == "Staff")
+                        if (role.Name == "Nieuwkomer")
                         {
-                            return true;
+                            var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Koos Rankloos");
+                            var deleteRole = guild.Roles.FirstOrDefault(x => x.Name == "Nieuwkomer");
+                            await user.AddRoleAsync(addRole);
+                            await user.RemoveRoleAsync(deleteRole);
                         }
                     }
-                    return false;
                 }
-                if (authenticationCheck())
+                if (channel.Id == 549350982081970176)
                 {
-                    //{✅}
-                    //{⛔}
-                    // vinkje = status veranderen en actie uitvoeren om er in te zetten
-                    // denied is status veranderen en user mention gebruiken
-                    var messageFromReaction = await reaction.Channel.GetMessageAsync(reaction.MessageId);
-                    var casted = (IUserMessage)messageFromReaction;
-                    var usedEmbed = casted.Embeds.First();
-                    if (reaction.Emote.Name == "⛔")
+                    bool authenticationCheck()
                     {
-                        var deniedEmbed = new EmbedBuilder();
-                        //need staff check
-                        try
+                        var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
+                        var userRoles = guild.GetUser(reaction.User.Value.Id).Roles;
+                        foreach (var role in userRoles)
                         {
-                            deniedEmbed = new EmbedBuilder
+                            if (role.Name == "Staff")
                             {
-                                Title = usedEmbed.Title,
-                                Description = usedEmbed.Description.Replace("Waiting for approval", "Denied"),
-                                ThumbnailUrl = usedEmbed.Thumbnail.Value.Url,
-                                Color = Color.Red
-                            };
+                                return true;
+                            }
                         }
-                        catch
-                        {
-                            deniedEmbed = new EmbedBuilder
-                            {
-                                Title = usedEmbed.Title,
-                                Description = usedEmbed.Description.Replace("Waiting for approval", "Denied"),
-                                Color = Color.Red
-                            };
-                        }
-                        
-                        await casted.ModifyAsync(msg => msg.Embed = deniedEmbed.Build());
-                        await casted.RemoveAllReactionsAsync();
-
+                        return false;
                     }
-                    if (reaction.Emote.Name == "✅")
+                    if (authenticationCheck())
                     {
-                        Regex digitsOnly = new Regex(@"[^\d]");
-                        Regex oneSpace = new Regex("[ ]{2,}");
-                        var IDS = oneSpace.Replace(digitsOnly.Replace(usedEmbed.Description, " "), "-").Split("-");
-                        var discordId = IDS[2];
-                        var scoresaberId = IDS[1];
-                        var approvedEmbed = new EmbedBuilder();
-                        try
+                        //{✅}
+                        //{⛔}
+                        // vinkje = status veranderen en actie uitvoeren om er in te zetten
+                        // denied is status veranderen en user mention gebruiken
+                        var messageFromReaction = await reaction.Channel.GetMessageAsync(reaction.MessageId);
+                        var casted = (IUserMessage)messageFromReaction;
+                        var usedEmbed = casted.Embeds.First();
+                        if (reaction.Emote.Name == "⛔")
                         {
-                            approvedEmbed = new EmbedBuilder
+                            var deniedEmbed = new EmbedBuilder();
+                            //need staff check
+                            try
                             {
-                                Title = usedEmbed.Title,
-                                Description = usedEmbed.Description.Replace("Waiting for approval", "Approved"),
-                                ThumbnailUrl = usedEmbed.Thumbnail.Value.Url,
-                                Color = Color.Green
-                            };
-                        }
-                        catch
-                        {
-                            approvedEmbed = new EmbedBuilder
+                                deniedEmbed = new EmbedBuilder
+                                {
+                                    Title = usedEmbed.Title,
+                                    Description = usedEmbed.Description.Replace("Waiting for approval", "Denied"),
+                                    ThumbnailUrl = usedEmbed.Thumbnail.Value.Url,
+                                    Color = Color.Red
+                                };
+                            }
+                            catch
                             {
-                                Title = usedEmbed.Title,
-                                Description = usedEmbed.Description.Replace("Waiting for approval", "Approved"),
-                                Color = Color.Green
-                            };
-                        }
-                        
+                                deniedEmbed = new EmbedBuilder
+                                {
+                                    Title = usedEmbed.Title,
+                                    Description = usedEmbed.Description.Replace("Waiting for approval", "Denied"),
+                                    Color = Color.Red
+                                };
+                            }
 
-                        var check = await new RoleAssignment(discordSocketClient).LinkAccount(discordId, scoresaberId);
-                        if (check)
-                        {
-                            await casted.ModifyAsync(msg => msg.Embed = approvedEmbed.Build());
+                            await casted.ModifyAsync(msg => msg.Embed = deniedEmbed.Build());
                             await casted.RemoveAllReactionsAsync();
+
                         }
+                        if (reaction.Emote.Name == "✅")
+                        {
+                            Regex digitsOnly = new Regex(@"[^\d]");
+                            Regex oneSpace = new Regex("[ ]{2,}");
+                            var IDS = oneSpace.Replace(digitsOnly.Replace(usedEmbed.Description, " "), "-").Split("-");
+                            var discordId = IDS[2];
+                            var scoresaberId = IDS[1];
+                            var approvedEmbed = new EmbedBuilder();
+                            try
+                            {
+                                approvedEmbed = new EmbedBuilder
+                                {
+                                    Title = usedEmbed.Title,
+                                    Description = usedEmbed.Description.Replace("Waiting for approval", "Approved"),
+                                    ThumbnailUrl = usedEmbed.Thumbnail.Value.Url,
+                                    Color = Color.Green
+                                };
+                            }
+                            catch
+                            {
+                                approvedEmbed = new EmbedBuilder
+                                {
+                                    Title = usedEmbed.Title,
+                                    Description = usedEmbed.Description.Replace("Waiting for approval", "Approved"),
+                                    Color = Color.Green
+                                };
+                            }
 
-                        var player = await BeatSaberInfoExtension.GetPlayerInfoWithScoresaberId(scoresaberId);
-                        DutchRankFeed.GiveRoleWithRank(player.countryRank, scoresaberId);
-                        var m = new ModerationHelper(discordSocketClient, 505485680344956928);
-                        await m.AddRole("Verified", m._guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));
-                        await m.DeleteRole("Link my discord please", m._guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));
-                        await m.DeleteRole("Koos Rankloos", m._guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));
 
+                            var check = await new RoleAssignment(discordSocketClient).LinkAccount(discordId, scoresaberId);
+                            if (check)
+                            {
+                                await casted.ModifyAsync(msg => msg.Embed = approvedEmbed.Build());
+                                await casted.RemoveAllReactionsAsync();
+                            }
+
+                            var player = await BeatSaberInfoExtension.GetPlayerInfoWithScoresaberId(scoresaberId);
+                            DutchRankFeed.GiveRoleWithRank(player.countryRank, scoresaberId);
+                            var m = new ModerationHelper(discordSocketClient, 505485680344956928);
+                            await m.AddRole("Verified", m._guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));
+                            await m.DeleteRole("Link my discord please", m._guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));
+                            await m.DeleteRole("Koos Rankloos", m._guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));
+
+                        }
                     }
-                }
-                
 
+
+                }
+
+                if (channel.Id == 510227606822584330)
+                {
+                    var guild = discordSocketClient.GetGuild(505485680344956928);
+                    var user = guild.GetUser(reaction.UserId);
+                    //await (user as IGuildUser).AddRoleAsync(new role);
+                    if (reaction.Emote.ToString() == "<:megaotherway:526402963372245012>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Event");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:vive:537368500277084172>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Vive");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:oculus:537368385206616075>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Oculus");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇽")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "X-Grip");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇧")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "B-Grip");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇻")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "V-Grip");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇰")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "K-Grip");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇷")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "R-Grip");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇫")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "F-Grip");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇨")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Claw-Grip");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇵")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Palm-Grip");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇹")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Tracker Sabers");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🆕")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Overige-Grip");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:terebilo:508313942297280518>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Normale-Grip");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "💻")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Modder");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🗺")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Mapper");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:vrchat:537413837100548115>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "VRChat");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:osu:578679882553491493>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Osu!");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:AYAYA:509158069809315850>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Anime");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "❕")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "NSFW");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:windows:553375150138195968>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "WMR");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    //{<:windows:553375150138195968>}
+                }
             }
-
-            if (channel.Id == 510227606822584330)
+            catch (Exception ex)
             {
-                var guild = discordSocketClient.GetGuild(505485680344956928);
-                var user = guild.GetUser(reaction.UserId);
-                //await (user as IGuildUser).AddRoleAsync(new role);
-                if (reaction.Emote.ToString() == "<:megaotherway:526402963372245012>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Event");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:vive:537368500277084172>")
-                {                   
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Vive");
-                    await (user as IGuildUser).AddRoleAsync(role);                  
-                }
-                if (reaction.Emote.ToString() == "<:oculus:537368385206616075>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Oculus");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇽")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "X-Grip");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇧")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "B-Grip");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇻")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "V-Grip");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇰")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "K-Grip");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇷")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "R-Grip");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇫")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "F-Grip");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇨")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Claw-Grip");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇵")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Palm-Grip");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇹")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Tracker Sabers");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🆕")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Overige-Grip");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:terebilo:508313942297280518>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Normale-Grip");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "💻")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Modder");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🗺")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Mapper");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:vrchat:537413837100548115>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "VRChat");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:osu:578679882553491493>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Osu!");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:AYAYA:509158069809315850>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Anime");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "❕")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "NSFW");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:windows:553375150138195968>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "WMR");
-                    await (user as IGuildUser).AddRoleAsync(role);
-                }
-                //{<:windows:553375150138195968>}
+                System.Console.WriteLine(ex);
             }
             return Task.CompletedTask;
         }
@@ -380,149 +413,160 @@ namespace DiscordBeatSaberBot
             //510227606822584330
             //{<:vive:537368500277084172>}
             //{<:oculus:537368385206616075>}
-
-            if (channel.Id == 510227606822584330)
+            try
             {
-                var guild = discordSocketClient.GetGuild(505485680344956928);
-                var user = guild.GetUser(reaction.UserId);
-                //await (user as IGuildUser).AddRoleAsync(new role);
-                if (reaction.Emote.ToString() == "<:megaotherway:526402963372245012>")
+                if (channel.Id == 510227606822584330)
                 {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Event");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:vive:537368500277084172>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Vive");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:oculus:537368385206616075>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Oculus");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇽")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "X-Grip");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇧")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "B-Grip");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇻")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "V-Grip");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇰")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "K-Grip");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇷")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "R-Grip");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇫")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "F-Grip");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇨")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Claw-Grip");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇵")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Palm-Grip");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🇹")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Tracker Sabers");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🆕")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Overige-Grip");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:terebilo:508313942297280518>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Normale-Grip");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "💻")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Modder");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "🗺")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Mapper");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:vrchat:537413837100548115>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "VRChat");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:osu:578679882553491493>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Osu!");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:AYAYA:509158069809315850>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "Anime");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "❕")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "NSFW");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
-                }
-                if (reaction.Emote.ToString() == "<:windows:553375150138195968>")
-                {
-                    var role = guild.Roles.FirstOrDefault(x => x.Name == "WMR");
-                    await (user as IGuildUser).RemoveRoleAsync(role);
+                    var guild = discordSocketClient.GetGuild(505485680344956928);
+                    var user = guild.GetUser(reaction.UserId);
+                    //await (user as IGuildUser).AddRoleAsync(new role);
+                    if (reaction.Emote.ToString() == "<:megaotherway:526402963372245012>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Event");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:vive:537368500277084172>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Vive");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:oculus:537368385206616075>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Oculus");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇽")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "X-Grip");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇧")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "B-Grip");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇻")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "V-Grip");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇰")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "K-Grip");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇷")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "R-Grip");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇫")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "F-Grip");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇨")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Claw-Grip");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇵")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Palm-Grip");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🇹")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Tracker Sabers");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🆕")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Overige-Grip");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:terebilo:508313942297280518>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Normale-Grip");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "💻")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Modder");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "🗺")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Mapper");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:vrchat:537413837100548115>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "VRChat");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:osu:578679882553491493>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Osu!");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:AYAYA:509158069809315850>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Anime");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "❕")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "NSFW");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:windows:553375150138195968>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "WMR");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
                 }
             }
-        
+            catch (Exception ex)
+            {
+                System.Console.WriteLine(ex);
+            }
             return Task.CompletedTask;
         }
 
         private async Task<Task> MessageReceived(SocketMessage message)
         {
-            //Server s = new Server(discordSocketClient, "");
-            //await s.AddVRroleMessage(null, true);
-            if (message.Author.Username == "BeatSaber Bot") return Task.CompletedTask;
-            if (message.Author.Id != 546850627029041153 && message.Content.Contains("ur an idiot"))
+            try
             {
-                var user = await message.Channel.GetUserAsync(138439306774577152);
-                var chn = await user.GetOrCreateDMChannelAsync();
-                await chn.SendMessageAsync(message.Author.Username + " was it!");
-            }
+                //Server s = new Server(discordSocketClient, "");
+                //await s.AddVRroleMessage(null, true);
+                if (message.Author.Username == "BeatSaber Bot") return Task.CompletedTask;
+                if (message.Author.Id != 546850627029041153 && message.Content.Contains("ur an idiot"))
+                {
+                    var user = await message.Channel.GetUserAsync(138439306774577152);
+                    var chn = await user.GetOrCreateDMChannelAsync();
+                    await chn.SendMessageAsync(message.Author.Username + " was it!");
+                }
                 if (message.Author.Id == 546850627029041153 && message.Content.Contains("ur an idiot"))
-            {
-                await message.Channel.SendMessageAsync("hehe that is true <a:pika:555862077403824133>");
-            }
+                {
+                    await message.Channel.SendMessageAsync("hehe that is true");
+                }
 
-            await MessageDelete.DeleteMessageCheck(message, discordSocketClient);
-            if (message.Content.Length <= 3)
-            {
-                return Task.CompletedTask;
+                await MessageDelete.DeleteMessageCheck(message, discordSocketClient);
+                if (message.Content.Length <= 3)
+                {
+                    return Task.CompletedTask;
+                }
             }
-
+            catch (Exception ex)
+            {
+                System.Console.WriteLine(ex);
+            }
             try
             {
                 if (message.Content.Substring(0, 3).Contains("!bs"))
@@ -572,7 +616,7 @@ namespace DiscordBeatSaberBot
                         {
                             await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopSongList(message.Content.Substring(12)));
                         }
-                      
+
                     }
                     else if (message.Content.Contains(" search"))
                     {
@@ -583,7 +627,7 @@ namespace DiscordBeatSaberBot
                         var r = new RoleAssignment(discordSocketClient);
                         if (message.Content.Contains("@"))
                         {
-                            var discordId = message.Content.Substring(11).Replace("<","").Replace(">", "").Replace("@", "").Replace("!","");
+                            var discordId = message.Content.Substring(11).Replace("<", "").Replace(">", "").Replace("@", "").Replace("!", "");
                             if (r.CheckIfDiscordIdIsLinked(discordId))
                             {
 
@@ -631,7 +675,7 @@ namespace DiscordBeatSaberBot
                         {
                             var embed = new RoleAssignment(discordSocketClient).GetLinkedDiscordNamesEmbed();
                             await message.Channel.SendMessageAsync(embed);
-                        }                       
+                        }
                     }
                     else if (message.Content.Contains(" notlinkednames"))
                     {
@@ -720,14 +764,14 @@ namespace DiscordBeatSaberBot
                         var moderationHelper = new ModerationHelper(discordSocketClient, 505485680344956928);
 
                         var user = message.Author;
-                        if (moderationHelper.UserHasRole(user , "Nieuwkomer"))
+                        if (moderationHelper.UserHasRole(user, "Nieuwkomer"))
                         {
                             await moderationHelper.AddRole("Link my discord please", user);
                             await moderationHelper.DeleteRole("Nieuwkomer", user);
-                          
-                        }                       
+
+                        }
                     }
-               
+
                     else if (message.Content.Contains(" country"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions
@@ -926,17 +970,17 @@ namespace DiscordBeatSaberBot
                             foreach (var builder in builderList)
                                 await message.Channel.SendMessageAsync("", false, builder.Build());
                     }
-                    
+
                     else { EmbedBuilderExtension.NullEmbed("Oops", "There is no command like that, try something else", null, null); }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Something went wrong, try again later", null, null));
                 Console.WriteLine(ex);
             }
 
-            
+
             return Task.CompletedTask;
         }
 
@@ -948,45 +992,45 @@ namespace DiscordBeatSaberBot
                 try
                 {
                     Console.WriteLine("Updating news feed...");
-                    await Task.Delay(90000 - (int) (watch.ElapsedMilliseconds % 1000), token);
+                    await Task.Delay(90000 - (int)(watch.ElapsedMilliseconds % 1000), token);
                     //await Feed.UpdateCheck(discordSocketClient);
                     //await Feed.RanksInfoFeed(discordSocketClient);
- 
-                        Console.WriteLine(".");
-                        try
-                        {
-                            var stopwatch = new Stopwatch();
-                            stopwatch.Start();
-                            await DutchRankFeed.DutchRankingFeed(discordSocketClient);
-                            stopwatch.Stop();
-                            Console.WriteLine("NL Feed updatetime: " + stopwatch.Elapsed);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("News Feed Crashed" + ex + "NL");
-                        }
-                        Console.WriteLine("..");
-                        //await USRankFeed.USRankingFeed(discordSocketClient);
-                        Console.WriteLine("...");
-                        try
-                        {
-                            await AU_NZ_RankFeed.AU_NZRankingFeed(discordSocketClient);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("News Feed Crashed" + ex + "CND");
-                        }
-                        Console.WriteLine("....");
-                        try
-                        {
-                            await GbRankFeed.GbRankingFeed(discordSocketClient);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("News Feed Crashed" + ex + "GB");
-                        }
-                        Console.WriteLine(".....");
-                    
+
+                    Console.WriteLine(".");
+                    try
+                    {
+                        var stopwatch = new Stopwatch();
+                        stopwatch.Start();
+                        await DutchRankFeed.DutchRankingFeed(discordSocketClient);
+                        stopwatch.Stop();
+                        Console.WriteLine("NL Feed updatetime: " + stopwatch.Elapsed);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("News Feed Crashed" + ex + "NL");
+                    }
+                    Console.WriteLine("..");
+                    //await USRankFeed.USRankingFeed(discordSocketClient);
+                    Console.WriteLine("...");
+                    try
+                    {
+                        await AU_NZ_RankFeed.AU_NZRankingFeed(discordSocketClient);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("News Feed Crashed" + ex + "CND");
+                    }
+                    Console.WriteLine("....");
+                    try
+                    {
+                        await GbRankFeed.GbRankingFeed(discordSocketClient);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("News Feed Crashed" + ex + "GB");
+                    }
+                    Console.WriteLine(".....");
+
 
                     Console.WriteLine("News Feed Updated");
                 }
