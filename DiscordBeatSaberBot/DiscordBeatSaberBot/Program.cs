@@ -80,7 +80,9 @@ namespace DiscordBeatSaberBot
                 await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
                 DutchHourCounter = new BeatSaberHourCounter(discordSocketClient);
 
-                var updater = new UpdateTimer(discordSocketClient, 5);
+                var updater = new UpdateTimer(discordSocketClient);
+                updater.Start(() => updater.DutchDiscordUserCount(), 5);
+                updater.Start(() => updater.EventNotification(), 1);
             }
             catch (Exception ex)
             {
@@ -162,7 +164,34 @@ namespace DiscordBeatSaberBot
                 //{<:megaotherway:526402963372245012>}
                 //{<:AYAYA:509158069809315850>}
                 //{❕}
-                if (channel.Id == 549343990957211658)
+
+                
+                if (reaction.MessageId.ToString() == File.ReadAllText("EventMessage.txt") || reaction.MessageId.ToString() == "586248421715738629")
+                {
+                    var eventDetailChannel = (ISocketMessageChannel) discordSocketClient.GetChannel(572721078359556097);
+                    var embededMessage = (IUserMessage) await eventDetailChannel.GetMessageAsync(586248421715738629);
+
+                    var embedInfo = embededMessage.Embeds.First();
+                    var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
+                    var user = guild.GetUser(reaction.User.Value.Id);
+
+                    var embedBuilder = new EmbedBuilder
+                    {
+                        Title = embedInfo.Title,
+                        Description = embedInfo.Description + "\n" + user.Username,
+                        Footer = new EmbedFooterBuilder { Text = embedInfo.Footer.ToString() },
+                        Color = embedInfo.Color
+                        
+                    };
+
+                    await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
+                    
+                    
+
+
+                }
+
+                    if (channel.Id == 549343990957211658)
                 {
                     var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
                     var user = guild.GetUser(reaction.User.Value.Id);
@@ -408,6 +437,31 @@ namespace DiscordBeatSaberBot
             ISocketMessageChannel channel,
             SocketReaction reaction)
         {
+
+            if (reaction.MessageId.ToString() == File.ReadAllText("EventMessage.txt") || reaction.MessageId.ToString() == "586248421715738629")
+            {
+                var eventDetailChannel = (ISocketMessageChannel)discordSocketClient.GetChannel(572721078359556097);
+                var embededMessage = (IUserMessage)await eventDetailChannel.GetMessageAsync(586248421715738629);
+
+                var embedInfo = embededMessage.Embeds.First();
+                var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
+                var user = guild.GetUser(reaction.User.Value.Id);
+
+                var embedBuilder = new EmbedBuilder
+                {
+                    Title = embedInfo.Title,
+                    Description = embedInfo.Description.Replace("\n" + user.Username, "").Trim(),
+                    Footer = new EmbedFooterBuilder { Text = embedInfo.Footer.ToString() },
+                    Color = embedInfo.Color
+
+                };
+
+                await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
+
+
+
+            }
+
             //var t = new Server(discordSocketClient, "");
             //await t.AddVRroleMessage();
             //510227606822584330
@@ -688,6 +742,15 @@ namespace DiscordBeatSaberBot
                             var embed = new RoleAssignment(discordSocketClient).GetNotLinkedDiscordNamesInGuildEmbed(505485680344956928);
                             await message.Channel.SendMessageAsync(embed);
                         }
+                    }
+                    else if (message.Content.Contains(" createevent"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        var thread = new Thread(() => new EventManager(message, discordSocketClient));
+                        thread.Start();
                     }
                     else if (message.Content.Contains(" playing"))
                     {
