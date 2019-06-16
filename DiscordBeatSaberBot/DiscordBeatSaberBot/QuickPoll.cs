@@ -24,6 +24,7 @@ namespace DiscordBeatSaberBot
                 Color = Color.DarkRed,
                 Title = "QuickPoll",
                 Description = question,
+                Footer = new EmbedFooterBuilder { Text="Reminder: Use *!bs poll question* to create a new poll"},
                 ThumbnailUrl = @"https://i.ibb.co/Y08zHnb/Pika.png"
             };
             Embed embed = builder.Build();

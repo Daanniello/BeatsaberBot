@@ -165,8 +165,8 @@ namespace DiscordBeatSaberBot
                 //{<:AYAYA:509158069809315850>}
                 //{❕}
 
-                
-                if (reaction.MessageId.ToString() == File.ReadAllText("EventMessage.txt") || reaction.MessageId.ToString() == "586248421715738629")
+                //reaction.MessageId.ToString() == File.ReadAllText("EventMessage.txt") || 
+                if (reaction.MessageId.ToString() == "586248421715738629")
                 {
                     var eventDetailChannel = (ISocketMessageChannel) discordSocketClient.GetChannel(572721078359556097);
                     var embededMessage = (IUserMessage) await eventDetailChannel.GetMessageAsync(586248421715738629);
@@ -313,9 +313,15 @@ namespace DiscordBeatSaberBot
                     var guild = discordSocketClient.GetGuild(505485680344956928);
                     var user = guild.GetUser(reaction.UserId);
                     //await (user as IGuildUser).AddRoleAsync(new role);
+                    //{<:indexvr:589754441545154570>}
                     if (reaction.Emote.ToString() == "<:megaotherway:526402963372245012>")
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Event");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:indexvr:589754441545154570>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Index");
                         await (user as IGuildUser).AddRoleAsync(role);
                     }
                     if (reaction.Emote.ToString() == "<:vive:537368500277084172>")
@@ -438,7 +444,8 @@ namespace DiscordBeatSaberBot
             SocketReaction reaction)
         {
 
-            if (reaction.MessageId.ToString() == File.ReadAllText("EventMessage.txt") || reaction.MessageId.ToString() == "586248421715738629")
+            //reaction.MessageId.ToString() == File.ReadAllText("EventMessage.txt") || 
+            if (reaction.MessageId.ToString() == "586248421715738629")
             {
                 var eventDetailChannel = (ISocketMessageChannel)discordSocketClient.GetChannel(572721078359556097);
                 var embededMessage = (IUserMessage)await eventDetailChannel.GetMessageAsync(586248421715738629);
@@ -477,6 +484,11 @@ namespace DiscordBeatSaberBot
                     if (reaction.Emote.ToString() == "<:megaotherway:526402963372245012>")
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Event");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    if (reaction.Emote.ToString() == "<:indexvr:589754441545154570>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Index");
                         await (user as IGuildUser).RemoveRoleAsync(role);
                     }
                     if (reaction.Emote.ToString() == "<:vive:537368500277084172>")

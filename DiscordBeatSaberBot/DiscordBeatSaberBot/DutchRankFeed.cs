@@ -120,14 +120,14 @@ namespace DiscordBeatSaberBot
                         {
                             imgUrl = "https://i.ibb.co/s1Rf1Lt/oculus.png";
                         }
-
+                       
                         // No Message
                         embedBuilders.Add(new EmbedBuilder
                         {
                             Title = "Congrats, " + newRankList.Item3[counter],
                             Description = newRankList.Item3[counter] + " is nu rank **#" + newRankList.Item2[counter] + "** van de Nederlandse beat saber spelers \n" + GetRankUpNotify(int.Parse(newRankList.Item2[counter]), oldRankList.FirstOrDefault(x => x.Value[1] == newRankList.Item4[counter]).Key, ulong.Parse(newRankList.Item4[counter].Replace("/u/", ""))),
-
-                            ThumbnailUrl = imgUrl,
+                            Url = "https://scoresaber.com" + newRankList.Item4[counter],
+                        ThumbnailUrl = imgUrl,
                                         
                             Color = GetColorFromRank(int.Parse(newRankList.Item2[counter])),
                             
