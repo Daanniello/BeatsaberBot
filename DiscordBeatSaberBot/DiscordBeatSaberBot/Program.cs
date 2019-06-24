@@ -755,6 +755,22 @@ namespace DiscordBeatSaberBot
                             await message.Channel.SendMessageAsync(embed);
                         }
                     }
+                    else if (message.Content.Contains(" changecolor"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        if (true)
+                        {
+                           
+                            await message.Channel.SendMessageAsync("", false, new EmbedBuilder
+                            {
+                                Title = "Je bent niet gemachtigt om je kleur aan te passen.",
+                                Description = "Win het weekelijkse 'meeste uren event' om deze functie te krijgen"
+                            });
+                        }
+                    }
                     else if (message.Content.Contains(" createevent"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions

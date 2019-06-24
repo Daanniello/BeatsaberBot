@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,7 +34,14 @@ namespace DiscordBeatSaberBot
         {
             while (true)
             {
-                await method();
+                try
+                {
+                    await method();
+                }
+                catch
+                {
+                    await discord.GetGuild(505485680344956928).GetTextChannel(550288060919709706).SendMessageAsync("ERROR: THREAD FUNCTION " + method.ToString() + " CRASHED \n" + method.GetMethodInfo().Name + "\n" + method.GetMethodInfo());
+                }
 
                 await Task.Delay(timespan);
             }
@@ -107,6 +115,11 @@ namespace DiscordBeatSaberBot
             };
 
             await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
+        }
+
+        public async Task DutchWeeklyHoursCheck()
+        {
+
         }
     }
 }
