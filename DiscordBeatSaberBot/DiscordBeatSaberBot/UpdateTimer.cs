@@ -13,12 +13,14 @@ namespace DiscordBeatSaberBot
     class UpdateTimer
     {
         private DiscordSocketClient discord;
+        private Logger _logger;
 
         public UpdateTimer(DiscordSocketClient discord)
         {
 
 
             this.discord = discord;
+            _logger = new Logger(discord);
         }
 
         public void Start(Func<Task> method, int hours, int minutes = 0, int seconds = 0)
@@ -38,9 +40,9 @@ namespace DiscordBeatSaberBot
                 {
                     await method();
                 }
-                catch
+                catch(Exception ex)
                 {
-                    await discord.GetGuild(505485680344956928).GetTextChannel(550288060919709706).SendMessageAsync("ERROR: THREAD FUNCTION " + method.ToString() + " CRASHED \n" + method.GetMethodInfo().Name + "\n" + method.GetMethodInfo());
+                    _logger.Log(Logger.LogCode.error, ex.ToString());
                 }
 
                 await Task.Delay(timespan);

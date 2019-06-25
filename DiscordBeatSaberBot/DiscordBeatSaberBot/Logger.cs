@@ -1,26 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
+using Discord;
+using Discord.WebSocket;
 
 namespace DiscordBeatSaberBot
 {
     class Logger
     {
-        internal enum Code{
+        private DiscordSocketClient _discord;
+
+        public enum LogCode{
             error,
             warning,
             debug
         }
 
-        public Logger()
+        public Logger(DiscordSocketClient discord)
         {
-            
+            _discord = discord;
         }
 
-        public void Log(Code code, string message)
+        public async void Log(LogCode code, string message)
         {
+            var color = Color.Green; 
+            switch (code)
+            {
+                case LogCode.error:
+                    color = Color.Red;
+                    break;
 
+                case LogCode.warning:
+                    color = Color.Orange;
+                    break;
+
+                case LogCode.debug:
+                    color = Color.Blue;
+                    break;
+            }
+            var embedbuilder = new EmbedBuilder
+            {
+                Title = code.ToString(),
+                Description = message,
+                Color = color
+            };
+            await _discord.GetGuild(505485680344956928).GetTextChannel(592877335355850752).SendMessageAsync("", false, embedbuilder.Build());
         }
     }
 }
