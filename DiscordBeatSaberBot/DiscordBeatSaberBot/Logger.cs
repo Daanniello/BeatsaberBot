@@ -21,7 +21,7 @@ namespace DiscordBeatSaberBot
             _discord = discord;
         }
 
-        public async void Log(LogCode code, string message)
+        public async void Log(LogCode code, string location, string message)
         {
             var color = Color.Green; 
             switch (code)
@@ -40,7 +40,7 @@ namespace DiscordBeatSaberBot
             }
             var embedbuilder = new EmbedBuilder
             {
-                Title = code.ToString(),
+                Title = code.ToString() + " Location: " + location,
                 Description = message,
                 Color = color
             };
