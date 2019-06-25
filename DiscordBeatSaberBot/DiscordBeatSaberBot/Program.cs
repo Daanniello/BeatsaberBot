@@ -18,6 +18,7 @@ namespace DiscordBeatSaberBot
         private DiscordSocketClient discordSocketClient;
         private List<SavedMessages> messageCache;
         private BeatSaberHourCounter DutchHourCounter;
+        private Logger _logger;
 
         public static void Main(string[] args)
         {
@@ -42,7 +43,7 @@ namespace DiscordBeatSaberBot
         {
 
 
-
+            
             discordSocketClient = new DiscordSocketClient();
             await log("Logging into Discord");
             await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
@@ -76,6 +77,7 @@ namespace DiscordBeatSaberBot
             try
             {
                 await Task.Delay(5000);
+                _logger = new Logger(discordSocketClient);
                 var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");
                 await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
                 DutchHourCounter = new BeatSaberHourCounter(discordSocketClient);
@@ -86,7 +88,7 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine(ex);
+                _logger.Log(Logger.LogCode.error, ex.ToString());
             }
         }
 
@@ -121,7 +123,7 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine(ex);
+                _logger.Log(Logger.LogCode.error, ex.ToString());
             }
         }
 
@@ -434,7 +436,7 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine(ex);
+                _logger.Log(Logger.LogCode.error, ex.ToString());
             }
             return Task.CompletedTask;
         }
@@ -600,7 +602,7 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine(ex);
+                _logger.Log(Logger.LogCode.error, ex.ToString());
             }
             return Task.CompletedTask;
         }
@@ -631,7 +633,7 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine(ex);
+                _logger.Log(Logger.LogCode.error, ex.ToString());
             }
             try
             {
@@ -1067,8 +1069,8 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Something went wrong, try again later", null, null));
                 Console.WriteLine(ex);
+                _logger.Log(Logger.LogCode.error, ex.ToString());
             }
 
 
@@ -1099,6 +1101,7 @@ namespace DiscordBeatSaberBot
                     catch (Exception ex)
                     {
                         Console.WriteLine("News Feed Crashed" + ex + "NL");
+                        _logger.Log(Logger.LogCode.error, "NL Feed Crashed \n\n" +  ex.ToString());
                     }
                     Console.WriteLine("..");
                     //await USRankFeed.USRankingFeed(discordSocketClient);
@@ -1125,7 +1128,9 @@ namespace DiscordBeatSaberBot
 
                     Console.WriteLine("News Feed Updated");
                 }
-                catch (TaskCanceledException) { }
+                catch (Exception ex) {
+                    _logger.Log(Logger.LogCode.error, ex.ToString());
+                }
         }
     }
 }
