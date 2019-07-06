@@ -14,10 +14,12 @@ namespace DiscordBeatSaberBot
     class BeatSaberHourCounter
     {
         private DiscordSocketClient discord;
+        private Logger _logger;
 
         public BeatSaberHourCounter(DiscordSocketClient discord)
         {
             this.discord = discord;
+            _logger = new Logger(discord);
             UpdateCounterInServer();
         }
 
@@ -61,7 +63,17 @@ namespace DiscordBeatSaberBot
                     if (discordId.Key == userOld.Id)
                     {
                         var dateTime = discordId.Value[1];
+
+                        if (dateTime == "")
+                        {
+                            _logger.Log(Logger.LogCode.error, "DateTime is empty! | " + dateTime);
+                        }
                         var totalHoursnew = DateTime.Now - DateTime.Parse(dateTime);
+
+                        if(totalHoursnew.TotalMinutes > 240)
+                        {
+                            _logger.Log(Logger.LogCode.warning, discord.GetUser(Convert.ToUInt64(discordId.Key)).Username + " heeft 4 uur+ beat saber gespeeld" + "\n " + "Minutes before: " + int.Parse(discordId.Value[0]));
+                        }
 
                         var currentHours = int.Parse(discordId.Value[0]);
                         var totalHours = (int)totalHoursnew.TotalMinutes + currentHours;

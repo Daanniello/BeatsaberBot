@@ -74,49 +74,68 @@ namespace DiscordBeatSaberBot
 
         public async Task EventNotification()
         {
-            var eventDetailChannel = (ISocketMessageChannel)discord.GetChannel(572721078359556097);
-            var embededMessage = (IUserMessage)await eventDetailChannel.GetMessageAsync(586248421715738629);
+       
+                var eventDetailChannel = (ISocketMessageChannel)discord.GetChannel(572721078359556097);
+                var embededMessage = (IUserMessage)await eventDetailChannel.GetMessageAsync(586248421715738629);
 
-            var embedInfo = embededMessage.Embeds.First();
-            var guild = discord.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
+                var embedInfo = embededMessage.Embeds.First();
+                var guild = discord.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
 
-            var time = embedInfo.Description.Split('\n');
-            var date = time[0].Replace("*", "").Trim();
-            var realDate = DateTime.ParseExact(date, "d-M-yyyy HH:mm:ss",
-                                       System.Globalization.CultureInfo.InvariantCulture);
-
-            var timeLeft = Math.Round(realDate.Subtract(DateTime.Now).TotalHours);
-            if (timeLeft == 1 )
-            {
-                var msg = await eventDetailChannel.SendMessageAsync("<@&538905985050476545>");
-                await msg.DeleteAsync();
-            }
-
-            if (timeLeft < 0)
-            {
+                if (embedInfo.Title.Contains("Geen events"))
+                {
                 var embedBuilder2 = new EmbedBuilder
                 {
                     Title = "Geen events op het moment",
                     Description = "",
-                    Footer = new EmbedFooterBuilder { Text = "Start over: " + timeLeft + " uur" },
+                    Footer = new EmbedFooterBuilder { Text = "" },
                     Color = embedInfo.Color
 
                 };
 
                 await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder2.Build());
+                await embededMessage.RemoveAllReactionsAsync();
                 return;
             }
 
-            var embedBuilder = new EmbedBuilder
-            {
-                Title = embedInfo.Title,
-                Description = embedInfo.Description,
-                Footer = new EmbedFooterBuilder { Text = "Start over: " + timeLeft + " uur" },
-                Color = embedInfo.Color
+                var time = embedInfo.Description.Split('\n');
+                var date = time[0].Replace("*", "").Trim();
+                var realDate = DateTime.ParseExact(date, "d-M-yyyy HH:mm:ss",
+                                           System.Globalization.CultureInfo.InvariantCulture);
 
-            };
+                var timeLeft = Math.Round(realDate.Subtract(DateTime.Now).TotalHours);
+                if (timeLeft == 1)
+                {
+                    var msg = await eventDetailChannel.SendMessageAsync("<@&538905985050476545>");
+                    await msg.DeleteAsync();
+                }
 
-            await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
+                if (timeLeft < 0)
+                {
+                    var embedBuilder2 = new EmbedBuilder
+                    {
+                        Title = "Geen events op het moment",
+                        Description = "",
+                        Footer = new EmbedFooterBuilder { Text = "Start over: " + timeLeft + " uur" },
+                        Color = embedInfo.Color
+
+                    };
+
+                    await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder2.Build());
+                    return;
+                }
+
+                var embedBuilder = new EmbedBuilder
+                {
+                    Title = embedInfo.Title,
+                    Description = embedInfo.Description,
+                    Footer = new EmbedFooterBuilder { Text = "Start over: " + timeLeft + " uur" },
+                    Color = embedInfo.Color
+
+                };
+
+                await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
+            
+   
         }
 
         public async Task DutchWeeklyHoursCheck()

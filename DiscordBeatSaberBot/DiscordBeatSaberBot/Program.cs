@@ -23,9 +23,23 @@ namespace DiscordBeatSaberBot
         public static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += Unhandled_Exception;
-       
 
-            new Program().MainAsync().GetAwaiter().GetResult();
+            var restart = true;
+            while (restart)
+            {
+                try
+                {
+                    new Program().MainAsync().GetAwaiter().GetResult();
+                    restart = false;
+                }
+                catch
+                {
+                    Console.WriteLine("BOT WENT DED");
+                    new Program().MainAsync().GetAwaiter().GetResult();
+                    restart = true;
+                }
+            }
+            
        
         }
 
@@ -34,9 +48,11 @@ namespace DiscordBeatSaberBot
 
         }
 
+     
         public static void Unhandled_Exception( object sender, UnhandledExceptionEventArgs e)
         {
-            Console.WriteLine(e);
+            
+
         }
 
         public async Task MainAsync()
@@ -60,6 +76,7 @@ namespace DiscordBeatSaberBot
             discordSocketClient.ReactionRemoved += ReactionRemoved;
             discordSocketClient.UserJoined += OnUserJoined;
             discordSocketClient.GuildMemberUpdated += OnUserUpdated;
+            discordSocketClient.Disconnected += onDisconnected;
             try
             {
                 Init();
@@ -72,6 +89,12 @@ namespace DiscordBeatSaberBot
 
             await Task.Delay(-1);
         }
+
+        private async Task onDisconnected(Exception e)
+        {
+            _logger.Log(Logger.LogCode.error, "BOT DISCONNECTED! \n " + e);
+        }
+
         private async void Init()
         {
             try
@@ -386,6 +409,12 @@ namespace DiscordBeatSaberBot
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Overige-Grip");
                         await (user as IGuildUser).AddRoleAsync(role);
                     }
+                    //{<:miitchelW:557923575944970241>}
+                    if (reaction.Emote.ToString() == "<:miitchelW:557923575944970241>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Botchal-Grip");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
                     if (reaction.Emote.ToString() == "<:terebilo:508313942297280518>")
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Normale-Grip");
@@ -399,6 +428,12 @@ namespace DiscordBeatSaberBot
                     if (reaction.Emote.ToString() == "🗺")
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Mapper");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    //{<:pavlov:593542245022695453>}
+                    if (reaction.Emote.ToString() == "<:pavlov:593542245022695453>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Pavlov");
                         await (user as IGuildUser).AddRoleAsync(role);
                     }
                     if (reaction.Emote.ToString() == "<:vrchat:537413837100548115>")
@@ -553,6 +588,11 @@ namespace DiscordBeatSaberBot
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Overige-Grip");
                         await (user as IGuildUser).RemoveRoleAsync(role);
                     }
+                    if (reaction.Emote.ToString() == "<:miitchelW:557923575944970241>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Botchal-Grip");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
                     if (reaction.Emote.ToString() == "<:terebilo:508313942297280518>")
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Normale-Grip");
@@ -576,6 +616,12 @@ namespace DiscordBeatSaberBot
                     if (reaction.Emote.ToString() == "<:osu:578679882553491493>")
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Osu!");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    //{<:pavlov:593542245022695453>}
+                    if (reaction.Emote.ToString() == "<:pavlov:593542245022695453>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Pavlov");
                         await (user as IGuildUser).RemoveRoleAsync(role);
                     }
                     if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")

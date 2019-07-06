@@ -23,6 +23,7 @@ namespace DiscordBeatSaberBot
 
         public async void Log(LogCode code, string message)
         {
+            if (message.Length > 2000) return;
             var color = Color.Green; 
             switch (code)
             {
