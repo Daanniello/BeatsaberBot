@@ -446,7 +446,7 @@ namespace DiscordBeatSaberBot
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Osu!");
                         await (user as IGuildUser).AddRoleAsync(role);
                     }
-                    if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
+                    if (reaction.Emote.ToString() == "<:minecraft:600768239261319217>")
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
                         await (user as IGuildUser).AddRoleAsync(role);
@@ -624,7 +624,7 @@ namespace DiscordBeatSaberBot
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Pavlov");
                         await (user as IGuildUser).RemoveRoleAsync(role);
                     }
-                    if (reaction.Emote.ToString() == "<:minecraft:533411817888808975>")
+                    if (reaction.Emote.ToString() == "<:minecraft:600768239261319217>")
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
                         await (user as IGuildUser).RemoveRoleAsync(role);
