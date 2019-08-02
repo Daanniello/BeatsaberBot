@@ -16,11 +16,15 @@ namespace DiscordBeatSaberBot
         private DiscordSocketClient discord;
         private Logger _logger;
 
-        public BeatSaberHourCounter(DiscordSocketClient discord)
+        public BeatSaberHourCounter(DiscordSocketClient discord, bool dontStart = false)
         {
             this.discord = discord;
             _logger = new Logger(discord);
-            UpdateCounterInServer();
+            if (!dontStart)
+            {
+                UpdateCounterInServer();
+            }
+            
         }
 
         public void TurnOnCounterForPlayer(SocketGuildUser userOld, SocketGuildUser userNew)
@@ -297,5 +301,50 @@ namespace DiscordBeatSaberBot
             IUserMessage msg = message as IUserMessage;
             await msg.ModifyAsync(x => { x.Embed = GetTop25BeatSaberHours();});
         }
+
+        public void ResetHours()
+        {
+            var topUser = GetTopDutchHoursUser();
+            Console.WriteLine(topUser);
+            discord.GetGuild(505485680344956928).GetTextChannel(510959349263499264).SendMessageAsync(
+                topUser.Mention + " heeft de meeste uren van de week in beat saber... Congrats! \nJe krijgt de VERSLAAFD role en mag een custom color uitkiezen \nDM SilerHaze#0001 om een hexcode uit te kiezen ^^ \nDe uren worden nu weer gereset."
+                );
+            InsertAndResetAllDutchMembers(discord);
+        }
+
+        private SocketUser GetTopDutchHoursUser()
+        {
+            var topdata = getData("../../../DiscordIDBeatsaberHourCounter.txt");
+
+            var counter = 0;
+            topdata.Remove(0000);
+            var sortedList = topdata.OrderByDescending(key => int.Parse(key.Value[0]));
+
+            var user = discord.GetUser(sortedList.First().Key);
+            return user;
+
+            Dictionary<ulong, string[]> getData(string filePath)
+            {
+                using (var r = new StreamReader(filePath))
+                {
+                    var json = r.ReadToEnd();
+                    try
+                    {
+                        var data = JsonConvert.DeserializeObject<Dictionary<ulong, string[]>>(json);
+                        if (data == null) return new Dictionary<ulong, string[]>();
+                        return data;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                    return null;
+
+                }
+            }
+
+        }
+
+
     }
 }

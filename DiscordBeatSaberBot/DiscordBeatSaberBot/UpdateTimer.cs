@@ -138,9 +138,31 @@ namespace DiscordBeatSaberBot
    
         }
 
-        public async Task DutchWeeklyHoursCheck()
+        public async Task DutchWeeklyEndHoursCheck()
         {
+            var dutchGuild = discord.GetGuild(505485680344956928);
+            var txtChannel = dutchGuild.GetTextChannel(572721078359556097);
+            var message = await txtChannel.GetMessageAsync(572721530262257675);
+            IUserMessage msg = message as IUserMessage;
 
+            var dateString = msg.Embeds.First().Footer.Value.ToString().Replace("Laatste update: ", "");
+            var day = dateString.Split('-')[0];
+            var month = dateString.Split('-')[1];
+            var year = dateString.Split('-')[2].Substring(0,4);
+            var hours = dateString.Split(' ')[1].Substring(0,2);
+            var minutes = dateString.Split(' ')[1].Split(':')[1].Substring(0,2);
+            var seconds = dateString.Split(' ')[1].Split(':')[2];
+         
+            var date = new DateTime(int.Parse(year), int.Parse(month), int.Parse(day), int.Parse(hours), int.Parse(minutes), int.Parse(seconds));
+            Console.WriteLine(date);
+
+            if(DateTime.Now > date)
+            {
+                var hourCounter = new BeatSaberHourCounter(discord, true);
+                hourCounter.ResetHours();
+            }
         }
+
+   
     }
 }

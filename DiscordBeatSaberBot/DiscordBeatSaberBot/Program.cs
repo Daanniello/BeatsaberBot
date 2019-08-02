@@ -108,6 +108,7 @@ namespace DiscordBeatSaberBot
                 var updater = new UpdateTimer(discordSocketClient);
                 updater.Start(() => updater.DutchDiscordUserCount(), 5);
                 updater.Start(() => updater.EventNotification(), 1);
+                updater.Start(() => updater.DutchWeeklyEndHoursCheck(), 1);
             }
             catch (Exception ex)
             {
