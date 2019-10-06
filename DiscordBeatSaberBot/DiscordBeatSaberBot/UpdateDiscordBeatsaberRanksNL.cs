@@ -38,12 +38,24 @@ namespace DiscordBeatSaberBot
                     var html = await client.GetStringAsync(url);
                     var doc = new HtmlAgilityPack.HtmlDocument();
                     doc.LoadHtml(html);
-
-                    var rankUnfixed = doc.DocumentNode.SelectSingleNode("//a[@href='/global?country=nl']").InnerText;
-                    rank = int.Parse(rankUnfixed.Replace("(", "").Replace(")", "").Replace("#", "").Replace(",", "").Trim());
-                }
+                    try
+                    {
+                        var rankUnfixed = doc.DocumentNode.SelectSingleNode("//a[@href='/global?country=nl']").InnerText;
+                        rank = int.Parse(rankUnfixed.Replace("(", "").Replace(")", "").Replace("#", "").Replace(",", "").Trim());
+                    }
+                    catch
+                    {
+                        var Logger = new Logger(discord);
+                        Logger.Log(Logger.LogCode.debug, "Cant get rank info from: " + url);
+                    }
+                 }
                 try
                 {
+                    if (rank == 0)
+                    {
+                        await DutchRankFeed.GiveRole(account[1], "Koos Rankloos", discord);
+                        continue;
+                    }
                     if (rank == 1)
                     {
                         await DutchRankFeed.GiveRole(account[1], "Nummer 1", discord);

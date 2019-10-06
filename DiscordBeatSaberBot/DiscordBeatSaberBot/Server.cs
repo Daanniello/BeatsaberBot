@@ -48,8 +48,8 @@ namespace DiscordBeatSaberBot
                 var embedBuilder = new EmbedBuilder
                 {
                     Title = "***Welkom in de Nederlandse Beat saber Discord!*** \n",
-                    Description = " \n**Info** \n We zijn een hechte community die samen de top van beat saber wilt bereiken. \n Om de 2 weken wordt er een beat saber multiplayer event gehouden. \n daarnaast wordt er om de maand een VRChat event gehouden.Verschillende andere events kunnen worden georganiseerd.\n"
-                        + "\n**Beat saber bot** \n Als bot, Kun je verschillende functie bij mij aanroepen in de discord server :wink: \n Zo kun je met ***!bs help*** al mijn functies vinden. \n Doe dit het liefst in de #bot-commands channel. \n"
+                    Description = " \n**Info** \n We zijn een hechte community die samen de top van beat saber wilt bereiken. \n"
+                        + "\n**Beat saber bot** \n Als bot, Kun je verschillende functies bij mij aanroepen. \n Zo kun je met ***!bs help*** al mijn functies bekijken. \n Doe dit het liefst in de #bot-commands channel. \n"
                         + "\n**Roles nodig?** \n Rollen geven in deze server verschillende functies en het zegt wat over jouw als beat saber gebruiker. \n In #role-toevoegen kun je reacties toevoegen om een specifieke role te krijgen. Neem een kijkje \n",
                     ThumbnailUrl = "https://cdn.discordapp.com/avatars/504633036902498314/8640cf47aeac6cf7fd071e111467cac5.png?size=256",
                     

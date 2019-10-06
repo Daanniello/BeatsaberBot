@@ -67,14 +67,19 @@ namespace DiscordBeatSaberBot
                     if (discordId.Key == userOld.Id)
                     {
                         var dateTime = discordId.Value[1];
+                        var totalHoursnew = new TimeSpan();
 
                         if (dateTime == "")
                         {
-                            _logger.Log(Logger.LogCode.error, "DateTime is empty! | " + dateTime);
+                            _logger.Log(Logger.LogCode.error, "DateTime is empty! | " + userNew.Username);
+                            return;
                         }
-                        var totalHoursnew = DateTime.Now - DateTime.Parse(dateTime);
+                        else
+                        {
+                            totalHoursnew = DateTime.Now - DateTime.Parse(dateTime);
+                        }
 
-                        if(totalHoursnew.TotalMinutes > 240)
+                        if (totalHoursnew.TotalMinutes > 240)
                         {
                             _logger.Log(Logger.LogCode.warning, discord.GetUser(Convert.ToUInt64(discordId.Key)).Username + " heeft 4 uur+ beat saber gespeeld" + "\n " + "Minutes before: " + int.Parse(discordId.Value[0]));
                         }
@@ -307,12 +312,12 @@ namespace DiscordBeatSaberBot
             var topUser = GetTopDutchHoursUser();
             Console.WriteLine(topUser);
             discord.GetGuild(505485680344956928).GetTextChannel(510959349263499264).SendMessageAsync(
-                topUser.Mention + " heeft de meeste uren van de week in beat saber... Congrats! \nJe krijgt de VERSLAAFD role en mag een custom color uitkiezen \nDM SilerHaze#0001 om een hexcode uit te kiezen ^^ \nDe uren worden nu weer gereset."
+                topUser.Mention + " heeft de meeste uren van de week in beat saber... Congrats! \nJe krijgt de VERSLAAFD role. \nJe kunt nu de command \n\n**!bs rolecolor [Hexcode]**\n\n gebruiken om de kleur van de role aan te passen\n\nDe uren worden nu weer gereset."
                 );
             InsertAndResetAllDutchMembers(discord);
         }
 
-        private SocketUser GetTopDutchHoursUser()
+        public SocketUser GetTopDutchHoursUser()
         {
             var topdata = getData("../../../DiscordIDBeatsaberHourCounter.txt");
 

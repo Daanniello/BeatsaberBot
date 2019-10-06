@@ -2,6 +2,15 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v2.0": {
+      "ColorHashSharp/1.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/ColorHashSharp.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/ColorHashSharp.dll": {}
+        }
+      },
       "Discord.Net/1.0.2": {
         "type": "package",
         "dependencies": {
@@ -1827,6 +1836,17 @@
     }
   },
   "libraries": {
+    "ColorHashSharp/1.0.0": {
+      "sha512": "6gdjaqMmMHznjqy+Iu8huHKMUUp1ioxb8YgEfmTL6gU30Jt7WFH6OwR5Had8qqJlyGaxoN1GHN+G8Fg2XTdFqg==",
+      "type": "package",
+      "path": "colorhashsharp/1.0.0",
+      "files": [
+        ".signature.p7s",
+        "colorhashsharp.1.0.0.nupkg.sha512",
+        "colorhashsharp.nuspec",
+        "lib/netstandard2.0/ColorHashSharp.dll"
+      ]
+    },
     "Discord.Net/1.0.2": {
       "sha512": "ZGazwrLmI6xdKaDK2XTdCwrx2BxUf+Z5FDL8uY8FVkto+/qkUD/6a3G1JzkSKA4N9Hf4sKgn806WX9xtPC1mvw==",
       "type": "package",
@@ -6134,6 +6154,7 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v2.0": [
+      "ColorHashSharp >= 1.0.0",
       "Discord.Net >= 1.0.2",
       "HtmlAgilityPack >= 1.8.9",
       "Microsoft.NETCore.App >= 2.0.0",
@@ -6181,6 +6202,10 @@
     "frameworks": {
       "netcoreapp2.0": {
         "dependencies": {
+          "ColorHashSharp": {
+            "target": "Package",
+            "version": "[1.0.0, )"
+          },
           "Discord.Net": {
             "target": "Package",
             "version": "[1.0.2, )"

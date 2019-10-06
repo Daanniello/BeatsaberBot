@@ -1,19 +1,28 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "c745678a7203cdd4960191a922b7ca11dcf2b78e"
+    "signature": "a48ba82db169b5852e4ee9f5626e8de69762a078"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.0": {
       "DiscordBeatSaberBot/1.0.0": {
         "dependencies": {
+          "ColorHashSharp": "1.0.0",
           "Discord.Net": "1.0.2",
           "HtmlAgilityPack": "1.8.9",
           "RestSharp": "106.6.9"
         },
         "runtime": {
           "DiscordBeatSaberBot.dll": {}
+        }
+      },
+      "ColorHashSharp/1.0.0": {
+        "runtime": {
+          "lib/netstandard2.0/ColorHashSharp.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "Discord.Net/1.0.2": {
@@ -1164,6 +1173,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "ColorHashSharp/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-6gdjaqMmMHznjqy+Iu8huHKMUUp1ioxb8YgEfmTL6gU30Jt7WFH6OwR5Had8qqJlyGaxoN1GHN+G8Fg2XTdFqg==",
+      "path": "colorhashsharp/1.0.0",
+      "hashPath": "colorhashsharp.1.0.0.nupkg.sha512"
     },
     "Discord.Net/1.0.2": {
       "type": "package",

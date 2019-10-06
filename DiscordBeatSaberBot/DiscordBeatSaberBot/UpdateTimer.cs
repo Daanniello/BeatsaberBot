@@ -49,7 +49,7 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public async Task DutchDiscordUserCount()
+        public async Task DutchDiscordUserCount(DateTime startTime)
         {
             //discord.GetGuild(505485680344956928).GetTextChannel(572721078359556097).SendMessageAsync("Test");
             var guild = discord.GetGuild(505485680344956928);
@@ -64,6 +64,7 @@ namespace DiscordBeatSaberBot
                     new EmbedFieldBuilder{Name = "Aantal gebruikers", Value = guild.Users.Count},
                     new EmbedFieldBuilder{Name = "Server gemaakt op", Value = guild.CreatedAt},
                     new EmbedFieldBuilder{Name = "Aantal emotes", Value = guild.Emotes.Count},
+                    new EmbedFieldBuilder{Name = "Beat Saber bot uptime", Value = "Days: " + (DateTime.Now - startTime).Days + " Hours: " + (DateTime.Now - startTime).Hours}
                 },
                 Footer = new EmbedFooterBuilder { Text = "Laatste update: " + DateTime.Now },
                 Color = Color.Red,
@@ -144,8 +145,7 @@ namespace DiscordBeatSaberBot
             var txtChannel = dutchGuild.GetTextChannel(572721078359556097);
             var message = await txtChannel.GetMessageAsync(572721530262257675);
             IUserMessage msg = message as IUserMessage;
-
-            var dateString = msg.Embeds.First().Footer.Value.ToString().Replace("Laatste update: ", "");
+            var dateString = msg.Embeds.First().Description.Split("\n")[1].Trim();
             var day = dateString.Split('-')[0];
             var month = dateString.Split('-')[1];
             var year = dateString.Split('-')[2].Substring(0,4);
@@ -156,11 +156,31 @@ namespace DiscordBeatSaberBot
             var date = new DateTime(int.Parse(year), int.Parse(month), int.Parse(day), int.Parse(hours), int.Parse(minutes), int.Parse(seconds));
             Console.WriteLine(date);
 
-            if(DateTime.Now > date)
+            var endDate = date.AddDays(7);
+            Console.WriteLine(endDate);
+
+            if(DateTime.Now > endDate)
             {
                 var hourCounter = new BeatSaberHourCounter(discord, true);
                 hourCounter.ResetHours();
-            }
+                try
+                {
+                    var user = discord.GetGuild(505485680344956928).Users.Where(u => u.Roles.Where(r => r.Name == "Verslaafd").Count() > 0);
+                    var role = discord.GetGuild(505485680344956928).Roles.Where(r => r.Name == "Verslaafd").First();
+
+                    if (user.Count() > 0)
+                    {
+                        await user.First().RemoveRoleAsync(role);
+                    }
+                    var newUser = hourCounter.GetTopDutchHoursUser();
+                    await discord.GetGuild(505485680344956928).GetUser(newUser.Id).AddRoleAsync(role);
+                    
+                }
+                catch
+                {
+                    _logger.Log(Logger.LogCode.error, "Could not reassign verslaafd role");
+                }
+               }
         }
 
    

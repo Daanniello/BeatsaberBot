@@ -11,6 +11,7 @@ using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 
+
 namespace DiscordBeatSaberBot
 {
     public class Program
@@ -19,28 +20,14 @@ namespace DiscordBeatSaberBot
         private List<SavedMessages> messageCache;
         private BeatSaberHourCounter DutchHourCounter;
         private Logger _logger;
+        private DateTime _startTime;
 
         public static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += Unhandled_Exception;
 
-            var restart = true;
-            while (restart)
-            {
-                try
-                {
-                    new Program().MainAsync().GetAwaiter().GetResult();
-                    restart = false;
-                }
-                catch
-                {
-                    Console.WriteLine("BOT WENT DED");
-                    new Program().MainAsync().GetAwaiter().GetResult();
-                    restart = true;
-                }
-            }
-            
-       
+            new Program().MainAsync().GetAwaiter().GetResult();
+
         }
 
         public static void Unhandled_ThreadException(object sender,ThreadExceptionEventArgs e)
@@ -49,10 +36,11 @@ namespace DiscordBeatSaberBot
         }
 
      
-        public static void Unhandled_Exception( object sender, UnhandledExceptionEventArgs e)
+        public static async void Unhandled_Exception( object sender, UnhandledExceptionEventArgs e)
         {
-            
-
+            Console.WriteLine("Unhandled_Exception\n\n" + e.ToString());
+            //Environment.Exit(Environment.ExitCode);
+            new Program().MainAsync().GetAwaiter().GetResult();
         }
 
         public async Task MainAsync()
@@ -65,10 +53,17 @@ namespace DiscordBeatSaberBot
             await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
             await discordSocketClient.StartAsync();
             await log("Discord Bot is now live");
-            TimerRunning(new CancellationToken());
+            try
+            {
+                var RankingFeedThread = new Thread(() => TimerRunning(new CancellationToken()));
+                RankingFeedThread.Start();
+                //TimerRunning(new CancellationToken());
+            }
+            catch
+            {
+                _logger.Log(Logger.LogCode.error, "Thread exeption");
+            }
             messageCache = new List<SavedMessages>();
-            var memeFeed = new MemeFeed(discordSocketClient);
-            memeFeed.TimerRunning(new CancellationToken());
 
             //Events
             discordSocketClient.MessageReceived += MessageReceived;
@@ -100,19 +95,20 @@ namespace DiscordBeatSaberBot
             try
             {
                 await Task.Delay(5000);
+                _startTime = DateTime.Now;
                 _logger = new Logger(discordSocketClient);
                 var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");
                 await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
                 DutchHourCounter = new BeatSaberHourCounter(discordSocketClient);
 
                 var updater = new UpdateTimer(discordSocketClient);
-                updater.Start(() => updater.DutchDiscordUserCount(), 5);
+                updater.Start(() => updater.DutchDiscordUserCount(_startTime), 1);
                 updater.Start(() => updater.EventNotification(), 1);
                 updater.Start(() => updater.DutchWeeklyEndHoursCheck(), 1);
             }
             catch (Exception ex)
             {
-                _logger.Log(Logger.LogCode.error, ex.ToString());
+                _logger.Log(Logger.LogCode.error, "Init Exception!! \n" + ex.ToString());
             }
         }
 
@@ -153,6 +149,7 @@ namespace DiscordBeatSaberBot
 
         private async Task OnUserJoined(SocketGuildUser guildUser)
         {
+            _logger.Log(Logger.LogCode.debug, "New user joined: " + guildUser.Username);
             var server = new Server(discordSocketClient);
             await server.UserJoinedMessage(guildUser);
 
@@ -334,15 +331,30 @@ namespace DiscordBeatSaberBot
 
                 }
 
-                if (channel.Id == 510227606822584330)
+                if (channel.Id == 510227606822584330 || channel.Id == 627292184143724544)
                 {
+
                     var guild = discordSocketClient.GetGuild(505485680344956928);
+                    if (channel.Id == 510227606822584330)
+                    {
+                        guild = discordSocketClient.GetGuild(505485680344956928);
+                    }
+                    else if (channel.Id == 627292184143724544)
+                    {
+                        guild = discordSocketClient.GetGuild(627156958880858113);
+                    }
                     var user = guild.GetUser(reaction.UserId);
                     //await (user as IGuildUser).AddRoleAsync(new role);
                     //{<:indexvr:589754441545154570>}
                     if (reaction.Emote.ToString() == "<:megaotherway:526402963372245012>")
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Event");
+                        await (user as IGuildUser).AddRoleAsync(role);
+                    }
+                    //{<:pimax:614170153185312789>}
+                    if (reaction.Emote.ToString() == "<:pimax:614170153185312789>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Pimax");
                         await (user as IGuildUser).AddRoleAsync(role);
                     }
                     if (reaction.Emote.ToString() == "<:indexvr:589754441545154570>")
@@ -452,7 +464,8 @@ namespace DiscordBeatSaberBot
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
                         await (user as IGuildUser).AddRoleAsync(role);
                     }
-                    if (reaction.Emote.ToString() == "<:AYAYA:509158069809315850>")
+                    // or {<:AWEE:588758943686328330>}
+                    if (reaction.Emote.ToString() == "<:AYAYA:509158069809315850>" || reaction.Emote.ToString() == "<:AWEE:588758943686328330>")
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Anime");
                         await (user as IGuildUser).AddRoleAsync(role);
@@ -514,9 +527,18 @@ namespace DiscordBeatSaberBot
             //{<:oculus:537368385206616075>}
             try
             {
-                if (channel.Id == 510227606822584330)
+                if (channel.Id == 510227606822584330 || channel.Id == 627292184143724544)
                 {
                     var guild = discordSocketClient.GetGuild(505485680344956928);
+                    if (channel.Id == 510227606822584330)
+                    {
+                        guild = discordSocketClient.GetGuild(505485680344956928);
+                    }
+                    else if (channel.Id == 627292184143724544)
+                    {
+                        guild = discordSocketClient.GetGuild(627156958880858113);
+                    }
+                    
                     var user = guild.GetUser(reaction.UserId);
                     //await (user as IGuildUser).AddRoleAsync(new role);
                     if (reaction.Emote.ToString() == "<:megaotherway:526402963372245012>")
@@ -527,6 +549,12 @@ namespace DiscordBeatSaberBot
                     if (reaction.Emote.ToString() == "<:indexvr:589754441545154570>")
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Index");
+                        await (user as IGuildUser).RemoveRoleAsync(role);
+                    }
+                    //<:pimax:614170153185312789>
+                    if (reaction.Emote.ToString() == "<:pimax:614170153185312789>")
+                    {
+                        var role = guild.Roles.FirstOrDefault(x => x.Name == "Pimax");
                         await (user as IGuildUser).RemoveRoleAsync(role);
                     }
                     if (reaction.Emote.ToString() == "<:vive:537368500277084172>")
@@ -630,7 +658,8 @@ namespace DiscordBeatSaberBot
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Minecraft");
                         await (user as IGuildUser).RemoveRoleAsync(role);
                     }
-                    if (reaction.Emote.ToString() == "<:AYAYA:509158069809315850>")
+                    // or {<:AWEE:588758943686328330>}
+                    if (reaction.Emote.ToString() == "<:AYAYA:509158069809315850>" || reaction.Emote.ToString() == "<:AWEE:588758943686328330>")
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == "Anime");
                         await (user as IGuildUser).RemoveRoleAsync(role);
@@ -714,6 +743,36 @@ namespace DiscordBeatSaberBot
                             Timeout = Configuration.TypingTimeOut
                         });
                         await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTop10Players());
+                    }
+                    else if (message.Content.Contains(" rolecolor"))
+                    {
+                        await message.Channel.TriggerTypingAsync(new RequestOptions
+                        {
+                            Timeout = Configuration.TypingTimeOut
+                        });
+                        var moderationHelper = new ModerationHelper(discordSocketClient, 505485680344956928);
+                        if (moderationHelper.UserHasRole(message.Author, "Staff") || moderationHelper.UserHasRole(message.Author, "Verslaafd")) {
+                            var roles = discordSocketClient.GetGuild(505485680344956928).Roles;
+                            SocketRole role = roles.FirstOrDefault(r => r.Name == "Verslaafd");
+                            try
+                            {
+                                var hexcode = message.Content.Split(" ")[2].Trim();
+                                var colorConverter = new System.Drawing.ColorConverter();
+                                dynamic color = colorConverter.ConvertFromString(hexcode);
+                                await role.ModifyAsync(r => r.Color = new Discord.Color(color.R, color.G, color.B));
+                                await message.Channel.SendMessageAsync("Color has been changed");
+                            }
+                            catch
+                            {
+                                
+                                await message.Channel.SendMessageAsync("Error: Color is not correct");
+                            }
+                        }
+                        else
+                        {
+                            await message.Channel.SendMessageAsync("You do not have permission");
+                        }
+
                     }
                     else if (message.Content.Contains(" topsong"))
                     {
@@ -1129,14 +1188,16 @@ namespace DiscordBeatSaberBot
             //var startTime = DateTime.Now;
             var watch = Stopwatch.StartNew();
             while (!token.IsCancellationRequested)
+            {
+
                 try
                 {
-                    Console.WriteLine("Updating news feed...");
+                    Console.WriteLine("Updating news feed in 90 sec");
                     await Task.Delay(90000 - (int)(watch.ElapsedMilliseconds % 1000), token);
                     //await Feed.UpdateCheck(discordSocketClient);
                     //await Feed.RanksInfoFeed(discordSocketClient);
 
-                    Console.WriteLine(".");
+                    Console.WriteLine("Startin NL feed...");
                     try
                     {
                         var stopwatch = new Stopwatch();
@@ -1148,11 +1209,10 @@ namespace DiscordBeatSaberBot
                     catch (Exception ex)
                     {
                         Console.WriteLine("News Feed Crashed" + ex + "NL");
-                        _logger.Log(Logger.LogCode.error, "NL Feed Crashed \n\n" +  ex.ToString());
+                        _logger.Log(Logger.LogCode.error, "NL Feed Crashed \n\n" + ex.ToString());
                     }
-                    Console.WriteLine("..");
                     //await USRankFeed.USRankingFeed(discordSocketClient);
-                    Console.WriteLine("...");
+                    Console.WriteLine("Startin AU_NZ feed...");
                     try
                     {
                         await AU_NZ_RankFeed.AU_NZRankingFeed(discordSocketClient);
@@ -1161,7 +1221,7 @@ namespace DiscordBeatSaberBot
                     {
                         Console.WriteLine("News Feed Crashed" + ex + "CND");
                     }
-                    Console.WriteLine("....");
+                    Console.WriteLine("Startin GB feed...");
                     try
                     {
                         await GbRankFeed.GbRankingFeed(discordSocketClient);
@@ -1170,14 +1230,14 @@ namespace DiscordBeatSaberBot
                     {
                         Console.WriteLine("News Feed Crashed" + ex + "GB");
                     }
-                    Console.WriteLine(".....");
-
-
                     Console.WriteLine("News Feed Updated");
                 }
-                catch (Exception ex) {
+                catch (Exception ex)
+                {
                     _logger.Log(Logger.LogCode.error, ex.ToString());
                 }
+                Console.WriteLine("Task token: " + token.IsCancellationRequested);
+            }
         }
     }
 }

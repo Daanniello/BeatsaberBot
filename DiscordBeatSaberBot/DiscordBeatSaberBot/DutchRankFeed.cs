@@ -17,6 +17,7 @@ namespace DiscordBeatSaberBot
     public static class DutchRankFeed
     {
         private static DiscordSocketClient _discord;
+        private static Logger _logger;
 
         public static async Task<(List<string>,List<string>,List<string>, List<string>)> GetDutchRankList()
         {
@@ -29,11 +30,45 @@ namespace DiscordBeatSaberBot
             for (var x = 1; x <= tab; x++)
             {
                 var url = "https://scoresaber.com/global/" + x + "&country=nl";
+ 
                 using (var client = new HttpClient())
                 {
-                    var html = await client.GetStringAsync(url);
+                    var html = "";
+                    try
+                    {
+                        var task = client.GetStringAsync(url);
+                        if (await Task.WhenAny(task, Task.Delay(2000)) == task)
+                        {
+                            // task completed within timeout
+                            html = await task;
+                        }
+                        else
+                        {
+                            // timeout logic
+                            //throw new Exception();
+                            _logger.Log(Logger.LogCode.warning, "NL scoresaber rate limit");
+                            return (playerImg, playerRank, playerName, playerId);
+                        }
+                        
+                        Console.WriteLine("Getting info from scoresaber: " + url);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Log(Logger.LogCode.debug, "NL Html error \n\n" + ex);
+                        _logger.Log(Logger.LogCode.debug, "Html: " + html);
+                        _logger.Log(Logger.LogCode.debug, "Url: " + url);
+                        throw ex;
+                    }
+
                     var doc = new HtmlAgilityPack.HtmlDocument();
-                    doc.LoadHtml(html);
+                    try
+                    {
+                        doc.LoadHtml(html);
+                    }
+                    catch
+                    {
+                        _logger.Log(Logger.LogCode.error, "Error with HTML: \n" + html);
+                    }
 
                     var table = doc.DocumentNode.SelectNodes("//figure[@class='image is-24x24']");
                     playerImg.AddRange(table.Descendants("img").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("src", ""))).ToList());
@@ -75,6 +110,9 @@ namespace DiscordBeatSaberBot
         {
             var filePath = "../../../DutchRankList.txt";
             var rankList = await GetDutchRankList();
+
+            if (rankList.Item1.Count == 0) return null;
+
             var newData = new Dictionary<int, List<string>>();
 
             for (var x = 0; x < rankList.Item1.Count; x++)
@@ -98,7 +136,8 @@ namespace DiscordBeatSaberBot
             var oldRankList = await GetOldRankList();
             await UpdateDutchRankList();
             var newRankList = await GetDutchRankList();
-            
+
+            if (newRankList.Item1.Count == 0) return new List<EmbedBuilder>();
 
             var oldCache = new List<string>();
 
@@ -118,21 +157,41 @@ namespace DiscordBeatSaberBot
                         var imgUrl = newRankList.Item1[counter].Replace("\"", "");
                         if (imgUrl == "/imports/images/oculus.png")
                         {
-                            imgUrl = "https://i.ibb.co/s1Rf1Lt/oculus.png";
+                            imgUrl = "https://scoresaber.com/imports/images/oculus.png";
                         }
-                       
-                        // No Message
-                        embedBuilders.Add(new EmbedBuilder
+                        else
                         {
-                            Title = "Congrats, " + newRankList.Item3[counter],
-                            Description = newRankList.Item3[counter] + " is nu rank **#" + newRankList.Item2[counter] + "** van de Nederlandse beat saber spelers \n" + GetRankUpNotify(int.Parse(newRankList.Item2[counter]), oldRankList.FirstOrDefault(x => x.Value[1] == newRankList.Item4[counter]).Key, ulong.Parse(newRankList.Item4[counter].Replace("/u/", ""))),
-                            Url = "https://scoresaber.com" + newRankList.Item4[counter],
-                        ThumbnailUrl = imgUrl,
-                                        
-                            Color = GetColorFromRank(int.Parse(newRankList.Item2[counter])),
-                            
+                            imgUrl = "https://scoresaber.com" + imgUrl;
+                        }
 
-                        });
+                        // No Message
+                        try
+                        {
+                            embedBuilders.Add(new EmbedBuilder
+                            {
+                                Title = "Congrats, " + newRankList.Item3[counter],
+                                Description = newRankList.Item3[counter] + " is nu rank **#" + newRankList.Item2[counter] + "** van de Nederlandse beat saber spelers \n" + GetRankUpNotify(int.Parse(newRankList.Item2[counter]), oldRankList.FirstOrDefault(x => x.Value[1] == newRankList.Item4[counter]).Key, ulong.Parse(newRankList.Item4[counter].Replace("/u/", ""))),
+                                Url = "https://scoresaber.com" + newRankList.Item4[counter],
+                                ThumbnailUrl = imgUrl,
+
+                                Color = GetColorFromRank(int.Parse(newRankList.Item2[counter])),
+
+
+                            });
+                           }
+                        catch
+                        {
+                            embedBuilders.Add(new EmbedBuilder
+                            {
+                                Title = "Congrats, " + newRankList.Item3[counter],
+                                Description = newRankList.Item3[counter] + " is nu rank **#" + newRankList.Item2[counter] + "** van de Nederlandse beat saber spelers \n" + GetRankUpNotify(int.Parse(newRankList.Item2[counter]), oldRankList.FirstOrDefault(x => x.Value[1] == newRankList.Item4[counter]).Key, ulong.Parse(newRankList.Item4[counter].Replace("/u/", ""))),
+                                Color = GetColorFromRank(int.Parse(newRankList.Item2[counter])),
+                            });
+                            var Logger = new Logger(_discord);
+                            Logger.Log(Logger.LogCode.debug, "-NL feed- \nUrl is not correct. \nWrong url is from: " + newRankList.Item3[counter] + "\nAnd the url is: " + imgUrl);
+
+                        }
+
                         Console.WriteLine("Feed NL - Message:" + newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the US beat saber spelers");
                     }
                     else
@@ -153,27 +212,27 @@ namespace DiscordBeatSaberBot
         public static async Task DutchRankingFeed(DiscordSocketClient discord)
         {
             _discord = discord;
+            _logger = new Logger(discord);
             var guilds = discord.Guilds.Where(x => x.Id == 439514151040057344);
-            //var channels = guilds.First().Channels.Where(x => x.Id == 504392851229114369);
-            //channels.First().
-            var embeds = await MessagesToSend();
+            var embeds = new List<EmbedBuilder>();
+            try
+            {
+                embeds = await MessagesToSend();
+            }
+            catch(Exception ex)
+            {
+                _logger.Log(Logger.LogCode.warning, "Scoresaber is being annoying NL");
+                _logger.Log(Logger.LogCode.debug, ex.ToString());
+                
+            }
+            
             foreach (var embed in embeds)
             {
                 await discord.GetGuild(505485680344956928).GetTextChannel(520613984668221440).SendMessageAsync("", false, embed);
             }
-            
-
 
             //NL Server 
             //505485680344956928
-            //505732796245868564
-
-            // test bot server
-            //439514151040057344 guild
-            //504392851229114369 channel
-            //var channelToMessageTo = channels.Select(x => x.)                                            
-
-
         }
 
         private static Color GetColorFromRank(int rank)
@@ -221,32 +280,32 @@ namespace DiscordBeatSaberBot
             if (rank == 1 && oldRank > 1)
             {
                 GiveRole(scoresaberId.ToString(), "Nummer 1");
-                message = "Een nieuwe #1 ;O praise the new King";
+                //message = "Een nieuwe #1 ;O praise the new King";
             }
             else if (rank <= 3 && oldRank > 3)
             {
                 GiveRole(scoresaberId.ToString(), "Top 3");
-                message = "Een nieuwe top #3 makker GGGGGGGGG";
+                //message = "Een nieuwe top #3 makker GGGGGGGGG";
             }
             else if (rank <= 10 && oldRank > 10)
             {
                 GiveRole(scoresaberId.ToString(), "Top 10");
-                message = "Een nieuwe top #10 gamer, Kolonisatie bitches!!";
+                //message = "Een nieuwe top #10 gamer, Kolonisatie bitches!!";
             }
             else if (rank <= 25 && oldRank > 25)
             {
                 GiveRole(scoresaberId.ToString(), "Top 25");
-                message = "Een nieuwe top #25, grats!! watch out tho, iemand komt zn rank weer terug halen";
+                //message = "Een nieuwe top #25, grats!! watch out tho, iemand komt zn rank weer terug halen";
             }
             else if (rank <= 50 && oldRank > 50)
             {
                 GiveRole(scoresaberId.ToString(), "Top 50");
-                message = "Een nieuwe top #50!!!, YAY stuur een invite voor de discord >;d nU!";
+                //message = "Een nieuwe top #50!!!, YAY stuur een invite voor de discord >;d nU!";
             }
             else if (rank <= 100 && oldRank > 100)
             {
                 GiveRole(scoresaberId.ToString(), "Top 100");
-                message = "Een nieuwe top #100, het begin van een nieuwe pro";
+                //message = "Een nieuwe top #100, het begin van een nieuwe pro";
             }
             else if (rank <= 250 && oldRank == null)
             {
@@ -322,6 +381,7 @@ namespace DiscordBeatSaberBot
                 "Top 50",
                 "Top 100",
                 "Top 250",
+                "Top 501+"
             };
             RoleAssignment r = new RoleAssignment(_discord);
             var userDiscordId = r.GetDiscordIdWithScoresaberId(scoresaberId);
