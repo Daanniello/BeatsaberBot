@@ -14,12 +14,12 @@ using Newtonsoft.Json;
 
 namespace DiscordBeatSaberBot
 {
-    public static class GbRankFeed
+    public static class BeRankFeed
     {
         private static DiscordSocketClient _discord;
         private static Logger _logger;
 
-        public static async Task<(List<string>,List<string>,List<string>, List<string>)> GetGbRankList()
+        public static async Task<(List<string>,List<string>,List<string>, List<string>)> GetBeRankList()
         {
             var tab = 5;
             var playerImg = new List<string>();
@@ -31,7 +31,7 @@ namespace DiscordBeatSaberBot
 
             for (var x = 1; x <= tab; x++)
             {
-                var url = "https://scoresaber.com/global/" + x + "&country=gb";
+                var url = "https://scoresaber.com/global/" + x + "&country=be";
               
                     var html = "";
                     try
@@ -64,7 +64,7 @@ namespace DiscordBeatSaberBot
 
         public static async Task<Dictionary<int, List<string>>> GetOldRankList()
         {
-            var filePath = "../../../GbRankList.txt";
+            var filePath = "../../../BeRankList.txt";
 
             var data = new Dictionary<int, List<string>>();
             try
@@ -83,10 +83,10 @@ namespace DiscordBeatSaberBot
             return data;
         }
 
-        public static async Task<Dictionary<int, List<string>>> UpdateGbRankList()
+        public static async Task<Dictionary<int, List<string>>> UpdateBeRankList()
         {
-            var filePath = "../../../GbRankList.txt";
-            var rankList = await GetGbRankList();
+            var filePath = "../../../BeRankList.txt";
+            var rankList = await GetBeRankList();
             var newData = new Dictionary<int, List<string>>();
 
             for (var x = 0; x < rankList.Item1.Count; x++)
@@ -108,8 +108,8 @@ namespace DiscordBeatSaberBot
             var embedBuilders = new List<EmbedBuilder>();
 
             var oldRankList = await GetOldRankList();
-            await UpdateGbRankList();
-            var newRankList = await GetGbRankList();
+            await UpdateBeRankList();
+            var newRankList = await GetBeRankList();
             
 
             var oldCache = new List<string>();
@@ -139,7 +139,7 @@ namespace DiscordBeatSaberBot
                             embedBuilders.Add(new EmbedBuilder
                             {
                                 Title = "Congrats, " + newRankList.Item3[counter],
-                                Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the GB beat saber players",
+                                Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the BE beat saber players",
                                 Url = "https://scoresaber.com" + newRankList.Item4[counter],
                                 ThumbnailUrl = imgUrl,
 
@@ -153,15 +153,15 @@ namespace DiscordBeatSaberBot
                             embedBuilders.Add(new EmbedBuilder
                             {
                                 Title = "Congrats, " + newRankList.Item3[counter],
-                                Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the GB beat saber players",
+                                Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the BE beat saber players",
                                 Color = GetColorFromRank(int.Parse(newRankList.Item2[counter])),
                             });
                             var Logger = new Logger(_discord);
-                            Logger.Log(Logger.LogCode.debug, "-GB feed- \nUrl is not correct. \nWrong url is from: " + newRankList.Item3[counter] + "\nAnd the url is: " + imgUrl);
+                            Logger.Log(Logger.LogCode.debug, "-BE feed- \nUrl is not correct. \nWrong url is from: " + newRankList.Item3[counter] + "\nAnd the url is: " + imgUrl);
 
                         }
 
-                        Console.WriteLine("Feed GB - Message:" + newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the GB beat saber players");
+                        Console.WriteLine("Feed BE - Message:" + newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the BE beat saber players");
                     }
                     else
                     {
@@ -178,12 +178,11 @@ namespace DiscordBeatSaberBot
             return embedBuilders;
         }
 
-        public static async Task GbRankingFeed(DiscordSocketClient discord)
+        public static async Task BeRankingFeed(DiscordSocketClient discord)
         {
             _discord = discord;
             _logger = new Logger(discord);
 
-            var guilds = discord.Guilds.Where(x => x.Id == 483482746824687616);
             //var channels = guilds.First().Channels.Where(x => x.Id == 504392851229114369);
             //channels.First().
             var embeds = new List<EmbedBuilder>();
@@ -193,11 +192,11 @@ namespace DiscordBeatSaberBot
             }
             catch
             {
-                _logger.Log(Logger.LogCode.warning, "Scoresaber is being annoying GB");
+                _logger.Log(Logger.LogCode.warning, "Scoresaber is being annoying BE");
                 return;
             }
-            var guild = discord.GetGuild(483482746824687616);
-            var channel = guild.GetTextChannel(535187354122584070);
+            var guild = discord.GetGuild(561207570669371402);
+            var channel = guild.GetTextChannel(634091663526199307);
             foreach (var embed in embeds)
             {
                 try

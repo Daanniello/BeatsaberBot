@@ -27,31 +27,34 @@ namespace DiscordBeatSaberBot
             
         }
 
+        //ToDo: Might have bugs
         public void TurnOnCounterForPlayer(SocketGuildUser userOld, SocketGuildUser userNew)
         {
+            if (userOld.Activity == null && userNew.Activity == null) return;
+            //if (userOld.Activity.Type == ActivityType.Listening && userNew.Activity.Type == ActivityType.Listening) return;
             
             var userOldName = "";
             var userNewName = "";
 
-            if (userOld.Game == null)
+            if (userOld.Activity == null)
             {
                 userOldName = "null";
             }
             else
             {
-                userOldName = userOld.Game.Value.ToString();
+                userOldName = userOld.Activity.Name;
             }
 
-            if (userNew.Game == null)
+            if (userNew.Activity == null)
             {
                 userNewName = "null";
             }
             else
             {
-                userNewName = userNew.Game.Value.ToString();
+                userNewName = userNew.Activity.Name;
             }
 
-            if (IsStreamingWithBeatsaber(userNew) == false && IsStreamingWithBeatsaber(userOld) || userOldName == "Beat Saber" && userNewName != "Beat Saber" ) //Finished Gaming
+            if (/*IsStreamingWithBeatsaber(userNew) == false && IsStreamingWithBeatsaber(userOld) || */ userOldName == "Beat Saber" && userNewName != "Beat Saber" ) //Finished Gaming
             {
                 var data = getData("../../../DiscordIDBeatsaberHourCounter.txt");
                 if (data.Count == 0)
@@ -105,7 +108,7 @@ namespace DiscordBeatSaberBot
                 UpdateCounterInServer();
             }
 
-            if (userOldName != "Beat Saber" && userNewName == "Beat Saber" || IsStreamingWithBeatsaber(userNew)) //Starting Gaming
+            if (userOldName != "Beat Saber" && userNewName == "Beat Saber" /* || IsStreamingWithBeatsaber(userNew) */) //Starting Gaming
             {
                 var data = getData("../../../DiscordIDBeatsaberHourCounter.txt");
                 if (data.Count == 0)
@@ -250,6 +253,7 @@ namespace DiscordBeatSaberBot
 
         }
 
+        //ToDo: Broken cause of game.
         public bool IsStreamingWithBeatsaber(SocketGuildUser userNew)
         {
             if (userNew.Id == 138439306774577152)

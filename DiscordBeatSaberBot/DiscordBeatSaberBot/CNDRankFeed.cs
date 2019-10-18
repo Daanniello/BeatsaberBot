@@ -27,11 +27,12 @@ namespace DiscordBeatSaberBot
             var playerName = new List<string>();
             var playerId = new List<string>();
 
+            var client = new HttpClient();
+
             for (var x = 1; x <= tab; x++)
             {
                 var url = "https://scoresaber.com/global/" + x + "&country=ca";
-                using (var client = new HttpClient())
-                {
+            
                     var html = "";
                     try
                     {
@@ -56,7 +57,7 @@ namespace DiscordBeatSaberBot
                     playerName.AddRange(names.Select(a => WebUtility.HtmlDecode(a.InnerText).Replace(@"\r\n", "").Trim()).ToList());
                     playerId.AddRange(names.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList());
 
-                }
+                
             }
 
             return (playerImg, playerRank, playerName, playerId);
@@ -198,7 +199,7 @@ namespace DiscordBeatSaberBot
             }
             foreach (var embed in embeds)
             {
-                await discord.GetGuild(497497184418398229).GetTextChannel(521836270918303754).SendMessageAsync("", false, embed);
+                await discord.GetGuild(497497184418398229).GetTextChannel(521836270918303754).SendMessageAsync("", false, embed.Build());
             }
 
             //CND Server

@@ -65,7 +65,7 @@ namespace DiscordBeatSaberBot
                     ThumbnailUrl = user.GetAvatarUrl()
                 };
 
-                await welkomChannel.SendMessageAsync("", false, embedBuilder);
+                await welkomChannel.SendMessageAsync("", false, embedBuilder.Build());
             }
         }
 

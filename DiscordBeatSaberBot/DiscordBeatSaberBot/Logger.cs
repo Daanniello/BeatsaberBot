@@ -11,6 +11,7 @@ namespace DiscordBeatSaberBot
         private DiscordSocketClient _discord;
 
         public enum LogCode{
+            fatal_error,
             error,
             warning,
             debug
@@ -37,6 +38,10 @@ namespace DiscordBeatSaberBot
 
                 case LogCode.debug:
                     color = Color.Blue;
+                    break;
+                case LogCode.fatal_error:
+                    color = Color.DarkRed;
+                    message = "<@138439306774577152> \n" + message;
                     break;
             }
             var embedbuilder = new EmbedBuilder

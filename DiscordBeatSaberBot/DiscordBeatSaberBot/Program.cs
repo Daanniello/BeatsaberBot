@@ -32,22 +32,31 @@ namespace DiscordBeatSaberBot
 
         public static void Unhandled_ThreadException(object sender,ThreadExceptionEventArgs e)
         {
-
+            Console.WriteLine("Unhandled_Exception\n\n" + e.ToString());
         }
-
+        
+        public static void Unhandled_HttpException(object sender, System.Net.Http.HttpRequestException e)
+        {
+            Console.WriteLine("Unhandled_Exception\n\n" + e.ToString());
+        }
      
         public static async void Unhandled_Exception( object sender, UnhandledExceptionEventArgs e)
         {
             Console.WriteLine("Unhandled_Exception\n\n" + e.ToString());
             //Environment.Exit(Environment.ExitCode);
-            new Program().MainAsync().GetAwaiter().GetResult();
+            //new Program().MainAsync().GetAwaiter().GetResult();
+        }
+
+        public static void Unhandled_TaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            Console.WriteLine("Unhandled_Exception\n\n" + e.ToString());
+            e.SetObserved();
+
         }
 
         public async Task MainAsync()
         {
 
-
-            
             discordSocketClient = new DiscordSocketClient();
             await log("Logging into Discord");
             await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
@@ -66,6 +75,7 @@ namespace DiscordBeatSaberBot
             messageCache = new List<SavedMessages>();
 
             //Events
+            TaskScheduler.UnobservedTaskException += Unhandled_TaskException;            
             discordSocketClient.MessageReceived += MessageReceived;
             discordSocketClient.ReactionAdded += ReactionAdded;
             discordSocketClient.ReactionRemoved += ReactionRemoved;
@@ -715,6 +725,7 @@ namespace DiscordBeatSaberBot
             {
                 if (message.Content.Substring(0, 3).Contains("!bs"))
                 {
+                    Console.WriteLine(message.Content);
                     if (message.Content.Contains(" help"))
                     {
                         await message.Channel.TriggerTypingAsync(new RequestOptions
@@ -742,7 +753,8 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTop10Players());
+                        var embedTask = await BeatSaberInfoExtension.GetTop10Players();
+                        await message.Channel.SendMessageAsync("", false, embedTask.Build());
                     }
                     else if (message.Content.Contains(" rolecolor"))
                     {
@@ -784,11 +796,13 @@ namespace DiscordBeatSaberBot
                         if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Trim().Count() == 11)
                         {
                             var scoresaberId = r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetBestSongWithId(scoresaberId));
+                            var embedTask = await BeatSaberInfoExtension.GetBestSongWithId(scoresaberId);
+                            await message.Channel.SendMessageAsync("", false, embedTask.Build());
                         }
                         else
                         {
-                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopSongList(message.Content.Substring(12)));
+                            var embedTask = await BeatSaberInfoExtension.GetTopSongList(message.Content.Substring(12));
+                            await message.Channel.SendMessageAsync("", false, embedTask.Build());
                         }
 
                     }
@@ -807,7 +821,8 @@ namespace DiscordBeatSaberBot
 
 
                                 var scoresaberId = r.GetScoresaberIdWithDiscordId(discordId);
-                                await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.SearchLinkedPlayer(scoresaberId));
+                                var embedTask = await BeatSaberInfoExtension.SearchLinkedPlayer(scoresaberId);
+                                await message.Channel.SendMessageAsync("", false, embedTask.Build());
                             }
                             else
                             {
@@ -817,13 +832,14 @@ namespace DiscordBeatSaberBot
                         else if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 10)
                         {
                             var scoresaberId = r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.SearchLinkedPlayer(scoresaberId));
+                            var embedTask = await BeatSaberInfoExtension.SearchLinkedPlayer(scoresaberId);
+                            await message.Channel.SendMessageAsync("", false, embedTask.Build());
                         }
                         else
                         {
                             foreach (var embed in await BeatSaberInfoExtension.GetPlayer(message.Content.Substring(11)))
                             {
-                                var completedMessage = await message.Channel.SendMessageAsync("", false, embed);
+                                var completedMessage = await message.Channel.SendMessageAsync("", false, embed.Build());
 
                                 //await completedMessage.AddReactionAsync(new Emoji("⬅"));
                                 //await completedMessage.AddReactionAsync(new Emoji("➡"));
@@ -876,7 +892,7 @@ namespace DiscordBeatSaberBot
                             {
                                 Title = "Je bent niet gemachtigt om je kleur aan te passen.",
                                 Description = "Win het weekelijkse 'meeste uren event' om deze functie te krijgen"
-                            });
+                            }.Build());
                         }
                     }
                     else if (message.Content.Contains(" createevent"))
@@ -907,7 +923,8 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetInviteLink());
+                        var embedTask = await BeatSaberInfoExtension.GetInviteLink();
+                        await message.Channel.SendMessageAsync("", false, embedTask.Build());
                     }
                     else if (message.Content.Contains(" poll"))
                     {
@@ -932,7 +949,8 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.PlayerComparer(message.Content.Substring(12)));
+                        var embedTask = await BeatSaberInfoExtension.PlayerComparer(message.Content.Substring(12));
+                        await message.Channel.SendMessageAsync("", false, embedTask.Build());
                     }
                     else if (message.Content.Contains(" resetdutchhours"))
                     {
@@ -977,7 +995,8 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetTopxCountry(message.Content.Substring(12)));
+                        var embedTask = await BeatSaberInfoExtension.GetTopxCountry(message.Content.Substring(12));
+                        await message.Channel.SendMessageAsync("", false, embedTask.Build());
                     }
                     else if (message.Content.Contains(" mod"))
                     {
@@ -985,7 +1004,7 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Mods Installer", "https://github.com/Umbranoxio/BeatSaberModInstaller/releases/download/2.1.6/BeatSaberModManager.exe", null, null));
+                        await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Mods Installer", "https://github.com/Umbranoxio/BeatSaberModInstaller/releases/download/2.1.6/BeatSaberModManager.exe", null, null).Build());
                     }
                     else if (message.Content.Contains(" topdutchhours"))
                     {
@@ -1015,13 +1034,13 @@ namespace DiscordBeatSaberBot
                         try { playerObject = await BeatSaberInfoExtension.GetPlayerInfo(player); }
                         catch (Exception ex)
                         {
-                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", ex.ToString(), null, null));
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", ex.ToString(), null, null).Build());
                             return Task.CompletedTask;
                         }
 
                         if (playerObject.Count == 0)
                         {
-                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Player found with the name " + player, "Try again with a different name", null, null));
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Player found with the name " + player, "Try again with a different name", null, null).Build());
                             return Task.CompletedTask;
                         }
 
@@ -1044,7 +1063,7 @@ namespace DiscordBeatSaberBot
 
                         if (_data.ContainsKey(message.Author.Id) && !firstItem)
                         {
-                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Already contains this Discord user", "Sorry, you can only follow one beat saber player on the moment attached to your discord", null, null));
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Already contains this Discord user", "Sorry, you can only follow one beat saber player on the moment attached to your discord", null, null).Build());
                             return Task.CompletedTask;
                         }
 
@@ -1057,7 +1076,7 @@ namespace DiscordBeatSaberBot
                         }
                         catch
                         {
-                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Could not add player into the RankList. Player: " + player + " DiscordId: " + message.Author.Id + " Rank: " + playerObject.First().rank, null, null));
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Could not add player into the RankList. Player: " + player + " DiscordId: " + message.Author.Id + " Rank: " + playerObject.First().rank, null, null).Build());
                             return Task.CompletedTask;
                         }
 
@@ -1067,7 +1086,7 @@ namespace DiscordBeatSaberBot
                             serializer.Serialize(file, _data);
                         }
 
-                        await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Successfully added to the Ranking Feed", "You will now be updated in DM when you lose or gain too many ranks, based on your beat saber rank.", null, null));
+                        await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Successfully added to the Ranking Feed", "You will now be updated in DM when you lose or gain too many ranks, based on your beat saber rank.", null, null).Build());
                     }
                     else if (message.Content.Contains(" addFeed"))
                     {
@@ -1118,9 +1137,9 @@ namespace DiscordBeatSaberBot
                                 serializer.Serialize(file, _data);
                             }
 
-                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Beat Saber Feed", "Successfully added the beat saber feed to this channel, I will post new beat saber updates directly into this channel.", null, null));
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Beat Saber Feed", "Successfully added the beat saber feed to this channel, I will post new beat saber updates directly into this channel.", null, null).Build());
                         }
-                        else { await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Beat Saber Feed", "Unsuccessfully added the beat saber feed to this channel, This channel is already in the list", null, null)); }
+                        else { await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Beat Saber Feed", "Unsuccessfully added the beat saber feed to this channel, This channel is already in the list", null, null).Build()); }
                     }
                     else if (message.Content.Contains(" pplist"))
                     {
@@ -1128,7 +1147,7 @@ namespace DiscordBeatSaberBot
                         {
                             Timeout = Configuration.TypingTimeOut
                         });
-                        await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Performance Points Song List", "Google spreadsheet with all ranked songs listed \n https://docs.google.com/spreadsheets/d/1ufWgF2tWS0gD3pIr0_d37EkIcmCrUy1x6hyzPEZDPNc/edit#gid=1775412672", null, null));
+                        await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Performance Points Song List", "Google spreadsheet with all ranked songs listed \n https://docs.google.com/spreadsheets/d/1ufWgF2tWS0gD3pIr0_d37EkIcmCrUy1x6hyzPEZDPNc/edit#gid=1775412672", null, null).Build());
                     }
                     else if (message.Content.Contains(" recentsong"))
                     {
@@ -1140,12 +1159,14 @@ namespace DiscordBeatSaberBot
                         if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 14)
                         {
                             var scoresaberId = r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetRecentSongWithId(scoresaberId));
+                            var embedTask = await BeatSaberInfoExtension.GetRecentSongWithId(scoresaberId);
+                            await message.Channel.SendMessageAsync("", false, embedTask.Build());
                         }
                         else
                         {
                             var id = await BeatSaberInfoExtension.GetPlayerId(message.Content.Substring(15));
-                            await message.Channel.SendMessageAsync("", false, await BeatSaberInfoExtension.GetRecentSongWithId(id[0]));
+                            var embedTask = await BeatSaberInfoExtension.GetRecentSongWithId(id[0]);
+                            await message.Channel.SendMessageAsync("", false, embedTask.Build());
                         }
                     }
                     else if (message.Content.Contains(" ranks"))
@@ -1155,7 +1176,7 @@ namespace DiscordBeatSaberBot
                             Timeout = Configuration.TypingTimeOut
                         });
                         var builderList = await BeatSaberInfoExtension.GetRanks();
-                        foreach (var builder in builderList) await message.Channel.SendMessageAsync("", false, builder);
+                        foreach (var builder in builderList) await message.Channel.SendMessageAsync("", false, builder.Build());
                     }
                     else if (message.Content.Contains(" songs"))
                     {
@@ -1164,7 +1185,7 @@ namespace DiscordBeatSaberBot
                             Timeout = Configuration.TypingTimeOut
                         });
                         var builderList = await BeatSaberInfoExtension.GetSongs(message.Content.Substring(10));
-                        if (builderList.Count > 4) await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Search term to wide", "I can not post more as 6 songs. " + "\n Try searching with a more specific word please. \n" + ":rage:", null, null));
+                        if (builderList.Count > 4) await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Search term to wide", "I can not post more as 6 songs. " + "\n Try searching with a more specific word please. \n" + ":rage:", null, null).Build());
                         else
                             foreach (var builder in builderList)
                                 await message.Channel.SendMessageAsync("", false, builder.Build());
@@ -1229,6 +1250,15 @@ namespace DiscordBeatSaberBot
                     catch (Exception ex)
                     {
                         Console.WriteLine("News Feed Crashed" + ex + "GB");
+                    }
+                    Console.WriteLine("Startin BE feed...");
+                    try
+                    {
+                        await BeRankFeed.BeRankingFeed(discordSocketClient);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("News Feed Crashed" + ex + "BE");
                     }
                     Console.WriteLine("News Feed Updated");
                 }

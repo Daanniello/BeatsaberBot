@@ -19,7 +19,7 @@ namespace DiscordBeatSaberBot
             builder.WithDescription(description);
             if (contentTitle != null || content != null)
             {
-                builder.AddInlineField(contentTitle, content);
+                builder.AddField(contentTitle, content);
             }
             builder.Timestamp = DateTimeOffset.Now;
 

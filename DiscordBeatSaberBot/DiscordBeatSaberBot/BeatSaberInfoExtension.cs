@@ -48,7 +48,7 @@ namespace DiscordBeatSaberBot
             var builder = new EmbedBuilder();
             builder.WithTitle("Top 10 Beatsaber Players");
             builder.WithDescription("Top 10 best beatsaber players");
-            builder.AddInlineField("Players", topInfo);
+            builder.AddField("Players", topInfo);            
 
             builder.WithColor(Color.Red);
             return builder;
@@ -114,7 +114,7 @@ namespace DiscordBeatSaberBot
                     builder.ThumbnailUrl = player.imgLink;
                     builder.Title = "**" + playerName.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
                     builder.Url = "https://scoresaber.com" + playerId.First();
-                    builder.AddInlineField("`ID: "+playerId.First().Replace("/u/", "") +"`","```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "``` \n [Click here for steam link](" + player.steamLink + ")\n\n");
+                    builder.AddField("`ID: "+playerId.First().Replace("/u/", "") +"`","```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "``` \n [Click here for steam link](" + player.steamLink + ")\n\n");
  
                 }
                 else
@@ -122,7 +122,7 @@ namespace DiscordBeatSaberBot
                     builder.ThumbnailUrl = "https://scoresaber.com/imports/images/oculus.png";
                     builder.Title = "**" + playerName.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
                     builder.Url = "https://scoresaber.com" + playerId.First();
-                    builder.AddInlineField("`ID: " + playerId.First().Replace("/u/", "") + "`", "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "```");
+                    builder.AddField("`ID: " + playerId.First().Replace("/u/", "") + "`", "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "```");
                 }
 
 
@@ -227,7 +227,7 @@ namespace DiscordBeatSaberBot
                     builder.ThumbnailUrl = player.imgLink;
                     builder.Title = "**" + player.name.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
                     builder.Url = "https://scoresaber.com/u/" + ScoresaberId;
-                    builder.AddInlineField("`ID: "+ ScoresaberId.Replace("/u/", "") +"`","```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "``` \n [Click here for steam link](" + player.steamLink + ")\n\n");
+                    builder.AddField("`ID: "+ ScoresaberId.Replace("/u/", "") +"`","```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "``` \n [Click here for steam link](" + player.steamLink + ")\n\n");
  
                 }
                 else
@@ -235,7 +235,7 @@ namespace DiscordBeatSaberBot
                     builder.ThumbnailUrl = "https://scoresaber.com/imports/images/oculus.png";
                     builder.Title = "**" + player.name.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
                     builder.Url = "https://scoresaber.com/u/" + ScoresaberId;
-                    builder.AddInlineField("`ID: " + ScoresaberId.Replace("/u/", "") + "`", "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "```");
+                    builder.AddField("`ID: " + ScoresaberId.Replace("/u/", "") + "`", "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "```");
                 }
 
 
@@ -356,7 +356,7 @@ namespace DiscordBeatSaberBot
             var output = "";
             for (var x = 1; x <= 10; x++) { output += "#" + x + topList[x].First() + "\n"; }
 
-            builder.AddInlineField("Top Players", output);
+            builder.AddField("Top Players", output);
 
             builder.WithColor(Color.Red);
             return builder;
@@ -448,6 +448,7 @@ namespace DiscordBeatSaberBot
             var url = "https://scoresaber.com/u/" + playerId.Replace("/u/", "");
             using (var client = new HttpClient())
             {
+                
                 var html = await client.GetStringAsync(url);
                 var doc = new HtmlAgilityPack.HtmlDocument();
                 doc.LoadHtml(html);
@@ -464,7 +465,7 @@ namespace DiscordBeatSaberBot
             }
 
             var builder = new EmbedBuilder();
-            builder.AddInlineField("Song", "name: " + songName + "\n" + "difficulty: " + songDifficulty + "\n" + "Author: " + songAuthor + "\n" + "pp from this song: " + playerTopSongPP + "\n" + playerTopSongAcc + "\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
+            builder.AddField("Song", "name: " + songName + "\n" + "difficulty: " + songDifficulty + "\n" + "Author: " + songAuthor + "\n" + "pp from this song: " + playerTopSongPP + "\n" + playerTopSongAcc + "\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
             builder.WithImageUrl(playerTopSongImg);
             try
             {
@@ -514,7 +515,7 @@ namespace DiscordBeatSaberBot
 
 
             var builder = new EmbedBuilder();
-            builder.AddInlineField(playerName, "**name:** " + songName + "\n" + "**difficulty:** " + songDifficulty + "\n" + "**Author:** " + songAuthor + "\n" + "**pp from this song:** " + playerTopSongPP + "\n" + playerTopSongAcc + "\n" + "**Rank: " + playerSongRank +"**"+ "\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
+            builder.AddField(playerName, "**name:** " + songName + "\n" + "**difficulty:** " + songDifficulty + "\n" + "**Author:** " + songAuthor + "\n" + "**pp from this song:** " + playerTopSongPP + "\n" + playerTopSongAcc + "\n" + "**Rank: " + playerSongRank +"**"+ "\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
             builder.WithImageUrl(playerTopSongImg);
             try
             {
@@ -593,11 +594,12 @@ namespace DiscordBeatSaberBot
             var Names = new List<string>();
             var ids = new List<string>();
 
+            var client = new HttpClient();
+
             for (var x = 1; x <= tab; x++)
             {
                 var url = "https://scoresaber.com/global/" + x + "&country=" + input[0];
-                using (var client = new HttpClient())
-                {
+                
                     var html = await client.GetStringAsync(url);
                     var doc = new HtmlAgilityPack.HtmlDocument();
                     doc.LoadHtml(html);
@@ -607,8 +609,10 @@ namespace DiscordBeatSaberBot
 
                     table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
                     ids = table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList();
-                }
+                
             }
+
+            client.Dispose();
 
             var topx = new List<string>();
             for (var x = 0; x < int.Parse(input[1]); x++)
@@ -628,7 +632,7 @@ namespace DiscordBeatSaberBot
                 counter += 1;
             }
 
-            builder.AddInlineField("Top " + input[1] + " " + input[0].ToUpper() + " :flag_" + input[0] + ":", output);
+            builder.AddField("Top " + input[1] + " " + input[0].ToUpper() + " :flag_" + input[0] + ":", output);
             return builder;
         }
 
@@ -737,7 +741,7 @@ namespace DiscordBeatSaberBot
                 counter += 1;
             }
 
-            builder.AddInlineField("RankList from " + playerName + " \nCountry: " + country + " " + " :flag_" + country.ToLower() + ":", output);
+            builder.AddField("RankList from " + playerName + " \nCountry: " + country + " " + " :flag_" + country.ToLower() + ":", output);
             return builder;
         }
 
@@ -1060,7 +1064,7 @@ namespace DiscordBeatSaberBot
             //    "PP" + "\n" +
             //    "TotalScore" + "\n");
 
-            builder.AddInlineField(splitting[0] + " " + player1.countryIcon.ToLower(), "#" + player1.rank + "\n" + "#" + player1.countryRank + "\n" + player1.playCount + "\n" + player1.pp + "pp" + "\n" + player1.totalScore + "\n");
+            builder.AddField(splitting[0] + " " + player1.countryIcon.ToLower(), "#" + player1.rank + "\n" + "#" + player1.countryRank + "\n" + player1.playCount + "\n" + player1.pp + "pp" + "\n" + player1.totalScore + "\n");
 
             var pp1 = int.Parse(player1.pp.Split(".")[0]);
             var pp2 = int.Parse(player2.pp.Split(".")[0]);
@@ -1068,9 +1072,9 @@ namespace DiscordBeatSaberBot
 
             var totalPointsDifference = Math.Abs((int.Parse(player1.totalScore.Replace(",", "")) - int.Parse(player2.totalScore.Replace(",", ""))));
 
-            builder.AddInlineField(":heavy_minus_sign:", (Math.Abs(player1.rank - player2.rank)) + "\n" + (Math.Abs(player1.countryRank - player2.countryRank)) + "\n" + (Math.Abs(player1.playCount - player2.playCount)) + "\n" + ppDifference + " pp" + "\n" + totalPointsDifference.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("us")));
+            builder.AddField(":heavy_minus_sign:", (Math.Abs(player1.rank - player2.rank)) + "\n" + (Math.Abs(player1.countryRank - player2.countryRank)) + "\n" + (Math.Abs(player1.playCount - player2.playCount)) + "\n" + ppDifference + " pp" + "\n" + totalPointsDifference.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("us")));
 
-            builder.AddInlineField(splitting[1] + " " + player2.countryIcon.ToLower(), "#" + player2.rank + "\n" + "#" + player2.countryRank + "\n" + player2.playCount + "\n" + player2.pp + "pp" + "\n" + player2.totalScore + "\n");
+            builder.AddField(splitting[1] + " " + player2.countryIcon.ToLower(), "#" + player2.rank + "\n" + "#" + player2.countryRank + "\n" + player2.playCount + "\n" + player2.pp + "pp" + "\n" + player2.totalScore + "\n");
 
 
             return builder;

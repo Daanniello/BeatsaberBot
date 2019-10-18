@@ -28,13 +28,14 @@ namespace DiscordBeatSaberBot
 
             }
 
+            var client = new HttpClient();
+
             var staticUrl = "https://scoresaber.com/u/";
             foreach (var account in accounts)
             {
                 var url = staticUrl + account[1];
                 var rank = 0;
-                using (var client = new HttpClient())
-                {
+               
                     var html = await client.GetStringAsync(url);
                     var doc = new HtmlAgilityPack.HtmlDocument();
                     doc.LoadHtml(html);
@@ -48,7 +49,7 @@ namespace DiscordBeatSaberBot
                         var Logger = new Logger(discord);
                         Logger.Log(Logger.LogCode.debug, "Cant get rank info from: " + url);
                     }
-                 }
+                 
                 try
                 {
                     if (rank == 0)
@@ -98,6 +99,8 @@ namespace DiscordBeatSaberBot
                 }
 
             }
+
+            client.Dispose();
 
             Console.WriteLine("Done updating accounts NL");
         }

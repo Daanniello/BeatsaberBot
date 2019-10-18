@@ -199,7 +199,7 @@ namespace DiscordBeatSaberBot
             {
                 try
                 {               
-                    await channel.SendMessageAsync("", false, embed);
+                    await channel.SendMessageAsync("", false, embed.Build());
                 }
                 catch(Exception ex)
                 {

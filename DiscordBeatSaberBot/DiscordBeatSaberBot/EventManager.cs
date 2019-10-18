@@ -92,22 +92,22 @@ namespace DiscordBeatSaberBot
             var newMessage = "";
             do
             {
-                var iMessage = await message.Channel.GetMessagesAsync(1).Flatten();
+                var iMessage = await message.Channel.GetMessagesAsync(1).Flatten().First();
                 
-                var id = iMessage.First().Author.Id;
+                var id = iMessage.Author.Id;
 
                 if (id == message.Author.Id)
                 {
                     try
                     {
-                        newMessage = iMessage.First().Attachments.First().Url;
+                        newMessage = iMessage.Attachments.First().Url;
                         break;
                     }
                     catch
                     {
 
                     }
-                    newMessage = iMessage.First().Content;
+                    newMessage = iMessage.Content;
                     break;
                 }
                 await Task.Delay(1000);

@@ -27,12 +27,14 @@ namespace DiscordBeatSaberBot
             var playerName = new List<string>();
             var playerId = new List<string>();
 
+            var client = new HttpClient();
+
             for (var x = 1; x <= tab; x++)
             {
                 var url = "https://scoresaber.com/global/" + x + "&country=nl";
  
-                using (var client = new HttpClient())
-                {
+                
+                
                     var html = "";
                     try
                     {
@@ -79,8 +81,10 @@ namespace DiscordBeatSaberBot
                     var names = doc.DocumentNode.SelectNodes("//td[@class='player']");
                     playerName.AddRange(names.Select(a => WebUtility.HtmlDecode(a.InnerText).Replace(@"\r\n", "").Trim()).ToList());
                     playerId.AddRange(names.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href",""))).ToList());
-                }
+                
             }
+
+            client.Dispose();
 
             return (playerImg, playerRank, playerName, playerId);
         }
@@ -226,9 +230,10 @@ namespace DiscordBeatSaberBot
                 
             }
             
+            //Todo: Might break here
             foreach (var embed in embeds)
             {
-                await discord.GetGuild(505485680344956928).GetTextChannel(520613984668221440).SendMessageAsync("", false, embed);
+                await discord.GetGuild(505485680344956928).GetTextChannel(520613984668221440).SendMessageAsync("", false, embed.Build());
             }
 
             //NL Server 

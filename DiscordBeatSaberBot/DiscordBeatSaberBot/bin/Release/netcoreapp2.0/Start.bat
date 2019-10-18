@@ -1,0 +1,1 @@
+dotnet DiscordBeatSaberBot.dll

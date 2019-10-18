@@ -149,7 +149,7 @@ namespace DiscordBeatSaberBot
             var embeds = await MessagesToSend();
             foreach (var embed in embeds)
             {
-                await discord.GetGuild(509146143985500160).GetTextChannel(521717100381863967).SendMessageAsync("", false, embed);
+                await discord.GetGuild(509146143985500160).GetTextChannel(521717100381863967).SendMessageAsync("", false, embed.Build());
             }
 
             //US Server
