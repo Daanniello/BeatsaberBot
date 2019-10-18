@@ -62,16 +62,7 @@ namespace DiscordBeatSaberBot
             await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
             await discordSocketClient.StartAsync();
             await log("Discord Bot is now live");
-            try
-            {
-                var RankingFeedThread = new Thread(() => TimerRunning(new CancellationToken()));
-                RankingFeedThread.Start();
-                //TimerRunning(new CancellationToken());
-            }
-            catch
-            {
-                _logger.Log(Logger.LogCode.error, "Thread exeption");
-            }
+            
             messageCache = new List<SavedMessages>();
 
             //Events
@@ -115,6 +106,17 @@ namespace DiscordBeatSaberBot
                 updater.Start(() => updater.DutchDiscordUserCount(_startTime), 1);
                 updater.Start(() => updater.EventNotification(), 1);
                 updater.Start(() => updater.DutchWeeklyEndHoursCheck(), 1);
+
+                try
+                {
+                    var RankingFeedThread = new Thread(() => TimerRunning(new CancellationToken()));
+                    RankingFeedThread.Start();
+                    //TimerRunning(new CancellationToken());
+                }
+                catch
+                {
+                    _logger.Log(Logger.LogCode.error, "Thread exeption");
+                }
             }
             catch (Exception ex)
             {
@@ -1213,10 +1215,13 @@ namespace DiscordBeatSaberBot
 
                 try
                 {
-                    Console.WriteLine("Updating news feed in 90 sec");
-                    await Task.Delay(90000 - (int)(watch.ElapsedMilliseconds % 1000), token);
-                    //await Feed.UpdateCheck(discordSocketClient);
-                    //await Feed.RanksInfoFeed(discordSocketClient);
+                    var belgiumRankFeed = new CountryRankFeed(discordSocketClient, "BE");
+                    var gbRankFeed = new CountryRankFeed(discordSocketClient, "GB");
+                    var au_nzRankFeed = new CountryRankFeed(discordSocketClient, "AU", "NZ");
+
+
+                    Console.WriteLine("Updating news feed in 60 sec");
+                    await Task.Delay(600000 - (int)(watch.ElapsedMilliseconds % 1000), token);
 
                     Console.WriteLine("Startin NL feed...");
                     try
@@ -1232,34 +1237,41 @@ namespace DiscordBeatSaberBot
                         Console.WriteLine("News Feed Crashed" + ex + "NL");
                         _logger.Log(Logger.LogCode.error, "NL Feed Crashed \n\n" + ex.ToString());
                     }
-                    //await USRankFeed.USRankingFeed(discordSocketClient);
+
+                    await Task.Delay(20000 - (int)(watch.ElapsedMilliseconds % 1000), token);
                     Console.WriteLine("Startin AU_NZ feed...");
                     try
                     {
-                        await AU_NZ_RankFeed.AU_NZRankingFeed(discordSocketClient);
+                        au_nzRankFeed.SendFeedInCountryDiscord(471250128615899136, 550387948294766611);             
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("News Feed Crashed" + ex + "CND");
+                        Console.WriteLine("News Feed Crashed" + ex + "AU_NZ");
                     }
+
+                    await Task.Delay(20000 - (int)(watch.ElapsedMilliseconds % 1000), token);
                     Console.WriteLine("Startin GB feed...");
                     try
                     {
-                        await GbRankFeed.GbRankingFeed(discordSocketClient);
+                        gbRankFeed.SendFeedInCountryDiscord(483482746824687616, 535187354122584070);
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine("News Feed Crashed" + ex + "GB");
                     }
+
+                    await Task.Delay(20000 - (int)(watch.ElapsedMilliseconds % 1000), token);
                     Console.WriteLine("Startin BE feed...");
                     try
                     {
-                        await BeRankFeed.BeRankingFeed(discordSocketClient);
+                        belgiumRankFeed.SendFeedInCountryDiscord(561207570669371402, 634091663526199307);
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine("News Feed Crashed" + ex + "BE");
                     }
+
+
                     Console.WriteLine("News Feed Updated");
                 }
                 catch (Exception ex)
