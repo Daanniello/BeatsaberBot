@@ -33,7 +33,7 @@ namespace DiscordBeatSaberBot
 
         }
 
-        public async void SendFeedInCountryDiscord(ulong guildId, ulong channelId)
+        public async Task SendFeedInCountryDiscord(ulong guildId, ulong channelId)
         {
             //var channels = guilds.First().Channels.Where(x => x.Id == 504392851229114369);
             //channels.First().
@@ -70,23 +70,27 @@ namespace DiscordBeatSaberBot
             var playerName = new List<string>();
             var playerId = new List<string>();
 
-            var client = new HttpClient();
-
-            for (var x = 1; x <= tab; x++)
+            using (var client = new HttpClient())
             {
-                var url = "https://scoresaber.com/global/" + x + "&country=" + countryCodeCombo;
-              
+                client.Timeout = new TimeSpan(0, 0, 0, 5);
+                for (var x = 1; x <= tab; x++)
+                {
+                    var url = "https://scoresaber.com/global/" + x + "&country=" + countryCodeCombo;
+
                     var html = "";
                     try
                     {
-
+                        
                         html = await client.GetStringAsync(url);
+
                     }
                     catch (Exception ex)
                     {
-                        _logger.Log(Logger.LogCode.debug, "Scoresaber ignored me >;d\n\n" + ex);
+                        _logger.Log(Logger.LogCode.fatal_error, "Scoresaber ignored me >;d\n\n" + ex);
+
                         throw ex;
                     }
+
                     var doc = new HtmlAgilityPack.HtmlDocument();
                     doc.LoadHtml(html);
 
@@ -99,7 +103,11 @@ namespace DiscordBeatSaberBot
                     var names = doc.DocumentNode.SelectNodes("//td[@class='player']");
                     playerName.AddRange(names.Select(a => WebUtility.HtmlDecode(a.InnerText).Replace(@"\r\n", "").Trim()).ToList());
                     playerId.AddRange(names.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList());
-                
+
+                    Console.WriteLine(url);
+                    await Task.Delay(2000);
+                }
+
             }
 
             return (playerImg, playerRank, playerName, playerId);

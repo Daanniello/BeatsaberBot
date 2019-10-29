@@ -27,38 +27,24 @@ namespace DiscordBeatSaberBot
             var playerName = new List<string>();
             var playerId = new List<string>();
 
-            var client = new HttpClient();
+            
+            using (var client = new HttpClient()) {
+                client.Timeout = new TimeSpan(0, 0, 0, 5);
+                for (var x = 1; x <= tab; x++)
+                {
+                    var url = "https://scoresaber.com/global/" + x + "&country=nl";
 
-            for (var x = 1; x <= tab; x++)
-            {
-                var url = "https://scoresaber.com/global/" + x + "&country=nl";
- 
-                
-                
+
                     var html = "";
                     try
                     {
-                        var task = client.GetStringAsync(url);
-                        if (await Task.WhenAny(task, Task.Delay(2000)) == task)
-                        {
-                            // task completed within timeout
-                            html = await task;
-                        }
-                        else
-                        {
-                            // timeout logic
-                            //throw new Exception();
-                            _logger.Log(Logger.LogCode.warning, "NL scoresaber rate limit");
-                            return (playerImg, playerRank, playerName, playerId);
-                        }
                         
-                        Console.WriteLine("Getting info from scoresaber: " + url);
+                        html = await client.GetStringAsync(url);
                     }
                     catch (Exception ex)
                     {
-                        _logger.Log(Logger.LogCode.debug, "NL Html error \n\n" + ex);
-                        _logger.Log(Logger.LogCode.debug, "Html: " + html);
-                        _logger.Log(Logger.LogCode.debug, "Url: " + url);
+                        _logger.Log(Logger.LogCode.fatal_error, "Scoresaber ignored me >;d\n\n" + ex);
+
                         throw ex;
                     }
 
@@ -80,11 +66,10 @@ namespace DiscordBeatSaberBot
 
                     var names = doc.DocumentNode.SelectNodes("//td[@class='player']");
                     playerName.AddRange(names.Select(a => WebUtility.HtmlDecode(a.InnerText).Replace(@"\r\n", "").Trim()).ToList());
-                    playerId.AddRange(names.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href",""))).ToList());
-                
-            }
+                    playerId.AddRange(names.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList());
 
-            client.Dispose();
+                }
+            }
 
             return (playerImg, playerRank, playerName, playerId);
         }
