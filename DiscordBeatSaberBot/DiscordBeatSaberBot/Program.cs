@@ -440,7 +440,7 @@ namespace DiscordBeatSaberBot
                     await message.Channel.SendMessageAsync("hehe that is true");
                 }
 
-                await MessageDelete.DeleteMessageCheck(message, discordSocketClient);
+                MessageDelete.DeleteMessageCheck(message, discordSocketClient);
                 if (message.Content.Length <= 3)
                 {
                     return Task.CompletedTask;

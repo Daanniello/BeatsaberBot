@@ -29,7 +29,7 @@ namespace DiscordBeatSaberBot
 
             
             using (var client = new HttpClient()) {
-                client.Timeout = new TimeSpan(0, 0, 0, 5);
+                client.Timeout = new TimeSpan(0, 0, 0, 10);
                 for (var x = 1; x <= tab; x++)
                 {
                     var url = "https://scoresaber.com/global/" + x + "&country=nl";
@@ -68,6 +68,8 @@ namespace DiscordBeatSaberBot
                     playerName.AddRange(names.Select(a => WebUtility.HtmlDecode(a.InnerText).Replace(@"\r\n", "").Trim()).ToList());
                     playerId.AddRange(names.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList());
 
+                    Console.WriteLine(url);
+                    await Task.Delay(2000);
                 }
             }
 

@@ -14,30 +14,40 @@ namespace DiscordBeatSaberBot
         
 
         public async static Task<bool> DeleteMessageCheck(SocketMessage message, DiscordSocketClient discord)
+        {            
+            var channels = new Dictionary<ulong, Func<Task<bool>>>();
+            channels.Add(549350982081970176, async () => await DisallowMessages(message));
+            channels.Add(537377323742265344, async () => await DisallowMessages(message));
+            channels.Add(550288233272180752, async () => await DisallowMessages(message));
+            channels.Add(627174908484517888, async () => await AllowFile(message)); //Fan art channel
+
+            if (!channels.Keys.Contains(message.Channel.Id)) return false;
+  
+            bool allowed = await channels[message.Channel.Id]();
+
+            if(!allowed) await message.DeleteAsync();
+
+            return !allowed;
+        }
+
+        private static async Task<bool> DisallowMessages(SocketMessage message)
         {
-            
-            List<ulong> channels = new List<ulong> {
-                549350982081970176,
-                537377323742265344
-            };
-   
-            if (channels.Contains(message.Channel.Id))
-            {
-                var user = discord.GetGuild(505485680344956928).GetUser(message.Author.Id) as IGuildUser;
-
-                foreach(var id in user.RoleIds)
-                {
-                    if (id == 505486321595187220)
-                    {
-                        return false;
-                    }
-                }
-
-                await Task.Delay(2000);
-                await message.DeleteAsync();
-                return true;
-            }
+            var messageCached = await message.Channel.SendMessageAsync("Text messages are not allowed in this channel.");
+            await Task.Delay(2000);
+            await messageCached.DeleteAsync();
             return false;
+        }
+
+        private static async Task<bool> AllowFile(SocketMessage message)
+        {
+            if (((dynamic)message.Attachments).Length <= 0)
+            {
+                var messageCached = await message.Channel.SendMessageAsync("Text messages are not allowed in this channel. Only messages with files attached are allowed.");
+                await Task.Delay(2000);
+                await messageCached.DeleteAsync();
+                return false;
+            }            
+            return true;
         }
     }
 }
