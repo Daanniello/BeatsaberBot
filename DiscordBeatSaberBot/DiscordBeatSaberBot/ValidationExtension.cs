@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DiscordBeatSaberBot
+﻿namespace DiscordBeatSaberBot
 {
-    static class Validation
+    internal static class ValidationExtension
     {
         public static bool IsDigitsOnly(string str)
         {

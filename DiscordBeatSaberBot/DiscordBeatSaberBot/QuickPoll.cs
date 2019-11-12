@@ -1,15 +1,13 @@
-﻿using Discord;
+﻿using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot
 {
-    class QuickPoll
+    internal class QuickPoll
     {
-        private SocketMessage _messageInfo;
+        private readonly SocketMessage _messageInfo;
+
         public QuickPoll(SocketMessage messageInfo)
         {
             _messageInfo = messageInfo;
@@ -19,21 +17,20 @@ namespace DiscordBeatSaberBot
         {
             string question = _messageInfo.Content.Substring(9);
 
-            EmbedBuilder builder = new EmbedBuilder
+            var builder = new EmbedBuilder
             {
                 Color = Color.DarkRed,
                 Title = "QuickPoll",
                 Description = question,
-                Footer = new EmbedFooterBuilder { Text="Reminder: Use *!bs poll question* to create a new poll"},
+                Footer = new EmbedFooterBuilder { Text = "Reminder: Use *!bs poll question* to create a new poll" },
                 ThumbnailUrl = @"https://i.ibb.co/Y08zHnb/Pika.png"
             };
-            Embed embed = builder.Build();
-            
+            var embed = builder.Build();
+
             var completedMessage = await _messageInfo.Channel.SendMessageAsync("", false, embed);
             await completedMessage.AddReactionAsync(new Emoji("⬅"));
             await completedMessage.AddReactionAsync(new Emoji("➡"));
             //await _messageInfo.DeleteAsync();
-
         }
     }
 }

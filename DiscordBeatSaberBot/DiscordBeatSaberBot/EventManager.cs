@@ -1,34 +1,30 @@
-﻿using Discord;
-using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
-using System.IO;
+using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 
 namespace DiscordBeatSaberBot
 {
-    class EventManager
+    internal class EventManager
     {
-        public ulong MessageId { get; set; }
-        private DiscordSocketClient discord;
-        private SocketMessage message;
-        private string title;
-        private string ondertitle;
-        private string kern;
-        private DateTime datum;
-        private string imgUrl;
         private string bijlage;
+        private DateTime datum;
+        private readonly DiscordSocketClient discord;
+        private string imgUrl;
+        private string kern;
         private string mention;
+        private readonly SocketMessage message;
+        private string ondertitle;
+        private string title;
 
 
         public EventManager(SocketMessage message, DiscordSocketClient discord)
         {
-
-            var tekst = File.ReadAllText("EventMessage.txt");
+            string tekst = File.ReadAllText("EventMessage.txt");
 
 
             try
@@ -46,14 +42,12 @@ namespace DiscordBeatSaberBot
             {
                 message.Channel.SendMessageAsync("Iets is verkeerd gegaan :c");
             }
-          
         }
+
+        public ulong MessageId { get; set; }
 
         private async Task QuestionRound()
         {
-
-
-
             await message.Channel.SendMessageAsync("Wat is de titel van het event?");
             title = await WaitForReaction();
             await message.Channel.SendMessageAsync("Wat is de ondertitel van het event?");
@@ -67,34 +61,31 @@ namespace DiscordBeatSaberBot
             try
             {
                 await message.Channel.SendMessageAsync("Geef nu de Datum weer van het event? \n formaat: yyyy-MM-dd HH:mm");
-                var stringDatum = await WaitForReaction();
+                string stringDatum = await WaitForReaction();
                 //2009-05-08 14:40
-                datum = DateTime.ParseExact(stringDatum, "yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+                datum = DateTime.ParseExact(stringDatum, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
             }
             catch
             {
-
                 await message.Channel.SendMessageAsync("Geef nu de Datum weer van het event? \n formaat: yyyy-MM-dd HH:mm \n laaste poging");
-                var stringDatum = await WaitForReaction();
+                string stringDatum = await WaitForReaction();
                 //2009-05-08 14:40
-                datum = DateTime.ParseExact(stringDatum, "yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+                datum = DateTime.ParseExact(stringDatum, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
             }
-            
+
             await message.Channel.SendMessageAsync("Nog extra bijlagen? urls, ps tekst, reminder");
             bijlage = await WaitForReaction();
-
-          
         }
 
         private async Task<string> WaitForReaction()
         {
             var now = DateTime.Now;
-            var newMessage = "";
+            string newMessage = "";
             do
             {
                 var iMessage = await message.Channel.GetMessagesAsync(1).Flatten().First();
-                
-                var id = iMessage.Author.Id;
+
+                ulong id = iMessage.Author.Id;
 
                 if (id == message.Author.Id)
                 {
@@ -103,36 +94,32 @@ namespace DiscordBeatSaberBot
                         newMessage = iMessage.Attachments.First().Url;
                         break;
                     }
-                    catch
-                    {
+                    catch { }
 
-                    }
                     newMessage = iMessage.Content;
                     break;
                 }
-                await Task.Delay(1000);
 
+                await Task.Delay(1000);
             } while (now < DateTime.Now.AddMinutes(10));
+
             return newMessage;
         }
 
         private async Task SendEventMessage(ulong guildId, ulong channelId)
         {
-
             var embedBuilder = new EmbedBuilder
             {
                 Title = title,
                 Description = "*" + ondertitle + "* \n\n" + kern + "\n\n" + "*" + bijlage + " \n \n Doe je mee met het event? voeg dan even een reactie toe in <#572721078359556097>" + "*",
-                Footer = new EmbedFooterBuilder() { Text = "Dit event start op de volgende datum: " + datum.ToString() },
+                Footer = new EmbedFooterBuilder {Text = "Dit event start op de volgende datum: " + datum},
                 Color = Color.Red
-
             };
 
-            var channel = (ISocketMessageChannel)discord.GetGuild(guildId).GetChannel(channelId);
+            var channel = (ISocketMessageChannel) discord.GetGuild(guildId).GetChannel(channelId);
 
             using (var client = new WebClient())
             {
-
                 client.DownloadFile(imgUrl, @"eventimg.jpg");
                 await channel.SendFileAsync("eventimg.jpg");
             }
@@ -142,20 +129,19 @@ namespace DiscordBeatSaberBot
 
             File.WriteAllText("EventMessage.txt", eventMessage.Id.ToString());
 
-            var eventDetailChannel = (ISocketMessageChannel)discord.GetChannel(572721078359556097);
-            var embededMessage = (IUserMessage)await eventDetailChannel.GetMessageAsync(586248421715738629);
+            var eventDetailChannel = (ISocketMessageChannel) discord.GetChannel(572721078359556097);
+            var embededMessage = (IUserMessage) await eventDetailChannel.GetMessageAsync(586248421715738629);
 
             var embedInfo = embededMessage.Embeds.First();
-            var guild = discord.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
+            var guild = discord.Guilds.FirstOrDefault(x => x.Id == (ulong) 505485680344956928);
 
 
             var embedBuilderDetails = new EmbedBuilder
             {
-                Title = "Volgende event *" + title +"*",
-                Description = "*" + datum.ToString() + "* \n" + "https://discordapp.com/channels/" + guildId + "/" + channelId + "/" + eventMessage.Id.ToString() + "\n" + "Deelnemers: \n",
-                Footer = new EmbedFooterBuilder { Text = "Start over: " + Math.Round(datum.Subtract(DateTime.Now).TotalHours) + " uur"},
+                Title = "Volgende event *" + title + "*",
+                Description = "*" + datum + "* \n" + "https://discordapp.com/channels/" + guildId + "/" + channelId + "/" + eventMessage.Id + "\n" + "Deelnemers: \n",
+                Footer = new EmbedFooterBuilder {Text = "Start over: " + Math.Round(datum.Subtract(DateTime.Now).TotalHours) + " uur"},
                 Color = Color.Blue
-
             };
 
             await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilderDetails.Build());
@@ -164,7 +150,6 @@ namespace DiscordBeatSaberBot
 
             var mentionmsg = await channel.SendMessageAsync(mention);
             await mentionmsg.DeleteAsync();
-            
         }
     }
 }

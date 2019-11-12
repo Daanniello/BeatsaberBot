@@ -1,18 +1,15 @@
-﻿using Discord;
-using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 
 namespace DiscordBeatSaberBot
 {
-    class ReactionEvent
+    internal class ReactionEvent
     {
-        private DiscordSocketClient discordSocketClient;
-        private ulong NLroleAddChannelId = 510227606822584330;
-        private ulong NLguildId = 505485680344956928;
+        private readonly DiscordSocketClient discordSocketClient;
+        private readonly ulong NLguildId = 505485680344956928;
+        private readonly ulong NLroleAddChannelId = 510227606822584330;
 
         public ReactionEvent(DiscordSocketClient discordSocketClient)
         {
@@ -47,11 +44,10 @@ namespace DiscordBeatSaberBot
                 }
 
                 if (reaction.Emote.ToString() == "🚫")
-                {
                     await (user as IGuildUser).RemoveRolesAsync(guild.Roles.Where(x => x.Name == "Oculus" || x.Name == "Vive"));
-                }
                 //{🚫}
             }
+
             return Task.CompletedTask;
         }
     }

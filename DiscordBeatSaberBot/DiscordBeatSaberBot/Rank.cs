@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using Discord;
-using System.Text;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
-using System.Net.Http;
+using Discord;
 using Discord.WebSocket;
+using HtmlAgilityPack;
 
 namespace DiscordBeatSaberBot
 {
-    static class Rank
+    internal static class Rank
     {
         public static Color Master = Color.Red;
         public static Color Challenger = Color.Magenta;
@@ -18,38 +16,27 @@ namespace DiscordBeatSaberBot
         public static Color Silver = Color.LighterGrey;
         public static Color bronze = Color.DarkOrange;
 
-        public static int rankMaster = 10; 
+        public static int rankMaster = 10;
         public static int rankChallenger = 500;
         public static int rankDiamond = 5000;
         public static int rankPlatinum = 10000;
         public static int rankGold = 40000;
         public static int rankSilver = 80000;
 
-        static public async Task<Color> GetRankColor(int rank)
+        public static async Task<Color> GetRankColor(int rank)
         {
             if (rank <= 10)
-            {
                 return Master;
-            }
-            else if (rank <= 500)
-            {
+            if (rank <= 500)
                 return Challenger;
-            }else if (rank <= 5000)
-            {
+            if (rank <= 5000)
                 return Diamond;
-            }
             if (rank <= 10000)
-            {
                 return Platinum;
-            }
-            else if (rank <= 40000)
-            {
+            if (rank <= 40000)
                 return Gold;
-            }
             if (rank <= 80000)
-            {
                 return Silver;
-            }
 
             return bronze;
         }
@@ -65,16 +52,17 @@ namespace DiscordBeatSaberBot
 
             int playerBaseCount = 0;
             var t = message.Split(' ');
-            try{
+            try
+            {
                 t[1] = t[1];
-            }catch
-            {
-                t =new string[] { "",""};
             }
+            catch
+            {
+                t = new[] { "", "" };
+            }
+
             if (message.Split(' ').Length > 1)
-            {
                 country = "&country=" + t[1];
-            }
 
             bool loop = true;
             int tempCount = 0;
@@ -84,9 +72,7 @@ namespace DiscordBeatSaberBot
             do
             {
                 if (tab < 0)
-                {
                     tab = 1;
-                }
                 tempCount = await getList();
 
                 if (tempCount == 0)
@@ -95,42 +81,39 @@ namespace DiscordBeatSaberBot
                     tab = tab - minTab;
 
                     if (minusCounter >= 1)
-                    {
                         val = 1;
-                    }
                     minTab = minTab / val;
                     minusCounter++;
                 }
+
                 if (tempCount == 50)
                 {
                     tab = tab + minTab;
                     plusTab = plusTab / 2;
                     minusCounter = 0;
                 }
+
                 if (tempCount > 0 && tempCount < 50)
                 {
                     playerBaseCount = tab * 50 + tempCount;
                     loop = false;
                 }
+
                 playerBaseCount += tempCount;
-
-
             } while (loop);
 
             async Task<int> getList()
             {
                 using (var client = new HttpClient())
                 {
-                    var html = await client.GetStringAsync("https://scoresaber.com/global/" + tab + country);
-                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    string html = await client.GetStringAsync("https://scoresaber.com/global/" + tab + country);
+                    var doc = new HtmlDocument();
                     doc.LoadHtml(html);
 
                     var table = doc.DocumentNode.SelectNodes("//td[@class='rank']");
                     int listCount = 0;
                     if (table != null)
-                    {
                         listCount = table.Count;
-                    }
                     return listCount;
                 }
             }

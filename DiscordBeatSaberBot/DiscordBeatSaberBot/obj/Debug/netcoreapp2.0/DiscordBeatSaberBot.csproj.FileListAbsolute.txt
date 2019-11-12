@@ -53,3 +53,14 @@ C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSabe
 C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.AssemblyInfo.cs
 C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.dll
 C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.pdb
+C:\Users\DaanS\OneDrive\Documenten\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.deps.json
+C:\Users\DaanS\OneDrive\Documenten\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.runtimeconfig.json
+C:\Users\DaanS\OneDrive\Documenten\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.runtimeconfig.dev.json
+C:\Users\DaanS\OneDrive\Documenten\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.dll
+C:\Users\DaanS\OneDrive\Documenten\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\bin\Debug\netcoreapp2.0\DiscordBeatSaberBot.pdb
+C:\Users\DaanS\OneDrive\Documenten\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.csprojAssemblyReference.cache
+C:\Users\DaanS\OneDrive\Documenten\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.csproj.CoreCompileInputs.cache
+C:\Users\DaanS\OneDrive\Documenten\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.AssemblyInfoInputs.cache
+C:\Users\DaanS\OneDrive\Documenten\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.AssemblyInfo.cs
+C:\Users\DaanS\OneDrive\Documenten\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.dll
+C:\Users\DaanS\OneDrive\Documenten\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\obj\Debug\netcoreapp2.0\DiscordBeatSaberBot.pdb

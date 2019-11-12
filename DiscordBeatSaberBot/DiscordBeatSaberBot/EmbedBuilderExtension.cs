@@ -1,11 +1,9 @@
-﻿using Discord;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using Discord;
 
 namespace DiscordBeatSaberBot
 {
-    class EmbedBuilderExtension
+    internal class EmbedBuilderExtension
     {
         public static EmbedBuilder EmbedBuilder()
         {
@@ -18,9 +16,7 @@ namespace DiscordBeatSaberBot
             builder.WithTitle(Title);
             builder.WithDescription(description);
             if (contentTitle != null || content != null)
-            {
                 builder.AddField(contentTitle, content);
-            }
             builder.Timestamp = DateTimeOffset.Now;
 
             builder.WithColor(Color.DarkRed);

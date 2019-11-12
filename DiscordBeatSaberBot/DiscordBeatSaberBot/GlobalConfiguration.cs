@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DiscordBeatSaberBot
 {
-    static class Configuration
+    static class GlobalConfiguration
     {
         public static string inviteLink = "https://discordapp.com/oauth2/authorize?&client_id=504633036902498314&scope=bot&permissions=0";
 

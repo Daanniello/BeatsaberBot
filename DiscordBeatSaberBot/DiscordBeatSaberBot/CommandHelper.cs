@@ -1,23 +1,21 @@
-﻿using Discord;
-using Discord.WebSocket;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using Discord;
+using Discord.WebSocket;
 
 namespace DiscordBeatSaberBot
 {
     public class CommandHelper
     {
-        private List<HelpObject> helpObjects = new List<HelpObject>();
         private static List<string> helpCommands = new List<string>();
-        private DiscordSocketClient Discord;
+        private readonly DiscordSocketClient Discord;
+        private readonly List<HelpObject> helpObjects = new List<HelpObject>();
 
         public CommandHelper(DiscordSocketClient discord)
         {
             Discord = discord;
 
-            CreateHelpObject("Search", "Looks up a beat saber player", 
+            CreateHelpObject("Search", "Looks up a beat saber player",
                 "!bs search <Playername> \n" +
                 "!bs search *If scoresaber is linked with discord");
 
@@ -59,13 +57,11 @@ namespace DiscordBeatSaberBot
                 "Example: !bs poll Is this a good example? Yes | No \n" +
                 "You can use markdown from discord \n" +
                 "!bs poll <Question + options>");
-
         }
 
         public void CreateHelpObject(string name, string description, string moreInfo)
         {
             helpObjects.Add(new HelpObject(name, description, moreInfo));
-
         }
 
         public HelpObject GetHelpObject(string name)
@@ -78,7 +74,8 @@ namespace DiscordBeatSaberBot
             var helpObject = GetHelpObject(name);
 
             var embedFields = new List<EmbedFieldBuilder>();
-            embedFields.Add(new EmbedFieldBuilder {
+            embedFields.Add(new EmbedFieldBuilder
+            {
                 Name = "Usage:",
                 Value = helpObject.moreInfo
             });
@@ -90,7 +87,7 @@ namespace DiscordBeatSaberBot
                 Fields = embedFields,
                 ThumbnailUrl = "https://cdn.discordapp.com/app-icons/504633036902498314/8640cf47aeac6cf7fd071e111467cac5.png?size=512",
                 Color = Color.Gold,
-                Footer = new EmbedFooterBuilder() { Text = "created by: @SilverHaze#0001", IconUrl = "https://cdn.discordapp.com/avatars/138439306774577152/a_ece649bd8de91e0cd338bd47e5eabc87.png" }
+                Footer = new EmbedFooterBuilder {Text = "created by: @SilverHaze#0001", IconUrl = "https://cdn.discordapp.com/avatars/138439306774577152/a_ece649bd8de91e0cd338bd47e5eabc87.png"}
             };
             return embedBuilder.Build();
         }
@@ -100,7 +97,6 @@ namespace DiscordBeatSaberBot
             var embedFields = new List<EmbedFieldBuilder>();
             foreach (var help in helpObjects)
             {
-
                 embedFields.Add(new EmbedFieldBuilder
                 {
                     Name = help.name,
@@ -108,7 +104,7 @@ namespace DiscordBeatSaberBot
                 });
             }
 
-            var userCount = 0;
+            int userCount = 0;
             foreach (var x in Discord.Guilds)
             {
                 userCount += x.MemberCount;
@@ -117,21 +113,20 @@ namespace DiscordBeatSaberBot
             var embedBuilder = new EmbedBuilder
             {
                 Title = "**Command List** :question: \n\n" +
-                "***For more info, use !bs help <Command Name>*** \n*Used by " + Discord.Guilds.Count + " servers with a total of "+ userCount + " users*\n",
+                        "***For more info, use !bs help <Command Name>*** \n*Used by " + Discord.Guilds.Count + " servers with a total of " + userCount + " users*\n",
                 Fields = embedFields,
                 ThumbnailUrl = "https://cdn.discordapp.com/app-icons/504633036902498314/8640cf47aeac6cf7fd071e111467cac5.png?size=512",
                 Color = Color.Gold,
-                Footer = new EmbedFooterBuilder() { Text = "created by: @SilverHaze#0001", IconUrl = "https://cdn.discordapp.com/avatars/138439306774577152/a_ece649bd8de91e0cd338bd47e5eabc87.png" }
-
+                Footer = new EmbedFooterBuilder {Text = "created by: @SilverHaze#0001", IconUrl = "https://cdn.discordapp.com/avatars/138439306774577152/a_ece649bd8de91e0cd338bd47e5eabc87.png"}
             };
             return embedBuilder.Build();
         }
 
         public class HelpObject
         {
-            public string name;
             public string description;
             public string moreInfo;
+            public string name;
 
             public HelpObject(string name, string description, string moreInfo)
             {
@@ -141,6 +136,4 @@ namespace DiscordBeatSaberBot
             }
         }
     }
-
-    
 }

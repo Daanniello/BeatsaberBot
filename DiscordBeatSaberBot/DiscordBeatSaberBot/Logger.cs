@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 
 namespace DiscordBeatSaberBot
 {
-    class Logger
+    internal class Logger
     {
-        private DiscordSocketClient _discord;
-
-        public enum LogCode{
+        public enum LogCode
+        {
             fatal_error,
             error,
             warning,
             debug
         }
+
+        private readonly DiscordSocketClient _discord;
 
         public Logger(DiscordSocketClient discord)
         {
@@ -25,7 +23,7 @@ namespace DiscordBeatSaberBot
         public async void Log(LogCode code, string message)
         {
             if (message.Length > 2000) return;
-            var color = Color.Green; 
+            var color = Color.Green;
             switch (code)
             {
                 case LogCode.error:
@@ -44,6 +42,7 @@ namespace DiscordBeatSaberBot
                     message = "<@138439306774577152> \n" + message;
                     break;
             }
+
             var embedbuilder = new EmbedBuilder
             {
                 Title = code.ToString(),
