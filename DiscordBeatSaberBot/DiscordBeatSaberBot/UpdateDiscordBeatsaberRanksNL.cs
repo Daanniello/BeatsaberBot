@@ -15,7 +15,7 @@ namespace DiscordBeatSaberBot
         {
             Console.WriteLine("Starting updating roles from linked NL accounts");
             var accounts = new List<string[]>();
-            string filePath = "../../../account.txt";
+            string filePath = "../../../DutchAccounts.txt";
 
             using (var r = new StreamReader(filePath))
             {

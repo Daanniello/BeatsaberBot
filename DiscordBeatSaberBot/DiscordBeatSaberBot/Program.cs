@@ -171,7 +171,7 @@ namespace DiscordBeatSaberBot
             var server = new GuildService(discordSocketClient);
             await server.UserJoinedMessage(guildUser);
 
-            var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong) 505485680344956928);
+            var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
             var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Nieuwkomer");
             await guildUser.AddRoleAsync(addRole);
         }
@@ -184,18 +184,18 @@ namespace DiscordBeatSaberBot
             {
                 if (reaction.MessageId.ToString() == "586248421715738629")
                 {
-                    var eventDetailChannel = (ISocketMessageChannel) discordSocketClient.GetChannel(572721078359556097);
-                    var embededMessage = (IUserMessage) await eventDetailChannel.GetMessageAsync(586248421715738629);
+                    var eventDetailChannel = (ISocketMessageChannel)discordSocketClient.GetChannel(572721078359556097);
+                    var embededMessage = (IUserMessage)await eventDetailChannel.GetMessageAsync(586248421715738629);
 
                     var embedInfo = embededMessage.Embeds.First();
-                    var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong) 505485680344956928);
+                    var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
                     var user = guild.GetUser(reaction.User.Value.Id);
 
                     var embedBuilder = new EmbedBuilder
                     {
                         Title = embedInfo.Title,
                         Description = embedInfo.Description + "\n" + user.Username,
-                        Footer = new EmbedFooterBuilder {Text = embedInfo.Footer.ToString()},
+                        Footer = new EmbedFooterBuilder { Text = embedInfo.Footer.ToString() },
                         Color = embedInfo.Color
                     };
 
@@ -204,7 +204,7 @@ namespace DiscordBeatSaberBot
 
                 if (channel.Id == 549343990957211658)
                 {
-                    var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong) 505485680344956928);
+                    var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
                     var user = guild.GetUser(reaction.User.Value.Id);
                     var userRoles = user.Roles;
                     foreach (var role in userRoles)
@@ -223,7 +223,7 @@ namespace DiscordBeatSaberBot
                 {
                     bool authenticationCheck()
                     {
-                        var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong) 505485680344956928);
+                        var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
                         var userRoles = guild.GetUser(reaction.User.Value.Id).Roles;
                         foreach (var role in userRoles)
                         {
@@ -241,7 +241,7 @@ namespace DiscordBeatSaberBot
                         // vinkje = status veranderen en actie uitvoeren om er in te zetten
                         // denied is status veranderen en user mention gebruiken
                         var messageFromReaction = await reaction.Channel.GetMessageAsync(reaction.MessageId);
-                        var casted = (IUserMessage) messageFromReaction;
+                        var casted = (IUserMessage)messageFromReaction;
                         var usedEmbed = casted.Embeds.First();
                         if (reaction.Emote.Name == "⛔")
                         {
@@ -352,18 +352,18 @@ namespace DiscordBeatSaberBot
             //reaction.MessageId.ToString() == File.ReadAllText("EventMessage.txt") || 
             if (reaction.MessageId.ToString() == "586248421715738629")
             {
-                var eventDetailChannel = (ISocketMessageChannel) discordSocketClient.GetChannel(572721078359556097);
-                var embededMessage = (IUserMessage) await eventDetailChannel.GetMessageAsync(586248421715738629);
+                var eventDetailChannel = (ISocketMessageChannel)discordSocketClient.GetChannel(572721078359556097);
+                var embededMessage = (IUserMessage)await eventDetailChannel.GetMessageAsync(586248421715738629);
 
                 var embedInfo = embededMessage.Embeds.First();
-                var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong) 505485680344956928);
+                var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
                 var user = guild.GetUser(reaction.User.Value.Id);
 
                 var embedBuilder = new EmbedBuilder
                 {
                     Title = embedInfo.Title,
                     Description = embedInfo.Description.Replace("\n" + user.Username, "").Trim(),
-                    Footer = new EmbedFooterBuilder {Text = embedInfo.Footer.ToString()},
+                    Footer = new EmbedFooterBuilder { Text = embedInfo.Footer.ToString() },
                     Color = embedInfo.Color
                 };
 
@@ -528,7 +528,8 @@ namespace DiscordBeatSaberBot
                             }
                             else
                             {
-                                await message.Channel.SendMessageAsync("Discord user is not linked with scoresaber");
+                                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("User's discord not linked", "Your discord is not linked yet. Type !bs verification [Scoresaberlink] to link it.", null, null).Build());
+
                             }
                         }
                         else if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 10)
@@ -539,6 +540,11 @@ namespace DiscordBeatSaberBot
                         }
                         else
                         {
+                            if (message.Content.Substring(10).Count() == 0)
+                            {
+                                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("User's discord not linked", "Your discord is not linked yet. Type !bs verification [Scoresaberlink] to link it.",null,null).Build());
+                                return Task.CompletedTask;
+                            }
                             foreach (var embed in await BeatSaberInfoExtension.GetPlayer(message.Content.Substring(11)))
                             {
                                 var completedMessage = await message.Channel.SendMessageAsync("", false, embed.Build());
@@ -667,27 +673,45 @@ namespace DiscordBeatSaberBot
                             Timeout = GlobalConfiguration.TypingTimeOut
                         });
 
-                        if (message.Channel.Id == 549350982081970176)
+                        var r = new RoleAssignment(discordSocketClient);
+
+                        if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
                         {
-                            var r = new RoleAssignment(discordSocketClient);
-                            if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
-                                await message.Channel.SendMessageAsync("Je discord is al gelinked met je scoresaber, No worries " + message.Author.Username);
-                            else
-                                r.MakeRequest(message);
-
-                            var moderationHelper = new GuildService(discordSocketClient, 505485680344956928);
-
-                            var user = message.Author;
-                            if (moderationHelper.UserHasRole(user, "Nieuwkomer"))
-                            {
-                                await moderationHelper.AddRole("Link my discord please", user);
-                                await moderationHelper.DeleteRole("Nieuwkomer", user);
-                            }
+                            await message.Channel.SendMessageAsync("Your Discord ID is already linked with your scoresaber, No worries " + message.Author.Username);
+                            return Task.CompletedTask;
                         }
                         else
                         {
-                            await message.Channel.SendMessageAsync("Only for the dutch desicord. soon maybe.  " + message.Author.Username);
+                            string ScoresaberId = message.Content.Substring(24);
+                            ScoresaberId = Regex.Replace(ScoresaberId, "[^0-9]", "");
+
+                            if (!ValidationExtension.IsDigitsOnly(ScoresaberId))
+                            {
+                                await message.Channel.SendMessageAsync("Scoresaber ID is wrong");
+                                return Task.CompletedTask;
+                            }
+
+                            if (await ValidationExtension.IsDutch(ScoresaberId))
+                            {
+                                r.MakeRequest(message);
+                            }
+                            else
+                            {
+                                JsonExtension.InsertJsonData("../../../GlobalAccounts.txt", message.Author.Id.ToString(), ScoresaberId);
+                                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added user to the list", "Added " + message.Author.Id.ToString() + " with scoresaberID " + ScoresaberId + " to the global list", null, null).Build());
+                            }
                         }
+                                          
+                        var moderationHelper = new GuildService(discordSocketClient, 505485680344956928);
+
+                        var user = message.Author;
+                        if (moderationHelper.UserHasRole(user, "Nieuwkomer"))
+                        {
+                            await moderationHelper.AddRole("Link my discord please", user);
+                            await moderationHelper.DeleteRole("Nieuwkomer", user);
+                        }
+
+
                     }
 
                     else if (message.Content.Contains(" country"))
@@ -942,7 +966,7 @@ namespace DiscordBeatSaberBot
 
 
                     Console.WriteLine("Updating news feed in 60 sec");
-                    await Task.Delay(60000 - (int) (watch.ElapsedMilliseconds % 1000), token);
+                    await Task.Delay(60000 - (int)(watch.ElapsedMilliseconds % 1000), token);
 
                     Console.WriteLine("Startin NL feed...");
                     try
@@ -961,7 +985,7 @@ namespace DiscordBeatSaberBot
 
                     Console.WriteLine("Ending NL feed...");
 
-                    await Task.Delay(20000 - (int) (watch.ElapsedMilliseconds % 1000), token);
+                    await Task.Delay(20000 - (int)(watch.ElapsedMilliseconds % 1000), token);
                     Console.WriteLine("Startin AU_NZ feed...");
                     try
                     {
@@ -974,7 +998,7 @@ namespace DiscordBeatSaberBot
 
                     Console.WriteLine("Ending AU_NZ feed...");
 
-                    await Task.Delay(20000 - (int) (watch.ElapsedMilliseconds % 1000), token);
+                    await Task.Delay(20000 - (int)(watch.ElapsedMilliseconds % 1000), token);
                     Console.WriteLine("Startin GB feed...");
                     try
                     {
@@ -987,7 +1011,7 @@ namespace DiscordBeatSaberBot
 
                     Console.WriteLine("Ending GB feed...");
 
-                    await Task.Delay(20000 - (int) (watch.ElapsedMilliseconds % 1000), token);
+                    await Task.Delay(20000 - (int)(watch.ElapsedMilliseconds % 1000), token);
                     Console.WriteLine("Startin BE feed...");
                     try
                     {

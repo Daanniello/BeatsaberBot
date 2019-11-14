@@ -30,7 +30,8 @@ namespace DiscordBeatSaberBot
 
             if (!ValidationExtension.IsDigitsOnly(ScoresaberId))
             {
-                await message.Channel.SendMessageAsync("Scoresaber ID is verkeerd");
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Wrong scoresaber ID", "Get you link from the url from your scoresaber page.", null, null).Build());
+
                 return;
             }
 
@@ -63,7 +64,7 @@ namespace DiscordBeatSaberBot
 
         public async Task<bool> LinkAccount(string discordId, string scoresaberId)
         {
-            string filePath = "../../../account.txt";
+            string filePath = "../../../DutchAccounts.txt";
 
             //command: linkaccount
             string DiscordId = discordId;
@@ -101,7 +102,7 @@ namespace DiscordBeatSaberBot
 
         public ulong GetDiscordIdWithScoresaberId(string scoresaberId)
         {
-            string filePath = "../../../account.txt";
+            string filePath = "../../../DutchAccounts.txt";
             var account = new List<string[]>();
             using (var r = new StreamReader(filePath))
             {
@@ -122,43 +123,61 @@ namespace DiscordBeatSaberBot
 
         public bool CheckIfDiscordIdIsLinked(string DiscordId)
         {
-            string filePath = "../../../account.txt";
-            var account = new List<string[]>();
-            using (var r = new StreamReader(filePath))
-            {
-                string json = r.ReadToEnd();
-                account = JsonConvert.DeserializeObject<List<string[]>>(json);
-            }
+            var DutchAccountsPath = "../../../DutchAccounts.txt";
+            var GlobalAccountsPath = "../../../GlobalAccounts.txt";
 
-            if (account == null || account.Count == 0)
+            var DutchAccounts = JsonExtension.GetJsonData(DutchAccountsPath);
+            var GlobalAccounts = JsonExtension.GetJsonData(GlobalAccountsPath);
+
+            if (DutchAccounts == null && GlobalAccounts == null)
                 return false;
 
-            foreach (var player in account)
+            if (DutchAccounts.Count == 0 && GlobalAccounts.Count == 0)
+                return false;
+
+            var condition = false;
+
+            foreach (var player in DutchAccounts)
             {
-                if (player[0] == DiscordId)
-                    return true;
+                if (player.Key == DiscordId)
+                    condition = true;
             }
 
-            return false;
+            foreach (var player in GlobalAccounts)
+            {
+                if (player.Key == DiscordId)
+                    condition = true;
+            }
+
+            return condition;
         }
 
         public string GetScoresaberIdWithDiscordId(string DiscordId)
         {
-            string filePath = "../../../account.txt";
-            var account = new List<string[]>();
-            using (var r = new StreamReader(filePath))
-            {
-                string json = r.ReadToEnd();
-                account = JsonConvert.DeserializeObject<List<string[]>>(json);
-            }
+            var DutchAccountsPath = "../../../DutchAccounts.txt";
+            var GlobalAccountsPath = "../../../GlobalAccounts.txt";
 
-            if (account == null || account.Count == 0)
+            var DutchAccounts = JsonExtension.GetJsonData(DutchAccountsPath);
+            var GlobalAccounts = JsonExtension.GetJsonData(GlobalAccountsPath);
+
+            if (DutchAccounts == null && GlobalAccounts == null)
                 return "0";
 
-            foreach (var player in account)
+            if (DutchAccounts.Count == 0 && GlobalAccounts.Count == 0)
+                return "0";
+
+            var condition = "0";
+
+            foreach (var player in DutchAccounts)
             {
-                if (player[0] == DiscordId)
-                    return player[1];
+                if (player.Key == DiscordId)
+                    return player.Value.ToString();
+            }
+
+            foreach (var player in GlobalAccounts)
+            {
+                if (player.Key == DiscordId)
+                    return player.Value.ToString();
             }
 
             return "0";
@@ -168,7 +187,7 @@ namespace DiscordBeatSaberBot
         {
             var discordNames = new List<string>();
 
-            string filePath = "../../../account.txt";
+            string filePath = "../../../DutchAccounts.txt";
             var account = new List<string[]>();
             using (var r = new StreamReader(filePath))
             {

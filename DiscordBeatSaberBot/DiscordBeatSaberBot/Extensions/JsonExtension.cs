@@ -7,7 +7,7 @@ namespace DiscordBeatSaberBot
     internal static class JsonExtension
     {
         /// <summary>
-        ///     Get JSON data. insert file path
+        ///     Get JSON data DICTIONARY. insert file path
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns>Dictionary string object</returns>

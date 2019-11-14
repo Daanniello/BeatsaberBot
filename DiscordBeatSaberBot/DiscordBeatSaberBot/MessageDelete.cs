@@ -13,7 +13,6 @@ namespace DiscordBeatSaberBot
             var channels = new Dictionary<ulong, Func<Task<bool>>>();
             channels.Add(549350982081970176, async () => await DisallowMessages(message));
             channels.Add(537377323742265344, async () => await DisallowMessages(message));
-            channels.Add(550288233272180752, async () => await DisallowMessages(message));
             channels.Add(627174908484517888, async () => await AllowFile(message)); //Fan art channel
 
             if (!channels.Keys.Contains(message.Channel.Id)) return false;

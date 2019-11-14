@@ -112,7 +112,7 @@ namespace DiscordBeatSaberBot
 
         public async Task<Dictionary<int, List<string>>> GetOldRankList()
         {
-            string filePath = "../../../" + countryCode + "RankList.txt";
+            string filePath = "../../../CountryRankingLists/" + countryCode + "RankList.txt";
 
             var data = new Dictionary<int, List<string>>();
             try
@@ -133,7 +133,7 @@ namespace DiscordBeatSaberBot
 
         public async Task<Dictionary<int, List<string>>> UpdateCountryRankList()
         {
-            string filePath = "../../../" + countryCode + "RankList.txt";
+            string filePath = "../../../CountryRankingLists/" + countryCode + "RankList.txt";
             var rankList = await GetCountryRankList(5);
             var newData = new Dictionary<int, List<string>>();
 

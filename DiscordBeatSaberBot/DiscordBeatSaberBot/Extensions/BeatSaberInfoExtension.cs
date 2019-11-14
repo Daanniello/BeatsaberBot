@@ -482,21 +482,30 @@ namespace DiscordBeatSaberBot
                 var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking songs']");
                 playerTopSongImg = "https://scoresaber.com" + table.Descendants("tbody").Select(tr => tr.Descendants("img").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("src", ""))).ToList()).ToList().First().First();
                 playerTopSongLink = table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList().First().First();
-                playerTopSongName = table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()).ToList().First().First();
-                playerTopSongPP = doc.DocumentNode.SelectSingleNode("//span[@class='scoreTop ppValue']").InnerText;
-                playerTopSongAcc = doc.DocumentNode.SelectSingleNode("//span[@class='scoreBottom']").InnerText;
-                songName = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").InnerText;
-                songDifficulty = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").Descendants("span").First().InnerText;
-                songAuthor = doc.DocumentNode.SelectSingleNode("//span[@class='songTop mapper']").InnerText;
-                playerName = doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']").InnerText;
-                playerSongRank = doc.DocumentNode.SelectNodes("//th[@class='rank']")[1].InnerText;
+                playerTopSongName = StringCleanup(table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()).ToList().First().First());
+                playerTopSongPP = StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='scoreTop ppValue']").InnerText).Split(' ').First();
+                playerTopSongAcc = StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='scoreBottom']").InnerText).Split(' ').Last();
+                songName = StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").InnerText);
+                songDifficulty = StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").Descendants("span").First().InnerText);
+                songAuthor = StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='songTop mapper']").InnerText);
+                playerName = StringCleanup(doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']").InnerText);
+                playerSongRank = StringCleanup(doc.DocumentNode.SelectNodes("//th[@class='rank']")[1].InnerText);
+            }
+
+            string StringCleanup(string RawContent)
+            {
+                var cleanContent = RawContent.Replace("\n", "").Trim();
+                return cleanContent;
             }
 
             string songDetails = playerTopSongName;
 
 
             var builder = new EmbedBuilder();
-            builder.AddField(playerName, "**name:** " + songName + "\n" + "**difficulty:** " + songDifficulty + "\n" + "**Author:** " + songAuthor + "\n" + "**pp from this song:** " + playerTopSongPP + "\n" + playerTopSongAcc + "\n" + "**Rank: " + playerSongRank + "**" + "\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
+            //builder.AddField( "", "**Songname:** " + songName + "\n" + "**Difficulty:** " + songDifficulty + "\n" + "**Author:** " + songAuthor + "\n\n" + "**Rank: **" + playerSongRank + "\n**Score: **" + playerTopSongAcc + "\n" + "**PP:** " + playerTopSongPP + "\n\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
+            builder.WithDescription("**Songname:** " + songName + "\n" + "**Difficulty:** " + songDifficulty + "\n" + "**Author:** " + songAuthor + "\n\n" + "**Rank: **" + playerSongRank + "\n**Score: **" + playerTopSongAcc + "\n" + "**PP:** " + playerTopSongPP + "\n\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
+            builder.WithTitle("**Recent song from: " + playerName + "**");
+            builder.WithUrl("https://scoresaber.com/u/" + playerId.Replace("/u/", ""));
             builder.WithImageUrl(playerTopSongImg);
             try
             {

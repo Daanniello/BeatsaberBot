@@ -76,7 +76,7 @@ namespace DiscordBeatSaberBot
 
         public static async Task<Dictionary<int, List<string>>> GetOldRankList()
         {
-            string filePath = "../../../DutchRankList.txt";
+            string filePath = "../../../CountryRankingLists/DutchRankList.txt";
 
             var data = new Dictionary<int, List<string>>();
             try
@@ -97,7 +97,7 @@ namespace DiscordBeatSaberBot
 
         public static async Task<Dictionary<int, List<string>>> UpdateDutchRankList()
         {
-            string filePath = "../../../DutchRankList.txt";
+            string filePath = "../../../CountryRankingLists/DutchRankList.txt";
             var rankList = await GetDutchRankList();
 
             if (rankList.Item1.Count == 0) return null;
@@ -319,7 +319,7 @@ namespace DiscordBeatSaberBot
         {
             var rolenames = new[]
             {
-                "nummer 1",
+                "Nummer 1",
                 "Top 3",
                 "Top 10",
                 "Top 25",

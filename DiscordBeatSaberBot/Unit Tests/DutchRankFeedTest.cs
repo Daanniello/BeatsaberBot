@@ -13,7 +13,7 @@ namespace UnitTest
         [TestMethod]
         public async Task UsingUpdateRankList()
         {
-            var filePath = "../../../DutchRankList.txt";
+            var filePath = "../../../CountryRankingLists/DutchRankList.txt";
             var newData = new Dictionary<int, List<string>>();
             newData.Add(999, new List<string>());
 
