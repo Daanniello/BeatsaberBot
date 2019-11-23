@@ -42,5 +42,14 @@ namespace DiscordBeatSaberBot
             }
                 return false;
         }
+
+        public static bool IsOwner(ulong Id)
+        {
+            if (Id == 138439306774577152)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }

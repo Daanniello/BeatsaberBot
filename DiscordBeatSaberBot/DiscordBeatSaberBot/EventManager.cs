@@ -35,8 +35,6 @@ namespace DiscordBeatSaberBot
                 message.Channel.SendMessageAsync("Event wordt geplaatst...");
                 SendEventMessage(505485680344956928, 510959349263499264).Wait();
                 message.Channel.SendMessageAsync("Event is geplaatst!");
-                //539815971183919120 test id
-                //510959349263499264 announcement id 
             }
             catch
             {

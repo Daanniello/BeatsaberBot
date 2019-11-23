@@ -326,6 +326,7 @@ namespace DiscordBeatSaberBot
                 "Top 50",
                 "Top 100",
                 "Top 250",
+                "Top 500",
                 "Top 501+"
             };
             var r = new RoleAssignment(_discord);

@@ -283,9 +283,15 @@ namespace DiscordBeatSaberBot
         {
             var topUser = GetTopDutchHoursUser();
             Console.WriteLine(topUser);
-            discord.GetGuild(505485680344956928).GetTextChannel(510959349263499264).SendMessageAsync(
-                topUser.Mention + " heeft de meeste uren van de week in beat saber... Congrats! \nJe krijgt de VERSLAAFD role. \nJe kunt nu de command \n\n**!bs rolecolor [Hexcode]**\n\n gebruiken om de kleur van de role aan te passen\n\nDe uren worden nu weer gereset."
-            );
+
+            var embedBuilder = new EmbedBuilder()
+            {
+                Title = "User met de meeste uren van de week",
+                Description = topUser.Mention + " heeft de meeste uren van de week in beat saber... Congrats! \nJe krijgt de VERSLAAFD role. \nJe kunt nu de command \n\n**!bs rolecolor [Hexcode]**\n\n gebruiken om de kleur van de role aan te passen\n\nDe uren worden nu weer gereset."
+            };
+
+            discord.GetGuild(505485680344956928).GetTextChannel(510959349263499264).SendMessageAsync("", false, embedBuilder.Build());
+
             InsertAndResetAllDutchMembers(discord);
         }
 

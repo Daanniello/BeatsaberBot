@@ -11,7 +11,8 @@ namespace DiscordBeatSaberBot
             fatal_error,
             error,
             warning,
-            debug
+            debug,
+            message
         }
 
         private readonly DiscordSocketClient _discord;
@@ -37,6 +38,9 @@ namespace DiscordBeatSaberBot
 
                 case LogCode.debug:
                     color = Color.Blue;
+                    break;
+                case LogCode.message:
+                    color = Color.Green;
                     break;
                 case LogCode.fatal_error:
                     color = Color.DarkRed;

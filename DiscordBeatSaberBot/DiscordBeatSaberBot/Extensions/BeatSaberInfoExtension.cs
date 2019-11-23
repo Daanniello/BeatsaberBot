@@ -212,14 +212,14 @@ namespace DiscordBeatSaberBot
                 builder.ThumbnailUrl = player.imgLink;
                 builder.Title = "**" + player.name.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
                 builder.Url = "https://scoresaber.com/u/" + ScoresaberId;
-                builder.AddField("`ID: " + ScoresaberId.Replace("/u/", "") + "`", "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "``` \n [Click here for steam link](" + player.steamLink + ")\n\n");
+                builder.AddField("`ID: " + ScoresaberId.Replace("/u/", "") + "`", "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Replays Watched: " + player.ReplaysWatched + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "``` \n [Click here for steam link](" + player.steamLink + ")\n\n");
             }
             else
             {
                 builder.ThumbnailUrl = "https://scoresaber.com/imports/images/oculus.png";
                 builder.Title = "**" + player.name.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
                 builder.Url = "https://scoresaber.com/u/" + ScoresaberId;
-                builder.AddField("`ID: " + ScoresaberId.Replace("/u/", "") + "`", "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "```");
+                builder.AddField("`ID: " + ScoresaberId.Replace("/u/", "") + "`", "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" + "Performance Points: " + player.pp + "\n\n" + "Replays Watched: " + player.ReplaysWatched + "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore + "```");
             }
 
 
@@ -428,6 +428,8 @@ namespace DiscordBeatSaberBot
             string songName = "";
             string songDifficulty = "";
             string songAuthor = "";
+            var playerSongRank = "";
+            var playerName = "";
 
             string url = "https://scoresaber.com/u/" + playerId.Replace("/u/", "");
             using (var client = new HttpClient())
@@ -440,16 +442,27 @@ namespace DiscordBeatSaberBot
                 playerTopSongImg = "https://scoresaber.com" + table.Descendants("tbody").Select(tr => tr.Descendants("img").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("src", ""))).ToList()).ToList().First().First();
                 playerTopSongLink = table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList().First().First();
                 playerTopSongName = table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()).ToList().First().First();
-                playerTopSongPP = doc.DocumentNode.SelectSingleNode("//span[@class='scoreTop ppValue']").InnerText;
-                playerTopSongAcc = doc.DocumentNode.SelectSingleNode("//span[@class='scoreBottom']").InnerText;
+                playerTopSongPP = StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='scoreTop ppValue']").InnerText);
+                playerTopSongAcc = StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='scoreBottom']").InnerText);
                 songName = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").InnerText;
                 songDifficulty = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").Descendants("span").First().InnerText;
                 songAuthor = doc.DocumentNode.SelectSingleNode("//span[@class='songTop mapper']").InnerText;
+                playerSongRank = StringCleanup(doc.DocumentNode.SelectNodes("//th[@class='rank']")[1].InnerText);
+                playerName = StringCleanup(doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']").InnerText);
+
+            }
+
+            string StringCleanup(string RawContent)
+            {
+                var cleanContent = RawContent.Replace("\n", "").Trim();
+                return cleanContent;
             }
 
             var builder = new EmbedBuilder();
-            builder.AddField("Song", "name: " + songName + "\n" + "difficulty: " + songDifficulty + "\n" + "Author: " + songAuthor + "\n" + "pp from this song: " + playerTopSongPP + "\n" + playerTopSongAcc + "\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
+            builder.WithTitle("**Top song from: "+ playerName + "**");
+            builder.WithDescription("**Song name:** " + songName + "\n" + "**Difficulty:** " + songDifficulty + "\n" + "**Author:** " + songAuthor + "\n\n" + "**Rank:** " + playerSongRank + "\n**" + playerTopSongAcc.Split(' ')[0] + "** "+ playerTopSongAcc.Split(' ')[1] + "\n**PP**: " + playerTopSongPP + "\n\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
             builder.WithImageUrl(playerTopSongImg);
+            builder.WithUrl(url);
             try
             {
                 builder.WithThumbnailUrl(await GetImageUrlFromId(playerId));
@@ -484,7 +497,7 @@ namespace DiscordBeatSaberBot
                 playerTopSongLink = table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList().First().First();
                 playerTopSongName = StringCleanup(table.Descendants("tbody").Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()).ToList().First().First());
                 playerTopSongPP = StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='scoreTop ppValue']").InnerText).Split(' ').First();
-                playerTopSongAcc = StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='scoreBottom']").InnerText).Split(' ').Last();
+                playerTopSongAcc = doc.DocumentNode.SelectSingleNode("//span[@class='scoreBottom']").InnerText;
                 songName = StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").InnerText);
                 songDifficulty = StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").Descendants("span").First().InnerText);
                 songAuthor = StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='songTop mapper']").InnerText);
@@ -503,7 +516,7 @@ namespace DiscordBeatSaberBot
 
             var builder = new EmbedBuilder();
             //builder.AddField( "", "**Songname:** " + songName + "\n" + "**Difficulty:** " + songDifficulty + "\n" + "**Author:** " + songAuthor + "\n\n" + "**Rank: **" + playerSongRank + "\n**Score: **" + playerTopSongAcc + "\n" + "**PP:** " + playerTopSongPP + "\n\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
-            builder.WithDescription("**Songname:** " + songName + "\n" + "**Difficulty:** " + songDifficulty + "\n" + "**Author:** " + songAuthor + "\n\n" + "**Rank: **" + playerSongRank + "\n**Score: **" + playerTopSongAcc + "\n" + "**PP:** " + playerTopSongPP + "\n\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
+            builder.WithDescription("**Songname:** " + songName + "\n" + "**Difficulty:** " + songDifficulty + "\n" + "**Author:** " + songAuthor + "\n\n" + "**Rank: **" + playerSongRank + "\n**" + playerTopSongAcc.Split(' ')[0] + "** " + playerTopSongAcc.Split(' ')[1] + "\n" + "**PP:** " + playerTopSongPP + "\n\n" + "https://scoresaber.com" + playerTopSongLink + "\n");
             builder.WithTitle("**Recent song from: " + playerName + "**");
             builder.WithUrl("https://scoresaber.com/u/" + playerId.Replace("/u/", ""));
             builder.WithImageUrl(playerTopSongImg);
@@ -979,6 +992,8 @@ namespace DiscordBeatSaberBot
                 player.countryIcon = ":flag_" + player.countryName + ":";
                 player.imgLink = playerImg.First().First();
                 player.name = player.name;
+                player.ReplaysWatched = int.Parse(playerInfo2.First()[4].Replace("\r\n", "").Replace("Replays Watched by Others: ", "").Trim());
+
                 //player.scoresaberLink = url;
 
                 var nextAndBefore = await RankedNeighbours(playerName, player.rank, 1);

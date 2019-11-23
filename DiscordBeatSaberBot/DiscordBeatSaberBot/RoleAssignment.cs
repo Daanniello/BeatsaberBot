@@ -64,33 +64,29 @@ namespace DiscordBeatSaberBot
 
         public async Task<bool> LinkAccount(string discordId, string scoresaberId)
         {
-            string filePath = "../../../DutchAccounts.txt";
+            var GlobalAccountsPath = "../../../DutchAccounts.txt";
 
             //command: linkaccount
             string DiscordId = discordId;
             string ScoresaberId = scoresaberId;
 
-            var account = new List<string[]>();
+            var account = new Dictionary<string, object>();
 
-            using (var r = new StreamReader(filePath))
-            {
-                string json = r.ReadToEnd();
-                account = JsonConvert.DeserializeObject<List<string[]>>(json);
-            }
+            account = JsonExtension.GetJsonData(GlobalAccountsPath);
 
             if (account == null || account.Count == 0)
-                account = new List<string[]>();
+                account = new Dictionary<string, object>();
 
 
             foreach (var acc in account)
             {
-                if (acc[0] == DiscordId && acc[1] == ScoresaberId)
+                if (acc.Key == DiscordId && acc.Value.ToString() == ScoresaberId)
                     return false;
             }
 
-            account.Add(new[] { DiscordId, ScoresaberId });
+            account.Add(DiscordId, ScoresaberId);             
 
-            using (var file = File.CreateText(filePath))
+            using (var file = File.CreateText(GlobalAccountsPath))
             {
                 var serializer = new JsonSerializer();
                 serializer.Serialize(file, account);
@@ -102,20 +98,16 @@ namespace DiscordBeatSaberBot
 
         public ulong GetDiscordIdWithScoresaberId(string scoresaberId)
         {
-            string filePath = "../../../DutchAccounts.txt";
-            var account = new List<string[]>();
-            using (var r = new StreamReader(filePath))
-            {
-                string json = r.ReadToEnd();
-                account = JsonConvert.DeserializeObject<List<string[]>>(json);
-            }
+            string GlobalAccountsPath = "../../../DutchAccounts.txt";
+            var account = new Dictionary<string, object>();
+            account = JsonExtension.GetJsonData(GlobalAccountsPath);
 
             if (account == null || account.Count == 0)
                 return 0;
             foreach (var player in account)
             {
-                if (player[1] == scoresaberId)
-                    return ulong.Parse(player[0]);
+                if (player.Value.ToString() == scoresaberId)
+                    return ulong.Parse(player.Key);
             }
 
             return 0;

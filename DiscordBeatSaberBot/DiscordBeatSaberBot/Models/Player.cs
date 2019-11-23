@@ -37,6 +37,8 @@ namespace DiscordBeatSaberBot
 
         public Player Before { get; set; }
 
+        public int ReplaysWatched{ get; set; }
+
         public async Task<List<string>> GetPlayerId()
         {
             var realPlayerIdList = new List<string>();

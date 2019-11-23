@@ -14,24 +14,20 @@ namespace DiscordBeatSaberBot
         public static async Task UpdateNLAsync(DiscordSocketClient discord)
         {
             Console.WriteLine("Starting updating roles from linked NL accounts");
-            var accounts = new List<string[]>();
-            string filePath = "../../../DutchAccounts.txt";
+            var accounts = new Dictionary<string, object>();
+            string DutchAccountsPath = "../../../DutchAccounts.txt";
 
-            using (var r = new StreamReader(filePath))
-            {
-                string json = r.ReadToEnd();
-                accounts = JsonConvert.DeserializeObject<List<string[]>>(json);
-            }
+            accounts = JsonExtension.GetJsonData(DutchAccountsPath);
 
             if (accounts == null || accounts.Count == 0)
-                accounts = new List<string[]>();
+                accounts = new Dictionary<string, object>();
 
             var client = new HttpClient();
 
             string staticUrl = "https://scoresaber.com/u/";
             foreach (var account in accounts)
             {
-                string url = staticUrl + account[1];
+                string url = staticUrl + account.Value.ToString();
                 int rank = 0;
 
                 string html = await client.GetStringAsync(url);
@@ -52,28 +48,33 @@ namespace DiscordBeatSaberBot
                 {
                     if (rank == 0)
                     {
-                        await DutchRankFeed.GiveRole(account[1], "Koos Rankloos", discord);
+                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Koos Rankloos", discord);
                         continue;
                     }
 
                     if (rank == 1)
-                        await DutchRankFeed.GiveRole(account[1], "Nummer 1", discord);
+                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Nummer 1", discord);
                     else if (rank <= 3)
-                        await DutchRankFeed.GiveRole(account[1], "Top 3", discord);
+                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 3", discord);
                     else if (rank <= 10)
-                        await DutchRankFeed.GiveRole(account[1], "Top 10", discord);
+                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 10", discord);
                     else if (rank <= 25)
-                        await DutchRankFeed.GiveRole(account[1], "Top 25", discord);
+                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 25", discord);
                     else if (rank <= 50)
-                        await DutchRankFeed.GiveRole(account[1], "Top 50", discord);
+                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 50", discord);
                     else if (rank <= 100)
-                        await DutchRankFeed.GiveRole(account[1], "Top 100", discord);
+                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 100", discord);
                     else if (rank <= 250)
-                        await DutchRankFeed.GiveRole(account[1], "Top 250", discord);
+                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 250", discord);
+                    else if (rank <= 500)
+                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 500", discord);
+                    else if (rank > 500)
+                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 501+", discord);
+
                 }
                 catch
                 {
-                    Console.WriteLine("Delete " + account[1] + "He left the discord");
+                    Console.WriteLine("Delete " + account.Value.ToString() + "He left the discord");
                 }
             }
 

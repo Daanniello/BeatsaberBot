@@ -144,24 +144,32 @@ namespace DiscordBeatSaberBot
             string seconds = dateString.Split(' ')[1].Split(':')[2];
 
             var date = new DateTime(int.Parse(year), int.Parse(month), int.Parse(day), int.Parse(hours), int.Parse(minutes), int.Parse(seconds));
-            Console.WriteLine(date);
-
             var endDate = date.AddDays(7);
-            Console.WriteLine(endDate);
 
             if (DateTime.Now > endDate)
             {
                 var hourCounter = new BeatSaberHourCounter(discord, true);
+                var newUser = hourCounter.GetTopDutchHoursUser();
                 hourCounter.ResetHours();
                 try
                 {
-                    var user = discord.GetGuild(505485680344956928).Users.Where(u => u.Roles.Where(r => r.Name == "Verslaafd").Count() > 0);
+                    var user = discord.GetGuild(505485680344956928).Users.First(u => u.Roles.Where(r => r.Name == "Verslaafd").Count() > 0);
                     var role = discord.GetGuild(505485680344956928).Roles.Where(r => r.Name == "Verslaafd").First();
 
-                    if (user.Count() > 0)
-                        await user.First().RemoveRoleAsync(role);
-                    var newUser = hourCounter.GetTopDutchHoursUser();
-                    await discord.GetGuild(505485680344956928).GetUser(newUser.Id).AddRoleAsync(role);
+                    if (user != null)
+                    {
+                        await user.RemoveRoleAsync(role);
+                        _logger.Log(Logger.LogCode.message, "Removed 'Verslaafd' role from " + user.Username);
+
+                        await discord.GetGuild(505485680344956928).GetUser(newUser.Id).AddRoleAsync(role);
+                        _logger.Log(Logger.LogCode.message, "Added 'Verslaafd' role to " + newUser.Username);
+                    }
+                    else
+                    {
+                        _logger.Log(Logger.LogCode.error, "Could not add 'verslaafd' to user. User: " + user.ToString());
+                    }
+
+
                 }
                 catch
                 {

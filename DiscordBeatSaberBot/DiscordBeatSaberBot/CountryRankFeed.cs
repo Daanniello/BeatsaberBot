@@ -34,8 +34,6 @@ namespace DiscordBeatSaberBot
 
         public async Task SendFeedInCountryDiscord(ulong guildId, ulong channelId)
         {
-            //var channels = guilds.First().Channels.Where(x => x.Id == 504392851229114369);
-            //channels.First().
             var embeds = new List<EmbedBuilder>();
             try
             {
@@ -72,7 +70,7 @@ namespace DiscordBeatSaberBot
 
             using (var client = new HttpClient())
             {
-                client.Timeout = new TimeSpan(0, 0, 0, 5);
+                client.Timeout = new TimeSpan(0, 0, 0, 10);
                 for (int x = 1; x <= tab; x++)
                 {
                     string url = "https://scoresaber.com/global/" + x + "&country=" + countryCodeCombo;
@@ -80,6 +78,12 @@ namespace DiscordBeatSaberBot
                     string html = "";
                     try
                     {
+                        var reponse = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
+                        if (!reponse.IsSuccessStatusCode)
+                        {
+                            throw new HttpRequestException();
+                        }
+                            
                         html = await client.GetStringAsync(url);
                     }
                     catch (Exception ex)
