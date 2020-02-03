@@ -13,6 +13,15 @@ namespace DiscordBeatSaberBot
         /// <returns>Dictionary string object</returns>
         public static Dictionary<string, object> GetJsonData(string filePath)
         {
+            var fileInfo = new FileInfo(filePath);
+
+            if (fileInfo.Exists == false)
+            {
+                File.CreateText(filePath);
+            }
+
+            if (new FileInfo(filePath).Length == 0) return null;
+
             using (var r = new StreamReader(filePath))
             {
                 string json = r.ReadToEnd();
@@ -26,6 +35,7 @@ namespace DiscordBeatSaberBot
                 var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
                 return data;
             }
+            
         }
 
         /// <summary>
@@ -37,6 +47,7 @@ namespace DiscordBeatSaberBot
         public static void InsertJsonData(string filePath, string key, object data)
         {
             var oldData = GetJsonData(filePath);
+            if (oldData == null) { oldData = new Dictionary<string, object>(); };
             if (oldData.ContainsKey(key))
             {
                 oldData.Remove(key);
@@ -52,6 +63,13 @@ namespace DiscordBeatSaberBot
                 var serializer = new JsonSerializer();
                 serializer.Serialize(file, oldData);
             }
+        }
+
+        public static Dictionary<string, TValue> ToDictionary<TValue>(object obj)
+        {
+            var json = JsonConvert.SerializeObject(obj);
+            var dictionary = JsonConvert.DeserializeObject<Dictionary<string, TValue>>(json);
+            return dictionary;
         }
     }
 }

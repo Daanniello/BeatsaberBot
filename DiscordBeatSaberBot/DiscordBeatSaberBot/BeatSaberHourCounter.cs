@@ -25,6 +25,7 @@ namespace DiscordBeatSaberBot
         //ToDo: Might have bugs
         public void TurnOnCounterForPlayer(SocketGuildUser userOld, SocketGuildUser userNew)
         {
+
             if (userOld.Activity == null && userNew.Activity == null) return;
             //if (userOld.Activity.Type == ActivityType.Listening && userNew.Activity.Type == ActivityType.Listening) return;
 
@@ -41,8 +42,14 @@ namespace DiscordBeatSaberBot
             else
                 userNewName = userNew.Activity.Name;
 
-            if ( /*IsStreamingWithBeatsaber(userNew) == false && IsStreamingWithBeatsaber(userOld) || */ userOldName == "Beat Saber" && userNewName != "Beat Saber") //Finished Gaming
+            Game userOldGameStatus = (Game) userOld.Activity;
+            Game userOldNewStatus = (Game)userNew.Activity;
+
+
+            if ( /*IsStreamingWithBeatsaber(userNew) == false && IsStreamingWithBeatsaber(userOld) || */ userOldName.Contains("Beat Saber") && userNewName.Contains("Beat Saber")) //Finished Gaming
             {
+
+
                 var data = getData("../../../DiscordIDBeatsaberHourCounter.txt");
                 if (data.Count == 0)
                 {
@@ -67,6 +74,8 @@ namespace DiscordBeatSaberBot
                         }
 
                         totalHoursnew = DateTime.Now - DateTime.Parse(dateTime);
+                        _logger.Log(Logger.LogCode.debug, userNew.Username + " | Adding hours -> | " + totalHoursnew);
+
 
                         if (totalHoursnew.TotalMinutes > 240)
                             _logger.Log(Logger.LogCode.warning, discord.GetUser(Convert.ToUInt64(discordId.Key)).Username + " heeft 4 uur+ beat saber gespeeld" + "\n " + "Minutes before: " + int.Parse(discordId.Value[0]));
@@ -87,12 +96,25 @@ namespace DiscordBeatSaberBot
                     }
                 }
 
+                if (newData == null)
+                {
+                    _logger.Log(Logger.LogCode.fatal_error, "Inputted Data for Beat saber hour counter END is null!! | " + newData.ToString());
+                    return;
+                }
+
                 setData("../../../DiscordIDBeatsaberHourCounter.txt", newData);
                 UpdateCounterInServer();
             }
 
-            if (userOldName != "Beat Saber" && userNewName == "Beat Saber" /* || IsStreamingWithBeatsaber(userNew) */) //Starting Gaming
+            if(userOld.Username == "The Cutest Ahri")
             {
+                var t = userNew;
+                //activity = custom status 
+            }
+
+            if (!userOldName.Contains("Beat Saber") && userNewName.Contains("Beat Saber") /* || IsStreamingWithBeatsaber(userNew) */) //Starting Gaming
+            {
+
                 var data = getData("../../../DiscordIDBeatsaberHourCounter.txt");
                 if (data.Count == 0)
                 {
@@ -118,6 +140,12 @@ namespace DiscordBeatSaberBot
                     {
                         newData.Add(discordId.Key, discordId.Value);
                     }
+                }
+
+                if(newData == null)
+                {
+                    _logger.Log(Logger.LogCode.fatal_error, "Inputted Data for Beat saber hour counter START is null!! | " + newData.ToString());
+                    return;
                 }
 
                 setData("../../../DiscordIDBeatsaberHourCounter.txt", newData);
@@ -161,7 +189,7 @@ namespace DiscordBeatSaberBot
                 if (bo) newList.Add(user.Id, new[] {"0", ""});
             }
 
-            newList.Add(0000, new[] {"Start date", DateTime.Now.ToString()});
+            newList.Add(0, new[] {"Start date", DateTime.Now.ToString()});
 
             using (var file = File.CreateText("../../../DiscordIDBeatsaberHourCounter.txt"))
             {
@@ -175,16 +203,15 @@ namespace DiscordBeatSaberBot
         public Embed GetTop25BeatSaberHours()
         {
             var topdata = getData("../../../DiscordIDBeatsaberHourCounter.txt");
-
             var embedBuilder = new EmbedBuilder
             {
                 Title = "Top 25 Dutch Beat saber hours",
-                Description = "***Dit zijn de top25 makkers met de meeste uren in beat saber sinds\n " + topdata.GetValueOrDefault((ulong) 0000)[1] + "\n De gene die na een week de meeste uren heeft krijgt de VERSLAAFD role*** \n\n **Naam--------------------Minuten** \n",
+                Description = "***Dit zijn de top25 makkers met de meeste uren in beat saber sinds\n " + topdata.GetValueOrDefault((ulong) 0)[1] + "\n De gene die na een week de meeste uren heeft krijgt de VERSLAAFD role*** \n\n **Naam--------------------Minuten** \n",
                 Footer = new EmbedFooterBuilder {Text = "Laatste update: " + DateTime.Now},
                 Color = Color.Gold
             };
             int counter = 0;
-            topdata.Remove(0000);
+            topdata.Remove(0);
             var sortedList = topdata.OrderByDescending(key => int.Parse(key.Value[0]));
 
             foreach (var top in sortedList)
@@ -274,7 +301,15 @@ namespace DiscordBeatSaberBot
         {
             var dutchGuild = discord.GetGuild(505485680344956928);
             var txtChannel = dutchGuild.GetTextChannel(572721078359556097);
-            var message = await txtChannel.GetMessageAsync(572721530262257675);
+            IMessage message = null;
+            try
+            {
+                message = await txtChannel.GetMessageAsync(572721530262257675);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
             var msg = message as IUserMessage;
             await msg.ModifyAsync(x => { x.Embed = GetTop25BeatSaberHours(); });
         }

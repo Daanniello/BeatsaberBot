@@ -15,3 +15,6 @@ C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\
 C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.csproj.CopyComplete
 C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.dll
 C:\Users\Daan Smit\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.pdb
+C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.csprojAssemblyReference.cache
+C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.AssemblyInfoInputs.cache
+C:\Users\DaanS\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\Unit Tests\obj\Debug\netcoreapp2.1\Unit Tests.AssemblyInfo.cs

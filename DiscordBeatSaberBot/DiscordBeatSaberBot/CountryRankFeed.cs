@@ -70,7 +70,7 @@ namespace DiscordBeatSaberBot
 
             using (var client = new HttpClient())
             {
-                client.Timeout = new TimeSpan(0, 0, 0, 10);
+                client.Timeout = new TimeSpan(0, 0, 0, 20);
                 for (int x = 1; x <= tab; x++)
                 {
                     string url = "https://scoresaber.com/global/" + x + "&country=" + countryCodeCombo;

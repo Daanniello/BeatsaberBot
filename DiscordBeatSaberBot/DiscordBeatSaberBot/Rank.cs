@@ -45,7 +45,7 @@ namespace DiscordBeatSaberBot
         {
             //Playerbase
             string message = messageInfo.Content.Substring(4);
-            int tab = 10000;
+            int tab = 3800;
             string country = "";
             //string url = "https://scoresaber.com/global/" + tab + country;
             //https://scoresaber.com/global/2&country=us
@@ -66,14 +66,26 @@ namespace DiscordBeatSaberBot
 
             bool loop = true;
             int tempCount = 0;
-            int minTab = 4000;
-            int plusTab = 4000;
+            int minTab = 40;
+            int plusTab = 40;
             int minusCounter = 0;
+            float percentage = 1;
+            float co = 0.5f;
+
+           var channelMessage = await messageInfo.Channel.SendMessageAsync("Loading... 0%");
+
             do
             {
                 if (tab < 0)
                     tab = 1;
                 tempCount = await getList();
+                //await channelMessage.ModifyAsync(msg => msg.Content = "Loading... " + "99"+ "%");
+
+                percentage = (((minTab + plusTab * 100f) / 80f) * co);
+                co = co * (1.05f);
+
+                await channelMessage.ModifyAsync(msg => msg.Content = "Loading... " + percentage.ToString() + "%");
+
 
                 if (tempCount == 0)
                 {
@@ -84,8 +96,9 @@ namespace DiscordBeatSaberBot
                         val = 1;
                     minTab = minTab / val;
                     minusCounter++;
-                }
 
+                }
+                
                 if (tempCount == 50)
                 {
                     tab = tab + minTab;
@@ -118,6 +131,7 @@ namespace DiscordBeatSaberBot
                 }
             }
 
+            await channelMessage.DeleteAsync();
             var embedBuilder = new EmbedBuilder
             {
                 Title = "Playerbase Count " + t[1],

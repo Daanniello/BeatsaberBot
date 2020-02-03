@@ -56,7 +56,14 @@ namespace DiscordBeatSaberBot
             };
 
             Console.WriteLine(embedbuilder.Title + "\n\n" + embedbuilder.Description);
-            await _discord.GetGuild(505485680344956928).GetTextChannel(592877335355850752).SendMessageAsync("", false, embedbuilder.Build());
+            try
+            {
+                await _discord.GetGuild(505485680344956928).GetTextChannel(592877335355850752).SendMessageAsync("", false, embedbuilder.Build());
+            }
+            catch
+            {
+                Console.WriteLine("No Internet connection");
+            }
         }
     }
 }

@@ -42,7 +42,7 @@ namespace DiscordBeatSaberBot
 
         public static async void Unhandled_Exception(object sender, dynamic e)
         {
-            Console.WriteLine("Unhandled_Exception\n\n" + e.ExceptionObject.message);
+            Console.WriteLine("Unhandled_Exception\n\n" + e.ExceptionObject.ToString());
             //Environment.Exit(Environment.ExitCode);
             //new Program().MainAsync().GetAwaiter().GetResult();
         }
@@ -100,8 +100,7 @@ namespace DiscordBeatSaberBot
                 _reactionWatcher = new Dictionary<string, string>();
                 _reactionWatcher.Add("<:windows:553375150138195968>", "WMR");
                 _reactionWatcher.Add("❕", "NSFW");
-                _reactionWatcher.Add("<:AYAYA:509158069809315850>", "Anime");
-                _reactionWatcher.Add("<:AWEE:588758943686328330>", "Anime"); //Silverhaze's server
+                _reactionWatcher.Add("<:AYAYA:509158069809315850>", "Weeb");
                 _reactionWatcher.Add("<:minecraft:600768239261319217>", "Minecraft");
                 _reactionWatcher.Add("<:osu:578679882553491493>", "Osu!");
                 _reactionWatcher.Add("<:vrchat:537413837100548115>", "VRChat");
@@ -125,7 +124,33 @@ namespace DiscordBeatSaberBot
                 _reactionWatcher.Add("<:indexvr:589754441545154570>", "Index");
                 _reactionWatcher.Add("<:pimax:614170153185312789>", "Pimax");
                 _reactionWatcher.Add("<:megaotherway:526402963372245012>", "Event");
-                _reactionWatcher.Add("<:silverGasm:628988811329929276>", "NSFW"); //Silverhaze s server
+                _reactionWatcher.Add("<:skyToxicc:479251361028898828>", "Toxic");
+                _reactionWatcher.Add("<:BeatSaberTime:633400410400489487>", "Beat saber multiplayer");
+                _reactionWatcher.Add("🎮", "Andere games multiplayer");
+                _reactionWatcher.Add("<:owopeak:401481118165237760>", "IRL event");
+                //"🎮"
+
+                //"<a:skyToxicc:479251361028898828>"
+                //skyToxicc (479251361028898828)
+                //BeatSaberTime (633400410400489487)
+
+                //Provincies
+                _reactionWatcher.Add("<:peepoGroningen:600782037325971458>", "Groningen");
+                _reactionWatcher.Add("<:peepoFriesland:600782036923449344>", "Friesland");
+                _reactionWatcher.Add("<:peepoDrenthe:600782037556920372>", "Drenthe");
+                _reactionWatcher.Add("<:peepoOverijssel:600782037649063947>", "Overijssel");
+                _reactionWatcher.Add("<:peepoFlevoland:600782037812772870>", "Flevoland");
+                _reactionWatcher.Add("<:peepoGelderland:600782037590474780>", "Gelderland");
+                _reactionWatcher.Add("<:peepoUtrecht:600782037472903169>", "Utrecht");
+                _reactionWatcher.Add("<:peepoNoordHolland:600782038035070986>", "Noord-Holland");
+                _reactionWatcher.Add("<:peepoZuidHolland:600782037682749448>", "Zuid-Holland");
+                _reactionWatcher.Add("<:peepoZeeland:600782037049409547>", "Zeeland");
+                _reactionWatcher.Add("<:peepoBrabant:600782036642430986>", "Noord-Brabant");
+                _reactionWatcher.Add("<:peepoLimburg:600782036919123968>", "Limburg");
+
+                //Silverhaze's server
+                _reactionWatcher.Add("<:AWEE:588758943686328330>", "Anime"); 
+                _reactionWatcher.Add("<:silverGasm:628988811329929276>", "NSFW"); 
 
 
                 try
@@ -202,7 +227,65 @@ namespace DiscordBeatSaberBot
                     await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
                 }
 
-                if (channel.Id == 549343990957211658)
+                Dictionary<string, object> data = JsonExtension.GetJsonData(Environment.CurrentDirectory + "\\irleventdata.txt");
+
+                if (reaction.UserId != 504633036902498314 && data.Keys.Contains(reaction.MessageId.ToString()))
+                {
+                    //green_check (671412276594475018)
+                    //blue_check (671413239992549387)
+                    //red_check (671413258468720650)
+                    //<:peepoLimburg:600782036919123968>
+
+                    if (reaction.Emote.ToString() == "<:green_check:671412276594475018>")
+                    {
+                        var deelnemersMsgData = JsonExtension.ToDictionary<string[]>(data[reaction.MessageId.ToString()]);
+                        var eventDetailChannel = reaction.Channel;
+                        var msgId = deelnemersMsgData.First().Key;
+                        var embededMessage = (IUserMessage)await eventDetailChannel.GetMessageAsync(ulong.Parse(msgId));
+
+                        var embedInfo = embededMessage.Embeds.First();
+                        var user = discordSocketClient.GetUser(reaction.User.Value.Id);
+
+                        var embedBuilder = new EmbedBuilder
+                        {
+                            Title = embedInfo.Title,
+                            Description = embedInfo.Description + "\n" + "<@!" + user.Id.ToString() + ">",
+                            Footer = new EmbedFooterBuilder { Text = embedInfo.Footer.ToString() },
+                            Color = embedInfo.Color
+                        };
+                        //Add permissions to see the general event channel
+                        var d = deelnemersMsgData[reaction.MessageId.ToString() + "0"];
+                        var generalChannel = discordSocketClient.GetGuild(505485680344956928).GetChannel(ulong.Parse(d.First()));
+                        await generalChannel.AddPermissionOverwriteAsync(user, new OverwritePermissions().Modify(sendMessages: Discord.PermValue.Allow, viewChannel: Discord.PermValue.Allow, readMessageHistory: Discord.PermValue.Allow));
+
+                        await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
+                    }
+                    else if (reaction.Emote.ToString() == "<:blue_check:671413239992549387>")
+                    {
+                        var user = discordSocketClient.GetUser(reaction.User.Value.Id);
+                        var deelnemersMsgData = JsonExtension.ToDictionary<string[]>(data[reaction.MessageId.ToString()]);
+                        var d = deelnemersMsgData[reaction.MessageId.ToString() + "0"];
+                        var generalChannel = discordSocketClient.GetGuild(505485680344956928).GetChannel(ulong.Parse(d.First()));
+                        await generalChannel.AddPermissionOverwriteAsync(user, new OverwritePermissions().Modify(sendMessages: Discord.PermValue.Allow, viewChannel: Discord.PermValue.Allow, readMessageHistory: Discord.PermValue.Allow));
+                    }
+                    else if (reaction.Emote.ToString() == "<:red_check:671413258468720650>")
+                    {
+                        var user = discordSocketClient.GetUser(reaction.User.Value.Id);             
+                        var generalChannel = discordSocketClient.GetGuild(505485680344956928).GetChannel(reaction.Channel.Id);
+                        await generalChannel.AddPermissionOverwriteAsync(user, new OverwritePermissions().Modify(sendMessages: Discord.PermValue.Deny, viewChannel: Discord.PermValue.Deny, readMessageHistory: Discord.PermValue.Deny));
+                    }
+
+
+                }
+
+                if (reaction.MessageId.ToString() == "586248421715738629")
+                {
+                    var messageID = reaction.MessageId;
+                    var userID = reaction.UserId;
+
+                }
+
+                    if (channel.Id == 549343990957211658)
                 {
                     var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
                     var user = guild.GetUser(reaction.User.Value.Id);
@@ -327,9 +410,11 @@ namespace DiscordBeatSaberBot
                         guild = discordSocketClient.GetGuild(627156958880858113);
                     var user = guild.GetUser(reaction.UserId);
 
+                    var t = reaction.Emote.ToString().Replace("<a:", "<:");
+
                     foreach (var reactionDic in _reactionWatcher)
                     {
-                        if (reactionDic.Key == reaction.Emote.ToString())
+                        if (reactionDic.Key == t)
                         {
                             var role = guild.Roles.FirstOrDefault(x => x.Name == reactionDic.Value);
                             await (user as IGuildUser).AddRoleAsync(role);
@@ -370,6 +455,63 @@ namespace DiscordBeatSaberBot
                 await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
             }
 
+            //IRL Event section
+            Dictionary<string, object> data = JsonExtension.GetJsonData(Environment.CurrentDirectory + "\\irleventdata.txt");
+
+            if (reaction.UserId != 504633036902498314 && data.Keys.Contains(reaction.MessageId.ToString()))
+            {
+                //green_check (671412276594475018)
+                //blue_check (671413239992549387)
+                //red_check (671413258468720650)
+                //<:peepoLimburg:600782036919123968>
+
+                if (reaction.Emote.ToString() == "<:green_check:671412276594475018>")
+                {
+                    var deelnemersMsgData = JsonExtension.ToDictionary<string[]>(data[reaction.MessageId.ToString()]);
+                    var eventDetailChannel = reaction.Channel;
+                    var msgId = deelnemersMsgData.First().Key;
+                    var embededMessage = (IUserMessage)await eventDetailChannel.GetMessageAsync(ulong.Parse(msgId));
+
+                    var embedInfo = embededMessage.Embeds.First();
+                    var user = discordSocketClient.GetUser(reaction.User.Value.Id);
+
+                    var des = embedInfo.Description.Split("\n");
+                    string description = "";
+                    foreach (var deelnemer in des)
+                    {
+                        if (!deelnemer.Contains(reaction.UserId.ToString()))
+                        {
+                            description += "\n" + deelnemer;
+                        }
+                    }
+
+                    var embedBuilder = new EmbedBuilder
+                    {
+                        Title = embedInfo.Title,
+                        Description = description,
+                        Footer = new EmbedFooterBuilder { Text = embedInfo.Footer.ToString() },
+                        Color = embedInfo.Color
+                    };
+
+                    await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
+                }
+                else if (reaction.Emote.ToString() == "<:red_check:671413258468720650>")
+                {
+                    var user = discordSocketClient.GetUser(reaction.User.Value.Id);
+                    var deelnemersMsgData = JsonExtension.ToDictionary<string[]>(data[reaction.MessageId.ToString()]);
+                    var d = deelnemersMsgData[reaction.MessageId.ToString() + "0"];
+                    var generalChannel = discordSocketClient.GetGuild(505485680344956928).GetChannel(ulong.Parse(d.First()));
+                    await generalChannel.AddPermissionOverwriteAsync(user, new OverwritePermissions().Modify(sendMessages: Discord.PermValue.Deny, viewChannel: Discord.PermValue.Deny, readMessageHistory: Discord.PermValue.Deny));
+
+
+                    var user2 = discordSocketClient.GetUser(reaction.User.Value.Id);
+                    var infoChannel = discordSocketClient.GetGuild(505485680344956928).GetChannel(reaction.Channel.Id);
+                    await generalChannel.AddPermissionOverwriteAsync(user2, new OverwritePermissions().Modify(sendMessages: Discord.PermValue.Deny, viewChannel: Discord.PermValue.Deny, readMessageHistory: Discord.PermValue.Deny));
+                }
+
+
+            }
+
             //Remove Roles from reactions added to specific channels 
             try
             {
@@ -382,9 +524,12 @@ namespace DiscordBeatSaberBot
                         guild = discordSocketClient.GetGuild(627156958880858113);
 
                     var user = guild.GetUser(reaction.UserId);
+
+                    var t = reaction.Emote.ToString();
+
                     foreach (var reactionDic in _reactionWatcher)
                     {
-                        if (reactionDic.Key == reaction.Emote.ToString())
+                        if (reactionDic.Key == t)
                         {
                             var role = guild.Roles.FirstOrDefault(x => x.Name == reactionDic.Value);
                             await (user as IGuildUser).RemoveRoleAsync(role);
@@ -431,6 +576,9 @@ namespace DiscordBeatSaberBot
                 if (message.Content.Substring(0, 3).Contains("!bs"))
                 {
                     Console.WriteLine(message.Content);
+                    
+
+
 
                     await message.Channel.TriggerTypingAsync(new RequestOptions
                     {
@@ -542,10 +690,12 @@ namespace DiscordBeatSaberBot
                     }
                     else if (message.Content.Contains(" updateroles"))
                     {
-                        if (!ValidationExtension.IsOwner(message.Author.Id))
+                        if (ValidationExtension.IsOwner(message.Author.Id))
                         {
-                            await UpdateDiscordBeatsaberRanksNL.UpdateNLAsync(discordSocketClient);
-                            await message.Channel.SendMessageAsync("Done");
+                            new Thread(async () => {
+                                await UpdateDiscordBeatsaberRanksNL.UpdateNLAsync(discordSocketClient);
+                                await message.Channel.SendMessageAsync("Done");
+                            }).Start();                           
                         }
                         else
                         {
@@ -603,7 +753,15 @@ namespace DiscordBeatSaberBot
                     }
                     else if (message.Content.Contains(" playerbase"))
                     {
-                        await message.Channel.SendMessageAsync("", false, await Rank.GetPlayerbaseCount(message));
+                        new Thread(async () =>
+                        {
+                            var count = await Rank.GetPlayerbaseCount(message);
+                            message.Channel.SendMessageAsync("", false, count);
+                        }).Start();
+
+                    }else if (message.Content.Contains(" loadingbartest"))
+                    {
+
                     }
                     else if (message.Content.Contains(" compare"))
                     {
@@ -786,6 +944,16 @@ namespace DiscordBeatSaberBot
                                 await message.Channel.SendMessageAsync("", false, builder.Build());
                             }
                     }
+                    else if (message.Content.Contains(" irlevent create"))
+                    {
+                        if (ValidationExtension.IsOwner(message.Author.Id)){
+                            var embedBuilder = EmbedBuilderExtension.NullEmbed("IRL Event handler", "Starting IRL Event handler...", null, null);
+                            var msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
+
+
+                            var irlEventHandler = new IRLeventHandler(message, discordSocketClient, msg);
+                        }
+                    }
 
                     else
                     {
@@ -795,7 +963,9 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
+                //If a command fails its job. return a message to the user and log the error.
                 Console.WriteLine(ex);
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", ex.Message, null, null).Build());
                 _logger.Log(Logger.LogCode.error, ex.ToString());
             }
 

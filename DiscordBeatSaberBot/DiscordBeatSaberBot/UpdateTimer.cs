@@ -100,8 +100,8 @@ namespace DiscordBeatSaberBot
             double timeLeft = Math.Round(realDate.Subtract(DateTime.Now).TotalHours);
             if (timeLeft == 1)
             {
-                var msg = await eventDetailChannel.SendMessageAsync("<@&538905985050476545>");
-                await msg.DeleteAsync();
+                //var msg = await eventDetailChannel.SendMessageAsync("<@&538905985050476545>");
+                //await msg.DeleteAsync();
             }
 
             if (timeLeft < 0)

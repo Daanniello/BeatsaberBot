@@ -7,7 +7,7 @@ namespace DiscordBeatSaberBot
     {
         public static EmbedBuilder EmbedBuilder()
         {
-            return null;
+            return new Discord.EmbedBuilder();
         }
 
         public static EmbedBuilder NullEmbed(string Title, string description, string contentTitle, string content)

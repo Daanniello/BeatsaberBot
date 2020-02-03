@@ -1,0 +1,2200 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>WebsitesScreenshot</name>
+    </assembly>
+    <members>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLEventCallBack">
+            <summary>
+            Simple interface used as a callback implemented by the main control
+            GUID generated using PSDK GUID generator
+            </summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.ProcessWeb.InternalCreateWB">
+            <summary>
+            Create Webbrowser control and set up it's events
+            called from OnHandleCreated
+            Webbrowser control hosting requires an HWND
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.ProcessWeb.DrawThumb2(System.Int32,System.Int32,System.Drawing.Imaging.PixelFormat)">
+            <summary>
+            Faster than DrawThumb, but
+            does not work if a window is hidden
+            or is not on top of the zorder
+            </summary>
+            <param name="W"></param>
+            <param name="H"></param>
+            <param name="pixFormat"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.ProcessWeb.InvokeScript(System.String,System.Object[])">
+            <summary>
+            Invokes a script within the HTML page
+            </summary>
+            <param name="ScriptName"></param>
+            <param name="Data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.ProcessWeb.AutomationTask_PerformClickButton(System.String)">
+            <summary>
+            Performs a click on a Button element with given name
+            </summary>
+            <param name="elemname">Name of Button element</param>
+            <returns></returns>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.ProcessWeb.AutomationTasks">
+            <summary>
+            Call this only once, as other calls are ignored by library.
+            Allow or disallow HTML dialogs launched using showModelessDialog() 
+            and showModalDialog() methods using CBT Window Hook.
+            Default, allow = true
+            </summary>
+            <param name="bAllow"></param>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.HTMLEventHandler">
+            <summary>
+            HTMLEventHandler delegate
+            </summary>
+            <param name="sender">Instance of cHTMLWindowEvents or cHTMLDocumentEvents class</param>
+            <param name="e">HTMLEventArgs</param>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.HTMLEventArgs">
+            <summary>
+            html document and window event argument class
+            </summary>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.cHTMLWindowEvents">
+            <summary>
+            To handle Window events
+            </summary>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.cHTMLDocumentEvents">
+            <summary>
+            To handle Document events
+            </summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.WinApis.DeleteFromUrlCache(System.String)">
+            <summary>
+            Attempts to delete a cookie or cache entry
+            </summary>
+            <param name="url">INTERNET_CACHE_ENTRY_INFO.lpszSourceUrlName</param>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.LoadHTMLMoniker">
+            <summary>
+            For loading html into document while having the ability to set the baseUrl
+            Only two methods of IMoniker are called BindToStorage and GetDisplayName
+            In BindToStorage, we pass a ref to our stream object to be used for loading page
+            data. In GetDisplayName, we pass our baseUrl to MSHTML to be used.
+            </summary>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.HTMLDispIDs">
+            <summary>
+            Dispids taken from MsHtmdid.h
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "F:WebsitesScreenshot.SupportClasses.HTMLDispIDs.DISPID_EVPROP_ONDATASETCHANGED" -->
+        <member name="T:WebsitesScreenshot.SupportClasses.cHTMLParser">
+            <summary>
+            Using MSHTML as a UI-less HTML parser
+            </summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.cHTMLParser.StartParsing(System.String)">
+            <summary>
+            Only public method which starts the parsing process
+            When parsing is done, we receive a DISPID_READYSTATE dispid
+            in IPropertyNotifySink.OnChanged implementation
+            </summary>
+            <param name="Url"></param>
+        </member>
+        <member name="E:WebsitesScreenshot.SupportClasses.cHTMLParser.HtmlParsingDoneEvent">
+            <summary>
+            The only event fired by this class upon completion of parsing
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.cHTMLParser.U_ID">
+            <summary>
+            Unique ID for this instance
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.cHTMLParser.OriginalURL">
+            <summary>
+            Original URL used for parsing
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.cHTMLParser.ParserDocument">
+            <summary>
+            Accessor for our document
+            </summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.TreeViewSerializer.SetAttributeValue(System.Windows.Forms.TreeNode,System.String,System.String)">
+            <summary>
+            Used by Deserialize method for setting properties of TreeNode from xml node attributes
+            </summary>
+            <param name="node"></param>
+            <param name="propertyName"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.FindParent(WebsitesScreenshot.SupportClasses.IHTMLElement,System.String)">
+            <summary>
+            Searches for a parent (or grandparent) element with the given tag
+            ParentTagName must be in the form "TD" "TR" "TABLE" (uppercase)
+            </summary>
+            <param name="elem"></param>
+            <param name="ParentTagName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.NextSibiling(WebsitesScreenshot.SupportClasses.IHTMLDOMNode)">
+            <summary>
+            Returns the right neighbour which is a IHTMLElement in the HTML hierarchy
+            </summary>
+            <param name="node"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.PreviousSibling(WebsitesScreenshot.SupportClasses.IHTMLDOMNode)">
+            <summary>
+            Returns the left neighbour which is a IHTMLElement in the HTML hierarchy
+            </summary>
+            <param name="node"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.RemoveNode(WebsitesScreenshot.SupportClasses.IHTMLElement,System.Boolean)">
+            <summary>
+            Removes node element
+            If RemoveAllChildren == true, Removes this element and all it's children from the document
+            else it just strips this element but does not remove its children
+            E.g.  "<BIG><b>Hello World</b></BIG>"  ---> strip BIG tag --> "<b>Hello World</b>"
+            </summary>
+            <param name="node">element to remove</param>
+            <param name="RemoveAllChildren"></param>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.IsElementEmpty(WebsitesScreenshot.SupportClasses.IHTMLElement)">
+            <summary>
+            Return TRUE if the element is empty inside (e.g. <a name="#Pos1"></a>)
+            </summary>
+            <param name="elem"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.AddToSelection(System.String,System.String)">
+            <summary>
+            1) If nothing is selected returns false
+            2) If the user has selected text or multiple elements
+            inserts s_BeginHtml before and s_EndHtml behind the current selection
+            3)If the user has selected a control returns false
+            </summary>
+            <param name="s_BeginHtml"></param>
+            <param name="s_EndHtml"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.PasteIntoSelection(System.String)">
+            <summary>
+            The currently selected text/controls will be replaced by the given HTML code.
+            If nothing is selected, the HTML code is inserted at the cursor position
+            </summary>
+            <param name="s_Html"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.InsertHTML(WebsitesScreenshot.SupportClasses.IHTMLElement,System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Inserts the given HTML code inside or outside of this Html element
+            There are 4 possible insert positions:
+            Outside-Before<TAG>Inside-Before InnerHTML Inside-After</TAG>Ouside-After
+            </summary>
+            <param name="elem"></param>
+            <param name="s_Html"></param>
+            <param name="b_AtBegin"></param>
+            <param name="b_Inside"></param>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.AppendChild(System.String)">
+            <summary>
+            Creates and appends an HTMLElement to the end of the document DOM
+            </summary>
+            <param name="TagName">a, img, table,...</param>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.AppendChild(WebsitesScreenshot.SupportClasses.IHTMLElement,System.String)">
+            <summary>
+            Creates and appends an HTMLElement to a parent element
+            </summary>
+            <param name="TagName">a, img, table,...</param>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.GetParentRow(WebsitesScreenshot.SupportClasses.IHTMLElement)">
+            <summary>
+            Returns parent row of passed cell element
+            </summary>
+            <param name="cellelem"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.GetParentTable(WebsitesScreenshot.SupportClasses.IHTMLElement)">
+            <summary>
+            Returns parent table of passed cell element
+            </summary>
+            <param name="cellelem"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.GetColIndex(WebsitesScreenshot.SupportClasses.IHTMLTableCell)">
+            <summary>
+            Get the column of the current cell
+            zero based
+            </summary>
+            <param name="cell"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.GetRow(WebsitesScreenshot.SupportClasses.IHTMLTable,System.Int32)">
+            <summary>
+            Zero based
+            </summary>
+            <param name="table"></param>
+            <param name="rowindex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.GetColCount(WebsitesScreenshot.SupportClasses.IHTMLTable,System.Int32)">
+            <summary>
+            Gets the column count of row(rowindex)
+            Accounts for colSpan property
+            </summary>
+            <param name="table"></param>
+            <param name="colindex"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.HTMLEditHelper.DeleteRow(WebsitesScreenshot.SupportClasses.IHTMLTable,System.Int32)">
+            <summary>
+            Deletes a given rowindex in a given table
+            zero based
+            If the table has no rows after deletion anymore
+            we delete it compeletely
+            </summary>
+            <param name="table"></param>
+            <param name="rowindex"></param>
+        </member>
+        <member name="F:WebsitesScreenshot.SupportClasses.STATURL.pwcsUrl">
+            <summary>
+            The specified URL.The calling function must free this parameter.
+            Set this parameter to STATURL_QUERYFLAG_NOURL if no URL is specified.
+            </summary>
+        </member>
+        <member name="F:WebsitesScreenshot.SupportClasses.STATURL.pwcsTitle">
+            <summary>
+            The title of the Web page, as contained in the title tags.
+            This calling application must free this parameter.
+            Set this parameter to STATURL_QUERYFLAG_NOTITLE if no Web page is specified.
+            </summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IUrlHistoryStg.BindToObject(System.String,System.Guid@,System.Object)">
+            <summary>
+            Currently not implemented
+            </summary>
+            <param name="pocsUrl"></param>
+            <param name="riid"></param>
+            <param name="ppvOut"></param>
+            <returns></returns>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.GetPath(System.Text.StringBuilder,System.Int32,WebsitesScreenshot.SupportClasses.WIN32_FIND_DATAA@,WebsitesScreenshot.SupportClasses.SLGP_FLAGS)">
+            <summary>Retrieves the path and file name of a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.GetIDList(System.IntPtr@)">
+            <summary>Retrieves the list of item identifiers for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.SetIDList(System.IntPtr)">
+            <summary>Sets the pointer to an item identifier list (PIDL) for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.GetDescription(System.Text.StringBuilder,System.Int32)">
+            <summary>Retrieves the description string for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.SetDescription(System.String)">
+            <summary>Sets the description for a Shell link object. The description can be any application-defined string</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.GetWorkingDirectory(System.Text.StringBuilder,System.Int32)">
+            <summary>Retrieves the name of the working directory for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.SetWorkingDirectory(System.String)">
+            <summary>Sets the name of the working directory for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.GetArguments(System.Text.StringBuilder,System.Int32)">
+            <summary>Retrieves the command-line arguments associated with a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.SetArguments(System.String)">
+            <summary>Sets the command-line arguments for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.GetHotkey(System.Int16@)">
+            <summary>Retrieves the hot key for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.SetHotkey(System.Int16)">
+            <summary>Sets a hot key for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.GetShowCmd(System.Int32@)">
+            <summary>Retrieves the show command for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.SetShowCmd(System.Int32)">
+            <summary>Sets the show command for a Shell link object. The show command sets the initial show state of the window.</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.GetIconLocation(System.Text.StringBuilder,System.Int32,System.Int32@)">
+            <summary>Retrieves the location (path and index) of the icon for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.SetIconLocation(System.String,System.Int32)">
+            <summary>Sets the location (path and index) of the icon for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.SetRelativePath(System.String,System.Int32)">
+            <summary>Sets the relative path to the Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.Resolve(System.IntPtr,WebsitesScreenshot.SupportClasses.SLR_FLAGS)">
+            <summary>Attempts to find the target of a Shell link, even if it has been moved or renamed</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkA.SetPath(System.String)">
+            <summary>Sets the path and file name of a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.GetPath(System.Text.StringBuilder,System.Int32,WebsitesScreenshot.SupportClasses.WIN32_FIND_DATAW@,WebsitesScreenshot.SupportClasses.SLGP_FLAGS)">
+            <summary>Retrieves the path and file name of a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.GetIDList(System.IntPtr@)">
+            <summary>Retrieves the list of item identifiers for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.SetIDList(System.IntPtr)">
+            <summary>Sets the pointer to an item identifier list (PIDL) for a Shell link object.</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.GetDescription(System.Text.StringBuilder,System.Int32)">
+            <summary>Retrieves the description string for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.SetDescription(System.String)">
+            <summary>Sets the description for a Shell link object. The description can be any application-defined string</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.GetWorkingDirectory(System.Text.StringBuilder,System.Int32)">
+            <summary>Retrieves the name of the working directory for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.SetWorkingDirectory(System.String)">
+            <summary>Sets the name of the working directory for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.GetArguments(System.Text.StringBuilder,System.Int32)">
+            <summary>Retrieves the command-line arguments associated with a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.SetArguments(System.String)">
+            <summary>Sets the command-line arguments for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.GetHotkey(System.Int16@)">
+            <summary>Retrieves the hot key for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.SetHotkey(System.Int16)">
+            <summary>Sets a hot key for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.GetShowCmd(System.Int32@)">
+            <summary>Retrieves the show command for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.SetShowCmd(System.Int32)">
+            <summary>Sets the show command for a Shell link object. The show command sets the initial show state of the window.</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.GetIconLocation(System.Text.StringBuilder,System.Int32,System.Int32@)">
+            <summary>Retrieves the location (path and index) of the icon for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.SetIconLocation(System.String,System.Int32)">
+            <summary>Sets the location (path and index) of the icon for a Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.SetRelativePath(System.String,System.Int32)">
+            <summary>Sets the relative path to the Shell link object</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.Resolve(System.IntPtr,WebsitesScreenshot.SupportClasses.SLR_FLAGS)">
+            <summary>Attempts to find the target of a Shell link, even if it has been moved or renamed</summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IShellLinkW.SetPath(System.String)">
+            <summary>Sets the path and file name of a Shell link object</summary>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLRect">
+            <summary><para><c>IHTMLRect</c> interface.</para></summary>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLRect.bottom">
+            <summary><para><c>bottom</c> property of <c>IHTMLRect</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>bottom</c> property was the following:  <c>long bottom</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLRect.left">
+            <summary><para><c>left</c> property of <c>IHTMLRect</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>left</c> property was the following:  <c>long left</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLRect.right">
+            <summary><para><c>right</c> property of <c>IHTMLRect</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>right</c> property was the following:  <c>long right</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLRect.top">
+            <summary><para><c>top</c> property of <c>IHTMLRect</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>top</c> property was the following:  <c>long top</c>;</para></remarks>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLRectCollection">
+            <summary><para><c>IHTMLRectCollection</c> interface.</para></summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLRectCollection.item(System.Object@)">
+            <summary><para><c>item</c> method of <c>IHTMLRectCollection</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>item</c> method was the following:  <c>HRESULT item ([in] VARIANT* pvarIndex, [out, retval] VARIANT* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLRectCollection._newEnum">
+            <summary><para><c>_newEnum</c> property of <c>IHTMLRectCollection</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>_newEnum</c> property was the following:  <c>IUnknown* _newEnum</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLRectCollection.length">
+            <summary><para><c>length</c> property of <c>IHTMLRectCollection</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>length</c> property was the following:  <c>long length</c>;</para></remarks>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLElement">
+            <summary><para><c>IHTMLElement</c> interface.</para></summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement.setAttribute(System.String,System.Object,System.Int32)">
+            <summary><para><c>setAttribute</c> method of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>setAttribute</c> method was the following:  <c>HRESULT setAttribute (BSTR strAttributeName, VARIANT AttributeValue, [optional, defaultvalue(1)] long lFlags)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement.getAttribute(System.String,System.Int32)">
+            <summary><para><c>getAttribute</c> method of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>getAttribute</c> method was the following:  <c>HRESULT getAttribute (BSTR strAttributeName, [optional, defaultvalue(0)] long lFlags, [out, retval] VARIANT* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement.removeAttribute(System.String,System.Int32)">
+            <summary><para><c>removeAttribute</c> method of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>removeAttribute</c> method was the following:  <c>HRESULT removeAttribute (BSTR strAttributeName, [optional, defaultvalue(1)] long lFlags, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement.scrollIntoView(System.Object)">
+            <summary><para><c>scrollIntoView</c> method of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>scrollIntoView</c> method was the following:  <c>HRESULT scrollIntoView ([optional] VARIANT varargStart)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement.contains(WebsitesScreenshot.SupportClasses.IHTMLElement)">
+            <summary><para><c>contains</c> method of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>contains</c> method was the following:  <c>HRESULT contains (IHTMLElement* pChild, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement.insertAdjacentHTML(System.String,System.String)">
+            <summary><para><c>insertAdjacentHTML</c> method of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>insertAdjacentHTML</c> method was the following:  <c>HRESULT insertAdjacentHTML (BSTR where, BSTR html)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement.insertAdjacentText(System.String,System.String)">
+            <summary><para><c>insertAdjacentText</c> method of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>insertAdjacentText</c> method was the following:  <c>HRESULT insertAdjacentText (BSTR where, BSTR text)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement.click">
+            <summary><para><c>click</c> method of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>click</c> method was the following:  <c>HRESULT click (void)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement.toString">
+            <summary><para><c>toString</c> method of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>toString</c> method was the following:  <c>HRESULT toString ([out, retval] BSTR* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.all">
+            <summary><para><c>all</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>all</c> property was the following:  <c>IDispatch* all</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.children">
+            <summary><para><c>children</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>children</c> property was the following:  <c>IDispatch* children</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.className">
+            <summary><para><c>className</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>className</c> property was the following:  <c>BSTR className</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.document">
+            <summary><para><c>document</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>document</c> property was the following:  <c>IDispatch* document</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.filters">
+            <summary><para><c>filters</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>filters</c> property was the following:  <c>IHTMLFiltersCollection* filters</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.id">
+            <summary><para><c>id</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>id</c> property was the following:  <c>BSTR id</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.innerHTML">
+            <summary><para><c>innerHTML</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>innerHTML</c> property was the following:  <c>BSTR innerHTML</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.innerText">
+            <summary><para><c>innerText</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>innerText</c> property was the following:  <c>BSTR innerText</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.isTextEdit">
+            <summary><para><c>isTextEdit</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>isTextEdit</c> property was the following:  <c>VARIANT_BOOL isTextEdit</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.lang">
+            <summary><para><c>lang</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>lang</c> property was the following:  <c>BSTR lang</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.language">
+            <summary><para><c>language</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>language</c> property was the following:  <c>BSTR language</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.offsetHeight">
+            <summary><para><c>offsetHeight</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>offsetHeight</c> property was the following:  <c>long offsetHeight</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.offsetLeft">
+            <summary><para><c>offsetLeft</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>offsetLeft</c> property was the following:  <c>long offsetLeft</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.offsetParent">
+            <summary><para><c>offsetParent</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>offsetParent</c> property was the following:  <c>IHTMLElement* offsetParent</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.offsetTop">
+            <summary><para><c>offsetTop</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>offsetTop</c> property was the following:  <c>long offsetTop</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.offsetWidth">
+            <summary><para><c>offsetWidth</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>offsetWidth</c> property was the following:  <c>long offsetWidth</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onafterupdate">
+            <summary><para><c>onafterupdate</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onafterupdate</c> property was the following:  <c>VARIANT onafterupdate</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onbeforeupdate">
+            <summary><para><c>onbeforeupdate</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onbeforeupdate</c> property was the following:  <c>VARIANT onbeforeupdate</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onclick">
+            <summary><para><c>onclick</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onclick</c> property was the following:  <c>VARIANT onclick</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.ondataavailable">
+            <summary><para><c>ondataavailable</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondataavailable</c> property was the following:  <c>VARIANT ondataavailable</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.ondatasetchanged">
+            <summary><para><c>ondatasetchanged</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondatasetchanged</c> property was the following:  <c>VARIANT ondatasetchanged</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.ondatasetcomplete">
+            <summary><para><c>ondatasetcomplete</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondatasetcomplete</c> property was the following:  <c>VARIANT ondatasetcomplete</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.ondblclick">
+            <summary><para><c>ondblclick</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondblclick</c> property was the following:  <c>VARIANT ondblclick</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.ondragstart">
+            <summary><para><c>ondragstart</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondragstart</c> property was the following:  <c>VARIANT ondragstart</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onerrorupdate">
+            <summary><para><c>onerrorupdate</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onerrorupdate</c> property was the following:  <c>VARIANT onerrorupdate</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onfilterchange">
+            <summary><para><c>onfilterchange</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onfilterchange</c> property was the following:  <c>VARIANT onfilterchange</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onhelp">
+            <summary><para><c>onhelp</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onhelp</c> property was the following:  <c>VARIANT onhelp</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onkeydown">
+            <summary><para><c>onkeydown</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onkeydown</c> property was the following:  <c>VARIANT onkeydown</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onkeypress">
+            <summary><para><c>onkeypress</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onkeypress</c> property was the following:  <c>VARIANT onkeypress</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onkeyup">
+            <summary><para><c>onkeyup</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onkeyup</c> property was the following:  <c>VARIANT onkeyup</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onmousedown">
+            <summary><para><c>onmousedown</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmousedown</c> property was the following:  <c>VARIANT onmousedown</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onmousemove">
+            <summary><para><c>onmousemove</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmousemove</c> property was the following:  <c>VARIANT onmousemove</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onmouseout">
+            <summary><para><c>onmouseout</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmouseout</c> property was the following:  <c>VARIANT onmouseout</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onmouseover">
+            <summary><para><c>onmouseover</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmouseover</c> property was the following:  <c>VARIANT onmouseover</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onmouseup">
+            <summary><para><c>onmouseup</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmouseup</c> property was the following:  <c>VARIANT onmouseup</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onrowenter">
+            <summary><para><c>onrowenter</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onrowenter</c> property was the following:  <c>VARIANT onrowenter</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onrowexit">
+            <summary><para><c>onrowexit</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onrowexit</c> property was the following:  <c>VARIANT onrowexit</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.onselectstart">
+            <summary><para><c>onselectstart</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onselectstart</c> property was the following:  <c>VARIANT onselectstart</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.outerHTML">
+            <summary><para><c>outerHTML</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>outerHTML</c> property was the following:  <c>BSTR outerHTML</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.outerText">
+            <summary><para><c>outerText</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>outerText</c> property was the following:  <c>BSTR outerText</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.parentElement">
+            <summary><para><c>parentElement</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>parentElement</c> property was the following:  <c>IHTMLElement* parentElement</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.parentTextEdit">
+            <summary><para><c>parentTextEdit</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>parentTextEdit</c> property was the following:  <c>IHTMLElement* parentTextEdit</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.recordNumber">
+            <summary><para><c>recordNumber</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>recordNumber</c> property was the following:  <c>VARIANT recordNumber</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.sourceIndex">
+            <summary><para><c>sourceIndex</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>sourceIndex</c> property was the following:  <c>long sourceIndex</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.style">
+            <summary><para><c>style</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>style</c> property was the following:  <c>IHTMLStyle* style</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.tagName">
+            <summary><para><c>tagName</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>tagName</c> property was the following:  <c>BSTR tagName</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement.title">
+            <summary><para><c>title</c> property of <c>IHTMLElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>title</c> property was the following:  <c>BSTR title</c>;</para></remarks>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLElement2">
+            <summary><para><c>IHTMLElement2</c> interface.</para></summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.setCapture(System.Boolean)">
+            <summary><para><c>setCapture</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>setCapture</c> method was the following:  <c>HRESULT setCapture ([optional, defaultvalue(-1)] VARIANT_BOOL containerCapture)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.releaseCapture">
+            <summary><para><c>releaseCapture</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>releaseCapture</c> method was the following:  <c>HRESULT releaseCapture (void)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.componentFromPoint(System.Int32,System.Int32)">
+            <summary><para><c>componentFromPoint</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>componentFromPoint</c> method was the following:  <c>HRESULT componentFromPoint (long x, long y, [out, retval] BSTR* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.doScroll(System.Object)">
+            <summary><para><c>doScroll</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>doScroll</c> method was the following:  <c>HRESULT doScroll ([optional] VARIANT component)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.getClientRects">
+            <summary><para><c>getClientRects</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>getClientRects</c> method was the following:  <c>HRESULT getClientRects ([out, retval] IHTMLRectCollection** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.getBoundingClientRect">
+            <summary><para><c>getBoundingClientRect</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>getBoundingClientRect</c> method was the following:  <c>HRESULT getBoundingClientRect ([out, retval] IHTMLRect** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.setExpression(System.String,System.String,System.String)">
+            <summary><para><c>setExpression</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>setExpression</c> method was the following:  <c>HRESULT setExpression (BSTR propname, BSTR expression, [optional, defaultvalue("")] BSTR language)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.getExpression(System.String)">
+            <summary><para><c>getExpression</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>getExpression</c> method was the following:  <c>HRESULT getExpression (BSTR propname, [out, retval] VARIANT* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.removeExpression(System.String)">
+            <summary><para><c>removeExpression</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>removeExpression</c> method was the following:  <c>HRESULT removeExpression (BSTR propname, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.focus">
+            <summary><para><c>focus</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>focus</c> method was the following:  <c>HRESULT focus (void)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.blur">
+            <summary><para><c>blur</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>blur</c> method was the following:  <c>HRESULT blur (void)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.addFilter(System.Object)">
+            <summary><para><c>addFilter</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>addFilter</c> method was the following:  <c>HRESULT addFilter (IUnknown* pUnk)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.removeFilter(System.Object)">
+            <summary><para><c>removeFilter</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>removeFilter</c> method was the following:  <c>HRESULT removeFilter (IUnknown* pUnk)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.attachEvent(System.String,System.Object)">
+            <summary><para><c>attachEvent</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>attachEvent</c> method was the following:  <c>HRESULT attachEvent (BSTR event, IDispatch* pdisp, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.detachEvent(System.String,System.Object)">
+            <summary><para><c>detachEvent</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>detachEvent</c> method was the following:  <c>HRESULT detachEvent (BSTR event, IDispatch* pdisp)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.createControlRange">
+            <summary><para><c>createControlRange</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>createControlRange</c> method was the following:  <c>HRESULT createControlRange ([out, retval] IDispatch** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.clearAttributes">
+            <summary><para><c>clearAttributes</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>clearAttributes</c> method was the following:  <c>HRESULT clearAttributes (void)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.mergeAttributes(WebsitesScreenshot.SupportClasses.IHTMLElement)">
+            <summary><para><c>mergeAttributes</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>mergeAttributes</c> method was the following:  <c>HRESULT mergeAttributes (IHTMLElement* mergeThis)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.insertAdjacentElement(System.String,WebsitesScreenshot.SupportClasses.IHTMLElement)">
+            <summary><para><c>insertAdjacentElement</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>insertAdjacentElement</c> method was the following:  <c>HRESULT insertAdjacentElement (BSTR where, IHTMLElement* insertedElement, [out, retval] IHTMLElement** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.applyElement(WebsitesScreenshot.SupportClasses.IHTMLElement,System.String)">
+            <summary><para><c>applyElement</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>applyElement</c> method was the following:  <c>HRESULT applyElement (IHTMLElement* apply, BSTR where, [out, retval] IHTMLElement** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.getAdjacentText(System.String)">
+            <summary><para><c>getAdjacentText</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>getAdjacentText</c> method was the following:  <c>HRESULT getAdjacentText (BSTR where, [out, retval] BSTR* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.replaceAdjacentText(System.String,System.String)">
+            <summary><para><c>replaceAdjacentText</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>replaceAdjacentText</c> method was the following:  <c>HRESULT replaceAdjacentText (BSTR where, BSTR newText, [out, retval] BSTR* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.addBehavior(System.String,System.Object@)">
+            <summary><para><c>addBehavior</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>addBehavior</c> method was the following:  <c>HRESULT addBehavior (BSTR bstrUrl, [in, optional] VARIANT* pvarFactory, [out, retval] long* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.removeBehavior(System.Int32)">
+            <summary><para><c>removeBehavior</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>removeBehavior</c> method was the following:  <c>HRESULT removeBehavior (long cookie, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement2.getElementsByTagName(System.String)">
+            <summary><para><c>getElementsByTagName</c> method of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>getElementsByTagName</c> method was the following:  <c>HRESULT getElementsByTagName (BSTR v, [out, retval] IHTMLElementCollection** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.accessKey">
+            <summary><para><c>accessKey</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>accessKey</c> property was the following:  <c>BSTR accessKey</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.behaviorUrns">
+            <summary><para><c>behaviorUrns</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>behaviorUrns</c> property was the following:  <c>IDispatch* behaviorUrns</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.canHaveChildren">
+            <summary><para><c>canHaveChildren</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>canHaveChildren</c> property was the following:  <c>VARIANT_BOOL canHaveChildren</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.clientHeight">
+            <summary><para><c>clientHeight</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>clientHeight</c> property was the following:  <c>long clientHeight</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.clientLeft">
+            <summary><para><c>clientLeft</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>clientLeft</c> property was the following:  <c>long clientLeft</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.clientTop">
+            <summary><para><c>clientTop</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>clientTop</c> property was the following:  <c>long clientTop</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.clientWidth">
+            <summary><para><c>clientWidth</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>clientWidth</c> property was the following:  <c>long clientWidth</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.currentStyle">
+            <summary><para><c>currentStyle</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>currentStyle</c> property was the following:  <c>IHTMLCurrentStyle* currentStyle</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.dir">
+            <summary><para><c>dir</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>dir</c> property was the following:  <c>BSTR dir</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onbeforecopy">
+            <summary><para><c>onbeforecopy</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onbeforecopy</c> property was the following:  <c>VARIANT onbeforecopy</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onbeforecut">
+            <summary><para><c>onbeforecut</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onbeforecut</c> property was the following:  <c>VARIANT onbeforecut</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onbeforeeditfocus">
+            <summary><para><c>onbeforeeditfocus</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onbeforeeditfocus</c> property was the following:  <c>VARIANT onbeforeeditfocus</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onbeforepaste">
+            <summary><para><c>onbeforepaste</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onbeforepaste</c> property was the following:  <c>VARIANT onbeforepaste</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onblur">
+            <summary><para><c>onblur</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onblur</c> property was the following:  <c>VARIANT onblur</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.oncellchange">
+            <summary><para><c>oncellchange</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>oncellchange</c> property was the following:  <c>VARIANT oncellchange</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.oncontextmenu">
+            <summary><para><c>oncontextmenu</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>oncontextmenu</c> property was the following:  <c>VARIANT oncontextmenu</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.oncopy">
+            <summary><para><c>oncopy</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>oncopy</c> property was the following:  <c>VARIANT oncopy</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.oncut">
+            <summary><para><c>oncut</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>oncut</c> property was the following:  <c>VARIANT oncut</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.ondrag">
+            <summary><para><c>ondrag</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondrag</c> property was the following:  <c>VARIANT ondrag</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.ondragend">
+            <summary><para><c>ondragend</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondragend</c> property was the following:  <c>VARIANT ondragend</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.ondragenter">
+            <summary><para><c>ondragenter</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondragenter</c> property was the following:  <c>VARIANT ondragenter</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.ondragleave">
+            <summary><para><c>ondragleave</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondragleave</c> property was the following:  <c>VARIANT ondragleave</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.ondragover">
+            <summary><para><c>ondragover</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondragover</c> property was the following:  <c>VARIANT ondragover</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.ondrop">
+            <summary><para><c>ondrop</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondrop</c> property was the following:  <c>VARIANT ondrop</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onfocus">
+            <summary><para><c>onfocus</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onfocus</c> property was the following:  <c>VARIANT onfocus</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onlosecapture">
+            <summary><para><c>onlosecapture</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onlosecapture</c> property was the following:  <c>VARIANT onlosecapture</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onpaste">
+            <summary><para><c>onpaste</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onpaste</c> property was the following:  <c>VARIANT onpaste</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onpropertychange">
+            <summary><para><c>onpropertychange</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onpropertychange</c> property was the following:  <c>VARIANT onpropertychange</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onreadystatechange">
+            <summary><para><c>onreadystatechange</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onreadystatechange</c> property was the following:  <c>VARIANT onreadystatechange</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onresize">
+            <summary><para><c>onresize</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onresize</c> property was the following:  <c>VARIANT onresize</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onrowsdelete">
+            <summary><para><c>onrowsdelete</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onrowsdelete</c> property was the following:  <c>VARIANT onrowsdelete</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onrowsinserted">
+            <summary><para><c>onrowsinserted</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onrowsinserted</c> property was the following:  <c>VARIANT onrowsinserted</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.onscroll">
+            <summary><para><c>onscroll</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onscroll</c> property was the following:  <c>VARIANT onscroll</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.readyState">
+            <summary><para><c>readyState</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>readyState</c> property was the following:  <c>VARIANT readyState</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.readyStateValue">
+            <summary><para><c>readyStateValue</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>readyStateValue</c> property was the following:  <c>long readyStateValue</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.runtimeStyle">
+            <summary><para><c>runtimeStyle</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>runtimeStyle</c> property was the following:  <c>IHTMLStyle* runtimeStyle</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.scopeName">
+            <summary><para><c>scopeName</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>scopeName</c> property was the following:  <c>BSTR scopeName</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.scrollHeight">
+            <summary><para><c>scrollHeight</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>scrollHeight</c> property was the following:  <c>long scrollHeight</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.scrollLeft">
+            <summary><para><c>scrollLeft</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>scrollLeft</c> property was the following:  <c>long scrollLeft</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.scrollTop">
+            <summary><para><c>scrollTop</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>scrollTop</c> property was the following:  <c>long scrollTop</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.scrollWidth">
+            <summary><para><c>scrollWidth</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>scrollWidth</c> property was the following:  <c>long scrollWidth</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.tabIndex">
+            <summary><para><c>tabIndex</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>tabIndex</c> property was the following:  <c>short tabIndex</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement2.tagUrn">
+            <summary><para><c>tagUrn</c> property of <c>IHTMLElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>tagUrn</c> property was the following:  <c>BSTR tagUrn</c>;</para></remarks>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLElement3">
+            <summary><para><c>IHTMLElement3</c> interface.</para></summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement3.mergeAttributes(WebsitesScreenshot.SupportClasses.IHTMLElement,System.Object@)">
+            <summary><para><c>mergeAttributes</c> method of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>mergeAttributes</c> method was the following:  <c>HRESULT mergeAttributes (IHTMLElement* mergeThis, [in, optional] VARIANT* pvarFlags)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement3.setActive">
+            <summary><para><c>setActive</c> method of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>setActive</c> method was the following:  <c>HRESULT setActive (void)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement3.FireEvent(System.String,System.Object@)">
+            <summary><para><c>FireEvent</c> method of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>FireEvent</c> method was the following:  <c>HRESULT FireEvent (BSTR bstrEventName, [in, optional] VARIANT* pvarEventObject, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLElement3.dragDrop">
+            <summary><para><c>dragDrop</c> method of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>dragDrop</c> method was the following:  <c>HRESULT dragDrop ([out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.canHaveHTML">
+            <summary><para><c>canHaveHTML</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>canHaveHTML</c> property was the following:  <c>VARIANT_BOOL canHaveHTML</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.contentEditable">
+            <summary><para><c>contentEditable</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>contentEditable</c> property was the following:  <c>BSTR contentEditable</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.disabled">
+            <summary><para><c>disabled</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>disabled</c> property was the following:  <c>VARIANT_BOOL disabled</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.glyphMode">
+            <summary><para><c>glyphMode</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>glyphMode</c> property was the following:  <c>long glyphMode</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.hideFocus">
+            <summary><para><c>hideFocus</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>hideFocus</c> property was the following:  <c>VARIANT_BOOL hideFocus</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.inflateBlock">
+            <summary><para><c>inflateBlock</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>inflateBlock</c> property was the following:  <c>VARIANT_BOOL inflateBlock</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.isContentEditable">
+            <summary><para><c>isContentEditable</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>isContentEditable</c> property was the following:  <c>VARIANT_BOOL isContentEditable</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.isDisabled">
+            <summary><para><c>isDisabled</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>isDisabled</c> property was the following:  <c>VARIANT_BOOL isDisabled</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.isMultiLine">
+            <summary><para><c>isMultiLine</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>isMultiLine</c> property was the following:  <c>VARIANT_BOOL isMultiLine</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.onactivate">
+            <summary><para><c>onactivate</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onactivate</c> property was the following:  <c>VARIANT onactivate</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.onbeforedeactivate">
+            <summary><para><c>onbeforedeactivate</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onbeforedeactivate</c> property was the following:  <c>VARIANT onbeforedeactivate</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.oncontrolselect">
+            <summary><para><c>oncontrolselect</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>oncontrolselect</c> property was the following:  <c>VARIANT oncontrolselect</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.ondeactivate">
+            <summary><para><c>ondeactivate</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondeactivate</c> property was the following:  <c>VARIANT ondeactivate</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.onlayoutcomplete">
+            <summary><para><c>onlayoutcomplete</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onlayoutcomplete</c> property was the following:  <c>VARIANT onlayoutcomplete</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.onmouseenter">
+            <summary><para><c>onmouseenter</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmouseenter</c> property was the following:  <c>VARIANT onmouseenter</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.onmouseleave">
+            <summary><para><c>onmouseleave</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmouseleave</c> property was the following:  <c>VARIANT onmouseleave</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.onmove">
+            <summary><para><c>onmove</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmove</c> property was the following:  <c>VARIANT onmove</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.onmoveend">
+            <summary><para><c>onmoveend</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmoveend</c> property was the following:  <c>VARIANT onmoveend</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.onmovestart">
+            <summary><para><c>onmovestart</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmovestart</c> property was the following:  <c>VARIANT onmovestart</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.onpage">
+            <summary><para><c>onpage</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onpage</c> property was the following:  <c>VARIANT onpage</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.onresizeend">
+            <summary><para><c>onresizeend</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onresizeend</c> property was the following:  <c>VARIANT onresizeend</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLElement3.onresizestart">
+            <summary><para><c>onresizestart</c> property of <c>IHTMLElement3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onresizestart</c> property was the following:  <c>VARIANT onresizestart</c>;</para></remarks>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLDocument">
+            <summary><para><c>IHTMLDocument</c> interface.</para></summary>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument.Script">
+            <summary><para><c>Script</c> property of <c>IHTMLDocument</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>Script</c> property was the following:  <c>IDispatch* Script</c>;</para></remarks>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLDocument2">
+            <summary><para><c>IHTMLDocument2</c> interface.</para></summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.write(System.Object)">
+            <summary><para><c>write</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>write</c> method was the following:  <c>HRESULT write (SAFEARRAY() psarray)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.writeln(System.Object)">
+            <summary><para><c>writeln</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>writeln</c> method was the following:  <c>HRESULT writeln (SAFEARRAY() psarray)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.open(System.String,System.Object,System.Object,System.Object)">
+            <summary><para><c>open</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>open</c> method was the following:  <c>HRESULT open ([optional, defaultvalue("text/html")] BSTR url, [optional] VARIANT name, [optional] VARIANT features, [optional] VARIANT replace, [out, retval] IDispatch** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.close">
+            <summary><para><c>close</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>close</c> method was the following:  <c>HRESULT close (void)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.clear">
+            <summary><para><c>clear</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>clear</c> method was the following:  <c>HRESULT clear (void)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.queryCommandSupported(System.String)">
+            <summary><para><c>queryCommandSupported</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>queryCommandSupported</c> method was the following:  <c>HRESULT queryCommandSupported (BSTR cmdID, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.queryCommandEnabled(System.String)">
+            <summary><para><c>queryCommandEnabled</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>queryCommandEnabled</c> method was the following:  <c>HRESULT queryCommandEnabled (BSTR cmdID, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.queryCommandState(System.String)">
+            <summary><para><c>queryCommandState</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>queryCommandState</c> method was the following:  <c>HRESULT queryCommandState (BSTR cmdID, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.queryCommandIndeterm(System.String)">
+            <summary><para><c>queryCommandIndeterm</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>queryCommandIndeterm</c> method was the following:  <c>HRESULT queryCommandIndeterm (BSTR cmdID, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.queryCommandText(System.String)">
+            <summary><para><c>queryCommandText</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>queryCommandText</c> method was the following:  <c>HRESULT queryCommandText (BSTR cmdID, [out, retval] BSTR* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.queryCommandValue(System.String)">
+            <summary><para><c>queryCommandValue</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>queryCommandValue</c> method was the following:  <c>HRESULT queryCommandValue (BSTR cmdID, [out, retval] VARIANT* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.execCommand(System.String,System.Boolean,System.Object)">
+            <summary><para><c>execCommand</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>execCommand</c> method was the following:  <c>HRESULT execCommand (BSTR cmdID, [optional, defaultvalue(0)] VARIANT_BOOL showUI, [optional] VARIANT value, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.execCommandShowHelp(System.String)">
+            <summary><para><c>execCommandShowHelp</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>execCommandShowHelp</c> method was the following:  <c>HRESULT execCommandShowHelp (BSTR cmdID, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.createElement(System.String)">
+            <summary><para><c>createElement</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>createElement</c> method was the following:  <c>HRESULT createElement (BSTR eTag, [out, retval] IHTMLElement** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.elementFromPoint(System.Int32,System.Int32)">
+            <summary><para><c>elementFromPoint</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>elementFromPoint</c> method was the following:  <c>HRESULT elementFromPoint (long x, long y, [out, retval] IHTMLElement** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.toString">
+            <summary><para><c>toString</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>toString</c> method was the following:  <c>HRESULT toString ([out, retval] BSTR* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument2.createStyleSheet(System.String,System.Int32)">
+            <summary><para><c>createStyleSheet</c> method of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>createStyleSheet</c> method was the following:  <c>HRESULT createStyleSheet ([optional, defaultvalue("")] BSTR bstrHref, [optional, defaultvalue(-1)] long lIndex, [out, retval] IHTMLStyleSheet** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.activeElement">
+            <summary><para><c>activeElement</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>activeElement</c> property was the following:  <c>IHTMLElement* activeElement</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.alinkColor">
+            <summary><para><c>alinkColor</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>alinkColor</c> property was the following:  <c>VARIANT alinkColor</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.all">
+            <summary><para><c>all</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>all</c> property was the following:  <c>IHTMLElementCollection* all</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.anchors">
+            <summary><para><c>anchors</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>anchors</c> property was the following:  <c>IHTMLElementCollection* anchors</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.applets">
+            <summary><para><c>applets</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>applets</c> property was the following:  <c>IHTMLElementCollection* applets</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.bgColor">
+            <summary><para><c>bgColor</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>bgColor</c> property was the following:  <c>VARIANT bgColor</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.body">
+            <summary><para><c>body</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>body</c> property was the following:  <c>IHTMLElement* body</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.charset">
+            <summary><para><c>charset</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>charset</c> property was the following:  <c>BSTR charset</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.cookie">
+            <summary><para><c>cookie</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>cookie</c> property was the following:  <c>BSTR cookie</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.defaultCharset">
+            <summary><para><c>defaultCharset</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>defaultCharset</c> property was the following:  <c>BSTR defaultCharset</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.designMode">
+            <summary><para><c>designMode</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>designMode</c> property was the following:  <c>BSTR designMode</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.domain">
+            <summary><para><c>domain</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>domain</c> property was the following:  <c>BSTR domain</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.embeds">
+            <summary><para><c>embeds</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>embeds</c> property was the following:  <c>IHTMLElementCollection* embeds</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.expando">
+            <summary><para><c>expando</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>expando</c> property was the following:  <c>VARIANT_BOOL expando</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.fgColor">
+            <summary><para><c>fgColor</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>fgColor</c> property was the following:  <c>VARIANT fgColor</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.fileCreatedDate">
+            <summary><para><c>fileCreatedDate</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>fileCreatedDate</c> property was the following:  <c>BSTR fileCreatedDate</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.fileModifiedDate">
+            <summary><para><c>fileModifiedDate</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>fileModifiedDate</c> property was the following:  <c>BSTR fileModifiedDate</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.fileSize">
+            <summary><para><c>fileSize</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>fileSize</c> property was the following:  <c>BSTR fileSize</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.fileUpdatedDate">
+            <summary><para><c>fileUpdatedDate</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>fileUpdatedDate</c> property was the following:  <c>BSTR fileUpdatedDate</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.forms">
+            <summary><para><c>forms</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>forms</c> property was the following:  <c>IHTMLElementCollection* forms</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.frames">
+            <summary><para><c>frames</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>frames</c> property was the following:  <c>IHTMLFramesCollection2* frames</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.images">
+            <summary><para><c>images</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>images</c> property was the following:  <c>IHTMLElementCollection* images</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.lastModified">
+            <summary><para><c>lastModified</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>lastModified</c> property was the following:  <c>BSTR lastModified</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.linkColor">
+            <summary><para><c>linkColor</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>linkColor</c> property was the following:  <c>VARIANT linkColor</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.links">
+            <summary><para><c>links</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>links</c> property was the following:  <c>IHTMLElementCollection* links</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.location">
+            <summary><para><c>location</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>location</c> property was the following:  <c>IHTMLLocation* location</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.mimeType">
+            <summary><para><c>mimeType</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>mimeType</c> property was the following:  <c>BSTR mimeType</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.nameProp">
+            <summary><para><c>nameProp</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>nameProp</c> property was the following:  <c>BSTR nameProp</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onafterupdate">
+            <summary><para><c>onafterupdate</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onafterupdate</c> property was the following:  <c>VARIANT onafterupdate</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onbeforeupdate">
+            <summary><para><c>onbeforeupdate</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onbeforeupdate</c> property was the following:  <c>VARIANT onbeforeupdate</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onclick">
+            <summary><para><c>onclick</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onclick</c> property was the following:  <c>VARIANT onclick</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.ondblclick">
+            <summary><para><c>ondblclick</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondblclick</c> property was the following:  <c>VARIANT ondblclick</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.ondragstart">
+            <summary><para><c>ondragstart</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondragstart</c> property was the following:  <c>VARIANT ondragstart</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onerrorupdate">
+            <summary><para><c>onerrorupdate</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onerrorupdate</c> property was the following:  <c>VARIANT onerrorupdate</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onhelp">
+            <summary><para><c>onhelp</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onhelp</c> property was the following:  <c>VARIANT onhelp</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onkeydown">
+            <summary><para><c>onkeydown</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onkeydown</c> property was the following:  <c>VARIANT onkeydown</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onkeypress">
+            <summary><para><c>onkeypress</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onkeypress</c> property was the following:  <c>VARIANT onkeypress</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onkeyup">
+            <summary><para><c>onkeyup</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onkeyup</c> property was the following:  <c>VARIANT onkeyup</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onmousedown">
+            <summary><para><c>onmousedown</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmousedown</c> property was the following:  <c>VARIANT onmousedown</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onmousemove">
+            <summary><para><c>onmousemove</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmousemove</c> property was the following:  <c>VARIANT onmousemove</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onmouseout">
+            <summary><para><c>onmouseout</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmouseout</c> property was the following:  <c>VARIANT onmouseout</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onmouseover">
+            <summary><para><c>onmouseover</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmouseover</c> property was the following:  <c>VARIANT onmouseover</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onmouseup">
+            <summary><para><c>onmouseup</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onmouseup</c> property was the following:  <c>VARIANT onmouseup</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onreadystatechange">
+            <summary><para><c>onreadystatechange</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onreadystatechange</c> property was the following:  <c>VARIANT onreadystatechange</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onrowenter">
+            <summary><para><c>onrowenter</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onrowenter</c> property was the following:  <c>VARIANT onrowenter</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onrowexit">
+            <summary><para><c>onrowexit</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onrowexit</c> property was the following:  <c>VARIANT onrowexit</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.onselectstart">
+            <summary><para><c>onselectstart</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onselectstart</c> property was the following:  <c>VARIANT onselectstart</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.parentWindow">
+            <summary><para><c>parentWindow</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>parentWindow</c> property was the following:  <c>IHTMLWindow2* parentWindow</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.plugins">
+            <summary><para><c>plugins</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>plugins</c> property was the following:  <c>IHTMLElementCollection* plugins</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.protocol">
+            <summary><para><c>protocol</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>protocol</c> property was the following:  <c>BSTR protocol</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.readyState">
+            <summary><para><c>readyState</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>readyState</c> property was the following:  <c>BSTR readyState</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.referrer">
+            <summary><para><c>referrer</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>referrer</c> property was the following:  <c>BSTR referrer</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.Script">
+            <summary><para><c>Script</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>Script</c> property was the following:  <c>IDispatch* Script</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.scripts">
+            <summary><para><c>scripts</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>scripts</c> property was the following:  <c>IHTMLElementCollection* scripts</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.security">
+            <summary><para><c>security</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>security</c> property was the following:  <c>BSTR security</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.selection">
+            <summary><para><c>selection</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>selection</c> property was the following:  <c>IHTMLSelectionObject* selection</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.styleSheets">
+            <summary><para><c>styleSheets</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>styleSheets</c> property was the following:  <c>IHTMLStyleSheetsCollection* styleSheets</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.title">
+            <summary><para><c>title</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>title</c> property was the following:  <c>BSTR title</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.url">
+            <summary><para><c>url</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>url</c> property was the following:  <c>BSTR url</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument2.vlinkColor">
+            <summary><para><c>vlinkColor</c> property of <c>IHTMLDocument2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>vlinkColor</c> property was the following:  <c>VARIANT vlinkColor</c>;</para></remarks>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLDocument3">
+            <summary><para><c>IHTMLDocument3</c> interface.</para></summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument3.releaseCapture">
+            <summary><para><c>releaseCapture</c> method of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>releaseCapture</c> method was the following:  <c>HRESULT releaseCapture (void)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument3.recalc(System.Boolean)">
+            <summary><para><c>recalc</c> method of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>recalc</c> method was the following:  <c>HRESULT recalc ([optional, defaultvalue(0)] VARIANT_BOOL fForce)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument3.createTextNode(System.String)">
+            <summary><para><c>createTextNode</c> method of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>createTextNode</c> method was the following:  <c>HRESULT createTextNode (BSTR text, [out, retval] IHTMLDOMNode** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument3.attachEvent(System.String,System.Object)">
+            <summary><para><c>attachEvent</c> method of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>attachEvent</c> method was the following:  <c>HRESULT attachEvent (BSTR event, IDispatch* pdisp, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument3.detachEvent(System.String,System.Object)">
+            <summary><para><c>detachEvent</c> method of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>detachEvent</c> method was the following:  <c>HRESULT detachEvent (BSTR event, IDispatch* pdisp)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument3.createDocumentFragment">
+            <summary><para><c>createDocumentFragment</c> method of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>createDocumentFragment</c> method was the following:  <c>HRESULT createDocumentFragment ([out, retval] IHTMLDocument2** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument3.getElementsByName(System.String)">
+            <summary><para><c>getElementsByName</c> method of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>getElementsByName</c> method was the following:  <c>HRESULT getElementsByName (BSTR v, [out, retval] IHTMLElementCollection** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument3.getElementById(System.String)">
+            <summary><para><c>getElementById</c> method of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>getElementById</c> method was the following:  <c>HRESULT getElementById (BSTR v, [out, retval] IHTMLElement** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLDocument3.getElementsByTagName(System.String)">
+            <summary><para><c>getElementsByTagName</c> method of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>getElementsByTagName</c> method was the following:  <c>HRESULT getElementsByTagName (BSTR v, [out, retval] IHTMLElementCollection** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.baseUrl">
+            <summary><para><c>baseUrl</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>baseUrl</c> property was the following:  <c>BSTR baseUrl</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.childNodes">
+            <summary><para><c>childNodes</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>childNodes</c> property was the following:  <c>IDispatch* childNodes</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.dir">
+            <summary><para><c>dir</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>dir</c> property was the following:  <c>BSTR dir</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.documentElement">
+            <summary><para><c>documentElement</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>documentElement</c> property was the following:  <c>IHTMLElement* documentElement</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.enableDownload">
+            <summary><para><c>enableDownload</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>enableDownload</c> property was the following:  <c>VARIANT_BOOL enableDownload</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.inheritStyleSheets">
+            <summary><para><c>inheritStyleSheets</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>inheritStyleSheets</c> property was the following:  <c>VARIANT_BOOL inheritStyleSheets</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.onbeforeeditfocus">
+            <summary><para><c>onbeforeeditfocus</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onbeforeeditfocus</c> property was the following:  <c>VARIANT onbeforeeditfocus</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.oncellchange">
+            <summary><para><c>oncellchange</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>oncellchange</c> property was the following:  <c>VARIANT oncellchange</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.oncontextmenu">
+            <summary><para><c>oncontextmenu</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>oncontextmenu</c> property was the following:  <c>VARIANT oncontextmenu</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.ondataavailable">
+            <summary><para><c>ondataavailable</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondataavailable</c> property was the following:  <c>VARIANT ondataavailable</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.ondatasetchanged">
+            <summary><para><c>ondatasetchanged</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondatasetchanged</c> property was the following:  <c>VARIANT ondatasetchanged</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.ondatasetcomplete">
+            <summary><para><c>ondatasetcomplete</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>ondatasetcomplete</c> property was the following:  <c>VARIANT ondatasetcomplete</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.onpropertychange">
+            <summary><para><c>onpropertychange</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onpropertychange</c> property was the following:  <c>VARIANT onpropertychange</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.onrowsdelete">
+            <summary><para><c>onrowsdelete</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onrowsdelete</c> property was the following:  <c>VARIANT onrowsdelete</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.onrowsinserted">
+            <summary><para><c>onrowsinserted</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onrowsinserted</c> property was the following:  <c>VARIANT onrowsinserted</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.onstop">
+            <summary><para><c>onstop</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onstop</c> property was the following:  <c>VARIANT onstop</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.parentDocument">
+            <summary><para><c>parentDocument</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>parentDocument</c> property was the following:  <c>IHTMLDocument2* parentDocument</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLDocument3.uniqueID">
+            <summary><para><c>uniqueID</c> property of <c>IHTMLDocument3</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>uniqueID</c> property was the following:  <c>BSTR uniqueID</c>;</para></remarks>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLStyle">
+            <summary><para><c>IHTMLStyle</c> interface.</para></summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLStyle.setAttribute(System.String,System.Object,System.Int32)">
+            <summary><para><c>setAttribute</c> method of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>setAttribute</c> method was the following:  <c>HRESULT setAttribute (BSTR strAttributeName, VARIANT AttributeValue, [optional, defaultvalue(1)] long lFlags)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLStyle.getAttribute(System.String,System.Int32)">
+            <summary><para><c>getAttribute</c> method of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>getAttribute</c> method was the following:  <c>HRESULT getAttribute (BSTR strAttributeName, [optional, defaultvalue(0)] long lFlags, [out, retval] VARIANT* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLStyle.removeAttribute(System.String,System.Int32)">
+            <summary><para><c>removeAttribute</c> method of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>removeAttribute</c> method was the following:  <c>HRESULT removeAttribute (BSTR strAttributeName, [optional, defaultvalue(1)] long lFlags, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLStyle.toString">
+            <summary><para><c>toString</c> method of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>toString</c> method was the following:  <c>HRESULT toString ([out, retval] BSTR* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.background">
+            <summary><para><c>background</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>background</c> property was the following:  <c>BSTR background</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.backgroundAttachment">
+            <summary><para><c>backgroundAttachment</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>backgroundAttachment</c> property was the following:  <c>BSTR backgroundAttachment</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.backgroundColor">
+            <summary><para><c>backgroundColor</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>backgroundColor</c> property was the following:  <c>VARIANT backgroundColor</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.backgroundImage">
+            <summary><para><c>backgroundImage</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>backgroundImage</c> property was the following:  <c>BSTR backgroundImage</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.backgroundPosition">
+            <summary><para><c>backgroundPosition</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>backgroundPosition</c> property was the following:  <c>BSTR backgroundPosition</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.backgroundPositionX">
+            <summary><para><c>backgroundPositionX</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>backgroundPositionX</c> property was the following:  <c>VARIANT backgroundPositionX</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.backgroundPositionY">
+            <summary><para><c>backgroundPositionY</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>backgroundPositionY</c> property was the following:  <c>VARIANT backgroundPositionY</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.backgroundRepeat">
+            <summary><para><c>backgroundRepeat</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>backgroundRepeat</c> property was the following:  <c>BSTR backgroundRepeat</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.border">
+            <summary><para><c>border</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>border</c> property was the following:  <c>BSTR border</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderBottom">
+            <summary><para><c>borderBottom</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderBottom</c> property was the following:  <c>BSTR borderBottom</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderBottomColor">
+            <summary><para><c>borderBottomColor</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderBottomColor</c> property was the following:  <c>VARIANT borderBottomColor</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderBottomStyle">
+            <summary><para><c>borderBottomStyle</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderBottomStyle</c> property was the following:  <c>BSTR borderBottomStyle</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderBottomWidth">
+            <summary><para><c>borderBottomWidth</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderBottomWidth</c> property was the following:  <c>VARIANT borderBottomWidth</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderColor">
+            <summary><para><c>borderColor</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderColor</c> property was the following:  <c>BSTR borderColor</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderLeft">
+            <summary><para><c>borderLeft</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderLeft</c> property was the following:  <c>BSTR borderLeft</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderLeftColor">
+            <summary><para><c>borderLeftColor</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderLeftColor</c> property was the following:  <c>VARIANT borderLeftColor</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderLeftStyle">
+            <summary><para><c>borderLeftStyle</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderLeftStyle</c> property was the following:  <c>BSTR borderLeftStyle</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderLeftWidth">
+            <summary><para><c>borderLeftWidth</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderLeftWidth</c> property was the following:  <c>VARIANT borderLeftWidth</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderRight">
+            <summary><para><c>borderRight</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderRight</c> property was the following:  <c>BSTR borderRight</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderRightColor">
+            <summary><para><c>borderRightColor</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderRightColor</c> property was the following:  <c>VARIANT borderRightColor</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderRightStyle">
+            <summary><para><c>borderRightStyle</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderRightStyle</c> property was the following:  <c>BSTR borderRightStyle</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderRightWidth">
+            <summary><para><c>borderRightWidth</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderRightWidth</c> property was the following:  <c>VARIANT borderRightWidth</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderStyle">
+            <summary><para><c>borderStyle</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderStyle</c> property was the following:  <c>BSTR borderStyle</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderTop">
+            <summary><para><c>borderTop</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderTop</c> property was the following:  <c>BSTR borderTop</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderTopColor">
+            <summary><para><c>borderTopColor</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderTopColor</c> property was the following:  <c>VARIANT borderTopColor</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderTopStyle">
+            <summary><para><c>borderTopStyle</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderTopStyle</c> property was the following:  <c>BSTR borderTopStyle</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderTopWidth">
+            <summary><para><c>borderTopWidth</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderTopWidth</c> property was the following:  <c>VARIANT borderTopWidth</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.borderWidth">
+            <summary><para><c>borderWidth</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>borderWidth</c> property was the following:  <c>BSTR borderWidth</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.clear">
+            <summary><para><c>clear</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>clear</c> property was the following:  <c>BSTR clear</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.clip">
+            <summary><para><c>clip</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>clip</c> property was the following:  <c>BSTR clip</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.color">
+            <summary><para><c>color</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>color</c> property was the following:  <c>VARIANT color</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.cssText">
+            <summary><para><c>cssText</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>cssText</c> property was the following:  <c>BSTR cssText</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.cursor">
+            <summary><para><c>cursor</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>cursor</c> property was the following:  <c>BSTR cursor</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.display">
+            <summary><para><c>display</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>display</c> property was the following:  <c>BSTR display</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.filter">
+            <summary><para><c>filter</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>filter</c> property was the following:  <c>BSTR filter</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.font">
+            <summary><para><c>font</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>font</c> property was the following:  <c>BSTR font</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.fontFamily">
+            <summary><para><c>fontFamily</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>fontFamily</c> property was the following:  <c>BSTR fontFamily</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.fontSize">
+            <summary><para><c>fontSize</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>fontSize</c> property was the following:  <c>VARIANT fontSize</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.fontStyle">
+            <summary><para><c>fontStyle</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>fontStyle</c> property was the following:  <c>BSTR fontStyle</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.fontVariant">
+            <summary><para><c>fontVariant</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>fontVariant</c> property was the following:  <c>BSTR fontVariant</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.fontWeight">
+            <summary><para><c>fontWeight</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>fontWeight</c> property was the following:  <c>BSTR fontWeight</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.height">
+            <summary><para><c>height</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>height</c> property was the following:  <c>VARIANT height</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.left">
+            <summary><para><c>left</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>left</c> property was the following:  <c>VARIANT left</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.letterSpacing">
+            <summary><para><c>letterSpacing</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>letterSpacing</c> property was the following:  <c>VARIANT letterSpacing</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.lineHeight">
+            <summary><para><c>lineHeight</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>lineHeight</c> property was the following:  <c>VARIANT lineHeight</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.listStyle">
+            <summary><para><c>listStyle</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>listStyle</c> property was the following:  <c>BSTR listStyle</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.listStyleImage">
+            <summary><para><c>listStyleImage</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>listStyleImage</c> property was the following:  <c>BSTR listStyleImage</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.listStylePosition">
+            <summary><para><c>listStylePosition</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>listStylePosition</c> property was the following:  <c>BSTR listStylePosition</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.listStyleType">
+            <summary><para><c>listStyleType</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>listStyleType</c> property was the following:  <c>BSTR listStyleType</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.margin">
+            <summary><para><c>margin</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>margin</c> property was the following:  <c>BSTR margin</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.marginBottom">
+            <summary><para><c>marginBottom</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>marginBottom</c> property was the following:  <c>VARIANT marginBottom</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.marginLeft">
+            <summary><para><c>marginLeft</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>marginLeft</c> property was the following:  <c>VARIANT marginLeft</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.marginRight">
+            <summary><para><c>marginRight</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>marginRight</c> property was the following:  <c>VARIANT marginRight</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.marginTop">
+            <summary><para><c>marginTop</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>marginTop</c> property was the following:  <c>VARIANT marginTop</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.overflow">
+            <summary><para><c>overflow</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>overflow</c> property was the following:  <c>BSTR overflow</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.padding">
+            <summary><para><c>padding</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>padding</c> property was the following:  <c>BSTR padding</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.paddingBottom">
+            <summary><para><c>paddingBottom</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>paddingBottom</c> property was the following:  <c>VARIANT paddingBottom</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.paddingLeft">
+            <summary><para><c>paddingLeft</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>paddingLeft</c> property was the following:  <c>VARIANT paddingLeft</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.paddingRight">
+            <summary><para><c>paddingRight</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>paddingRight</c> property was the following:  <c>VARIANT paddingRight</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.paddingTop">
+            <summary><para><c>paddingTop</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>paddingTop</c> property was the following:  <c>VARIANT paddingTop</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.pageBreakAfter">
+            <summary><para><c>pageBreakAfter</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>pageBreakAfter</c> property was the following:  <c>BSTR pageBreakAfter</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.pageBreakBefore">
+            <summary><para><c>pageBreakBefore</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>pageBreakBefore</c> property was the following:  <c>BSTR pageBreakBefore</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.pixelHeight">
+            <summary><para><c>pixelHeight</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>pixelHeight</c> property was the following:  <c>long pixelHeight</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.pixelLeft">
+            <summary><para><c>pixelLeft</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>pixelLeft</c> property was the following:  <c>long pixelLeft</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.pixelTop">
+            <summary><para><c>pixelTop</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>pixelTop</c> property was the following:  <c>long pixelTop</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.pixelWidth">
+            <summary><para><c>pixelWidth</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>pixelWidth</c> property was the following:  <c>long pixelWidth</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.posHeight">
+            <summary><para><c>posHeight</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>posHeight</c> property was the following:  <c>float posHeight</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.position">
+            <summary><para><c>position</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>position</c> property was the following:  <c>BSTR position</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.posLeft">
+            <summary><para><c>posLeft</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>posLeft</c> property was the following:  <c>float posLeft</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.posTop">
+            <summary><para><c>posTop</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>posTop</c> property was the following:  <c>float posTop</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.posWidth">
+            <summary><para><c>posWidth</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>posWidth</c> property was the following:  <c>float posWidth</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.styleFloat">
+            <summary><para><c>styleFloat</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>styleFloat</c> property was the following:  <c>BSTR styleFloat</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.textAlign">
+            <summary><para><c>textAlign</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>textAlign</c> property was the following:  <c>BSTR textAlign</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.textDecoration">
+            <summary><para><c>textDecoration</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>textDecoration</c> property was the following:  <c>BSTR textDecoration</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.textDecorationBlink">
+            <summary><para><c>textDecorationBlink</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>textDecorationBlink</c> property was the following:  <c>VARIANT_BOOL textDecorationBlink</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.textDecorationLineThrough">
+            <summary><para><c>textDecorationLineThrough</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>textDecorationLineThrough</c> property was the following:  <c>VARIANT_BOOL textDecorationLineThrough</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.textDecorationNone">
+            <summary><para><c>textDecorationNone</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>textDecorationNone</c> property was the following:  <c>VARIANT_BOOL textDecorationNone</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.textDecorationOverline">
+            <summary><para><c>textDecorationOverline</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>textDecorationOverline</c> property was the following:  <c>VARIANT_BOOL textDecorationOverline</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.textDecorationUnderline">
+            <summary><para><c>textDecorationUnderline</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>textDecorationUnderline</c> property was the following:  <c>VARIANT_BOOL textDecorationUnderline</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.textIndent">
+            <summary><para><c>textIndent</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>textIndent</c> property was the following:  <c>VARIANT textIndent</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.textTransform">
+            <summary><para><c>textTransform</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>textTransform</c> property was the following:  <c>BSTR textTransform</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.top">
+            <summary><para><c>top</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>top</c> property was the following:  <c>VARIANT top</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.verticalAlign">
+            <summary><para><c>verticalAlign</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>verticalAlign</c> property was the following:  <c>VARIANT verticalAlign</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.visibility">
+            <summary><para><c>visibility</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>visibility</c> property was the following:  <c>BSTR visibility</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.whiteSpace">
+            <summary><para><c>whiteSpace</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>whiteSpace</c> property was the following:  <c>BSTR whiteSpace</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.width">
+            <summary><para><c>width</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>width</c> property was the following:  <c>VARIANT width</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.wordSpacing">
+            <summary><para><c>wordSpacing</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>wordSpacing</c> property was the following:  <c>VARIANT wordSpacing</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLStyle.zIndex">
+            <summary><para><c>zIndex</c> property of <c>IHTMLStyle</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>zIndex</c> property was the following:  <c>VARIANT zIndex</c>;</para></remarks>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLTxtRange">
+            <summary><para><c>IHTMLTxtRange</c> interface.</para></summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.parentElement">
+            <summary><para><c>parentElement</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>parentElement</c> method was the following:  <c>HRESULT parentElement ([out, retval] IHTMLElement** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.duplicate">
+            <summary><para><c>duplicate</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>duplicate</c> method was the following:  <c>HRESULT duplicate ([out, retval] IHTMLTxtRange** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.inRange(WebsitesScreenshot.SupportClasses.IHTMLTxtRange)">
+            <summary><para><c>inRange</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>inRange</c> method was the following:  <c>HRESULT inRange (IHTMLTxtRange* range, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.isEqual(WebsitesScreenshot.SupportClasses.IHTMLTxtRange)">
+            <summary><para><c>isEqual</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>isEqual</c> method was the following:  <c>HRESULT isEqual (IHTMLTxtRange* range, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.scrollIntoView(System.Boolean)">
+            <summary><para><c>scrollIntoView</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>scrollIntoView</c> method was the following:  <c>HRESULT scrollIntoView ([optional, defaultvalue(-1)] VARIANT_BOOL fStart)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.collapse(System.Boolean)">
+            <summary><para><c>collapse</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>collapse</c> method was the following:  <c>HRESULT collapse ([optional, defaultvalue(-1)] VARIANT_BOOL Start)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.expand(System.String)">
+            <summary><para><c>expand</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>expand</c> method was the following:  <c>HRESULT expand (BSTR Unit, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.move(System.String,System.Int32)">
+            <summary><para><c>move</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>move</c> method was the following:  <c>HRESULT move (BSTR Unit, [optional, defaultvalue(1)] long Count, [out, retval] long* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.moveStart(System.String,System.Int32)">
+            <summary><para><c>moveStart</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>moveStart</c> method was the following:  <c>HRESULT moveStart (BSTR Unit, [optional, defaultvalue(1)] long Count, [out, retval] long* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.moveEnd(System.String,System.Int32)">
+            <summary><para><c>moveEnd</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>moveEnd</c> method was the following:  <c>HRESULT moveEnd (BSTR Unit, [optional, defaultvalue(1)] long Count, [out, retval] long* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.select">
+            <summary><para><c>select</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>select</c> method was the following:  <c>HRESULT select (void)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.pasteHTML(System.String)">
+            <summary><para><c>pasteHTML</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>pasteHTML</c> method was the following:  <c>HRESULT pasteHTML (BSTR html)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.moveToElementText(WebsitesScreenshot.SupportClasses.IHTMLElement)">
+            <summary><para><c>moveToElementText</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>moveToElementText</c> method was the following:  <c>HRESULT moveToElementText (IHTMLElement* element)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.setEndPoint(System.String,WebsitesScreenshot.SupportClasses.IHTMLTxtRange)">
+            <summary><para><c>setEndPoint</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>setEndPoint</c> method was the following:  <c>HRESULT setEndPoint (BSTR how, IHTMLTxtRange* SourceRange)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.compareEndPoints(System.String,WebsitesScreenshot.SupportClasses.IHTMLTxtRange)">
+            <summary><para><c>compareEndPoints</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>compareEndPoints</c> method was the following:  <c>HRESULT compareEndPoints (BSTR how, IHTMLTxtRange* SourceRange, [out, retval] long* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.findText(System.String,System.Int32,System.Int32)">
+            <summary><para><c>findText</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>findText</c> method was the following:  <c>HRESULT findText (BSTR String, [optional, defaultvalue(1073741823)] long Count, [optional, defaultvalue(0)] long Flags, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.moveToPoint(System.Int32,System.Int32)">
+            <summary><para><c>moveToPoint</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>moveToPoint</c> method was the following:  <c>HRESULT moveToPoint (long x, long y)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.getBookmark">
+            <summary><para><c>getBookmark</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>getBookmark</c> method was the following:  <c>HRESULT getBookmark ([out, retval] BSTR* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.moveToBookmark(System.String)">
+            <summary><para><c>moveToBookmark</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>moveToBookmark</c> method was the following:  <c>HRESULT moveToBookmark (BSTR Bookmark, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.queryCommandSupported(System.String)">
+            <summary><para><c>queryCommandSupported</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>queryCommandSupported</c> method was the following:  <c>HRESULT queryCommandSupported (BSTR cmdID, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.queryCommandEnabled(System.String)">
+            <summary><para><c>queryCommandEnabled</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>queryCommandEnabled</c> method was the following:  <c>HRESULT queryCommandEnabled (BSTR cmdID, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.queryCommandState(System.String)">
+            <summary><para><c>queryCommandState</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>queryCommandState</c> method was the following:  <c>HRESULT queryCommandState (BSTR cmdID, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.queryCommandIndeterm(System.String)">
+            <summary><para><c>queryCommandIndeterm</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>queryCommandIndeterm</c> method was the following:  <c>HRESULT queryCommandIndeterm (BSTR cmdID, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.queryCommandText(System.String)">
+            <summary><para><c>queryCommandText</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>queryCommandText</c> method was the following:  <c>HRESULT queryCommandText (BSTR cmdID, [out, retval] BSTR* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.queryCommandValue(System.String)">
+            <summary><para><c>queryCommandValue</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>queryCommandValue</c> method was the following:  <c>HRESULT queryCommandValue (BSTR cmdID, [out, retval] VARIANT* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.execCommand(System.String,System.Boolean,System.Object)">
+            <summary><para><c>execCommand</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>execCommand</c> method was the following:  <c>HRESULT execCommand (BSTR cmdID, [optional, defaultvalue(0)] VARIANT_BOOL showUI, [optional] VARIANT value, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.execCommandShowHelp(System.String)">
+            <summary><para><c>execCommandShowHelp</c> method of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>execCommandShowHelp</c> method was the following:  <c>HRESULT execCommandShowHelp (BSTR cmdID, [out, retval] VARIANT_BOOL* ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.htmlText">
+            <summary><para><c>htmlText</c> property of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>htmlText</c> property was the following:  <c>BSTR htmlText</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLTxtRange.text">
+            <summary><para><c>text</c> property of <c>IHTMLTxtRange</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>text</c> property was the following:  <c>BSTR text</c>;</para></remarks>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLBodyElement">
+            <summary><para><c>IHTMLBodyElement</c> interface.</para></summary>
+        </member>
+        <member name="M:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.createTextRange">
+            <summary><para><c>createTextRange</c> method of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>createTextRange</c> method was the following:  <c>HRESULT createTextRange ([out, retval] IHTMLTxtRange** ReturnValue)</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.aLink">
+            <summary><para><c>aLink</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>aLink</c> property was the following:  <c>VARIANT aLink</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.background">
+            <summary><para><c>background</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>background</c> property was the following:  <c>BSTR background</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.bgColor">
+            <summary><para><c>bgColor</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>bgColor</c> property was the following:  <c>VARIANT bgColor</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.bgProperties">
+            <summary><para><c>bgProperties</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>bgProperties</c> property was the following:  <c>BSTR bgProperties</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.bottomMargin">
+            <summary><para><c>bottomMargin</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>bottomMargin</c> property was the following:  <c>VARIANT bottomMargin</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.leftMargin">
+            <summary><para><c>leftMargin</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>leftMargin</c> property was the following:  <c>VARIANT leftMargin</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.link">
+            <summary><para><c>link</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>link</c> property was the following:  <c>VARIANT link</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.noWrap">
+            <summary><para><c>noWrap</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>noWrap</c> property was the following:  <c>VARIANT_BOOL noWrap</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.onbeforeunload">
+            <summary><para><c>onbeforeunload</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onbeforeunload</c> property was the following:  <c>VARIANT onbeforeunload</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.onload">
+            <summary><para><c>onload</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onload</c> property was the following:  <c>VARIANT onload</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.onselect">
+            <summary><para><c>onselect</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onselect</c> property was the following:  <c>VARIANT onselect</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.onunload">
+            <summary><para><c>onunload</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onunload</c> property was the following:  <c>VARIANT onunload</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.rightMargin">
+            <summary><para><c>rightMargin</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>rightMargin</c> property was the following:  <c>VARIANT rightMargin</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.scroll">
+            <summary><para><c>scroll</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>scroll</c> property was the following:  <c>BSTR scroll</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.text">
+            <summary><para><c>text</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>text</c> property was the following:  <c>VARIANT text</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.topMargin">
+            <summary><para><c>topMargin</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>topMargin</c> property was the following:  <c>VARIANT topMargin</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement.vLink">
+            <summary><para><c>vLink</c> property of <c>IHTMLBodyElement</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>vLink</c> property was the following:  <c>VARIANT vLink</c>;</para></remarks>
+        </member>
+        <member name="T:WebsitesScreenshot.SupportClasses.IHTMLBodyElement2">
+            <summary><para><c>IHTMLBodyElement2</c> interface.</para></summary>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement2.onafterprint">
+            <summary><para><c>onafterprint</c> property of <c>IHTMLBodyElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onafterprint</c> property was the following:  <c>VARIANT onafterprint</c>;</para></remarks>
+        </member>
+        <member name="P:WebsitesScreenshot.SupportClasses.IHTMLBodyElement2.onbeforeprint">
+            <summary><para><c>onbeforeprint</c> property of <c>IHTMLBodyElement2</c> interface.</para></summary>
+            <remarks><para>An original IDL definition of <c>onbeforeprint</c> property was the following:  <c>VARIANT onbeforeprint</c>;</para></remarks>
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.CaptureWebpage(System.String)">
+            <summary>
+            Capture web page from url or local path.    
+            </summary>
+            <param name='strURL'>
+            Website page url or HTML/MHTML file path.
+            </param>        
+            <returns>
+            WebsitesScreenshot.Result, result of the capturing process (Captured, Failed, Timeout).
+            </returns>          
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.CaptureWebpageAsync(System.String)">
+            <summary>
+            Asynchronize method to capture web page from url or local path. Return value can be handled in CaptureResult event.    
+            </summary>
+             <param name='strURL'>
+             Website page url or HTML/MHTML file path.
+             </param>        
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.CaptureHTML(System.String)">
+            <summary>
+            Capture HTML code and convert it to image.    
+            </summary>
+            <param name='strHTMLCode'>
+            HTML code.
+            </param>        
+            <returns>
+            WebsitesScreenshot.Result, result of the capturing process (Captured, Failed, Timeout).
+            </returns>          
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.CaptureHTMLAsync(System.String)">
+            <summary>
+            Asynchronize method to capture HTML code and convert it to image. Return value can be handled in CaptureResult event.    
+            </summary>
+            <param name='strHTMLCode'>
+            HTML code.
+            </param>                
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.SaveImage(System.String)">
+            <summary>
+            Save captured image.
+            </summary>
+            <param name='strImageName'>
+            Output image name with full path.
+            </param>   
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.GetImage">
+            <summary>
+            Get captured image in memory.
+            </summary>
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.GetDocumentTitle">
+            <summary>
+            Get the title of the captured web page.
+            </summary>
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.GetDocumentText">
+            <summary>
+            Get the text content of the captured web page.
+            </summary>
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.GetDocumentLinks">
+            <summary>
+            Get the URLs of links on the captured web page.
+            </summary>
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.GetDocumentFrames">
+            <summary>
+            Get the URLs of frames on the captured web page.
+            </summary>
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.GetDocumentImages">
+            <summary>
+            Get the URLs of images on the captured web page.
+            </summary>
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.GetDocumentSource">
+            <summary>
+            Get HTML Source of the captured web page.
+            </summary>
+        </member>
+        <member name="M:WebsitesScreenshot.WebsitesScreenshot.GetHtmlDocument">
+            <summary>
+            Get the HTML Document object of the captured web page.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.ImageFormat">
+            <summary>
+            Output image format, default value JPG.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.JpegQuality">
+            <summary>
+            Output JPEG image quality percent, value from 0 to 100, default value 100.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.ImageWidth">
+            <summary>
+            Width of the output image, default width automatically determined.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.ImageHeight">
+            <summary>
+            Height of the output image, default height automatically determined.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.PreserveAspectRatio">
+            <summary>
+            Preserve aspect ratio when applying width or height to the output.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.BrowserWidth">
+            <summary>
+            Browser width, default width automatically determined.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.BrowserHeight">
+            <summary>
+            Browser height, default height automatically determined.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.NoActiveX">
+            <summary>
+            Disable ActiveX on the page.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.NoJava">
+            <summary>
+            Disable Java on the page.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.NoScripts">
+            <summary>
+            Disable Scripts on the page.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.TimeOutSeconds">
+            <summary>
+            Timeout in seconds. Timeout value for the process, default value 120 seconds.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.DelaySeconds">
+            <summary>
+            Delay in seconds. After page loads, take screenshot after specified seconds, default value 1 second.
+            </summary>
+        </member>
+        <member name="P:WebsitesScreenshot.WebsitesScreenshot.Force">
+            <summary>
+            Force to take screenshot if timeout.
+            </summary>
+        </member>
+    </members>
+</doc>
