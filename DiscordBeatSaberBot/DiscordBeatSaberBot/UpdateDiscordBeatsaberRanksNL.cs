@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using HtmlAgilityPack;
@@ -11,8 +12,13 @@ namespace DiscordBeatSaberBot
 {
     internal static class UpdateDiscordBeatsaberRanksNL
     {
-        public static async Task UpdateNLAsync(DiscordSocketClient discord)
+        public static async Task UpdateNLAsync(DiscordSocketClient discord, SocketMessage message)
         {
+            
+
+            var embed = await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Starting Roles update", "", null, null).Build());
+            await Task.Delay(1000);
+
             Console.WriteLine("Starting updating roles from linked NL accounts");
             var accounts = new Dictionary<string, object>();
             string DutchAccountsPath = "../../../DutchAccounts.txt";
@@ -23,6 +29,10 @@ namespace DiscordBeatSaberBot
                 accounts = new Dictionary<string, object>();
 
             var client = new HttpClient();
+
+            var LoadingSpaceCount = 0;
+            var spaceCount = accounts.Count;
+            var accountsProcessCount = 0;
 
             string staticUrl = "https://scoresaber.com/u/";
             foreach (var account in accounts)
@@ -75,6 +85,22 @@ namespace DiscordBeatSaberBot
                 catch
                 {
                     Console.WriteLine("Delete " + account.Value.ToString() + "He left the discord");
+                }
+
+                await embed.ModifyAsync(x =>
+                    x.Embed = EmbedBuilderExtension.NullEmbed("Loading", "*0%* ||" + GiveSpaces(accountsProcessCount).Item1 + "||" + GiveSpaces(accountsProcessCount).Item2 + "*100%*", null, null).Build());
+                accountsProcessCount += 1;
+
+                (string, string) GiveSpaces(int count)
+                {
+                    var l = "";
+                    var s = "";
+
+                    for (var i = 0; i < count; i++) l += "";
+
+                    for (var i = 0; i < accounts.Count - count; i++) s += "";
+
+                    return (l, s);
                 }
             }
 
