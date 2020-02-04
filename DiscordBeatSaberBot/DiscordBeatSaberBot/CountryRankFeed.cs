@@ -39,9 +39,9 @@ namespace DiscordBeatSaberBot
             {
                 embeds = await MessagesToSend();
             }
-            catch
+            catch(Exception ex)
             {
-                _logger.Log(Logger.LogCode.warning, "Scoresaber is being annoying " + countryCodeCombo + "");
+                _logger.Log(Logger.LogCode.warning, ex.ToString());
                 return;
             }
 
