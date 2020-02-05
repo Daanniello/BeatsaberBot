@@ -201,7 +201,7 @@ namespace DiscordBeatSaberBot
             await guildUser.AddRoleAsync(addRole);
         }
 
-        private async Task<Task> ReactionAdded(Cacheable<IUserMessage, ulong> cache,
+        private async Task ReactionAdded(Cacheable<IUserMessage, ulong> cache,
             ISocketMessageChannel channel,
             SocketReaction reaction)
         {
@@ -427,10 +427,10 @@ namespace DiscordBeatSaberBot
                 _logger.Log(Logger.LogCode.error, ex.ToString());
             }
 
-            return Task.CompletedTask;
+            return;
         }
 
-        private async Task<Task> ReactionRemoved(Cacheable<IUserMessage, ulong> cache,
+        private async Task ReactionRemoved(Cacheable<IUserMessage, ulong> cache,
             ISocketMessageChannel channel,
             SocketReaction reaction)
         {
@@ -453,6 +453,7 @@ namespace DiscordBeatSaberBot
                 };
 
                 await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
+                return;
             }
 
             //IRL Event section
@@ -494,6 +495,7 @@ namespace DiscordBeatSaberBot
                     };
 
                     await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
+                    return;
                 }
                 else if (reaction.Emote.ToString() == "<:red_check:671413258468720650>")
                 {
@@ -507,6 +509,7 @@ namespace DiscordBeatSaberBot
                     var user2 = discordSocketClient.GetUser(reaction.User.Value.Id);
                     var infoChannel = discordSocketClient.GetGuild(505485680344956928).GetChannel(reaction.Channel.Id);
                     await generalChannel.AddPermissionOverwriteAsync(user2, new OverwritePermissions().Modify(sendMessages: Discord.PermValue.Deny, viewChannel: Discord.PermValue.Deny, readMessageHistory: Discord.PermValue.Deny));
+                    return;
                 }
 
 
@@ -535,6 +538,7 @@ namespace DiscordBeatSaberBot
                             await (user as IGuildUser).RemoveRoleAsync(role);
                         }
                     }
+                    return;
                 }
             }
             catch (Exception ex)
@@ -542,16 +546,16 @@ namespace DiscordBeatSaberBot
                 _logger.Log(Logger.LogCode.error, reaction.Emote.Name + "\n" + ex);
             }
 
-            return Task.CompletedTask;
+            return;
         }
 
-        private async Task<Task> MessageReceived(SocketMessage message)
+        private async Task MessageReceived(SocketMessage message)
         {
             try
             {
                 //Server s = new Server(discordSocketClient, "");
                 //await s.AddVRroleMessage(null, true);
-                if (message.Author.Username == "BeatSaber Bot") return Task.CompletedTask;
+                if (message.Author.Username == "BeatSaber Bot") return;
                 if (message.Author.Id != 546850627029041153 && message.Content.Contains("ur an idiot"))
                 {
                     var user = await message.Channel.GetUserAsync(138439306774577152);
@@ -564,7 +568,7 @@ namespace DiscordBeatSaberBot
 
                 MessageDelete.DeleteMessageCheck(message, discordSocketClient);
                 if (message.Content.Length <= 3)
-                    return Task.CompletedTask;
+                    return;
             }
             catch (Exception ex)
             {
@@ -600,7 +604,7 @@ namespace DiscordBeatSaberBot
                         }
 
 
-                        return Task.CompletedTask;
+                        return;
                     }
 
                     if (message.Content.Contains(" top10"))
@@ -677,7 +681,7 @@ namespace DiscordBeatSaberBot
                             if (message.Content.Substring(10).Count() == 0)
                             {
                                 await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("User's discord not linked", "Your discord is not linked yet. Type !bs verification [Scoresaberlink] to link it.",null,null).Build());
-                                return Task.CompletedTask;
+                                return;
                             }
                             foreach (var embed in await BeatSaberInfoExtension.GetPlayer(message.Content.Substring(11)))
                             {
@@ -693,7 +697,7 @@ namespace DiscordBeatSaberBot
                         if (ValidationExtension.IsOwner(message.Author.Id))
                         {
                             new Thread(async () => {
-                                await UpdateDiscordBeatsaberRanksNL.UpdateNLAsync(discordSocketClient);
+                                await UpdateDiscordBeatsaberRanksNL.UpdateNLAsync(discordSocketClient, message);
                                 await message.Channel.SendMessageAsync("Done");
                             }).Start();                           
                         }
@@ -781,7 +785,7 @@ namespace DiscordBeatSaberBot
                         if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
                         {
                             await message.Channel.SendMessageAsync("Your Discord ID is already linked with your scoresaber, No worries " + message.Author.Username);
-                            return Task.CompletedTask;
+                            return;
                         }
                         else
                         {
@@ -791,7 +795,7 @@ namespace DiscordBeatSaberBot
                             if (!ValidationExtension.IsDigitsOnly(ScoresaberId))
                             {
                                 await message.Channel.SendMessageAsync("Scoresaber ID is wrong");
-                                return Task.CompletedTask;
+                                return;
                             }
 
                             if (await ValidationExtension.IsDutch(ScoresaberId))
@@ -850,13 +854,13 @@ namespace DiscordBeatSaberBot
                         catch (Exception ex)
                         {
                             await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", ex.ToString(), null, null).Build());
-                            return Task.CompletedTask;
+                            return;
                         }
 
                         if (playerObject.Count == 0)
                         {
                             await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Player found with the name " + player, "Try again with a different name", null, null).Build());
-                            return Task.CompletedTask;
+                            return;
                         }
 
                         bool firstItem = false;
@@ -879,7 +883,7 @@ namespace DiscordBeatSaberBot
                         if (_data.ContainsKey(message.Author.Id) && !firstItem)
                         {
                             await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Already contains this Discord user", "Sorry, you can only follow one beat saber player on the moment attached to your discord", null, null).Build());
-                            return Task.CompletedTask;
+                            return;
                         }
 
                         try
@@ -892,7 +896,7 @@ namespace DiscordBeatSaberBot
                         catch
                         {
                             await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Could not add player into the RankList. Player: " + player + " DiscordId: " + message.Author.Id + " Rank: " + playerObject.First().rank, null, null).Build());
-                            return Task.CompletedTask;
+                            return;
                         }
 
                         using (var file = File.CreateText(filePath))
@@ -917,7 +921,7 @@ namespace DiscordBeatSaberBot
                             if (message.Content.Length <= 18)
                             {
                                 await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Search failed", "Search value is not long enough. it should be larger than 3 characters.", null, null).Build());
-                                return Task.CompletedTask;
+                                return;
                             }
 
                             string username = message.Content.Substring(15);
@@ -970,7 +974,7 @@ namespace DiscordBeatSaberBot
             }
 
 
-            return Task.CompletedTask;
+            return;
         }
 
         private async void RankFeedTimer(CancellationToken token)
