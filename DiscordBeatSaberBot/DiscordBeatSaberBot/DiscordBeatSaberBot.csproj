@@ -20,10 +20,4 @@
     <Folder Include="Config\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="WebsitesScreenshot">
-      <HintPath>..\..\..\..\..\..\..\Websites_Screenshot_DLL\NET_4.0\WebsitesScreenshot.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
