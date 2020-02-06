@@ -16,7 +16,7 @@ namespace DiscordBeatSaberBot
         {
             
 
-            var embed = await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Starting Roles update", "", null, null).Build());
+            var embed = await message.Channel.SendMessageAsync("Starting Roles update");
             await Task.Delay(1000);
 
             Console.WriteLine("Starting updating roles from linked NL accounts");
@@ -88,17 +88,18 @@ namespace DiscordBeatSaberBot
                 }
 
                 await embed.ModifyAsync(x =>
-                    x.Embed = EmbedBuilderExtension.NullEmbed("Loading", "*0%* ||" + GiveSpaces(accountsProcessCount).Item1 + "||" + GiveSpaces(accountsProcessCount).Item2 + "*100%*", null, null).Build());
+                    x.Content = "Loading... \n*" + accountsProcessCount + "* ||  " + GiveSpaces(accountsProcessCount).Item1 + "||" + GiveSpaces(accountsProcessCount).Item2 + "*" + accounts.Count.ToString() + "*");
                 accountsProcessCount += 1;
+                
 
                 (string, string) GiveSpaces(int count)
                 {
                     var l = "";
                     var s = "";
 
-                    for (var i = 0; i < count; i++) l += "";
+                    for (var i = 0; i < count; i++) l += " ";
 
-                    for (var i = 0; i < accounts.Count - count; i++) s += "";
+                    for (var i = 0; i < accounts.Count - count; i++) s += " ";
 
                     return (l, s);
                 }

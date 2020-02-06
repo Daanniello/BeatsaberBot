@@ -157,63 +157,72 @@ namespace DiscordBeatSaberBot
 
         public async Task<List<EmbedBuilder>> MessagesToSend()
         {
-            var embedBuilders = new List<EmbedBuilder>();
-
-            var oldRankList = await GetOldRankList();
-            await UpdateCountryRankList();
-            var newRankList = await GetCountryRankList(5);
-
-
-            var oldCache = new List<string>();
-
-            int counter = 0;
-            foreach (var player in oldRankList)
+            try
             {
-                //player.Key.ToString() != newRankList.Item2[counter] 
-                //OldList                NewList                       OldList            NewList
-                if (player.Value[1] != newRankList.Item4[counter])
-                    if (!oldCache.Contains(newRankList.Item4[counter]))
-                    {
-                        string imgUrl = newRankList.Item1[counter].Replace("\"", "");
-                        if (imgUrl == "/imports/images/oculus.png")
-                            imgUrl = "https://scoresaber.com/imports/images/oculus.png";
-                        else
-                            imgUrl = "https://scoresaber.com" + imgUrl;
+                var embedBuilders = new List<EmbedBuilder>();
 
-                        // No Message
-                        try
+                var oldRankList = await GetOldRankList();
+                await UpdateCountryRankList();
+                var newRankList = await GetCountryRankList(5);
+
+
+                var oldCache = new List<string>();
+
+                int counter = 0;
+                foreach (var player in oldRankList)
+                {
+                    //player.Key.ToString() != newRankList.Item2[counter] 
+                    //OldList                NewList                       OldList            NewList
+                    if (player.Value[1] != newRankList.Item4[counter])
+                        if (!oldCache.Contains(newRankList.Item4[counter]))
                         {
-                            embedBuilders.Add(new EmbedBuilder
+                            string imgUrl = newRankList.Item1[counter].Replace("\"", "");
+                            if (imgUrl == "/imports/images/oculus.png")
+                                imgUrl = "https://scoresaber.com/imports/images/oculus.png";
+                            else
+                                imgUrl = "https://scoresaber.com" + imgUrl;
+
+                            // No Message
+                            try
                             {
-                                Title = "Congrats, " + newRankList.Item3[counter],
-                                Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the " + countryCodeCombo + " beat saber players",
-                                Url = "https://scoresaber.com" + newRankList.Item4[counter],
-                                ThumbnailUrl = imgUrl,
+                                embedBuilders.Add(new EmbedBuilder
+                                {
+                                    Title = "Congrats, " + newRankList.Item3[counter],
+                                    Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the " + countryCodeCombo + " beat saber players",
+                                    Url = "https://scoresaber.com" + newRankList.Item4[counter],
+                                    ThumbnailUrl = imgUrl,
 
-                                Color = GetColorFromRank(int.Parse(newRankList.Item2[counter]))
-                            });
-                        }
-                        catch
-                        {
-                            embedBuilders.Add(new EmbedBuilder
+                                    Color = GetColorFromRank(int.Parse(newRankList.Item2[counter]))
+                                });
+                            }
+                            catch
                             {
-                                Title = "Congrats, " + newRankList.Item3[counter],
-                                Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the " + countryCodeCombo + " beat saber players",
-                                Color = GetColorFromRank(int.Parse(newRankList.Item2[counter]))
-                            });
-                            var Logger = new Logger(_discord);
-                            Logger.Log(Logger.LogCode.debug, "-" + countryCodeCombo + " feed- \nUrl is not correct. \nWrong url is from: " + newRankList.Item3[counter] + "\nAnd the url is: " + imgUrl);
+                                embedBuilders.Add(new EmbedBuilder
+                                {
+                                    Title = "Congrats, " + newRankList.Item3[counter],
+                                    Description = newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the " + countryCodeCombo + " beat saber players",
+                                    Color = GetColorFromRank(int.Parse(newRankList.Item2[counter]))
+                                });
+                                var Logger = new Logger(_discord);
+                                Logger.Log(Logger.LogCode.debug, "-" + countryCodeCombo + " feed- \nUrl is not correct. \nWrong url is from: " + newRankList.Item3[counter] + "\nAnd the url is: " + imgUrl);
+                            }
+
+                            Console.WriteLine("Feed " + countryCodeCombo + " - Message:" + newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the " + countryCodeCombo + " beat saber players");
                         }
 
-                        Console.WriteLine("Feed " + countryCodeCombo + " - Message:" + newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the " + countryCodeCombo + " beat saber players");
-                    }
+                    oldCache.Add(player.Value[1]);
 
-                oldCache.Add(player.Value[1]);
+                    counter++;
+                }
 
-                counter++;
+                return embedBuilders;
             }
-
-            return embedBuilders;
+            catch(Exception ex)
+            {
+                _logger.Log(Logger.LogCode.warning, ex.ToString());
+                throw ex;
+            }
+            
         }
 
         private static Color GetColorFromRank(int rank)
