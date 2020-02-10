@@ -192,13 +192,17 @@ namespace DiscordBeatSaberBot
 
         private async Task OnUserJoined(SocketGuildUser guildUser)
         {
-            _logger.Log(Logger.LogCode.debug, "New user joined: " + guildUser.Username);
-            var server = new GuildService(discordSocketClient);
-            await server.UserJoinedMessage(guildUser);
-
+            //UserJoinedMessage(guildUser);
             var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
             var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Nieuwkomer");
             await guildUser.AddRoleAsync(addRole);
+        }
+
+        private async Task UserJoinedMessage(SocketUser user)
+        {
+            var server = new GuildService(discordSocketClient, 505485680344956928);
+            var guildUser = server.ConvertUserToGuildUser(user);
+            await server.UserJoinedMessage(guildUser);
         }
 
         private async Task ReactionAdded(Cacheable<IUserMessage, ulong> cache,
@@ -393,9 +397,12 @@ namespace DiscordBeatSaberBot
                             var player = await BeatSaberInfoExtension.GetPlayerInfoWithScoresaberId(scoresaberId);
                             DutchRankFeed.GiveRoleWithRank(player.countryRank, scoresaberId);
                             var m = new GuildService(discordSocketClient, 505485680344956928);
-                            await m.AddRole("Verified", m.Guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));
-                            await m.DeleteRole("Link my discord please", m.Guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));
-                            await m.DeleteRole("Koos Rankloos", m.Guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId)));
+                            var linkingUser = m.Guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId));
+                            await m.AddRole("Verified", linkingUser);
+                            await m.DeleteRole("Link my discord please", linkingUser);
+                            await m.DeleteRole("Koos Rankloos", linkingUser);
+
+                            await UserJoinedMessage(linkingUser);
                         }
                     }
                 }
@@ -492,7 +499,7 @@ namespace DiscordBeatSaberBot
                         Description = description,
                         Footer = new EmbedFooterBuilder { Text = embedInfo.Footer.ToString() },
                         Color = embedInfo.Color
-                    };
+                    };                                        
 
                     await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
                     return;
@@ -806,6 +813,7 @@ namespace DiscordBeatSaberBot
                             {
                                 JsonExtension.InsertJsonData("../../../GlobalAccounts.txt", message.Author.Id.ToString(), ScoresaberId);
                                 await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added user to the list", "Added " + message.Author.Id.ToString() + " with scoresaberID " + ScoresaberId + " to the global list", null, null).Build());
+                                return;
                             }
                         }
                                           
@@ -938,6 +946,38 @@ namespace DiscordBeatSaberBot
                             await message.Channel.SendMessageAsync("", false, builder.Build());
                         }
                     }
+                    else if (message.Content.Contains(" senddm"))
+                    {
+                        var guildUserSender = message.Author as SocketGuildUser;
+                        if (guildUserSender.IsDutchAdmin() || ValidationExtension.IsOwner(message.Author.Id))
+                        {
+                            //!bs senddm <@!32432424> hello
+                            var content = message.Content.Substring(11);
+                            var splitContent = Regex.Split(content, @"<@!([0-9]+)>");
+                            var user = discordSocketClient.GetUser(ulong.Parse(splitContent[1]));
+
+                            await user.SendDMMessage(splitContent[2], discordSocketClient);
+                            await message.Channel.SendMessageAsync($"DM send to {splitContent[1]}");
+
+                        }
+                    }
+                    else if (message.Content.Contains(" approvedutchuser"))
+                    {
+                        var guildUserSender = message.Author as SocketGuildUser;
+                        if(guildUserSender.IsDutchAdmin())
+                        {
+                            var userId = message.Content.Substring(21).Replace("<@!", "").Replace(">", "").Trim();
+                            var user = discordSocketClient.GetUser(ulong.Parse(userId));
+
+                            var guildService = new GuildService(discordSocketClient, 505485680344956928);
+                       
+                            await guildService.AddRole("Koos Rankloos", user);
+                            await UserJoinedMessage(user);
+                        }
+
+                        await message.DeleteAsync();
+                        return;
+                    }
                     else if (message.Content.Contains(" songs"))
                     {
                         var builderList = await BeatSaberInfoExtension.GetSongs(message.Content.Substring(10));
@@ -977,7 +1017,7 @@ namespace DiscordBeatSaberBot
             return;
         }
 
-        private async void RankFeedTimer(CancellationToken token)
+        private async Task RankFeedTimer(CancellationToken token)
         {
             var watch = Stopwatch.StartNew();
             while (!token.IsCancellationRequested)

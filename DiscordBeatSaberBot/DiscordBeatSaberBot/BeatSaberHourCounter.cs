@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
@@ -54,9 +55,9 @@ namespace DiscordBeatSaberBot
                 if (data.Count == 0)
                 {
                     // first input
-                    var t = new[] {"0", DateTime.Now.ToString()};
+                    var t = new[] {"0", ""};
                     data = new Dictionary<ulong, string[]>();
-                    data.Add(123456, t);
+                    data.Add(280054293955084288, t);
                 }
 
                 var newData = new Dictionary<ulong, string[]>();
@@ -119,9 +120,9 @@ namespace DiscordBeatSaberBot
                 if (data.Count == 0)
                 {
                     // first input
-                    var t = new[] {"0", DateTime.Now.ToString()};
+                    var t = new[] { "0", "" };
                     data = new Dictionary<ulong, string[]>();
-                    data.Add(123456, t);
+                    data.Add(280054293955084288, t);
                 }
 
                 var newData = new Dictionary<ulong, string[]>();
@@ -297,7 +298,7 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        private async void UpdateCounterInServer()
+        private async Task UpdateCounterInServer()
         {
             var dutchGuild = discord.GetGuild(505485680344956928);
             var txtChannel = dutchGuild.GetTextChannel(572721078359556097);
@@ -305,13 +306,14 @@ namespace DiscordBeatSaberBot
             try
             {
                 message = await txtChannel.GetMessageAsync(572721530262257675);
+                var msg = message as IUserMessage;
+                await msg.ModifyAsync(x => { x.Embed = GetTop25BeatSaberHours(); });
             }
             catch (Exception ex)
             {
+                _logger.Log(Logger.LogCode.fatal_error, ex.ToString());
                 Console.WriteLine(ex);
             }
-            var msg = message as IUserMessage;
-            await msg.ModifyAsync(x => { x.Embed = GetTop25BeatSaberHours(); });
         }
 
         public void ResetHours()

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using HtmlAgilityPack;
 
 namespace DiscordBeatSaberBot
@@ -44,7 +45,9 @@ namespace DiscordBeatSaberBot
             var realPlayerIdList = new List<string>();
             var playerIdList = new List<List<string>>();
             var playerNameList = new List<string>();
-            string url = "https://scoresaber.com/global?search=" + name.Replace(" ", "+");
+            var encodedName = HttpUtility.UrlEncode(name);
+
+            string url = "https://scoresaber.com/global?search=" + encodedName;
             using (var client = new HttpClient())
             {
                 string html = await client.GetStringAsync(url);

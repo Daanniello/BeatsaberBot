@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using System;
+using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot
 {
@@ -22,7 +23,7 @@ namespace DiscordBeatSaberBot
             _discord = discord;
         }
 
-        public async void Log(LogCode code, string message)
+        public async Task Log(LogCode code, string message)
         {
             if (message.Length > 2000) return;
             var color = Color.Green;

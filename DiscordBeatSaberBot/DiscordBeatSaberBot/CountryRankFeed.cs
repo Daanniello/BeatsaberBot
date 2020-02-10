@@ -39,7 +39,7 @@ namespace DiscordBeatSaberBot
             {
                 embeds = await MessagesToSend();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Log(Logger.LogCode.warning, ex.ToString());
                 return;
@@ -83,7 +83,7 @@ namespace DiscordBeatSaberBot
                         {
                             throw new HttpRequestException();
                         }
-                            
+
                         html = await client.GetStringAsync(url);
                     }
                     catch (Exception ex)
@@ -146,11 +146,12 @@ namespace DiscordBeatSaberBot
                 newData.Add(int.Parse(rankList.Item2[x]), new List<string> { rankList.Item3[x], rankList.Item4[x], rankList.Item1[x] });
             }
 
-            using (var file = File.CreateText(filePath))
+            using (var file = new StreamWriter(filePath))
             {
                 var serializer = new JsonSerializer();
                 serializer.Serialize(file, newData);
             }
+
 
             return newData;
         }
@@ -217,12 +218,12 @@ namespace DiscordBeatSaberBot
 
                 return embedBuilders;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Log(Logger.LogCode.warning, ex.ToString());
                 throw ex;
             }
-            
+
         }
 
         private static Color GetColorFromRank(int rank)

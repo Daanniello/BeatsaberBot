@@ -18,7 +18,7 @@ namespace DiscordBeatSaberBot
             _discordSocketClient = discordSocketClient;
         }
 
-        public async void MakeRequest(SocketMessage message)
+        public async Task MakeRequest(SocketMessage message)
         {
             //command: requestrole
             //command: requestverification

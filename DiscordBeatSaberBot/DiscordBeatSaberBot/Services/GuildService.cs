@@ -159,7 +159,7 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        private SocketGuildUser ConvertUserToGuildUser(SocketUser user)
+        public SocketGuildUser ConvertUserToGuildUser(SocketUser user)
         {
             var guild = _discord.Guilds.FirstOrDefault(x => x.Id == ServerId);
             return guild.GetUser(user.Id);

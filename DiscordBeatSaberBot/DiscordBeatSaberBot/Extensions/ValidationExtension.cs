@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Linq;
+using Discord.WebSocket;
 
 namespace DiscordBeatSaberBot
 {
@@ -48,6 +49,18 @@ namespace DiscordBeatSaberBot
             if (Id == 138439306774577152)
             {
                 return true;
+            }
+            return false;
+        }
+
+        public static bool IsDutchAdmin(this SocketGuildUser user) // Staff ID : 505486321595187220
+        {
+            foreach (var role in user.Roles)
+            {
+                if (role.Id == 505486321595187220)
+                {
+                    return true;
+                }
             }
             return false;
         }

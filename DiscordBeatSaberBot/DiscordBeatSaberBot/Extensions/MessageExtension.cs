@@ -23,5 +23,19 @@ namespace DiscordBeatSaberBot
                 throw ex;
             }
         }
+
+        public static async Task SendDMMessage(this SocketUser user, string message, DiscordSocketClient discord)
+        {
+            try
+            {
+                var userd = discord.GetUser(user.Id);
+                var DMChannel = await userd.GetOrCreateDMChannelAsync();
+                await DMChannel.SendMessageAsync(message);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }
