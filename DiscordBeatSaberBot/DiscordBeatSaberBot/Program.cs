@@ -10,6 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using DiscordBeatSaberBot.DataAccess;
+using DiscordBeatSaberBot.DataAccess.Models;
+using DiscordBeatSaberBot.DataAccess.Tables;
 using Newtonsoft.Json;
 using Color = Discord.Color;
 
@@ -26,7 +29,6 @@ namespace DiscordBeatSaberBot
         public static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += Unhandled_Exception;
-
             new Program().MainAsync().GetAwaiter().GetResult();
         }
 
