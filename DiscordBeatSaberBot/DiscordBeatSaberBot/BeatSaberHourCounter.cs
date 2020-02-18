@@ -10,7 +10,7 @@ using RestSharp;
 
 namespace DiscordBeatSaberBot
 {
-    internal class BeatSaberHourCounter
+    public class BeatSaberHourCounter
     {
         private readonly Logger _logger;
         private readonly DiscordSocketClient discord;

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot
 {
-    internal class Logger
+    public class Logger
     {
         public enum LogCode
         {

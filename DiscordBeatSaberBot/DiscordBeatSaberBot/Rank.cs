@@ -44,13 +44,13 @@ namespace DiscordBeatSaberBot
         public static async Task<Embed> GetPlayerbaseCount(SocketMessage messageInfo)
         {
             //Playerbase
-            string message = messageInfo.Content.Substring(4);
-            int tab = 3800;
-            string country = "";
+            var message = messageInfo.Content.Substring(4);
+            var tab = 3800;
+            var country = "";
             //string url = "https://scoresaber.com/global/" + tab + country;
             //https://scoresaber.com/global/2&country=us
 
-            int playerBaseCount = 0;
+            var playerBaseCount = 0;
             var t = message.Split(' ');
             try
             {
@@ -58,21 +58,21 @@ namespace DiscordBeatSaberBot
             }
             catch
             {
-                t = new[] { "", "" };
+                t = new[] {"", ""};
             }
 
             if (message.Split(' ').Length > 1)
                 country = "&country=" + t[1];
 
-            bool loop = true;
-            int tempCount = 0;
-            int minTab = 40;
-            int plusTab = 40;
-            int minusCounter = 0;
+            var loop = true;
+            var tempCount = 0;
+            var minTab = 40;
+            var plusTab = 40;
+            var minusCounter = 0;
             float percentage = 1;
-            float co = 0.5f;
+            var co = 0.5f;
 
-           var channelMessage = await messageInfo.Channel.SendMessageAsync("Loading... 0%");
+            var channelMessage = await messageInfo.Channel.SendMessageAsync("Loading... 0%");
 
             do
             {
@@ -81,24 +81,23 @@ namespace DiscordBeatSaberBot
                 tempCount = await getList();
                 //await channelMessage.ModifyAsync(msg => msg.Content = "Loading... " + "99"+ "%");
 
-                percentage = (((minTab + plusTab * 100f) / 80f) * co);
-                co = co * (1.05f);
+                percentage = (minTab + plusTab * 100f) / 80f * co;
+                co = co * 1.05f;
 
-                await channelMessage.ModifyAsync(msg => msg.Content = "Loading... " + percentage.ToString() + "%");
+                await channelMessage.ModifyAsync(msg => msg.Content = "Loading... " + percentage + "%");
 
 
                 if (tempCount == 0)
                 {
-                    int val = 2;
+                    var val = 2;
                     tab = tab - minTab;
 
                     if (minusCounter >= 1)
                         val = 1;
                     minTab = minTab / val;
                     minusCounter++;
-
                 }
-                
+
                 if (tempCount == 50)
                 {
                     tab = tab + minTab;
@@ -119,12 +118,12 @@ namespace DiscordBeatSaberBot
             {
                 using (var client = new HttpClient())
                 {
-                    string html = await client.GetStringAsync("https://scoresaber.com/global/" + tab + country);
+                    var html = await client.GetStringAsync("https://scoresaber.com/global/" + tab + country);
                     var doc = new HtmlDocument();
                     doc.LoadHtml(html);
 
                     var table = doc.DocumentNode.SelectNodes("//td[@class='rank']");
-                    int listCount = 0;
+                    var listCount = 0;
                     if (table != null)
                         listCount = table.Count;
                     return listCount;
@@ -135,7 +134,8 @@ namespace DiscordBeatSaberBot
             var embedBuilder = new EmbedBuilder
             {
                 Title = "Playerbase Count " + t[1],
-                Description = "The Current playerbase count is ***" + playerBaseCount + "*** \n Tabs: ***" + tab + "***",
+                Description =
+                    "The Current playerbase count is ***" + playerBaseCount + "*** \n Tabs: ***" + tab + "***",
                 Color = Color.Blue
             };
 
