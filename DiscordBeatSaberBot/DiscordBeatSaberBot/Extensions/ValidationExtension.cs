@@ -64,5 +64,19 @@ namespace DiscordBeatSaberBot
             }
             return false;
         }
+
+        public static bool IsDutchAdmin(this SocketUser user, DiscordSocketClient discord) // Staff ID : 505486321595187220
+        {
+            var guildUser = new GuildService(discord, 505485680344956928).ConvertUserToGuildUser(user);
+
+            foreach (var role in guildUser.Roles)
+            {
+                if (role.Id == 505486321595187220)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

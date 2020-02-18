@@ -10,14 +10,16 @@ namespace DiscordBeatSaberBot
     {
         public static async Task<bool> DeleteMessageCheck(SocketMessage message, DiscordSocketClient discord)
         {
-            var channels = new Dictionary<ulong, Func<Task<bool>>>();
-            channels.Add(549350982081970176, async () => await DisallowMessages(message));
-            channels.Add(537377323742265344, async () => await DisallowMessages(message));
-            channels.Add(627174908484517888, async () => await AllowFile(message)); //Fan art channel
+            var channels = new Dictionary<ulong, Func<Task<bool>>>
+            {
+                { 549350982081970176, async () => await DisallowMessages(message) },
+                { 537377323742265344, async () => await DisallowMessages(message) },
+                { 627174908484517888, async () => await AllowFile(message) } //Fan art channel
+            };
 
             if (!channels.Keys.Contains(message.Channel.Id)) return false;
 
-            bool allowed = await channels[message.Channel.Id]();
+            var allowed = await channels[message.Channel.Id]();
 
             if (!allowed) await message.DeleteAsync();
 

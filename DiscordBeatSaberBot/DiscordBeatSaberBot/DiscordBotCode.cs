@@ -9,8 +9,8 @@ namespace DiscordBeatSaberBot
 
         private static string ReadFromDesktop(string fileName)
         {
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string fullName = Path.Combine(desktopPath, fileName);
+            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var fullName = Path.Combine(desktopPath, fileName);
             using (var steamReader = new StreamReader(fullName))
             {
                 return steamReader.ReadToEnd();
