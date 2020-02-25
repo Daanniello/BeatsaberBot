@@ -249,6 +249,7 @@ namespace DiscordBeatSaberBot
                     var belgiumRankFeed = new CountryRankFeed(discordSocketClient, "BE");
                     var gbRankFeed = new CountryRankFeed(discordSocketClient, "GB");
                     var au_nzRankFeed = new CountryRankFeed(discordSocketClient, "AU", "NZ");
+                    var dkRankFeed = new CountryRankFeed(discordSocketClient, "DK");
 
                     Console.WriteLine("Updating news feed in 60 sec");
                     await Task.Delay(60000 - (int) (watch.ElapsedMilliseconds % 1000), token);
@@ -269,6 +270,17 @@ namespace DiscordBeatSaberBot
                     }
 
                     Console.WriteLine("Ending NL feed...");
+
+                    await Task.Delay(20000 - (int)(watch.ElapsedMilliseconds % 1000), token);
+                    Console.WriteLine("Startin DK feed...");
+                    try
+                    {
+                        await dkRankFeed.SendFeedInCountryDiscord(511188151968989197, 680415200108871784);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("News Feed Crashed" + ex + "DK");
+                    }
 
                     await Task.Delay(20000 - (int) (watch.ElapsedMilliseconds % 1000), token);
                     Console.WriteLine("Startin AU_NZ feed...");
