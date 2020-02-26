@@ -17,8 +17,10 @@ namespace DiscordBeatSaberBot
             foreach (var method in methods)
             {
                 var attribute = method.CustomAttributes.Where(x => x.AttributeType == typeof(HelpAttribute)).FirstOrDefault();
-                if (attribute != null) HelpCommandList.Add(attribute.ConstructorArguments[0].ToString(), attribute.ConstructorArguments[1].ToString());
+                if (attribute != null) HelpCommandList.Add(attribute.ConstructorArguments[0].ToString().TrimStart('"').TrimEnd('"') + " (" + Enum.GetValues(typeof(HelpAttribute.Catergories)).GetValue((int)attribute.ConstructorArguments[2].Value) + ")", attribute.ConstructorArguments[1].ToString().TrimStart('"').TrimEnd('"'));
             }
+
+
 
             return HelpCommandList;
         }
@@ -33,7 +35,7 @@ namespace DiscordBeatSaberBot
             foreach (var method in methods)
             {
                 var attribute = method.CustomAttributes.Where(x => x.AttributeType == typeof(HelpAttribute)).FirstOrDefault();
-                if (attribute != null) HelpCommandList.Add(attribute.ConstructorArguments[0].ToString(), attribute.ConstructorArguments[1].ToString());
+                if (attribute != null) HelpCommandList.Add(attribute.ConstructorArguments[0].ToString() + " (" + Enum.GetValues(typeof(HelpAttribute.Catergories)).GetValue((int)attribute.ConstructorArguments[2].Value) + ")", attribute.ConstructorArguments[1].ToString());
             }
 
             return HelpCommandList;
@@ -42,6 +44,7 @@ namespace DiscordBeatSaberBot
         static public Dictionary<string, string> GetAllCustomHelpAttributes()
         {
             var HelpList = new Dictionary<string, string>();
+        
 
             var DSM = GetCustomHelpAttributeListFromClass(new DutchServerCommands());
             var GSM = GetCustomHelpAttributeListFromClass(new GlobalScoresaberCommands());
@@ -51,6 +54,10 @@ namespace DiscordBeatSaberBot
             DSM.ToList().ForEach(x => HelpList.Add(x.Key, x.Value));
             GSM.ToList().ForEach(x => HelpList.Add(x.Key, x.Value));
             GM.ToList().ForEach(x => HelpList.Add(x.Key, x.Value));
+
+           
+
+           
 
             return HelpList;
         }
