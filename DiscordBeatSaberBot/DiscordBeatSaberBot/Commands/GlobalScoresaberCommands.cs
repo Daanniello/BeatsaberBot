@@ -7,14 +7,14 @@ namespace DiscordBeatSaberBot.Commands
 {
     internal class GlobalScoresaberCommands : ICommand
     {
-        [Help("Top10", "Show the global Top 10 players.")]
+        [Help("Top10", "Show the global Top 10 players.", HelpAttribute.Catergories.General)]
         public static async Task Top10(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var embedTask = await BeatSaberInfoExtension.GetTop10Players();
             await message.Channel.SendMessageAsync("", false, embedTask.Build());
         }
 
-        [Help("Playerbase", "Returns the playerbase from scoresaber")]
+        [Help("Playerbase", "Returns the playerbase from scoresaber", HelpAttribute.Catergories.General)]
         public static async Task Playerbase(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             new Thread(async () =>
@@ -24,21 +24,21 @@ namespace DiscordBeatSaberBot.Commands
             }).Start();
         }
 
-        [Help("Compare", "Compares two player's stats with each other.")]
+        [Help("Compare", "Compares two player's stats with each other.", HelpAttribute.Catergories.General)]
         public static async Task Comapre(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var embedTask = await BeatSaberInfoExtension.PlayerComparer(message.Content.Substring(12));
             await message.Channel.SendMessageAsync("", false, embedTask.Build());
         }
 
-        [Help("Country", "Searches up the top x from a country")]
+        [Help("Country", "Searches up the top x from a country", HelpAttribute.Catergories.General)]
         public static async Task Country(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var embedTask = await BeatSaberInfoExtension.GetTopxCountry(message.Content.Substring(12));
             await message.Channel.SendMessageAsync("", false, embedTask.Build());
         }
 
-        [Help("Songs", "Searches up the song with the name")]
+        [Help("Songs", "Searches up the song with the name", HelpAttribute.Catergories.General)]
         public static async Task Songs(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var builderList = await BeatSaberInfoExtension.GetSongs(message.Content.Substring(10));
@@ -58,7 +58,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("RecentSong", "Get info from the latest song played")]
+        [Help("RecentSong", "Get info from the latest song played", HelpAttribute.Catergories.General)]
         public static async Task RecentSong(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
@@ -86,7 +86,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("TopSong", "Show the best played ranked map from a person")]
+        [Help("TopSong", "Show the best played ranked map from a person", HelpAttribute.Catergories.General)]
         public static async Task TopSong(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
@@ -103,7 +103,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("Search", "Shows scoresaber information about a player")]
+        [Help("Search", "Shows scoresaber information about a player", HelpAttribute.Catergories.General)]
         public static async Task Search(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);

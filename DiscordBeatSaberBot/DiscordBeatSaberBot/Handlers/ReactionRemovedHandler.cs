@@ -115,6 +115,47 @@ namespace DiscordBeatSaberBot.Handlers
                         }
                 }
 
+                //Turn page from help command
+
+                //right (681843066104971287)
+                //left (681842980134584355)
+                if (reaction.UserId != 504633036902498314)
+                {
+                    if (reaction.Emote.ToString() == "<:right:681843066104971287>")
+                    {
+                        var t = reaction.Message.ToString();
+                        var message = await channel.GetMessageAsync(reaction.MessageId);
+                        var casted = (IUserMessage) message;
+                        var usedEmbed = casted.Embeds.First();
+                        var pagenr = usedEmbed.Title.Split("[")[1].Split("]")[0];
+
+                        var currentNr = int.Parse(pagenr.Split("/")[0]);
+                        var maxNr = int.Parse(pagenr.Split("/")[1]);
+
+                        if (currentNr >= maxNr) return;
+
+                    casted.ModifyAsync(msg =>
+                            msg.Embed = Help.GetHelpList(discordSocketClient, int.Parse(pagenr.Split("/").First())));
+                    }
+
+                    if (reaction.Emote.ToString() == "<:left:681842980134584355>")
+                    {
+                        var t = reaction.Message.ToString();
+                        var message = await channel.GetMessageAsync(reaction.MessageId);
+                        var casted = (IUserMessage) message;
+                        var usedEmbed = casted.Embeds.First();
+                        var pagenr = usedEmbed.Title.Split("[")[1].Split("]")[0];
+
+                        var currentNr = int.Parse(pagenr.Split("/")[0]);
+
+                        if (currentNr <= 0) return;
+
+                    casted.ModifyAsync(msg =>
+                            msg.Embed = Help.GetHelpList(discordSocketClient,
+                                int.Parse(pagenr.Split("/").First()) - 2));
+                    }
+                }
+
         }
     }
 }
