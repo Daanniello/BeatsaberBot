@@ -10,20 +10,14 @@ namespace DiscordBeatSaberBot.Handlers
     public class MessageReceivedHandler
     {
         public async Task HandleMessage(DiscordSocketClient discordSocketClient, SocketMessage message, Logger _logger,
-            BeatSaberHourCounter DutchHourCounter, Program program)
+            BeatSaberHourCounter DutchHourCounter, Program program, IDisposable typingState = null)
         {
-            //Server s = new Server(discordSocketClient, "");
-            //await s.AddVRroleMessage(null, true);
             if (message.Author.Username == "BeatSaber Bot") return;
 
             MessageDelete.DeleteMessageCheck(message, discordSocketClient);
+
             if (message.Content.Length <= 3)
                 return;
-
-            var typingState = message.Channel.EnterTypingState(new RequestOptions
-            {
-                Timeout = GlobalConfiguration.TypingTimeOut,
-            });
 
             if (message.Content.Substring(0, 3).Contains("!bs"))
             {

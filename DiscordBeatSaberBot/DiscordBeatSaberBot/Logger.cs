@@ -53,7 +53,11 @@ namespace DiscordBeatSaberBot
             {
                 Title = code.ToString(),
                 Description = message,
-                Color = color
+                Color = color,
+                Footer = new EmbedFooterBuilder()
+                {
+                    Text = DateTime.Now.ToLongDateString()
+                }
             };
 
             Console.WriteLine(embedbuilder.Title + "\n\n" + embedbuilder.Description);
