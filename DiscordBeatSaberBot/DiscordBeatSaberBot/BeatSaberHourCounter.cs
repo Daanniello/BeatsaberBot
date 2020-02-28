@@ -7,6 +7,7 @@ using Discord;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 using RestSharp;
+using DiscordBeatSaberBot.Extensions;
 
 namespace DiscordBeatSaberBot
 {

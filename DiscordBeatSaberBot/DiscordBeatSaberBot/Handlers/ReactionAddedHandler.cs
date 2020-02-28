@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using DiscordBeatSaberBot.Extensions;
 
 namespace DiscordBeatSaberBot.Handlers
 {

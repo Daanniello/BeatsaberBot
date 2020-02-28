@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using System.Threading.Tasks;
 using Discord;
+using DiscordBeatSaberBot.Extensions;
 
 namespace DiscordBeatSaberBot.Commands
 {

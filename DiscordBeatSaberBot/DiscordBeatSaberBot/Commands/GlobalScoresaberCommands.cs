@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using DiscordBeatSaberBot.Extensions;
 
 namespace DiscordBeatSaberBot.Commands
 {
@@ -121,7 +122,7 @@ namespace DiscordBeatSaberBot.Commands
                 {
                     await message.Channel.SendMessageAsync("", false,
                         EmbedBuilderExtension.NullEmbed("User's discord not linked",
-                            "Your discord is not linked yet. Type !bs verification [Scoresaberlink] to link it.", null,
+                            "Your discord is not linked yet. Type !bs requestverification [Scoresaberlink] to link it.", null,
                             null).Build());
                 }
             }
@@ -137,7 +138,7 @@ namespace DiscordBeatSaberBot.Commands
                 {
                     await message.Channel.SendMessageAsync("", false,
                         EmbedBuilderExtension.NullEmbed("User's discord not linked",
-                            "Your discord is not linked yet. Type !bs verification [Scoresaberlink] to link it.", null,
+                            "Your discord is not linked yet. Type !bs requestverification [Scoresaberlink] to link it.", null,
                             null).Build());
                     return;
                 }

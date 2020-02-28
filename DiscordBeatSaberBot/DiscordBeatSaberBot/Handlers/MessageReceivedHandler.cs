@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using DiscordBeatSaberBot.Commands;
+using DiscordBeatSaberBot.Extensions;
 
 namespace DiscordBeatSaberBot.Handlers
 {
