@@ -15,34 +15,23 @@ namespace DiscordBeatSaberBot.Handlers
             //Server s = new Server(discordSocketClient, "");
             //await s.AddVRroleMessage(null, true);
             if (message.Author.Username == "BeatSaber Bot") return;
-            if (message.Author.Id != 546850627029041153 && message.Content.Contains("ur an idiot"))
-            {
-                var user = await message.Channel.GetUserAsync(138439306774577152);
-                var chn = await user.GetOrCreateDMChannelAsync();
-                await chn.SendMessageAsync(message.Author.Username + " was it!");
-            }
-
-            if (message.Author.Id == 546850627029041153 && message.Content.Contains("ur an idiot"))
-                await message.Channel.SendMessageAsync("hehe that is true");
 
             MessageDelete.DeleteMessageCheck(message, discordSocketClient);
             if (message.Content.Length <= 3)
                 return;
 
+            var typingState = message.Channel.EnterTypingState(new RequestOptions
+            {
+                Timeout = GlobalConfiguration.TypingTimeOut,
+            });
 
             if (message.Content.Substring(0, 3).Contains("!bs"))
             {
                 Console.WriteLine(message.Content);
 
-                await message.Channel.TriggerTypingAsync(new RequestOptions
-                {
-                    Timeout = GlobalConfiguration.TypingTimeOut
-                });
-
                 if (message.Content.Contains(" help"))
                 {
                     GenericCommands.Help(discordSocketClient, message);
-                    return;
                 }
 
                 if (message.Content.Contains(" top10"))
@@ -160,9 +149,12 @@ namespace DiscordBeatSaberBot.Handlers
 
                 else
                 {
-                    EmbedBuilderExtension.NullEmbed("Oops", "There is no command like that, try something else",
+                    var embedBuilder = EmbedBuilderExtension.NullEmbed("Oops", "There is no command like that, try something else",
                         null, null);
+                    await message.Channel.SendMessageAsync(null, false, embedBuilder.Build());
                 }
+
+                typingState.Dispose();
             }
         }
     }
