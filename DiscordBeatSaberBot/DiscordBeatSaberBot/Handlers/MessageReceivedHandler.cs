@@ -10,7 +10,7 @@ namespace DiscordBeatSaberBot.Handlers
     public class MessageReceivedHandler
     {
         public async Task HandleMessage(DiscordSocketClient discordSocketClient, SocketMessage message, Logger _logger,
-            BeatSaberHourCounter DutchHourCounter, Program program, IDisposable typingState = null)
+            BeatSaberHourCounter DutchHourCounter, Program program)
         {
             if (message.Author.Username == "BeatSaber Bot") return;
 
@@ -21,6 +21,12 @@ namespace DiscordBeatSaberBot.Handlers
 
             if (message.Content.Substring(0, 3).Contains("!bs"))
             {
+
+                var typingState = message.Channel.EnterTypingState(new RequestOptions
+                {
+                    Timeout = GlobalConfiguration.TypingTimeOut,
+                });
+
                 Console.WriteLine(message.Content);
 
                 if (message.Content.Contains(" help"))

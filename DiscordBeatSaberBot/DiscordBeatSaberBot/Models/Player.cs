@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
+using Discord.WebSocket;
 using HtmlAgilityPack;
 
 namespace DiscordBeatSaberBot
@@ -58,9 +59,12 @@ namespace DiscordBeatSaberBot
 
                 try
                 {
-                    playerIdList = table.Descendants("tr").Skip(1).Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList();
+                    playerIdList.Add(table.Descendants("tr").Skip(1).Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList().First());
                     playerNameList = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']").Descendants("span").Where(span => span.GetAttributeValue("class", "") == "songTop pp").Select(span => WebUtility.HtmlDecode(span.InnerText)).ToList();
                     int counter = 0;
+
+       
+
                     foreach (var playerId in playerIdList)
                     {
                         if (playerNameList[counter].ToUpper() == name.ToUpper() && realPlayerIdList.Count <= 3)

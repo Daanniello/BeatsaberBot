@@ -224,13 +224,7 @@ namespace DiscordBeatSaberBot
         }
 
         private async Task MessageReceived(SocketMessage message)
-        {
-
-            var typingState = message.Channel.EnterTypingState(new RequestOptions
-            {
-                Timeout = GlobalConfiguration.TypingTimeOut,
-            });
-
+        {      
             try
             {
                 new MessageReceivedHandler().HandleMessage(discordSocketClient, message, _logger, DutchHourCounter, this);
@@ -241,9 +235,7 @@ namespace DiscordBeatSaberBot
                 Console.WriteLine(ex);
                 await message.Channel.SendMessageAsync("", false,
                     EmbedBuilderExtension.NullEmbed("Error", ex.Message, null, null).Build());
-                await _logger.Log(Logger.LogCode.error, ex.ToString());
-
-                typingState.Dispose();
+                await _logger.Log(Logger.LogCode.error, ex.ToString());  
             }
         }
 

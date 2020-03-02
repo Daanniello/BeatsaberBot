@@ -74,6 +74,10 @@ namespace DiscordBeatSaberBot.Extensions
                 };
                 return embedList;
             }
+            else if(playerId.Count > 1)
+            {
+       
+            }
 
             var players = await GetPlayerInfo(playerName);
 

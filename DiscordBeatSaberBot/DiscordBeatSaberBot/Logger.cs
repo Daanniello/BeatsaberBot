@@ -56,7 +56,7 @@ namespace DiscordBeatSaberBot
                 Color = color,
                 Footer = new EmbedFooterBuilder()
                 {
-                    Text = DateTime.Now.ToLongDateString()
+                    Text = DateTime.Now.ToString()
                 }
             };
 
@@ -64,6 +64,7 @@ namespace DiscordBeatSaberBot
             try
             {
                 await _discord.GetGuild(505485680344956928).GetTextChannel(592877335355850752).SendMessageAsync("", false, embedbuilder.Build());
+                await _discord.GetGuild(677437721081413633).GetTextChannel(682874265594363916).SendMessageAsync("", false, embedbuilder.Build());
             }
             catch
             {
