@@ -42,6 +42,10 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     DutchServerCommands.RoleColor(discordSocketClient, message);
                 }
+                else if (message.Content.Contains(" newsearch"))
+                {
+                    GlobalScoresaberCommands.NewSearch(discordSocketClient, message);
+                }
                 else if (message.Content.Contains(" topsong"))
                 {
                     GlobalScoresaberCommands.TopSong(discordSocketClient, message);
