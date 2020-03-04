@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -258,6 +260,56 @@ namespace DiscordBeatSaberBot.Extensions
             var rankColor = Rank.GetRankColor(player.rank);
             builder.WithColor(await rankColor);
             return builder;
+        }
+
+        static public async Task<List<EmbedBuilder>> GetPlayerSearchInfoEmbed(string scoresaberId)
+        {
+            var embedBuilderList = new List<EmbedBuilder>();
+
+            var searchedPlayerInfo = await new ScoresaberAPI(scoresaberId).GetPlayerFull();
+            var embedBuilder = new EmbedBuilder
+            {
+                Title = $"**{searchedPlayerInfo.playerInfo.Name} :flag_{searchedPlayerInfo.playerInfo.Country.ToLower()}:**",
+                ThumbnailUrl =
+                $"https://new.scoresaber.com{searchedPlayerInfo.playerInfo.Avatar}",
+                Url = $"https://new.scoresaber.com/u/{searchedPlayerInfo.playerInfo.PlayerId}",
+            };
+            embedBuilder.AddField(
+                $"`ID: {searchedPlayerInfo.playerInfo.PlayerId}`",  
+                $"```cs\n" +
+                $"Global Rank:              #{searchedPlayerInfo.playerInfo.rank} \n\n" +
+                $"Country Rank:             #{searchedPlayerInfo.playerInfo.CountryRank} \n\n" +
+                $"Average Ranked Acc:       '{searchedPlayerInfo.scoreStats.AvarageRankedAccuracy} %' \n\n" +
+                $"PP:                       '{searchedPlayerInfo.playerInfo.Pp} PP' \n\n" +
+                $"```" +
+                "\n\n" +
+                $"```cs\n" +
+                $"Total Plays:              {searchedPlayerInfo.scoreStats.TotalPlayCount} \n\n" +
+                $"Total Score:              {searchedPlayerInfo.scoreStats.TotalScore} \n\n" +
+                $"Total Ranked Plays:       {searchedPlayerInfo.scoreStats.RankedPlayerCount} \n\n" +
+                $"Total Ranked Score:       {searchedPlayerInfo.scoreStats.TotalRankedScore} \n\n" +
+                $"" +
+                $"" +
+                $"```" +
+                "\n\n" +
+                $"```cs\n" +
+                $"Role:                     '{searchedPlayerInfo.playerInfo.Role}' \n\n" +
+                $"Inactive:                 '{searchedPlayerInfo.playerInfo.Inactive}' \n\n" +
+                $"Banned:                   '{searchedPlayerInfo.playerInfo.Banned}' \n\n" +
+                //$"Rank History:             {searchedPlayerInfo.playerInfo.History} \n\n" +
+                $"" +
+                $"```"
+            );
+
+            //embedBuilder.ImageUrl = $"https://new.scoresaber.com/api/static/badges/{searchedPlayerInfo.playerInfo.Badges.First().Image}";
+
+            embedBuilderList.Add(embedBuilder);
+            foreach (var badge in searchedPlayerInfo.playerInfo.Badges)
+            {
+                embedBuilderList.Add(new EmbedBuilder() { ImageUrl = $"https://new.scoresaber.com/api/static/badges/{badge.Image}", Title = badge.Description});
+            }
+
+            return embedBuilderList;
         }
 
         public static async Task<List<EmbedBuilder>> GetSongs(string search)

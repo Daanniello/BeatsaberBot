@@ -152,5 +152,64 @@ namespace DiscordBeatSaberBot.Commands
                 }
             }
         }
+
+        [Help("NewSearch", "Shows new scoresaber information about a player", HelpAttribute.Catergories.General)]
+        public static async Task NewSearch(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var r = new RoleAssignment(discordSocketClient);
+            if (message.Content.Contains("@"))
+            {
+                var discordId = message.Content.Substring(11).Replace("<", "").Replace(">", "").Replace("@", "")
+                    .Replace("!", "");
+                if (r.CheckIfDiscordIdIsLinked(discordId))
+                {
+                    var scoresaberId = r.GetScoresaberIdWithDiscordId(discordId);
+                    var embedTask = await BeatSaberInfoExtension.GetPlayerSearchInfoEmbed(scoresaberId);
+               
+
+                    foreach (var embedBuilder in embedTask)
+                    {
+                        await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
+                    }
+                }
+                else
+                {
+                    await message.Channel.SendMessageAsync("", false,
+                        EmbedBuilderExtension.NullEmbed("User's discord not linked",
+                            "Your discord is not linked yet. Type !bs requestverification [Scoresaberlink] to link it.", null,
+                            null).Build());
+                }
+            }
+            else if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 13)
+            {
+                var scoresaberId = r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var embedTask = await BeatSaberInfoExtension.GetPlayerSearchInfoEmbed(scoresaberId);
+
+                foreach (var embedBuilder in embedTask)
+                {
+                    await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
+                }
+                
+            }
+            else
+            {
+                if (message.Content.Substring(10).Count() == 0)
+                {
+                    await message.Channel.SendMessageAsync("", false,
+                        EmbedBuilderExtension.NullEmbed("User's discord not linked",
+                            "Your discord is not linked yet. Type !bs requestverification [Scoresaberlink] to link it.", null,
+                            null).Build());
+                    return;
+                }
+
+                foreach (var embed in await BeatSaberInfoExtension.GetPlayer(message.Content.Substring(11)))
+                {
+                    var completedMessage = await message.Channel.SendMessageAsync("", false, embed.Build());
+
+                    //await completedMessage.AddReactionAsync(new Emoji("⬅"));
+                    //await completedMessage.AddReactionAsync(new Emoji("➡"));
+                }
+            }
+        }
     }
 }
