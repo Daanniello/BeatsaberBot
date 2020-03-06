@@ -22,7 +22,8 @@ namespace DiscordBeatSaberBot
         public static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += Unhandled_Exception;
-            new Program().MainAsync().GetAwaiter().GetResult();
+            new Corona().TakeScreenshotFromCoronaCounter();
+            //new Program().MainAsync().GetAwaiter().GetResult();
         }
 
         public static void Unhandled_ThreadException(object sender, ThreadExceptionEventArgs e)
@@ -83,7 +84,7 @@ namespace DiscordBeatSaberBot
                 _logger = new Logger(discordSocketClient);
                 var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");
                 await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
-                DutchHourCounter = new BeatSaberHourCounter(discordSocketClient);
+                //DutchHourCounter = new BeatSaberHourCounter(discordSocketClient);
 
                 var updater = new UpdateTimer(discordSocketClient);
                 updater.Start(() => updater.DutchDiscordUserCount(_startTime), 1);
