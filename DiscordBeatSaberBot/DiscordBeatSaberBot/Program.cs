@@ -17,7 +17,6 @@ namespace DiscordBeatSaberBot
         private Dictionary<string, string> _reactionWatcher;
         private DateTime _startTime;
         private DiscordSocketClient discordSocketClient;
-        private BeatSaberHourCounter DutchHourCounter;
 
         public static void Main(string[] args)
         {
@@ -177,16 +176,7 @@ namespace DiscordBeatSaberBot
 
         private async Task OnUserUpdated(SocketGuildUser userOld, SocketGuildUser userNew)
         {
-            try
-            {
-                if (discordSocketClient.GetGuild(505485680344956928).Users.Contains(userNew))
-                    if (DutchHourCounter != null)
-                        DutchHourCounter.TurnOnCounterForPlayer(userOld, userNew);
-            }
-            catch (Exception ex)
-            {
-                _logger.Log(Logger.LogCode.error, ex.ToString());
-            }
+       
         }
 
         private async Task OnUserJoined(SocketGuildUser guildUser)
@@ -236,7 +226,7 @@ namespace DiscordBeatSaberBot
         {      
             try
             {
-                new MessageReceivedHandler().HandleMessage(discordSocketClient, message, _logger, DutchHourCounter, this);
+                new MessageReceivedHandler().HandleMessage(discordSocketClient, message, _logger, this);
             }
             catch (Exception ex)
             {

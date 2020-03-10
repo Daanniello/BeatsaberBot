@@ -128,54 +128,5 @@ namespace DiscordBeatSaberBot
 
             await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
         }
-
-        public async Task DutchWeeklyEndHoursCheck()
-        {
-            var dutchGuild = discord.GetGuild(505485680344956928);
-            var txtChannel = dutchGuild.GetTextChannel(572721078359556097);
-            var message = await txtChannel.GetMessageAsync(572721530262257675);
-            var msg = message as IUserMessage;
-            string dateString = msg.Embeds.First().Description.Split("\n")[1].Trim();
-            string day = dateString.Split('-')[0];
-            string month = dateString.Split('-')[1];
-            string year = dateString.Split('-')[2].Substring(0, 4);
-            string hours = dateString.Split(' ')[1].Substring(0, 2);
-            string minutes = dateString.Split(' ')[1].Split(':')[1].Substring(0, 2);
-            string seconds = dateString.Split(' ')[1].Split(':')[2];
-
-            var date = new DateTime(int.Parse(year), int.Parse(month), int.Parse(day), int.Parse(hours), int.Parse(minutes), int.Parse(seconds));
-            var endDate = date.AddDays(7);
-
-            if (DateTime.Now > endDate)
-            {
-                var hourCounter = new BeatSaberHourCounter(discord, true);
-                var newUser = hourCounter.GetTopDutchHoursUser();
-                hourCounter.ResetHours();
-                try
-                {
-                    var user = discord.GetGuild(505485680344956928).Users.First(u => u.Roles.Where(r => r.Name == "Verslaafd").Count() > 0);
-                    var role = discord.GetGuild(505485680344956928).Roles.Where(r => r.Name == "Verslaafd").First();
-
-                    if (user != null)
-                    {
-                        await user.RemoveRoleAsync(role);
-                        _logger.Log(Logger.LogCode.message, "Removed 'Verslaafd' role from " + user.Username);
-
-                        await discord.GetGuild(505485680344956928).GetUser(newUser.Id).AddRoleAsync(role);
-                        _logger.Log(Logger.LogCode.message, "Added 'Verslaafd' role to " + newUser.Username);
-                    }
-                    else
-                    {
-                        _logger.Log(Logger.LogCode.error, "Could not add 'verslaafd' to user. User: " + user.ToString());
-                    }
-
-
-                }
-                catch
-                {
-                    _logger.Log(Logger.LogCode.error, "Could not reassign verslaafd role");
-                }
-            }
-        }
     }
 }

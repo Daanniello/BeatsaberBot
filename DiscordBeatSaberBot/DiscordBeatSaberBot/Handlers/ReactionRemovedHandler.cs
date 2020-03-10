@@ -12,7 +12,7 @@ namespace DiscordBeatSaberBot.Handlers
         public async Task HandleReaction(DiscordSocketClient discordSocketClient, SocketReaction reaction,
             ISocketMessageChannel channel, Dictionary<string, string> _reactionWatcher, Program program)
         {
-            //reaction.MessageId.ToString() == File.ReadAllText("EventMessage.txt") || 
+            
             if (reaction.MessageId.ToString() == "586248421715738629")
             {
                 var eventDetailChannel = (ISocketMessageChannel)discordSocketClient.GetChannel(572721078359556097);
@@ -35,7 +35,7 @@ namespace DiscordBeatSaberBot.Handlers
             }
 
             //IRL Event section
-            var data = JsonExtension.GetJsonData(Environment.CurrentDirectory + "\\irleventdata.txt");
+            var data = JsonExtension.GetJsonData("../../../Resources/irleventdata.txt");
 
             if (reaction.UserId != 504633036902498314 && data.Keys.Contains(reaction.MessageId.ToString()))
             {

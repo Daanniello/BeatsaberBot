@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBeatSaberBot", "DiscordBeatSaberBot\DiscordBeatSaberBot.csproj", "{E2F5E3C4-6CC9-4FA9-9B42-51295F99E35D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBeatSaberBot.DataAccess", "DataAccess\DiscordBeatSaberBot.DataAccess.csproj", "{5148EB31-5010-4E61-853B-F2FFA7D92A4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBeatSaberBot.DataAccess", "DataAccess\DiscordBeatSaberBot.DataAccess.csproj", "{5148EB31-5010-4E61-853B-F2FFA7D92A4C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
