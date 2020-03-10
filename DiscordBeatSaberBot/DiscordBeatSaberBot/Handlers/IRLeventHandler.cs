@@ -25,7 +25,7 @@ namespace DiscordBeatSaberBot.Handlers
 
         public IRLeventHandler(SocketMessage message, DiscordSocketClient discord, RestUserMessage msg)
         {
-            string tekst = File.ReadAllText("EventMessage.txt");
+            string tekst = File.ReadAllText("../../../Resources/EventMessage.txt");
 
 
             try
@@ -104,7 +104,7 @@ namespace DiscordBeatSaberBot.Handlers
                             {
                                 try
                                 {                      
-                                    client.DownloadFile(irlEventModel.imageUrl, Environment.CurrentDirectory + "\\" + @"irlevent.jpg");                                   
+                                    client.DownloadFile(irlEventModel.imageUrl, "../../../Resources/Img/irlevent.jpg");                                   
                                 }
                                 catch (Exception ex)
                                 {
@@ -167,7 +167,7 @@ namespace DiscordBeatSaberBot.Handlers
 
             builder.Footer = new EmbedFooterBuilder { Text = "Groen vinkje = Ik neem deel aan \nBlauw vinkje = Ik ben geinteresseerd \nRode kruis = verwijder deze channel"};
 
-            await infoChannel.SendFileAsync("irlevent.jpg", "", false);
+            await infoChannel.SendFileAsync("../../../Resources/Img/irlevent.jpg", "", false);
 
             var messageInChannel = await infoChannel.SendMessageAsync(null, false, builder.Build());
             var deelnemersMessage = await infoChannel.SendMessageAsync(null, false, EmbedBuilderExtension.NullEmbed("Deelnemers", "", null, null).Build());
@@ -182,7 +182,7 @@ namespace DiscordBeatSaberBot.Handlers
             var generalFakeId = ulong.Parse(f);
             deelnemers.Add(deelnemersMessage.Id, new string[] { "Yeet" });
             deelnemers.Add(generalFakeId, new string[] { generalChannel.Id.ToString()});            
-            JsonExtension.InsertJsonData(Environment.CurrentDirectory + "\\irleventdata.txt", messageInChannel.Id.ToString(), deelnemers);
+            JsonExtension.InsertJsonData("../../../Resources/irleventdata.txt", messageInChannel.Id.ToString(), deelnemers);
 
             return infoChannel;
         }

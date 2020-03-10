@@ -24,7 +24,7 @@ namespace DiscordBeatSaberBot
 
         public EventManager(SocketMessage message, DiscordSocketClient discord)
         {
-            string tekst = File.ReadAllText("EventMessage.txt");
+            string tekst = File.ReadAllText("../../../Resources/EventMessage.txt");
 
 
             try
@@ -125,7 +125,7 @@ namespace DiscordBeatSaberBot
             var eventMessage = await channel.SendMessageAsync("", false, embedBuilder.Build());
             //await eventMessage.AddReactionAsync(new Emoji("✅"));
 
-            File.WriteAllText("EventMessage.txt", eventMessage.Id.ToString());
+            File.WriteAllText("../../../Resources/EventMessage.txt", eventMessage.Id.ToString());
 
             var eventDetailChannel = (ISocketMessageChannel) discord.GetChannel(572721078359556097);
             var embededMessage = (IUserMessage) await eventDetailChannel.GetMessageAsync(586248421715738629);

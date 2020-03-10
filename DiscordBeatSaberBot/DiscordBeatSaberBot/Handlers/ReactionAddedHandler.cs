@@ -34,7 +34,7 @@ namespace DiscordBeatSaberBot.Handlers
                     await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
                 }
 
-                var data = JsonExtension.GetJsonData(Environment.CurrentDirectory + "\\irleventdata.txt");
+                var data = JsonExtension.GetJsonData("../../../Resources/irleventdata.txt");
 
                 if (reaction.UserId != 504633036902498314 && data.Keys.Contains(reaction.MessageId.ToString()))
                 {

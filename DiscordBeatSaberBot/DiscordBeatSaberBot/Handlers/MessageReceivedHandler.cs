@@ -9,8 +9,7 @@ namespace DiscordBeatSaberBot.Handlers
 {
     public class MessageReceivedHandler
     {
-        public async Task HandleMessage(DiscordSocketClient discordSocketClient, SocketMessage message, Logger _logger,
-            BeatSaberHourCounter DutchHourCounter, Program program)
+        public async Task HandleMessage(DiscordSocketClient discordSocketClient, SocketMessage message, Logger _logger, Program program)
         {
             if (message.Author.Username == "BeatSaber Bot") return;
 
@@ -95,10 +94,6 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     GlobalScoresaberCommands.Comapre(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" resetdutchhours"))
-                {
-                    DutchServerCommands.ResetDutchHours(discordSocketClient, message, DutchHourCounter);
-                }
                 else if (message.Content.Contains(" requestverification"))
                 {
                     DutchServerCommands.RequestVerification(discordSocketClient, message);
@@ -107,10 +102,6 @@ namespace DiscordBeatSaberBot.Handlers
                 else if (message.Content.Contains(" country"))
                 {
                     GlobalScoresaberCommands.Country(discordSocketClient, message);
-                }
-                else if (message.Content.Contains(" topdutchhours"))
-                {
-                    DutchServerCommands.TopDutchHours(discordSocketClient, message, DutchHourCounter);
                 }
                 else if (message.Content.Contains(" recentsong"))
                 {

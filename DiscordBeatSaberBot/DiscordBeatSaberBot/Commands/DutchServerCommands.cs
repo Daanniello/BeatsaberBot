@@ -96,19 +96,6 @@ namespace DiscordBeatSaberBot.Commands
             thread.Start();
         }
 
-        [Help("ResetDutchHours", "Reset the hours from the weekly event in the dutch beat saber discord. ", HelpAttribute.Catergories.AdminCommands)]
-        static public async Task ResetDutchHours(DiscordSocketClient discordSocketClient, SocketMessage message, BeatSaberHourCounter DutchHourCounter)
-        {
-            DutchHourCounter.InsertAndResetAllDutchMembers(discordSocketClient);
-            await message.Channel.SendMessageAsync("Reset completed");
-        }
-
-        [Help("TopDutchHours", "Shows a list with the top of dutch players with the most hours. ", HelpAttribute.Catergories.DutchFunctions)]
-        static public async Task TopDutchHours(DiscordSocketClient discordSocketClient, SocketMessage message, BeatSaberHourCounter DutchHourCounter)
-        {
-            await message.Channel.SendMessageAsync("", false, DutchHourCounter.GetTop25BeatSaberHours());
-        }
-
         [Help("IRLevent", "Creates and IRL Event for the dutch discord.", HelpAttribute.Catergories.AdminCommands)]
         static public async Task IRLevent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
