@@ -22,8 +22,15 @@ namespace DiscordBeatSaberBot
         public static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += Unhandled_Exception;
-            new Corona().TakeScreenshotFromCoronaCounter();
-            //new Program().MainAsync().GetAwaiter().GetResult();
+            //new Corona().TakeScreenshotFromCoronaCounter();
+            try
+            {
+                new Program().MainAsync().GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
         public static void Unhandled_ThreadException(object sender, ThreadExceptionEventArgs e)
@@ -51,6 +58,7 @@ namespace DiscordBeatSaberBot
         {
             discordSocketClient = new DiscordSocketClient();
             await log("Connecting to Discord...");
+            await log($"Discord Token used: {DiscordBotCode.discordBotCode}");
             await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
             await discordSocketClient.StartAsync();
 
@@ -89,7 +97,7 @@ namespace DiscordBeatSaberBot
                 var updater = new UpdateTimer(discordSocketClient);
                 updater.Start(() => updater.DutchDiscordUserCount(_startTime), 1);
                 updater.Start(() => updater.EventNotification(), 1);
-                updater.Start(() => updater.DutchWeeklyEndHoursCheck(), 1);
+                //updater.Start(() => updater.DutchWeeklyEndHoursCheck(), 1);
 
                 _reactionWatcher = new Dictionary<string, string>
                 {
