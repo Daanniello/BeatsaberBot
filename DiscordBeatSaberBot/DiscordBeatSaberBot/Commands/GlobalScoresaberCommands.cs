@@ -8,6 +8,8 @@ namespace DiscordBeatSaberBot.Commands
 {
     internal class GlobalScoresaberCommands : ICommand
     {
+        public static System.IDisposable triggerState = null;
+
         [Help("Top10", "Show the global Top 10 players.", HelpAttribute.Catergories.General)]
         public static async Task Top10(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
@@ -101,6 +103,31 @@ namespace DiscordBeatSaberBot.Commands
             {
                 var embedTask = await BeatSaberInfoExtension.GetTopSongList(message.Content.Substring(12));
                 await message.Channel.SendMessageAsync("", false, embedTask.Build());
+            }
+        }
+
+        [Help("Typing", "Turn on typing in the channel 'On' or 'Off'", HelpAttribute.Catergories.General)]
+        public static async Task Typing(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var option = message.Content.Substring(10);
+            if (option.Contains("on"))
+            {
+                GlobalScoresaberCommands.triggerState = message.Channel.EnterTypingState(new Discord.RequestOptions() { RetryMode = Discord.RetryMode.AlwaysFail, Timeout = 1});
+                message.Channel.SendMessageAsync("Let me tell you something...");
+
+            }
+            else if (option.Contains("off"))
+            {
+                if(GlobalScoresaberCommands.triggerState != null)
+                {
+                    GlobalScoresaberCommands.triggerState.Dispose();
+
+                }
+            }
+            else
+            {
+            
+
             }
         }
 

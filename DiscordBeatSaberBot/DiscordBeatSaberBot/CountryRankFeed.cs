@@ -58,6 +58,7 @@ namespace DiscordBeatSaberBot
                     Console.WriteLine(embed + " EX: " + ex);
                 }
             }
+            return;
         }
 
         public async Task<(List<string>, List<string>, List<string>, List<string>)> GetCountryRankList(int tabs)

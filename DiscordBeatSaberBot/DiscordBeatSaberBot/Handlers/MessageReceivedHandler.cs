@@ -20,6 +20,7 @@ namespace DiscordBeatSaberBot.Handlers
 
             if (message.Content.Substring(0, 3).Contains("!bs"))
             {
+                var messageCommand = message.Content.ToLower();
 
                 var typingState = message.Channel.EnterTypingState(new RequestOptions
                 {
@@ -28,96 +29,101 @@ namespace DiscordBeatSaberBot.Handlers
 
                 Console.WriteLine(message.Content);
 
-                if (message.Content.Contains(" help"))
+                if (messageCommand.Contains(" help"))
                 {
                     GenericCommands.Help(discordSocketClient, message);
                 }
 
-                if (message.Content.Contains(" top10"))
+                if (messageCommand.Contains(" top10"))
                 {
                     GlobalScoresaberCommands.Top10(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" rolecolor"))
+                else if (messageCommand.Contains(" rolecolor"))
                 {
                     DutchServerCommands.RoleColor(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" newsearch"))
+                else if (messageCommand.Contains(" newsearch"))
                 {
                     GlobalScoresaberCommands.NewSearch(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" topsong"))
+                else if (messageCommand.Contains(" topsong"))
                 {
                     GlobalScoresaberCommands.TopSong(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" search"))
+                else if (messageCommand.Contains(" search"))
                 {
                     GlobalScoresaberCommands.Search(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" updateroles"))
+                else if (messageCommand.Contains(" updateroles"))
                 {
                     DutchServerCommands.UpdateRoles(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" linkednames"))
+                else if (messageCommand.Contains(" linkednames"))
                 {
                     DutchServerCommands.LinkedNames(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" notlinkednames"))
+                else if (messageCommand.Contains(" notlinkednames"))
                 {
                     DutchServerCommands.NotLinkedNames(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" changecolor"))
+                else if (messageCommand.Contains(" changecolor"))
                 {
                     DutchServerCommands.ChangeColor(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" createevent"))
+                else if (messageCommand.Contains(" createevent"))
                 {
                     DutchServerCommands.CreatEvent(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" playing"))
+                else if (messageCommand.Contains(" playing"))
                 {
                     GenericCommands.Playing(discordSocketClient, message);
                 }
 
-                else if (message.Content.Contains(" invite"))
+                else if (messageCommand.Contains(" invite"))
                 {
                     GenericCommands.Invite(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" poll"))
+                else if (messageCommand.Contains(" poll"))
                 {
                     GenericCommands.Poll(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" playerbase"))
+                else if (messageCommand.Contains(" playerbase"))
                 {
                     GlobalScoresaberCommands.Playerbase(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" compare"))
+                else if (messageCommand.Contains(" compare"))
                 {
                     GlobalScoresaberCommands.Comapre(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" requestverification"))
+                else if (messageCommand.Contains(" requestverification"))
                 {
                     DutchServerCommands.RequestVerification(discordSocketClient, message);
                 }
 
-                else if (message.Content.Contains(" country"))
+                else if (messageCommand.Contains(" country"))
                 {
                     GlobalScoresaberCommands.Country(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" recentsong"))
+                else if (messageCommand.Contains(" recentsong"))
                 {
                     GlobalScoresaberCommands.RecentSong(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" ranks"))
+                else if (messageCommand.Contains(" typing"))
+                {
+                    GlobalScoresaberCommands.Typing(discordSocketClient, message);
+                    message.DeleteAsync();
+                }
+                else if (messageCommand.Contains(" ranks"))
                 {
                     var builderList = await BeatSaberInfoExtension.GetRanks();
                     foreach (var builder in builderList)
                         await message.Channel.SendMessageAsync("", false, builder.Build());
                 }
-                else if (message.Content.Contains(" senddm"))
+                else if (messageCommand.Contains(" senddm"))
                 {
                     GenericCommands.SendDM(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" approvedutchuser"))
+                else if (messageCommand.Contains(" approvedutchuser"))
                 {
                     var guildUserSender = message.Author as SocketGuildUser;
                     if (guildUserSender.IsDutchAdmin())
@@ -133,11 +139,11 @@ namespace DiscordBeatSaberBot.Handlers
 
                     await message.DeleteAsync();
                 }
-                else if (message.Content.Contains(" songs"))
+                else if (messageCommand.Contains(" songs"))
                 {
                     DutchServerCommands.IRLevent(discordSocketClient, message);
                 }
-                else if (message.Content.Contains(" irlevent create"))
+                else if (messageCommand.Contains(" irlevent create"))
                 {
                     DutchServerCommands.IRLevent(discordSocketClient, message);
                 }

@@ -199,6 +199,7 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
+                return;
                 _logger.Log(Logger.LogCode.warning, "Scoresaber is being annoying NL");
                 _logger.Log(Logger.LogCode.debug, ex.ToString());
             }
@@ -209,6 +210,7 @@ namespace DiscordBeatSaberBot
                 await discord.GetGuild(505485680344956928).GetTextChannel(520613984668221440).SendMessageAsync("", false, embed.Build());
             }
 
+            return;
             //NL Server 
             //505485680344956928
         }

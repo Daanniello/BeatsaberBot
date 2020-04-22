@@ -28,8 +28,8 @@ namespace DiscordBeatSaberBot
             var embed = builder.Build();
 
             var completedMessage = await _messageInfo.Channel.SendMessageAsync("", false, embed);
-            await completedMessage.AddReactionAsync(new Emoji("⬅"));
-            await completedMessage.AddReactionAsync(new Emoji("➡"));
+            await completedMessage.AddReactionAsync(Emote.Parse("<:green_check:671412276594475018>"));
+            await completedMessage.AddReactionAsync(Emote.Parse("<:red_check:671413258468720650>"));
             //await _messageInfo.DeleteAsync();
         }
     }

@@ -58,7 +58,14 @@ namespace DiscordBeatSaberBot
             discordSocketClient = new DiscordSocketClient();
             await log("Connecting to Discord...");
             await log($"Discord Token used: {DiscordBotCode.discordBotCode}");
-            await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
+            try
+            {
+                await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
             await discordSocketClient.StartAsync();
 
             //Events
