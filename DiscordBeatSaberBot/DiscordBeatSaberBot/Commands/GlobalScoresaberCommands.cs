@@ -89,6 +89,35 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
+        [Help("NewRecentSong", "Get info from the latest song played", HelpAttribute.Catergories.General)]
+        public static async Task NewRecentSong(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var r = new RoleAssignment(discordSocketClient);
+            if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 17)
+            {
+                var scoresaberId = r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                
+                var embedTask = await BeatSaberInfoExtension.GetNewRecentSongWithScoresaberId(scoresaberId);
+                await message.Channel.SendMessageAsync("", false, embedTask.Build());
+            }
+            else
+            {
+                if (message.Content.Length <= 18)
+                {
+                    await message.Channel.SendMessageAsync("", false,
+                        EmbedBuilderExtension.NullEmbed("Search failed",
+                                "Search value is not long enough. it should be larger than 3 characters.", null, null)
+                            .Build());
+                    return;
+                }
+
+                var username = message.Content.Substring(15);
+                var id = await BeatSaberInfoExtension.GetPlayerId(username);
+                var embedTask = await BeatSaberInfoExtension.GetNewRecentSongWithScoresaberId(id[0]);
+                await message.Channel.SendMessageAsync("", false, embedTask.Build());
+            }
+        }
+
         [Help("TopSong", "Show the best played ranked map from a person", HelpAttribute.Catergories.General)]
         public static async Task TopSong(DiscordSocketClient discordSocketClient, SocketMessage message)
         {

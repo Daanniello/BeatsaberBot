@@ -66,6 +66,10 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     DutchServerCommands.NotLinkedNames(discordSocketClient, message);
                 }
+                else if (messageCommand.Contains(" newrecentsong"))
+                {
+                    GlobalScoresaberCommands.NewRecentSong(discordSocketClient, message);
+                }
                 else if (messageCommand.Contains(" changecolor"))
                 {
                     DutchServerCommands.ChangeColor(discordSocketClient, message);

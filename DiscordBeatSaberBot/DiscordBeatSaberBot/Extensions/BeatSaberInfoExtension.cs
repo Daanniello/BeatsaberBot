@@ -10,7 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using DiscordBeatSaberBot.Models.ScoreberAPI;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
 
 namespace DiscordBeatSaberBot.Extensions
 {
@@ -586,6 +588,70 @@ namespace DiscordBeatSaberBot.Extensions
             }
 
             return builder;
+        }
+
+        public static async Task<EmbedBuilder> GetNewRecentSongWithScoresaberId(string playerId)
+        {
+            var url = $"https://new.scoresaber.com/api/player/{playerId}/scores/recent/1";
+            var embedBuilder = new EmbedBuilder();
+
+            using (var client = new HttpClient())
+            {
+                var recentSongsJsonData = await client.GetStringAsync(url);
+                var recentSongsInfo = JsonConvert.DeserializeObject<ScoresaberRecentSongsModel>(recentSongsJsonData);
+                var recentSong = recentSongsInfo.Scores[0];
+
+                var playerInfoJsonData = await client.GetStringAsync($"https://new.scoresaber.com/api/player/{playerId}/full");
+                var playerInfo1 = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoJsonData);
+                var playerInfo = playerInfo1.playerInfo;
+
+
+                embedBuilder = new EmbedBuilder
+                {
+                    Title = $"**Recent Song From: {playerInfo.Name} :flag_{playerInfo.Country.ToLower()}:**",
+                    ThumbnailUrl =
+                $"https://scoresaber.com/imports/images/songs/{recentSong.Id}.png",
+                    Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}",
+                };
+
+                object acc = "No Data";
+                if (recentSong.MaxScoreEx == 0){
+                    
+                }
+                else
+                {
+                    acc = recentSong.UScore / recentSong.MaxScoreEx * 100;
+                }
+
+                embedBuilder.AddField($"{recentSong.Name}",
+                    $"```cs\n" +
+                    $"Song Name:                {recentSong.Name} \n\n" +
+                    $"Song Sub name:            {recentSong.SongSubName} \n\n" +
+                    $"Difficulty:               {recentSong.Diff} \n\n" +
+                    $"Song Author name:         {recentSong.SongAuthorName} \n\n" +
+                    $"Map Author name:          {recentSong.LevelAuthorName} \n\n" +
+                    $"```" +
+                    "\n\n" +
+                    $"```cs\n" +
+                    $"Rank:                      #{recentSong.Rank} \n" +
+                    $"Score:                     {recentSong.ScoreScore} \n" +
+                    $"Accuracy:                  {acc}% \n" +
+                    $"PP:                        {recentSong.Pp} \n" +
+                    $"PP Weight:                 {recentSong.Weight} \n" +
+                    $"```" +
+                    "\n\n" +
+                    $"```cs\n" +
+                    $"Time Set:                 '{recentSong.Timeset}' \n\n" +
+                    $"Max Score Ex:             '{recentSong.MaxScoreEx}' \n\n" +
+                    $"Mods:                     '{recentSong.Mods}' \n\n" +                    
+                    $"```" +
+                    "\n\n" +
+                    $"Url:                      'https://scoresaber.com/leaderboard/{recentSong.LeaderboardId}' \n\n"
+                );
+
+
+            }
+            return embedBuilder;
         }
 
         public static async Task<EmbedBuilder> GetRecentSongWithId(string playerId)
