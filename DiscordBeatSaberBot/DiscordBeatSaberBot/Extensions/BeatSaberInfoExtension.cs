@@ -67,96 +67,6 @@ namespace DiscordBeatSaberBot.Extensions
             return builder;
         }
 
-        public static async Task<List<EmbedBuilder>> GetPlayer(string playerName)
-        {
-            var playerId = await GetPlayerId(playerName);
-
-            if (playerId.Count == 0)
-            {
-                var embedList = new List<EmbedBuilder>
-                {
-                    EmbedBuilderExtension.NullEmbed("No Results",
-                        "I am sorry, I could not find any person named: " + playerName +
-                        "\n\n\n If you are searching for yourself, you can also do: \n\n***!bs link [ScoresaberID]*** \n\nto have easy access by only typing !bs search",
-                        null, null)
-                };
-                return embedList;
-            }
-            else if(playerId.Count > 1)
-            {
-       
-            }
-
-            var players = await GetPlayerInfo(playerName);
-
-            var builders = new List<EmbedBuilder>();
-
-            foreach (var player in players)
-            {
-                var builder = new EmbedBuilder();
-                var countryNameSmall = player.countryName;
-
-                var ppNext = "-";
-                var ppBefore = "-";
-                var playerNextName = "Not Found o.o";
-                try
-                {
-                    var ppNextDouble = Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp), 0);
-                    var ppBeforeDouble = Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp), 0);
-                    if (player.Before.pp == "0")
-                        ppBefore = "No Search results";
-                    else
-                        ppBefore = ppBeforeDouble.ToString();
-                    if (player.Next.pp == "0")
-                        ppNext = "No Search results";
-                    else
-                        ppNext = ppNextDouble.ToString();
-
-
-                    playerNextName = player.Next.name;
-                }
-                catch
-                {
-                }
-
-                if (player.steamLink != "#")
-
-                {
-                    builder.ThumbnailUrl = player.imgLink;
-                    builder.Title = "**" + playerName.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
-                    builder.Url = "https://scoresaber.com" + playerId.First();
-                    builder.AddField("`ID: " + playerId.First().Replace("/u/", "") + "`",
-                        "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank +
-                        "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore +
-                        "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " +
-                        playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore +
-                        "``` \n [Click here for steam link](" + player.steamLink + ")\n\n");
-                }
-                else
-                {
-                    builder.ThumbnailUrl = "https://scoresaber.com/imports/images/oculus.png";
-                    builder.Title = "**" + playerName.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
-                    builder.Url = "https://scoresaber.com" + playerId.First();
-                    builder.AddField("`ID: " + playerId.First().Replace("/u/", "") + "`",
-                        "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank +
-                        "\n\n" + "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore +
-                        "\n\n" + "Performance Points: " + player.pp + "``` \n\n" + "```Player above: " +
-                        playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" + "PP till DeRank: " + ppBefore +
-                        "```");
-                }
-
-
-                //var rankValue = player.rank.Split('#')[1].Replace(",", "");
-                var rankInt = player.rank;
-                var rankColor = Rank.GetRankColor(rankInt);
-                builder.WithColor(await rankColor);
-                builders.Add(builder);
-            }
-
-
-            return builders;
-        }
-
         public static async Task<Player> GetPlayerInfoWithScoresaberId(string scoresaberId)
         {
             var url = "https://scoresaber.com/u/" + scoresaberId;
@@ -378,78 +288,6 @@ namespace DiscordBeatSaberBot.Extensions
             return builderList;
         }
 
-        public static async Task<EmbedBuilder> GetTopSongList(string search)
-        {
-            if (search != "!bs topsong")
-            {
-                var idList = await GetPlayerId(search);
-                var build = await GetBestSongWithId(idList.First());
-                build.WithTitle("Top song from " + search);
-                return build;
-            }
-
-            var TopSongInfo = new List<string>();
-            var TopSongUrl = new List<List<string>>();
-            var topSongUrlString = "";
-            var topSongImg = new List<List<string>>();
-            var topSongImgString = "";
-            var topList = new List<List<string>>();
-            var url = "https://scoresaber.com/top";
-            using (var client = new HttpClient())
-            {
-                var html = await client.GetStringAsync(url);
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
-
-                var table = doc.DocumentNode.SelectSingleNode("//table[@class='table table-bordered']");
-                TopSongInfo = table.Descendants("tr").Skip(1).Select(tr =>
-                    tr.Descendants("td").Select(td => WebUtility.HtmlDecode(td.InnerText)).ToList()).First().ToList();
-
-                topSongImg = table.Descendants("tr").Skip(1).Select(tr =>
-                    tr.Descendants("img").Select(img => WebUtility.HtmlDecode(img.GetAttributeValue("src", "")))
-                        .ToList()).ToList();
-
-                TopSongUrl = table.Descendants("tr").Skip(1).Select(tr =>
-                        tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", "")))
-                            .ToList())
-                    .ToList();
-                topSongUrlString = TopSongUrl.First().First();
-                topSongImgString = "https://scoresaber.com" + topSongImg.First().First();
-            }
-
-            using (var client = new HttpClient())
-            {
-                url = "https://scoresaber.com" + topSongUrlString;
-                var html = await client.GetStringAsync(url);
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
-
-                var table = doc.DocumentNode.SelectSingleNode("//table[@class='table table-bordered ']");
-                topList = table.Descendants("tr")
-                    .Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList())
-                    .ToList();
-            }
-
-            var songName = TopSongInfo[0].Replace("\r\n", "").Trim();
-            var songDifficulty = TopSongInfo[2];
-            var songStar = TopSongInfo[4];
-            var songPlays = TopSongInfo[3];
-
-
-            var builder = new EmbedBuilder();
-            builder.WithTitle(songName);
-            builder.WithDescription("Difficulty: " + songDifficulty + "\n" + "Star rate: " + songStar + "\n" +
-                                    "Plays last 24H: " + songPlays);
-            builder.WithThumbnailUrl(topSongImgString);
-            var output = "";
-            for (var x = 1; x <= 10; x++) output += "#" + x + topList[x].First() + "\n";
-
-            builder.AddField("Top Players", output);
-
-            builder.WithColor(Color.Red);
-            return builder;
-        }
-
         public static async Task<List<EmbedBuilder>> GetRanks()
         {
             var builderList = new List<EmbedBuilder>();
@@ -517,7 +355,7 @@ namespace DiscordBeatSaberBot.Extensions
             return playerImgUrl;
         }
 
-        public static async Task<List<string>> GetPlayerId(string search)
+        public static async Task<string> GetPlayerId(string search)
         {
             var player = new Player(search);
             return await player.GetPlayerId();
@@ -1215,81 +1053,6 @@ namespace DiscordBeatSaberBot.Extensions
 
             return playerInfo.First()[2].Replace("/global?country=", "") +
                    playerInfo2.First()[0].Replace("\r\n", "").Trim();
-        }
-
-        public static async Task<EmbedBuilder> AddRole(SocketMessage message)
-        {
-            var name = message.Content.Substring(12);
-            var id = await GetPlayerId(name);
-
-            var guild = message.Channel as SocketGuildChannel;
-            if (string.IsNullOrEmpty(id.First()))
-                return EmbedBuilderExtension.NullEmbed("Soryy", "This name does not exist", null, null);
-
-            (var playerName, var songName) = await GetRecentSongInfoWithId(id.First());
-
-            if (songName == "Hi - Hi Easy")
-            {
-                var user = message.Author;
-                var guildUser = user as IGuildUser;
-
-                var rankcountry = await GetPlayerCountryRank(name);
-                var rankcountryList = rankcountry.Split("-");
-                rankcountry = rankcountryList[1].Replace("(", "").Replace(")", "").Replace("#", "").Trim();
-
-                var rank = int.Parse(rankcountry);
-                if (rank == 1)
-                {
-                    await guildUser.AddRoleAsync(GetRole("Nummer 1"));
-                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 1", null, null);
-                }
-
-                if (rank <= 3)
-                {
-                    await guildUser.AddRoleAsync(GetRole("Top 3"));
-                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 3", null, null);
-                }
-
-                if (rank <= 10)
-                {
-                    await guildUser.AddRoleAsync(GetRole("Top 10"));
-                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 10", null, null);
-                }
-
-                if (rank <= 25)
-                {
-                    await guildUser.AddRoleAsync(GetRole("Top 25"));
-                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 25", null, null);
-                }
-
-                if (rank <= 50)
-                {
-                    await guildUser.AddRoleAsync(GetRole("Top 50"));
-                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 50", null, null);
-                }
-
-                if (rank <= 100)
-                {
-                    await guildUser.AddRoleAsync(GetRole("Top 100"));
-                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 100", null, null);
-                }
-
-                if (rank > 100)
-                {
-                    await guildUser.AddRoleAsync(GetRole("Top 501+"));
-                    return EmbedBuilderExtension.NullEmbed("Completed", "Your role is now top 501 +", null, null);
-                }
-
-                SocketRole GetRole(string botname)
-                {
-                    var role = guild.Guild.Roles.FirstOrDefault(x => x.Name == botname);
-                    return role;
-                }
-            }
-
-            return EmbedBuilderExtension.NullEmbed("Soryy",
-                "Discord can not be linked because the recent song is not [Hi - Hi Easy] \n Please play this song with 0 points to register",
-                null, null);
         }
 
         public static async Task<List<Player>> GetPlayerInfo(string playerName, int recursionLoop = 0,
