@@ -1,3 +1,1 @@
-{
-"gamePlaying":"Beat saber"
-}
+{"gamePlaying":"Beat Saber"}

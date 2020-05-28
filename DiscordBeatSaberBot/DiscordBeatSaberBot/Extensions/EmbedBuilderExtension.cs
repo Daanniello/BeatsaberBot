@@ -10,7 +10,7 @@ namespace DiscordBeatSaberBot
             return new Discord.EmbedBuilder();
         }
 
-        public static EmbedBuilder NullEmbed(string Title, string description, string contentTitle, string content)
+        public static EmbedBuilder NullEmbed(string Title, string description, string contentTitle = null, string content = null)
         {
             var builder = new EmbedBuilder();
             builder.WithTitle(Title);
