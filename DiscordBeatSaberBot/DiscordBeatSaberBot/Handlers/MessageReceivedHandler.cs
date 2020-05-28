@@ -33,26 +33,17 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     GenericCommands.Help(discordSocketClient, message);
                 }
-
-                if (messageCommand.Contains(" top10"))
-                {
-                    GlobalScoresaberCommands.Top10(discordSocketClient, message);
-                }
                 else if (messageCommand.Contains(" rolecolor"))
                 {
                     DutchServerCommands.RoleColor(discordSocketClient, message);
                 }
-                else if (messageCommand.Contains(" newsearch"))
-                {
-                    GlobalScoresaberCommands.NewSearch(discordSocketClient, message);
-                }
                 else if (messageCommand.Contains(" topsong"))
                 {
-                    GlobalScoresaberCommands.TopSong(discordSocketClient, message);
+                    GlobalScoresaberCommands.NewTopSong(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" search"))
                 {
-                    GlobalScoresaberCommands.Search(discordSocketClient, message);
+                    GlobalScoresaberCommands.NewSearch(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" updateroles"))
                 {
@@ -66,7 +57,7 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     DutchServerCommands.NotLinkedNames(discordSocketClient, message);
                 }
-                else if (messageCommand.Contains(" newrecentsong"))
+                else if (messageCommand.Contains(" recentsong"))
                 {
                     GlobalScoresaberCommands.NewRecentSong(discordSocketClient, message);
                 }
@@ -91,27 +82,19 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     GenericCommands.Poll(discordSocketClient, message);
                 }
-                else if (messageCommand.Contains(" playerbase"))
-                {
-                    GlobalScoresaberCommands.Playerbase(discordSocketClient, message);
-                }
                 else if (messageCommand.Contains(" compare"))
                 {
-                    GlobalScoresaberCommands.Comapre(discordSocketClient, message);
+                    GlobalScoresaberCommands.Compare(discordSocketClient, message);
                 }
-                else if (messageCommand.Contains(" requestverification"))
+                else if (messageCommand.Contains(" unlink"))
                 {
-                    DutchServerCommands.RequestVerification(discordSocketClient, message);
+                    DutchServerCommands.LinkScoresaberWithDiscord(discordSocketClient, message);
                 }
-
-                else if (messageCommand.Contains(" country"))
+                else if (messageCommand.Contains(" link"))
                 {
-                    GlobalScoresaberCommands.Country(discordSocketClient, message);
+                    DutchServerCommands.LinkScoresaberWithDiscord(discordSocketClient, message);
                 }
-                else if (messageCommand.Contains(" recentsong"))
-                {
-                    GlobalScoresaberCommands.RecentSong(discordSocketClient, message);
-                }
+              
                 else if (messageCommand.Contains(" typing"))
                 {
                     GlobalScoresaberCommands.Typing(discordSocketClient, message);
@@ -145,13 +128,17 @@ namespace DiscordBeatSaberBot.Handlers
                 }
                 else if (messageCommand.Contains(" songs"))
                 {
-                    DutchServerCommands.IRLevent(discordSocketClient, message);
+                    await message.Channel.SendMessageAsync(null, false, EmbedBuilderExtension.NullEmbed("Ewh..", "This command is outdated. Blame silverhaze to remake it").Build());
+                    //GlobalScoresaberCommands.Songs(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" irlevent create"))
                 {
                     DutchServerCommands.IRLevent(discordSocketClient, message);
                 }
-
+                else if (messageCommand.Contains(" randomevent create"))
+                {
+                    DutchServerCommands.RandomEvent(discordSocketClient, message);
+                }
                 else
                 {
                     var embedBuilder = EmbedBuilderExtension.NullEmbed("Oops", "There is no command like that, try something else",

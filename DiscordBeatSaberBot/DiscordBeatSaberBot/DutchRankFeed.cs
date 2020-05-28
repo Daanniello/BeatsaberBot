@@ -304,8 +304,10 @@ namespace DiscordBeatSaberBot
             await GiveRole(scoresaberId, roleName);
         }
 
-        public static async Task GiveRoleWithRank(int rank, string scoresaberId)
+        public static async Task GiveRoleWithRank(int rank, string scoresaberId, DiscordSocketClient discord = null)
         {
+            if (_discord == null) _discord = discord;
+
             if (rank == 0) return;
             if (rank <= 1) await GiveRole(scoresaberId, "Nummer 1");
             else if (rank <= 3) await GiveRole(scoresaberId, "Top 3");
@@ -319,7 +321,7 @@ namespace DiscordBeatSaberBot
         }
 
         public static async Task GiveRole(string scoresaberId, string roleName)
-        {
+        {           
             var rolenames = new[]
             {
                 "Nummer 1",
@@ -335,11 +337,14 @@ namespace DiscordBeatSaberBot
             var r = new RoleAssignment(_discord);
             ulong userDiscordId = r.GetDiscordIdWithScoresaberId(scoresaberId);
             if (userDiscordId != 0)
-            {
-                ulong guild_id = 505485680344956928;
-                var guild = _discord.Guilds.FirstOrDefault(x => x.Id == guild_id);
+            {              
+                var guild = _discord.GetGuild(505485680344956928);
                 var user = guild.GetUser(userDiscordId);
-
+                if (user == null)
+                {
+                    Console.WriteLine($"User {userDiscordId} is not in the server");
+                    return;
+                }
                 if (user.Id != 221373638979485696)
                     foreach (var userRole in user.Roles)
                     {

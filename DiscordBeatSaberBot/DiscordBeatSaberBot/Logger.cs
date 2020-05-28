@@ -23,7 +23,7 @@ namespace DiscordBeatSaberBot
             _discord = discord;
         }
 
-        public async Task Log(LogCode code, string message)
+        public async Task Log(LogCode code, string message, SocketMessage messageInfo = null)
         {
             if (message.Length > 2000) return;
             var color = Color.Green;
@@ -60,7 +60,7 @@ namespace DiscordBeatSaberBot
                 }
             };
 
-            Console.WriteLine(embedbuilder.Title + "\n\n" + embedbuilder.Description);
+            //Console.WriteLine(embedbuilder.Title + "\n\n" + embedbuilder.Description);
             try
             {
                 await _discord.GetGuild(505485680344956928).GetTextChannel(592877335355850752).SendMessageAsync("", false, embedbuilder.Build());

@@ -74,13 +74,14 @@ namespace DiscordBeatSaberBot
             discordSocketClient.ReactionAdded += ReactionAdded;
             discordSocketClient.ReactionRemoved += ReactionRemoved;
             discordSocketClient.UserJoined += OnUserJoined;
-            discordSocketClient.GuildMemberUpdated += OnUserUpdated;
+            //discordSocketClient.GuildMemberUpdated += OnUserUpdated;
             discordSocketClient.Disconnected += onDisconnected;
             discordSocketClient.Ready += Init;
 
             await log("Connecting to Discord...");
 
-            await Task.Delay(-1);
+    
+                await Task.Delay(-1);
         }
 
         private async Task onDisconnected(Exception e)
@@ -160,8 +161,8 @@ namespace DiscordBeatSaberBot
 
                 try
                 {
-                    var RankingFeedThread = new Thread(() => RankFeedTimer(new CancellationToken()));
-                    RankingFeedThread.Start();
+                    //var RankingFeedThread = new Thread(() => RankFeedTimer(new CancellationToken()));
+                    //RankingFeedThread.Start();
                     //TimerRunning(new CancellationToken());
                 }
                 catch
@@ -181,10 +182,10 @@ namespace DiscordBeatSaberBot
             return Task.CompletedTask;
         }
 
-        private async Task OnUserUpdated(SocketGuildUser userOld, SocketGuildUser userNew)
-        {
+        //private async Task OnUserUpdated(SocketGuildUser userOld, SocketGuildUser userNew)
+        //{
        
-        }
+        //}
 
         private async Task OnUserJoined(SocketGuildUser guildUser)
         {

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 
 namespace DiscordBeatSaberBot.Models.ScoreberAPI
 {
@@ -18,7 +19,8 @@ namespace DiscordBeatSaberBot.Models.ScoreberAPI
             public ulong PlayerId { get; set; }
 
             [JsonProperty(PropertyName = "pp")]
-            public double Pp { get; set; }
+            private double _pp { get; set; }
+            public double Pp { get { return Math.Round(_pp, 2); } set { this._pp = Math.Round(value, 2); } }
 
             [JsonProperty(PropertyName = "banned")]
             public bool Banned { get; set; }
@@ -70,7 +72,8 @@ namespace DiscordBeatSaberBot.Models.ScoreberAPI
             public ulong TotalRankedScore { get; set; }
 
             [JsonProperty(PropertyName = "averageRankedAccuracy")]
-            public ulong AvarageRankedAccuracy { get; set; }
+            private double _avarageRankedAccuracy { get; set; }
+            public double AvarageRankedAccuracy { get { return Math.Round(_avarageRankedAccuracy,2); } set { this._avarageRankedAccuracy = Math.Round(value, 2); } }
 
             [JsonProperty(PropertyName = "totalPlayCount")]
             public int TotalPlayCount { get; set; }

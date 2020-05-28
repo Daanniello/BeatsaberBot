@@ -14,7 +14,7 @@ namespace DiscordBeatSaberBot.Models
         public DateTime date = new DateTime();
         public String url = "";
         public String imageUrl = "";
-
+        public string locatie = "";
 
 
     }

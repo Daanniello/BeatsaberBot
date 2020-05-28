@@ -6,7 +6,7 @@ using System.Text;
 namespace DiscordBeatSaberBot.Models.ScoreberAPI
 {
 
-    public partial class ScoresaberRecentSongsModel
+    public partial class ScoresaberSongsModel
     {
         [JsonProperty("scores")]
         public Score[] Scores { get; set; }
@@ -34,11 +34,16 @@ namespace DiscordBeatSaberBot.Models.ScoreberAPI
             [JsonProperty("timeset")]
             public DateTimeOffset Timeset { get; set; }
 
-            [JsonProperty("pp")]
-            public long Pp { get; set; }
+            //[JsonProperty("pp")]
+            //public long Pp { get; set; }
 
-            [JsonProperty("weight")]
-            public long Weight { get; set; }
+            [JsonProperty(PropertyName = "pp")]
+            private double _pp { get; set; }
+            public double Pp { get { return Math.Round(_pp, 3); } set { this._pp = Math.Round(value, 3); } }
+
+            [JsonProperty(PropertyName = "weight")]
+            private double _weight { get; set; }
+            public double Weight { get { return Math.Round(_weight, 14); } set { this._weight = Math.Round(value, 14); } }
 
             [JsonProperty("id")]
             public string Id { get; set; }

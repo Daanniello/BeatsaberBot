@@ -1,6 +1,8 @@
-﻿using DiscordBeatSaberBot.Models.ScoreberAPI;
+﻿using Discord.WebSocket;
+using DiscordBeatSaberBot.Models.ScoreberAPI;
 using Newtonsoft.Json;
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -11,10 +13,12 @@ namespace DiscordBeatSaberBot
 
         private string _baseUrl = "https://new.scoresaber.com/api/player/";
         private string _playerId;
+        private SocketMessage _message;
 
-        public ScoresaberAPI (string playerId)
+        public ScoresaberAPI (string playerId, SocketMessage message = null)
         {
             _playerId = playerId;
+            _message = message;
         }
 
         public async Task<ScoresaberPlayerFullModel> GetPlayerFull()
@@ -51,21 +55,19 @@ namespace DiscordBeatSaberBot
         private async Task<string> GetData(string type, string endpoint)
         {
             string result = null;
-            try
+            using (var Client = new HttpClient())
             {
-                using (var Client = new HttpClient())
+                var url = new Uri(_baseUrl + _playerId + type + endpoint);
+                var httpResponseMessage = await Client.GetAsync(url);
+                if (httpResponseMessage.StatusCode != HttpStatusCode.OK && _message != null)
                 {
-                    var url = new Uri(_baseUrl + _playerId + type + endpoint);
-                    var httpResponseMessage = await Client.GetAsync(url);
-                    httpResponseMessage.EnsureSuccessStatusCode();
-                    result = await httpResponseMessage.Content.ReadAsStringAsync();
+                    await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"Status code: {httpResponseMessage.StatusCode}").Build());
+                    return null;
                 }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
 
+                httpResponseMessage.EnsureSuccessStatusCode();
+                result = await httpResponseMessage.Content.ReadAsStringAsync();
+            }
             return result;
         }
         

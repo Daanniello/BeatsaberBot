@@ -57,6 +57,8 @@ namespace DiscordBeatSaberBot
 
                 var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
 
+                if (table == null) return null;
+
                 try
                 {
                     playerIdList.Add(table.Descendants("tr").Skip(1).Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList()).ToList().First());

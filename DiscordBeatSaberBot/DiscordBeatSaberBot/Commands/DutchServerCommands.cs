@@ -92,14 +92,18 @@ namespace DiscordBeatSaberBot.Commands
         [Help("CreateEvent", "Creates a handler that guides you for creating an event in the dutch beat saber group.", HelpAttribute.Catergories.AdminCommands)]
         static public async Task CreatEvent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            var thread = new Thread(() => new EventManager(message, discordSocketClient));
-            thread.Start();
+            //Is Eventleider?
+            if(message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194))
+            {
+                var thread = new Thread(() => new EventManager(message, discordSocketClient));
+                thread.Start();
+            }            
         }
 
         [Help("IRLevent", "Creates and IRL Event for the dutch discord.", HelpAttribute.Catergories.AdminCommands)]
         static public async Task IRLevent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            if (ValidationExtension.IsOwner(message.Author.Id))
+            if (message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194))
             {
                 var embedBuilder = EmbedBuilderExtension.NullEmbed("IRL Event handler", "Starting IRL Event handler...", null, null);
                 var msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
@@ -109,21 +113,49 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
+        [Help("RandomEvent", "Creates and Random Event for the dutch discord.", HelpAttribute.Catergories.AdminCommands)]
+        static public async Task RandomEvent(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            if (message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194))
+            {
+                var embedBuilder = EmbedBuilderExtension.NullEmbed("Random Event Generator", "Starting random event handler...", null, null);
+                var msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
 
 
-        [Help("RequestVerification", "Reset the hours from the weekly event in the dutch beat saber discord. ", HelpAttribute.Catergories.General)]
-        static public async Task RequestVerification(DiscordSocketClient discordSocketClient, SocketMessage message)
+                var randomEventHandler = new RandomEventHandler(message, discordSocketClient, msg);
+            }
+        }
+
+        [Help("Unlink", "Will unlink your current Scoresaber from your Discord account ", HelpAttribute.Catergories.General)]
+        static public async Task UnlinkScoresaberFromDiscord(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
 
             if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
             {
+                return;
+            }
+            else
+            {
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Hmmmm?", "Your Discord does not seemed to be already linked. You can link a new scoresaber account with !bs link [ScoresaberID]").Build());
+            }
+        }
+
+        [Help("Link", "Will link your Scoresaber profile to your Discord account ", HelpAttribute.Catergories.General)]
+        static public async Task LinkScoresaberWithDiscord(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var r = new RoleAssignment(discordSocketClient);
+
+            if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
+            {
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Pog", $"Your Discord ID is already linked with your scoresaber, No worries {message.Author.Username}. If you want to unlink, type !bs unlink.").Build());
+
                 await message.Channel.SendMessageAsync("Your Discord ID is already linked with your scoresaber, No worries " + message.Author.Username);
                 return;
             }
             else
             {
-                var ScoresaberId = message.Content.Substring(24);
+                var ScoresaberId = message.Content.Substring(9);
                 ScoresaberId = Regex.Replace(ScoresaberId, "[^0-9]", "");
 
                 if (!ValidationExtension.IsDigitsOnly(ScoresaberId))
@@ -134,6 +166,11 @@ namespace DiscordBeatSaberBot.Commands
 
                 if (await ValidationExtension.IsDutch(ScoresaberId))
                 {
+                    var guildChannel = message.Channel as SocketGuildChannel;
+                    if (guildChannel.Guild.Id != 505485680344956928)
+                    {
+                        message.Channel.SendMessageAsync("It seems that you are Dutch and trying to link your account outside the Dutch Discord. A Dutch request needs to be validated. Consider joining the Dutch Beat Saber Discord. (https://discord.gg/cH7mTyq)");
+                    }
                     r.MakeRequest(message);
                 }
                 else

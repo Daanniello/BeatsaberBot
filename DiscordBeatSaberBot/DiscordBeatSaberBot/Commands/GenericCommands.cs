@@ -22,11 +22,18 @@ namespace DiscordBeatSaberBot.Commands
         [Help("Playing", "Sets the game of the discord bot.", HelpAttribute.Catergories.BotFunctions)]
         static public async Task Playing(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            var msg = message.Content.Substring(12);
-            //C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\BeatSaberSettings.txt
-            JsonExtension.InsertJsonData(@"../../../BeatSaberSettings.txt", "gamePlaying", msg);
-            await discordSocketClient.SetGameAsync(msg);
-            await message.Channel.SendMessageAsync("Game now set to " + msg);
+            if (message.Author.IsDutchAdmin(discordSocketClient))
+            {
+                var msg = message.Content.Substring(12);
+                //C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\BeatSaberSettings.txt
+                JsonExtension.InsertJsonData(@"../../../BeatSaberSettings.txt", "gamePlaying", msg);
+                await discordSocketClient.SetGameAsync(msg);
+                await message.Channel.SendMessageAsync("Game now set to " + msg);
+            }
+            else
+            {
+                await message.Channel.SendMessageAsync("Please don't touch this command you normie");
+            }            
         }
 
         [Help("Invite", "Gives an invite link for the bot to join in other discord servers.", HelpAttribute.Catergories.BotFunctions)]

@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using DiscordBeatSaberBot.Models;
 using DiscordBeatSaberBot.Models.ScoreberAPI;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
+using RestSharp.Serialization.Json;
 
 namespace DiscordBeatSaberBot.Extensions
 {
@@ -73,7 +77,7 @@ namespace DiscordBeatSaberBot.Extensions
                 {
                     EmbedBuilderExtension.NullEmbed("No Results",
                         "I am sorry, I could not find any person named: " + playerName +
-                        "\n\n\n If you are searching for yourself, you can also do: \n\n***!bs requestverification [ScoresaberID]*** \n\nto have easy access by only typing !bs search",
+                        "\n\n\n If you are searching for yourself, you can also do: \n\n***!bs link [ScoresaberID]*** \n\nto have easy access by only typing !bs search",
                         null, null)
                 };
                 return embedList;
@@ -264,11 +268,11 @@ namespace DiscordBeatSaberBot.Extensions
             return builder;
         }
 
-        static public async Task<List<EmbedBuilder>> GetPlayerSearchInfoEmbed(string scoresaberId)
+        static public async Task<List<EmbedBuilder>> GetPlayerSearchInfoEmbed(string scoresaberId, SocketMessage message)
         {
             var embedBuilderList = new List<EmbedBuilder>();
 
-            var searchedPlayerInfo = await new ScoresaberAPI(scoresaberId).GetPlayerFull();
+            var searchedPlayerInfo = await new ScoresaberAPI(scoresaberId, message).GetPlayerFull();
             var embedBuilder = new EmbedBuilder
             {
                 Title = $"**{searchedPlayerInfo.playerInfo.Name} :flag_{searchedPlayerInfo.playerInfo.Country.ToLower()}:**",
@@ -519,6 +523,16 @@ namespace DiscordBeatSaberBot.Extensions
             return await player.GetPlayerId();
         }
 
+        public static async Task<string> GetPlayerIdsWithUsername(string search)
+        {
+            using (var client = new HttpClient())
+            {
+                var playerInfoJsonData = await client.GetStringAsync($"https://new.scoresaber.com/api/players/by-name/{search}");
+                var playerInfo = JsonConvert.DeserializeObject<ScoresaberSearchPlayerModel>(playerInfoJsonData);
+                return playerInfo.Playerid;
+            }
+        }
+
         public static async Task<EmbedBuilder> GetBestSongWithId(string playerId)
         {
             var playerTopSongImg = "";
@@ -597,9 +611,35 @@ namespace DiscordBeatSaberBot.Extensions
 
             using (var client = new HttpClient())
             {
-                var recentSongsJsonData = await client.GetStringAsync(url);
-                var recentSongsInfo = JsonConvert.DeserializeObject<ScoresaberRecentSongsModel>(recentSongsJsonData);
+                var httpResponseMessage = await client.GetAsync(url);
+
+                if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"Status code: {httpResponseMessage.StatusCode}");
+
+                var recentSongsJsonData = await httpResponseMessage.Content.ReadAsStringAsync();
+
+                var recentSongsInfo = JsonConvert.DeserializeObject<ScoresaberSongsModel>(recentSongsJsonData);
                 var recentSong = recentSongsInfo.Scores[0];
+
+                //Download info from beat saver
+                var beatsaverUrl = $"https://beatsaver.com/api/maps/by-hash/{recentSong.Id}";
+
+                var request = new HttpRequestMessage()
+                {
+                    RequestUri = new Uri(beatsaverUrl),
+                    Method = HttpMethod.Get,
+                };
+
+                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("*/*"));
+                client.DefaultRequestHeaders.Add("User-Agent", "C# App");
+                client.DefaultRequestHeaders.Connection.Add("keep-alive");
+
+                var httpResponseMessage2 = await client.SendAsync(request);
+
+                if (httpResponseMessage2.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("BeatSaver Error", $"Status code: {httpResponseMessage2.StatusCode}");
+
+                var recentSongsJsonDataBeatSaver = await httpResponseMessage2.Content.ReadAsStringAsync();
+                var recentSongsInfoBeatSaver = JsonConvert.DeserializeObject<BeatSaverMapInfoModel>(recentSongsJsonDataBeatSaver);
+
 
                 var playerInfoJsonData = await client.GetStringAsync($"https://new.scoresaber.com/api/player/{playerId}/full");
                 var playerInfo1 = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoJsonData);
@@ -609,44 +649,133 @@ namespace DiscordBeatSaberBot.Extensions
                 embedBuilder = new EmbedBuilder
                 {
                     Title = $"**Recent Song From: {playerInfo.Name} :flag_{playerInfo.Country.ToLower()}:**",
-                    ThumbnailUrl =
+                    ImageUrl =
                 $"https://scoresaber.com/imports/images/songs/{recentSong.Id}.png",
                     Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}",
                 };
 
-                object acc = "No Data";
-                if (recentSong.MaxScoreEx == 0){
-                    
-                }
-                else
-                {
-                    acc = recentSong.UScore / recentSong.MaxScoreEx * 100;
+                object acc = "";
+                object mods = "";
+
+                if (recentSong.Mods != "") mods = $"Mods:               '{recentSong.Mods}' \n";
+                if (recentSong.MaxScoreEx != 0){
+                    double percentage = Convert.ToDouble(recentSong.UScore) / Convert.ToDouble(recentSong.MaxScoreEx) * 100;
+                    acc = $"Accuracy:           { Math.Round(percentage, 2)}% \n";
                 }
 
-                embedBuilder.AddField($"{recentSong.Name}",
+                var metadataDynamic = recentSongsInfoBeatSaver.Metadata.Characteristics[0].Difficulties;
+                dynamic difficulty = metadataDynamic.GetType().GetProperty(recentSong.Diff.Substring(1).Split('_')[0]).GetValue(metadataDynamic, null);
+
+                var actualWeight = Math.Round(recentSong.Pp * recentSong.Weight, 2);
+
+                embedBuilder.AddField($"Song Name: {recentSong.Name}",
                     $"```cs\n" +
-                    $"Song Name:                {recentSong.Name} \n\n" +
-                    $"Song Sub name:            {recentSong.SongSubName} \n\n" +
-                    $"Difficulty:               {recentSong.Diff} \n\n" +
-                    $"Song Author name:         {recentSong.SongAuthorName} \n\n" +
-                    $"Map Author name:          {recentSong.LevelAuthorName} \n\n" +
+                    //$"Song Name:          {recentSong.Name} \n" +
+                    //$"Song Sub name:            {recentSong.SongSubName} \n\n" +
+                    $"Difficulty:         {recentSong.Diff.Replace("_", " ").Trim()} \n" +
+                    $"Song Author name:   {recentSong.SongAuthorName} \n" +
+                    $"Map Author name:    {recentSong.LevelAuthorName} \n" +
                     $"```" +
-                    "\n\n" +
+               
                     $"```cs\n" +
-                    $"Rank:                      #{recentSong.Rank} \n" +
-                    $"Score:                     {recentSong.ScoreScore} \n" +
-                    $"Accuracy:                  {acc}% \n" +
-                    $"PP:                        {recentSong.Pp} \n" +
-                    $"PP Weight:                 {recentSong.Weight} \n" +
+                    $"Rank:               #{recentSong.Rank} \n" +
+                    $"Score:              {recentSong.ScoreScore} \n" +
+                    acc +
+                    $"PP:                 {recentSong.Pp} \n" +
+                    $"PP Weight:          {actualWeight} \n" +
                     $"```" +
-                    "\n\n" +
+    
                     $"```cs\n" +
-                    $"Time Set:                 '{recentSong.Timeset}' \n\n" +
-                    $"Max Score Ex:             '{recentSong.MaxScoreEx}' \n\n" +
-                    $"Mods:                     '{recentSong.Mods}' \n\n" +                    
+                    $"Time Set:           '{recentSong.Timeset.DateTime.ToShortDateString()} {recentSong.Timeset.DateTime.ToShortTimeString()}' \n" +
+                    $"Max Score Ex:       '{recentSong.MaxScoreEx}' \n" +
+                    mods +
                     $"```" +
-                    "\n\n" +
-                    $"Url:                      'https://scoresaber.com/leaderboard/{recentSong.LeaderboardId}' \n\n"
+
+                    $"```cs\n" +
+                    $"Bpm:                '{recentSongsInfoBeatSaver.Metadata.Bpm}' \n" +
+                    $"Duration:           '{recentSongsInfoBeatSaver.Metadata.Duration}' \n" +
+                    $"Notes:              '{difficulty.Notes}' \n" +
+                    $"Njs:                '{difficulty.Njs}' \n" +
+                    $"NjsOffset:          '{difficulty.NjsOffset}' \n" +
+                    $"Bombs:              '{difficulty.Bombs}' \n" +
+                    $"Obstacles:          '{difficulty.Obstacles}' \n" +
+                    $"```" +
+
+                    "\n" +
+                    $"Url:                https://scoresaber.com/leaderboard/{recentSong.LeaderboardId} \n\n" +
+                    $"Direct download:       https://beatsaver.com/{recentSongsInfoBeatSaver.DirectDownload} \n\n"
+                );
+
+
+            }
+            return embedBuilder;
+        }
+
+        public static async Task<EmbedBuilder> GetNewTopSongWithScoresaberId(string playerId)
+        {
+            var url = $"https://new.scoresaber.com/api/player/{playerId}/scores/top/1";
+            var embedBuilder = new EmbedBuilder();
+
+            using (var client = new HttpClient())
+            {
+                var httpResponseMessage = await client.GetAsync(url);
+
+                if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"Status code: {httpResponseMessage.StatusCode}");
+
+                var TopSongsJsonData = await httpResponseMessage.Content.ReadAsStringAsync();
+
+                var TopSongsJsonInfo = JsonConvert.DeserializeObject<ScoresaberSongsModel>(TopSongsJsonData);
+                var TopSong = TopSongsJsonInfo.Scores[0];
+
+                var playerInfoJsonData = await client.GetStringAsync($"https://new.scoresaber.com/api/player/{playerId}/full");
+                var playerInfo1 = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoJsonData);
+                var playerInfo = playerInfo1.playerInfo;
+
+
+                embedBuilder = new EmbedBuilder
+                {
+                    Title = $"**Recent Song From: {playerInfo.Name} :flag_{playerInfo.Country.ToLower()}:**",
+                    ImageUrl =
+                $"https://scoresaber.com/imports/images/songs/{TopSong.Id}.png",
+                    Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}",
+                };
+
+                object acc = "";
+                object mods = "";
+
+                if (TopSong.Mods != "") mods = $"Mods:               '{TopSong.Mods}' \n";
+                if (TopSong.MaxScoreEx != 0)
+                {
+                    double percentage = Convert.ToDouble(TopSong.UScore) / Convert.ToDouble(TopSong.MaxScoreEx) * 100;
+                    acc = $"Accuracy:           { Math.Round(percentage, 2)}% \n";
+                }
+
+                var actualWeight = Math.Round(TopSong.Pp * TopSong.Weight,2);
+
+                embedBuilder.AddField($"Song Name: {TopSong.Name}",
+                    $"```cs\n" +
+                    //$"Song Name:          {recentSong.Name} \n" +
+                    //$"Song Sub name:            {recentSong.SongSubName} \n\n" +
+                    $"Difficulty:         {TopSong.Diff.Replace("_", " ").Trim()} \n" +
+                    $"Song Author name:   {TopSong.SongAuthorName} \n" +
+                    $"Map Author name:    {TopSong.LevelAuthorName} \n" +
+                    $"```" +
+
+                    $"```cs\n" +
+                    $"Rank:               #{TopSong.Rank} \n" +
+                    $"Score:              {TopSong.ScoreScore} \n" +
+                    acc +
+                    $"PP:                 {TopSong.Pp} \n" +
+                    $"PP Weight:          {actualWeight} \n" +
+                    $"```" +
+
+                    $"```cs\n" +
+                    $"Time Set:           '{TopSong.Timeset.DateTime.ToShortDateString()} {TopSong.Timeset.DateTime.ToShortTimeString()}' \n" +
+                    $"Max Score Ex:       '{TopSong.MaxScoreEx}' \n" +
+                    mods +
+                    $"```" +
+                    "\n" +
+                    $"Url:                https://scoresaber.com/leaderboard/{TopSong.LeaderboardId} \n\n"
                 );
 
 
@@ -670,7 +799,11 @@ namespace DiscordBeatSaberBot.Extensions
             var url = "https://scoresaber.com/u/" + playerId.Replace("/u/", "") + "&sort=2";
             using (var client = new HttpClient())
             {
+                var sw = new Stopwatch();
+                sw.Start();
                 var html = await client.GetStringAsync(url);
+                sw.Stop();
+                Console.WriteLine(sw.ElapsedMilliseconds);
                 var doc = new HtmlDocument();
                 doc.LoadHtml(html);
 
@@ -1276,55 +1409,189 @@ namespace DiscordBeatSaberBot.Extensions
             }
         }
 
-        public static async Task<EmbedBuilder> PlayerComparer(string message)
+        public static async Task<EmbedBuilder> GetComparedEmbedBuilder(string message, SocketMessage socketMessage, DiscordSocketClient discordSocketClient)
         {
-            var splitting = message.Split(" vs ");
+            //Check if the message is set up correctly
+            if (message.Length == 0 || message == null) return EmbedBuilderExtension.NullEmbed("Format is not set up correctly", "Use the following format: !bs compare player1 player2");
 
-            var player1List = await GetPlayerInfo(splitting[0].Trim());
-            var player2List = await GetPlayerInfo(splitting[1].Trim());
+            //Prepare player data             
+            var players = message.Split(' ');            
 
-            if (player1List.Count == 0)
-                return EmbedBuilderExtension.NullEmbed("No search results",
-                    "The name " + splitting[0] + " could not be found.", null, null);
-            if (player2List.Count == 0)
-                return EmbedBuilderExtension.NullEmbed("No search results",
-                    "The name " + splitting[1] + " could not be found.", null, null);
+            if (players.Count() > 2) return EmbedBuilderExtension.NullEmbed("oh oh...", $"One of your inputs contains a space. Connect the name as the following: !bs compare silverhaze Duh<>Hello");
 
-            var player1 = player1List.First();
-            var player2 = player2List.First();
+            var player1 = players[0].Replace("<>", " ");
+            var player2 = players[1].Replace("<>", " ");
 
-            var builder = new EmbedBuilder();
+            var player1containsmention = false;
+            var player2containsmention = false;
 
-            //builder.AddInlineField(splitting[0],
-            //    "Rank" + "\n" +
-            //    "Country" + "\n" +
-            //    "CountryRank" + "\n" +
-            //    "PlayCount" + "\n" +
-            //    "PP" + "\n" +
-            //    "TotalScore" + "\n");
+            if (player1.Contains("@"))
+            {
+                var r = new RoleAssignment(discordSocketClient);
+                var discordId = player1.Replace("<@!", "").Replace(">", "");
+                if (r.CheckIfDiscordIdIsLinked(discordId))
+                {
+                    player1 = r.GetScoresaberIdWithDiscordId(discordId);
+                    player1containsmention = true;
+                }
+                else
+                {
+                    return EmbedBuilderExtension.NullEmbed("Not Linked error", $"{player1} is not linked with his/her scoresaber");
+                }
+            }
 
-            builder.AddField(splitting[0] + " " + player1.countryIcon.ToLower(),
-                "#" + player1.rank + "\n" + "#" + player1.countryRank + "\n" + player1.playCount + "\n" + player1.pp +
-                "pp" + "\n" + player1.totalScore + "\n");
+            if (player2.Contains("@"))
+            {
+                var r = new RoleAssignment(discordSocketClient);
+                var discordId = player2.Replace("<@!", "").Replace(">", "");
+                if (r.CheckIfDiscordIdIsLinked(discordId))
+                {
+                    player2 = r.GetScoresaberIdWithDiscordId(discordId);
+                    player2containsmention = true;
+                }
+                else
+                {
+                    return EmbedBuilderExtension.NullEmbed("Not Linked error", $"{player2} is not linked with his/her scoresaber");
+                }
+            }
 
-            var pp1 = int.Parse(player1.pp.Split(".")[0]);
-            var pp2 = int.Parse(player2.pp.Split(".")[0]);
-            var ppDifference = Math.Abs(pp1 - pp2);
+            var urlPlayer1 = $"https://new.scoresaber.com/api/players/by-name/{player1}";
+            var urlPlayer2 = $"https://new.scoresaber.com/api/players/by-name/{player2}";
 
-            var totalPointsDifference = Math.Abs(int.Parse(player1.totalScore.Replace(",", "")) -
-                                                 int.Parse(player2.totalScore.Replace(",", "")));
+            var player1Info = new ScoresaberPlayerFullModel();
+            var player2Info = new ScoresaberPlayerFullModel();
 
-            builder.AddField(":heavy_minus_sign:",
-                Math.Abs(player1.rank - player2.rank) + "\n" + Math.Abs(player1.countryRank - player2.countryRank) +
-                "\n" + Math.Abs(player1.playCount - player2.playCount) + "\n" + ppDifference + " pp" + "\n" +
-                totalPointsDifference.ToString("N0", CultureInfo.GetCultureInfo("us")));
+            using (HttpClient hc = new HttpClient())
+            {
+                var player1ScoresaberID = player1;
+                var player2ScoresaberID = player2;
 
-            builder.AddField(splitting[1] + " " + player2.countryIcon.ToLower(),
-                "#" + player2.rank + "\n" + "#" + player2.countryRank + "\n" + player2.playCount + "\n" + player2.pp +
-                "pp" + "\n" + player2.totalScore + "\n");
+                if (!player1containsmention) {
+                    var infoPlayer1Raw = await hc.GetAsync(urlPlayer1);
+                    if (infoPlayer1Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"**Player 1 status:** {infoPlayer1Raw.StatusCode}");
+                    var players1ScoresaberID = JsonConvert.DeserializeObject<List<ScoreSaberSearchByNameModel>>(infoPlayer1Raw.Content.ReadAsStringAsync().Result);
+                    var player1search = players1ScoresaberID.Where(x => x.Name.ToLower() == player1);
+                    if (player1search.Count() == 0) return EmbedBuilderExtension.NullEmbed("Error", $"{player1} could not be found");
+                    player1ScoresaberID = players1ScoresaberID.Where(x => x.Name.ToLower() == player1).First().Playerid;
+                }
+
+                if (!player2containsmention)
+                {
+                    var infoPlayer2Raw = await hc.GetAsync(urlPlayer2);
+                    if (infoPlayer2Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"**Player 2 status:** {infoPlayer2Raw.StatusCode}");
+                    var players2ScoresaberID = JsonConvert.DeserializeObject<List<ScoreSaberSearchByNameModel>>(infoPlayer2Raw.Content.ReadAsStringAsync().Result);
+                    var player2search = players2ScoresaberID.Where(x => x.Name.ToLower() == player2);
+                    if (player2search.Count() == 0) return EmbedBuilderExtension.NullEmbed("Error", $"{player2} could not be found");
+                    player2ScoresaberID = players2ScoresaberID.Where(x => x.Name.ToLower() == player2).First().Playerid;
+                }
+
+                //GET players info 
+                var urlPlayerInfo1 = $"https://new.scoresaber.com/api/player/{player1ScoresaberID}/full";
+                var player1InfoRaw = await hc.GetStringAsync(urlPlayerInfo1);
+                player1Info = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(player1InfoRaw);
+
+                var urlPlayerInfo2 = $"https://new.scoresaber.com/api/player/{player2ScoresaberID}/full";
+                var player2InfoRaw = await hc.GetStringAsync(urlPlayerInfo2);
+                player2Info = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(player2InfoRaw);
+            }
+
+            var embedBuilder = new EmbedBuilder
+            {
+                Title = $"**Compare Info from: \n{player1Info.playerInfo.Name} :flag_{player1Info.playerInfo.Country.ToLower()}:   &   {player2Info.playerInfo.Name} :flag_{player2Info.playerInfo.Country.ToLower()}:**",
+            };
+
+            embedBuilder.AddField($"\n\nDifference:", $"" +
+                $"```md\n" +
+                $"Yellow: < {player1Info.playerInfo.Name}> \nBlue:   <{ player2Info.playerInfo.Name}>\n\n" +
+                $"Rank:                 {getRedOrGreenAndValue(player1Info.playerInfo.rank, player2Info.playerInfo.rank, true)} \n" +
+                $"PP:                   {getRedOrGreenAndValue(Math.Round(player1Info.playerInfo.Pp), Math.Round(player2Info.playerInfo.Pp))} \n" +
+                $"Accuracy:             {getRedOrGreenAndValue((float)player1Info.scoreStats.AvarageRankedAccuracy, (float)player2Info.scoreStats.AvarageRankedAccuracy)} \n" +
+                $"```" +
+
+                $"```md\n" +
+                $"TotalPlayCount:       {getRedOrGreenAndValue(player1Info.scoreStats.TotalPlayCount, player2Info.scoreStats.TotalPlayCount)} \n" +
+                $"TotalRankedPlayCount: {getRedOrGreenAndValue(player1Info.scoreStats.RankedPlayerCount, player2Info.scoreStats.RankedPlayerCount)} \n" +
+                $"TotalScore:           {getRedOrGreenAndValue((float)player1Info.scoreStats.TotalScore, (float)player2Info.scoreStats.TotalScore)} \n" +
+                $"TotalRankedScore:     {getRedOrGreenAndValue((float)player1Info.scoreStats.TotalRankedScore, (float)player2Info.scoreStats.TotalRankedScore)} \n" +
+                $"```"
+                +
+                $"```md\n" +
+                $"CountryRank:          {getRedOrGreenAndValue(player1Info.playerInfo.CountryRank, player2Info.playerInfo.CountryRank, true)} \n" +
+                $"BadgeCount:           {getRedOrGreenAndValue(player1Info.playerInfo.Badges.Count(), player2Info.playerInfo.Badges.Count())} \n" +
+                $"```"
+            );
+
+            string getRedOrGreenAndValue(dynamic value, dynamic value2, bool shouldBeLower = false)
+            {
+                var color = "<";
+                bool isYellow = false;
+
+                if (shouldBeLower)
+                {
+                    if (Math.Min(value, value2) == value)
+                    {
+                        color = "< ";
+                        isYellow = true;
+                    }
+                }
+                else
+                {
+                    if (Math.Max(value, value2) == value)
+                    { 
+                        color = "< "; 
+                        isYellow = true;
+                    }
+                }
+
+                var endResult = Math.Abs(value - value2);
+
+                try
+                {
+                    endResult = Math.Round(endResult, 2);
+                }
+                catch
+                {
+
+                }
+               
+                string v = value.ToString("#,##0,,M", CultureInfo.InvariantCulture); 
+                if ( value.ToString().Length > 7)
+                {
+                    value = v;
+                }
+
+                string v2 = value2.ToString("#,##0,,M", CultureInfo.InvariantCulture);
+                if (value2.ToString().Length > 7)
+                {
+                    value2 = v2;
+                }
+
+                string e2 = endResult.ToString("#,##0,,M", CultureInfo.InvariantCulture);
+                if (endResult.ToString().Length > 7)
+                {
+                    endResult = e2;
+                }
+
+                return $"< {getValueWithSpacingAfter(value.ToString())}>    {color}{getValueWithSpacingAfter(endResult.ToString(), isYellow)}>     <{getValueWithSpacingAfter(value2.ToString())}>";
+            }
+
+            string getValueWithSpacingAfter(string value, bool isYellow = false)
+            {
+                var spaces = "";
+
+                for(var x = 6; x > value.Length; x--)
+                {
+                    spaces += " ";
+                }
+
+                if (!isYellow) spaces += " ";
+
+                return value+spaces;
+            }
 
 
-            return builder;
-        }
+
+            return embedBuilder;
+        }       
     }
 }

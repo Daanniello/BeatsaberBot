@@ -198,15 +198,17 @@ namespace DiscordBeatSaberBot.Handlers
                                 await casted.RemoveAllReactionsAsync();
                             }
 
-                            var player = await BeatSaberInfoExtension.GetPlayerInfoWithScoresaberId(scoresaberId);
-                            DutchRankFeed.GiveRoleWithRank(player.countryRank, scoresaberId);
-                            var m = new GuildService(discordSocketClient, 505485680344956928);
-                            var linkingUser =
-                                m.Guild.GetUser(
-                                    new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId));
-                            await m.AddRole("Verified", linkingUser);
-                            await m.DeleteRole("Link my discord please", linkingUser);
-                            await m.DeleteRole("Koos Rankloos", linkingUser);
+                            var player = await new ScoresaberAPI(scoresaberId).GetPlayerFull();
+
+          
+                            DutchRankFeed.GiveRoleWithRank(player.playerInfo.CountryRank, scoresaberId, discordSocketClient);
+                            var dutchGuild = new GuildService(discordSocketClient, 505485680344956928);
+                            var linkingUser = dutchGuild.Guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId));
+                            await dutchGuild.AddRole("Verified", linkingUser);
+
+
+                            await dutchGuild.DeleteRole("Link my discord please", linkingUser);
+                            await dutchGuild.DeleteRole("Koos Rankloos", linkingUser);
 
                             await program.UserJoinedMessage(linkingUser);
                         }

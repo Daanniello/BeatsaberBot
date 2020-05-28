@@ -25,7 +25,7 @@ namespace DiscordBeatSaberBot
             //Request comes in with DiscordId + ScoresaberID
 
             ulong DiscordId = message.Author.Id;
-            string ScoresaberId = message.Content.Substring(24);
+            string ScoresaberId = message.Content.Substring(9);
             ScoresaberId = Regex.Replace(ScoresaberId, "[^0-9]", "");
 
             if (!ValidationExtension.IsDigitsOnly(ScoresaberId))
@@ -51,7 +51,7 @@ namespace DiscordBeatSaberBot
                               "**Discord ID:** " + DiscordId + "\n" +
                               "**Scoresaber link:** https://scoresaber.com/u/" + ScoresaberId + " \n" +
                               "*Waiting for approval by a Staff*" + " \n\n" +
-                              "***(Reminder) Type !bs requestverification [Scoresaber ID]***",
+                              "***(Reminder) Type !bs link [Scoresaber ID]***",
                 Color = Color.Orange
             };
 
@@ -129,15 +129,19 @@ namespace DiscordBeatSaberBot
 
             var condition = false;
 
-            foreach (var player in DutchAccounts)
+            if (DutchAccounts == null) return false;
+
+            foreach (var user in DutchAccounts)
             {
-                if (player.Key == DiscordId)
+                if (user.Key == DiscordId)
                     condition = true;
             }
 
-            foreach (var player in GlobalAccounts)
+            if (GlobalAccounts == null) return false;
+
+            foreach (var user in GlobalAccounts)
             {
-                if (player.Key == DiscordId)
+                if (user.Key == DiscordId)
                     condition = true;
             }
 
@@ -247,6 +251,6 @@ namespace DiscordBeatSaberBot
             namesAsString += "```";
 
             return namesAsString;
-        }
+        }       
     }
 }

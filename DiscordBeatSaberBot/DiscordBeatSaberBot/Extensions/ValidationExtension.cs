@@ -69,6 +69,8 @@ namespace DiscordBeatSaberBot
         {
             var guildUser = new GuildService(discord, 505485680344956928).ConvertUserToGuildUser(user);
 
+            if (guildUser == null) return false;
+
             foreach (var role in guildUser.Roles)
             {
                 if (role.Id == 505486321595187220)
@@ -76,6 +78,30 @@ namespace DiscordBeatSaberBot
                     return true;
                 }
             }
+            return false;
+        }
+
+        public static bool HasCertainRoleInNBSG(this SocketMessage message, DiscordSocketClient discord, ulong RoleId)
+        {
+            var guildUser = new GuildService(discord, 505485680344956928).ConvertUserToGuildUser(message.Author);
+
+            if (guildUser == null)
+            {
+                message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Not in the NBSG Discord", $"You need to be in the Dutch Beat Saber Discord to use this command").Build());
+                return false;
+            }
+
+            foreach (var role in guildUser.Roles)
+            {
+                if (role.Id == RoleId)
+                {
+                    return true;
+                }
+            }
+
+            var roleName = discord.GetGuild(505485680344956928).GetRole(RoleId).Name;
+            message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Validation Error", $"You do not have the right to access this command. You would need to have the role: {roleName}").Build());
+
             return false;
         }
     }
