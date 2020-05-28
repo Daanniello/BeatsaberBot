@@ -24,9 +24,6 @@ namespace DiscordBeatSaberBot
 
         public EventManager(SocketMessage message, DiscordSocketClient discord)
         {
-            string tekst = File.ReadAllText("../../../Resources/EventMessage.txt");
-
-
             try
             {
                 this.discord = discord;

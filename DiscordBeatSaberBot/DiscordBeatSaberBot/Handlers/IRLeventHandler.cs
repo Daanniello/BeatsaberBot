@@ -25,9 +25,6 @@ namespace DiscordBeatSaberBot.Handlers
 
         public IRLeventHandler(SocketMessage message, DiscordSocketClient discord, RestUserMessage msg)
         {
-            string tekst = File.ReadAllText("../../../Resources/EventMessage.txt");
-
-
             try
             {
                 this.discord = discord;

@@ -21,7 +21,6 @@ namespace DiscordBeatSaberBot
         public static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += Unhandled_Exception;
-            //new Corona().TakeScreenshotFromCoronaCounter();
             try
             {
                 new Program().MainAsync().GetAwaiter().GetResult();

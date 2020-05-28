@@ -89,17 +89,6 @@ namespace DiscordBeatSaberBot.Commands
                 }.Build());
         }
 
-        [Help("CreateEvent", "Creates a handler that guides you for creating an event in the dutch beat saber group.", HelpAttribute.Catergories.AdminCommands)]
-        static public async Task CreatEvent(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            //Is Eventleider?
-            if(message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194))
-            {
-                var thread = new Thread(() => new EventManager(message, discordSocketClient));
-                thread.Start();
-            }            
-        }
-
         [Help("IRLevent", "Creates and IRL Event for the dutch discord.", HelpAttribute.Catergories.AdminCommands)]
         static public async Task IRLevent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {

@@ -1470,9 +1470,9 @@ namespace DiscordBeatSaberBot.Extensions
                     var infoPlayer1Raw = await hc.GetAsync(urlPlayer1);
                     if (infoPlayer1Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"**Player 1 status:** {infoPlayer1Raw.StatusCode}");
                     var players1ScoresaberID = JsonConvert.DeserializeObject<List<ScoreSaberSearchByNameModel>>(infoPlayer1Raw.Content.ReadAsStringAsync().Result);
-                    var player1search = players1ScoresaberID.Where(x => x.Name.ToLower() == player1);
+                    var player1search = players1ScoresaberID.Where(x => x.Name.ToLower() == player1.ToLower());
                     if (player1search.Count() == 0) return EmbedBuilderExtension.NullEmbed("Error", $"{player1} could not be found");
-                    player1ScoresaberID = players1ScoresaberID.Where(x => x.Name.ToLower() == player1).First().Playerid;
+                    player1ScoresaberID = players1ScoresaberID.Where(x => x.Name.ToLower() == player1.ToLower()).First().Playerid;
                 }
 
                 if (!player2containsmention)
@@ -1480,9 +1480,9 @@ namespace DiscordBeatSaberBot.Extensions
                     var infoPlayer2Raw = await hc.GetAsync(urlPlayer2);
                     if (infoPlayer2Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"**Player 2 status:** {infoPlayer2Raw.StatusCode}");
                     var players2ScoresaberID = JsonConvert.DeserializeObject<List<ScoreSaberSearchByNameModel>>(infoPlayer2Raw.Content.ReadAsStringAsync().Result);
-                    var player2search = players2ScoresaberID.Where(x => x.Name.ToLower() == player2);
+                    var player2search = players2ScoresaberID.Where(x => x.Name.ToLower() == player2.ToLower());
                     if (player2search.Count() == 0) return EmbedBuilderExtension.NullEmbed("Error", $"{player2} could not be found");
-                    player2ScoresaberID = players2ScoresaberID.Where(x => x.Name.ToLower() == player2).First().Playerid;
+                    player2ScoresaberID = players2ScoresaberID.Where(x => x.Name.ToLower() == player2.ToLower()).First().Playerid;
                 }
 
                 //GET players info 

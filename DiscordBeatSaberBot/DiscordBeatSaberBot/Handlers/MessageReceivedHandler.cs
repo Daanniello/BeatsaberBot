@@ -65,10 +65,6 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     DutchServerCommands.ChangeColor(discordSocketClient, message);
                 }
-                else if (messageCommand.Contains(" createevent"))
-                {
-                    DutchServerCommands.CreatEvent(discordSocketClient, message);
-                }
                 else if (messageCommand.Contains(" playing"))
                 {
                     GenericCommands.Playing(discordSocketClient, message);
