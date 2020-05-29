@@ -9,7 +9,7 @@ namespace DiscordBeatSaberBot.Handlers
 {
     public class MessageReceivedHandler
     {
-        public async Task HandleMessage(DiscordSocketClient discordSocketClient, SocketMessage message, Logger _logger, Program program)
+        public async Task HandleMessage(DiscordSocketClient discordSocketClient, SocketMessage message, Program program)
         {
             if (message.Author.Username == "BeatSaber Bot") return;
 

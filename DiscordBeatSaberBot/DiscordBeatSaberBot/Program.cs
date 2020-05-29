@@ -8,18 +8,19 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DiscordBeatSaberBot.Handlers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DiscordBeatSaberBot
 {
     public class Program
     {
-        private Logger _logger;
+        private ILogger _logger;
         private Dictionary<string, string> _reactionWatcher;
         private DateTime _startTime;
         private DiscordSocketClient discordSocketClient;
 
         public static void Main(string[] args)
-        {
+        {                  
             AppDomain.CurrentDomain.UnhandledException += Unhandled_Exception;
             try
             {
@@ -55,8 +56,8 @@ namespace DiscordBeatSaberBot
         public async Task MainAsync()
         {
             discordSocketClient = new DiscordSocketClient();
-            await log("Connecting to Discord...");
-            await log($"Discord Token used: {DiscordBotCode.discordBotCode}");
+            Console.WriteLine("Connecting to Discord...");
+            Console.WriteLine($"Discord Token used: {DiscordBotCode.discordBotCode}");
             try
             {
                 await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
@@ -77,7 +78,7 @@ namespace DiscordBeatSaberBot
             discordSocketClient.Disconnected += onDisconnected;
             discordSocketClient.Ready += Init;
 
-            await log("Connecting to Discord...");
+            Console.WriteLine("Connecting to Discord...");
 
     
                 await Task.Delay(-1);
@@ -91,11 +92,18 @@ namespace DiscordBeatSaberBot
         private async Task Init()
         {
             try
-            {
-                await log("Discord Bot is now Connected.");
+            {               
+                //Setup up the depencendy injection
+                var serviceCollection = new ServiceCollection();
+                serviceCollection.AddSingleton(discordSocketClient);
+                serviceCollection.AddSingleton<ILogger, Logger>();
+                var serviceProvider = serviceCollection.BuildServiceProvider();
 
+                //Getting needed objects for the program class 
+                _logger = serviceProvider.GetService<ILogger>();
+
+                _logger.ConsoleLog("Discord Bot is now Connected, starting the initialization...");
                 _startTime = DateTime.Now;
-                _logger = new Logger(discordSocketClient);
                 var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");
                 await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
                 //DutchHourCounter = new BeatSaberHourCounter(discordSocketClient);
@@ -173,18 +181,8 @@ namespace DiscordBeatSaberBot
             {
                 _logger.Log(Logger.LogCode.error, "Init Exception!! \n" + ex);
             }
+            _logger.ConsoleLog("initialization completed.");
         }
-
-        private Task log(string message)
-        {
-            Console.WriteLine(message);
-            return Task.CompletedTask;
-        }
-
-        //private async Task OnUserUpdated(SocketGuildUser userOld, SocketGuildUser userNew)
-        //{
-       
-        //}
 
         private async Task OnUserJoined(SocketGuildUser guildUser)
         {
@@ -233,7 +231,7 @@ namespace DiscordBeatSaberBot
         {      
             try
             {
-                new MessageReceivedHandler().HandleMessage(discordSocketClient, message, _logger, this);
+                new MessageReceivedHandler().HandleMessage(discordSocketClient, message, this);
             }
             catch (Exception ex)
             {

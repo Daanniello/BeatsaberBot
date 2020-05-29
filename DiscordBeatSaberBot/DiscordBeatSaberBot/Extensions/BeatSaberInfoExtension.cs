@@ -1191,6 +1191,7 @@ namespace DiscordBeatSaberBot.Extensions
             if (player1.Contains("@"))
             {
                 var r = new RoleAssignment(discordSocketClient);
+                
                 var discordId = player1.Replace("<@!", "").Replace(">", "");
                 if (r.CheckIfDiscordIdIsLinked(discordId))
                 {

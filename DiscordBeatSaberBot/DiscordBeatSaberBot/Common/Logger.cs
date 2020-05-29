@@ -2,10 +2,17 @@
 using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
+using static DiscordBeatSaberBot.Logger;
 
 namespace DiscordBeatSaberBot
 {
-    public class Logger
+    interface ILogger
+    {
+        Task Log(LogCode logCode, string logMessage, SocketMessage discordSocketMessage = null);
+        void ConsoleLog(string message);
+    }
+
+    public class Logger :ILogger
     {
         public enum LogCode
         {
@@ -16,11 +23,11 @@ namespace DiscordBeatSaberBot
             message
         }
 
-        private readonly DiscordSocketClient _discord;
+        private readonly DiscordSocketClient _discord;   
 
-        public Logger(DiscordSocketClient discord)
+        public Logger(DiscordSocketClient discordSocketClient)
         {
-            _discord = discord;
+            _discord = discordSocketClient;
         }
 
         public async Task Log(LogCode code, string message, SocketMessage messageInfo = null)
@@ -68,8 +75,13 @@ namespace DiscordBeatSaberBot
             }
             catch
             {
-                Console.WriteLine("No Internet connection");
+                Console.WriteLine("No connection to discord");
             }
+        }
+
+        public void ConsoleLog(string message)
+        {
+            Console.WriteLine(message);
         }
     }
 }
