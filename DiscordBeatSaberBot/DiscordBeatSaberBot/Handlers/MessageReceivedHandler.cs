@@ -90,7 +90,14 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     DutchServerCommands.LinkScoresaberWithDiscord(discordSocketClient, message);
                 }
-              
+                else if (messageCommand.Contains(" unmute"))
+                {
+                    DutchServerCommands.UnMute(discordSocketClient, message);
+                }
+                else if (messageCommand.Contains(" mute"))
+                {
+                    DutchServerCommands.Mute(discordSocketClient, message);
+                }             
                 else if (messageCommand.Contains(" typing"))
                 {
                     GlobalScoresaberCommands.Typing(discordSocketClient, message);

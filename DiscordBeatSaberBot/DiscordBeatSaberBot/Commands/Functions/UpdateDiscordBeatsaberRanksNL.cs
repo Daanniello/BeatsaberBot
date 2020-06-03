@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using DiscordBeatSaberBot.Models.ScoreberAPI;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 
@@ -28,84 +30,74 @@ namespace DiscordBeatSaberBot
             if (accounts == null || accounts.Count == 0)
                 accounts = new Dictionary<string, object>();
 
-            var client = new HttpClient();
-
             var LoadingSpaceCount = 0;
             var spaceCount = accounts.Count;
             var accountsProcessCount = 0;
 
-            string staticUrl = "https://scoresaber.com/u/";
-            foreach (var account in accounts)
+            using (HttpClient client = new HttpClient())
             {
-                string url = staticUrl + account.Value.ToString();
-                int rank = 0;
+                foreach (var account in accounts)
+                {
+                    string url = $"https://new.scoresaber.com/api/player/{account.Value.ToString()}/full";
+                    int rank = 0;
 
-                string html = await client.GetStringAsync(url);
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
-                try
-                {
-                    string rankUnfixed = doc.DocumentNode.SelectSingleNode("//a[@href='/global?country=nl']").InnerText;
-                    rank = int.Parse(rankUnfixed.Replace("(", "").Replace(")", "").Replace("#", "").Replace(",", "").Trim());
-                }
-                catch
-                {
-                    var Logger = new Logger(discord);
-                    Logger.Log(Logger.LogCode.debug, "Cant get rank info from: " + url);
-                }
-
-                try
-                {
-                    if (rank == 0)
+                    var playerInfoRaw = await client.GetAsync(url);
+                    if (playerInfoRaw.StatusCode != HttpStatusCode.OK)
                     {
-                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Koos Rankloos", discord);
+                        Console.WriteLine("Delete " + account.Value.ToString() + "He left the discord");
                         continue;
                     }
+                    else
+                    {
+                        var playerInfo = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
+                        rank = playerInfo.playerInfo.CountryRank;
+                    }
+                    
+                        if (rank == 0)
+                        {
+                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Koos Rankloos", discord);
+                            continue;
+                        }
 
-                    if (rank == 1)
-                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Nummer 1", discord);
-                    else if (rank <= 3)
-                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 3", discord);
-                    else if (rank <= 10)
-                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 10", discord);
-                    else if (rank <= 25)
-                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 25", discord);
-                    else if (rank <= 50)
-                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 50", discord);
-                    else if (rank <= 100)
-                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 100", discord);
-                    else if (rank <= 250)
-                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 250", discord);
-                    else if (rank <= 500)
-                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 500", discord);
-                    else if (rank > 500)
-                        await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 501+", discord);
+                        if (rank == 1)
+                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Nummer 1", discord);
+                        else if (rank <= 3)
+                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 3", discord);
+                        else if (rank <= 10)
+                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 10", discord);
+                        else if (rank <= 25)
+                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 25", discord);
+                        else if (rank <= 50)
+                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 50", discord);
+                        else if (rank <= 100)
+                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 100", discord);
+                        else if (rank <= 250)
+                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 250", discord);
+                        else if (rank <= 500)
+                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 500", discord);
+                        else if (rank > 500)
+                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 501+", discord);
 
-                }
-                catch
-                {
-                    Console.WriteLine("Delete " + account.Value.ToString() + "He left the discord");
-                }
+                    await embed.ModifyAsync(x =>
+                        x.Content = "Loading... \n*" + accountsProcessCount + "* ||  " + GiveSpaces(accountsProcessCount).Item1 + "||" + GiveSpaces(accountsProcessCount).Item2 + "*" + accounts.Count.ToString() + "*");
+                    accountsProcessCount += 1;
 
-                await embed.ModifyAsync(x =>
-                    x.Content = "Loading... \n*" + accountsProcessCount + "* ||  " + GiveSpaces(accountsProcessCount).Item1 + "||" + GiveSpaces(accountsProcessCount).Item2 + "*" + accounts.Count.ToString() + "*");
-                accountsProcessCount += 1;
-                
+                    (string, string) GiveSpaces(int count)
+                    {
+                        var l = "";
+                        var s = "";
 
-                (string, string) GiveSpaces(int count)
-                {
-                    var l = "";
-                    var s = "";
+                        for (var i = 0; i < count; i++) l += " ";
 
-                    for (var i = 0; i < count; i++) l += " ";
+                        for (var i = 0; i < accounts.Count - count; i++) s += " ";
 
-                    for (var i = 0; i < accounts.Count - count; i++) s += " ";
+                        return (l, s);
+                    }
 
-                    return (l, s);
+                    //wait 2 sec for each call
+                    await Task.Delay(2000);
                 }
             }
-
-            client.Dispose();
 
             Console.WriteLine("Done updating accounts NL");
         }

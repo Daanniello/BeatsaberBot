@@ -105,7 +105,7 @@ namespace DiscordBeatSaberBot.Commands
         [Help("RandomEvent", "Creates and Random Event for the dutch discord.", HelpAttribute.Catergories.AdminCommands)]
         static public async Task RandomEvent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            if (message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194))
+            if (message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194, 505486321595187220))
             {
                 var embedBuilder = EmbedBuilderExtension.NullEmbed("Random Event Generator", "Starting random event handler...", null, null);
                 var msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
@@ -128,6 +128,36 @@ namespace DiscordBeatSaberBot.Commands
             {
                 await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Hmmmm?", "Your Discord does not seemed to be already linked. You can link a new scoresaber account with !bs link [ScoresaberID]").Build());
             }
+        }
+
+        [Help("Mute", "Will unlink your current Scoresaber from your Discord account ", HelpAttribute.Catergories.AdminCommands)]
+        static public async Task Mute(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            if (message.Author.IsDutchAdmin(discordSocketClient) || message.Author.IsDutchMod(discordSocketClient))
+            {
+                var discordId = message.Content.Substring(9).Replace("<@!", "").Replace(">", "");
+                new RoleAssignment(discordSocketClient).MutePerson(ulong.Parse(discordId));
+                message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("User has been muted", $"{discordId} has been muted").Build());
+            }
+            else
+            {
+                message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Validation error", "You have not the rights to use this command.").Build());
+            }
+        }
+
+        [Help("UnMute", "Will unlink your current Scoresaber from your Discord account ", HelpAttribute.Catergories.AdminCommands)]
+        static public async Task UnMute(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            if (message.Author.IsDutchAdmin(discordSocketClient) || message.Author.IsDutchMod(discordSocketClient))
+            {
+                var discordId = message.Content.Substring(11).Replace("<@!", "").Replace(">", "");
+                new RoleAssignment(discordSocketClient).UnMutePerson(ulong.Parse(discordId));
+                message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("User has been unmuted", $"{discordId} has been unmuted").Build());
+            }
+            else
+            {
+                message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Validation error", "You have not the rights to use this command.").Build());
+            }            
         }
 
         [Help("Link", "Will link your Scoresaber profile to your Discord account ", HelpAttribute.Catergories.General)]

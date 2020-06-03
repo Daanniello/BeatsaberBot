@@ -3,6 +3,10 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Linq;
 using Discord.WebSocket;
+using System.Net;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using DiscordBeatSaberBot.Models.ScoreberAPI;
 
 namespace DiscordBeatSaberBot
 {
@@ -24,19 +28,12 @@ namespace DiscordBeatSaberBot
             string url = "https://scoresaber.com/u/" + ID;
             using (var client = new HttpClient())
             {
-                string html = await client.GetStringAsync(url);
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
+                var playerInfoRaw = await client.GetAsync(url);
+                if (playerInfoRaw.StatusCode != HttpStatusCode.OK) return false;
+                var playerInfo = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
 
-                
-                var htmlCollection = doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']");
-                var titleCollection = htmlCollection.SelectNodes("//img");
-                //Logo img
-                var titleCollectionFiltered = titleCollection.Where(x => x.Attributes.Count == 1);
-                var countryCode = titleCollectionFiltered.First().Attributes;
-                
 
-                if (countryCode["src"].Value.Contains("nl"))
+                if (playerInfo.playerInfo.Country == "NL")
                 {
                     return true;
                 }
@@ -81,7 +78,23 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        public static bool HasCertainRoleInNBSG(this SocketMessage message, DiscordSocketClient discord, ulong RoleId)
+        public static bool IsDutchMod(this SocketUser user, DiscordSocketClient discord) // Staff ID : 505486321595187220
+        {
+            var guildUser = new GuildService(discord, 505485680344956928).ConvertUserToGuildUser(user);
+
+            if (guildUser == null) return false;
+
+            foreach (var role in guildUser.Roles)
+            {
+                if (role.Id == 711348102241583184)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool HasCertainRoleInNBSG(this SocketMessage message, DiscordSocketClient discord, params ulong[] RoleId)
         {
             var guildUser = new GuildService(discord, 505485680344956928).ConvertUserToGuildUser(message.Author);
 
@@ -93,14 +106,22 @@ namespace DiscordBeatSaberBot
 
             foreach (var role in guildUser.Roles)
             {
-                if (role.Id == RoleId)
+                foreach(var id in RoleId)
                 {
-                    return true;
-                }
+                    if (role.Id == id)
+                    {
+                        return true;
+                    }
+                }                
             }
 
-            var roleName = discord.GetGuild(505485680344956928).GetRole(RoleId).Name;
-            message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Validation Error", $"You do not have the right to access this command. You would need to have the role: {roleName}").Build());
+            var roleNames = "";
+            foreach (var id in RoleId)
+            {
+                roleNames += discord.GetGuild(505485680344956928).GetRole(id).Name + ", ";
+            }
+
+            message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Validation Error", $"You do not have the rights to access this command. You would need to have the role: {roleNames}").Build());
 
             return false;
         }

@@ -252,5 +252,38 @@ namespace DiscordBeatSaberBot
 
             return namesAsString;
         }       
+
+        public async void MutePerson(ulong discordId)
+        {
+            //Mute role: 550291116667437056
+            var dutchDiscord = _discordSocketClient.GetGuild(505485680344956928);
+            var muteRole = dutchDiscord.GetRole(550291116667437056);
+            var user = dutchDiscord.GetUser(discordId);
+            user.AddRoleAsync(muteRole);
+
+            //Make sure all channels have the mute role setup right.
+            foreach (var channel in dutchDiscord.Channels)
+            {
+                if (channel.Id == 716676959068749874) continue;
+                channel.AddPermissionOverwriteAsync(muteRole, new OverwritePermissions().Modify(
+                    readMessageHistory: PermValue.Inherit, 
+                    viewChannel: PermValue.Inherit, 
+                    sendMessages: PermValue.Deny,
+                    attachFiles: PermValue.Deny,
+                    useExternalEmojis: PermValue.Deny,
+                    connect: PermValue.Deny,
+                    mentionEveryone: PermValue.Deny,
+                    addReactions: PermValue.Deny
+                    ));
+            }
+        }
+
+        public void UnMutePerson(ulong discordId)
+        {
+            var dutchDiscord = _discordSocketClient.GetGuild(505485680344956928);
+            var muteRole = dutchDiscord.GetRole(550291116667437056);
+            var user = dutchDiscord.GetUser(discordId);
+            user.RemoveRoleAsync(muteRole);
+        }
     }
 }
