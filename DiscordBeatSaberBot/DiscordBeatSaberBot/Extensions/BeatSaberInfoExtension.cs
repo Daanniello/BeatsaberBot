@@ -12,6 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using DiscordBeatSaberBot.Api.ScoreberAPI;
+using DiscordBeatSaberBot.Api.ScoreberAPI.Models;
 using DiscordBeatSaberBot.Models;
 using DiscordBeatSaberBot.Models.ScoreberAPI;
 using HtmlAgilityPack;
@@ -1356,6 +1358,88 @@ namespace DiscordBeatSaberBot.Extensions
 
 
             return embedBuilder;
-        }       
+        }
+        
+        public static async Task<EmbedBuilder> GetImprovableMapsByAccFromToplist(string scoresaberId, double wishedAcc)
+        {            
+            var playerTopPageList = new List<ScoresaberScoresTopModel>();
+
+            using(var client = new HttpClient()){
+                for (var x = 1; x <= 8; x++)
+                {
+                    var url = $"https://new.scoresaber.com/api/player/{scoresaberId}/scores/top/{x}";
+                    var httpCall = await client.GetAsync(url);
+                    if (httpCall.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"**Cant find maps on page:** {x}");
+                    playerTopPageList.Add(JsonConvert.DeserializeObject<ScoresaberScoresTopModel>(httpCall.Content.ReadAsStringAsync().Result));
+                }
+            }
+
+            var playerTopList = new List<DiscordBeatSaberBot.Api.ScoreberAPI.Models.Score>();
+            foreach(var topModel in playerTopPageList)
+            {
+                foreach(var map in topModel.Scores)
+                {
+                    playerTopList.Add(map);
+                }
+            }
+
+            var ppleftList = new Dictionary<string, double>();
+
+            foreach(var map in playerTopList)
+            {
+                
+
+                double percentage = Convert.ToDouble(map.UScore) / Convert.ToDouble(map.MaxScoreEx) * 100;
+                var acc = Math.Round(percentage, 2);
+
+
+                //var f = map.Pp * map.MaxScoreEx;
+                //var ppLeft = (f / map.UScore) - map.Pp;
+
+                //ADD THE PP GRAPH POINTS TO CALCULATE THE MAX PP
+
+                if (acc >= wishedAcc) continue;
+                var name = map.Name;
+                var maxPp = PpCalculator.GetMaxPpByCurrentPpAndAcc(acc, map.Pp);
+                //var wishedPp = PpCalculator.GetPpFromWishedAccByCurrentPpAndAcc(acc, map.Pp, wishedAcc);
+
+                var ppLeft = Math.Round(maxPp - map.Pp, 2);
+
+                //test
+                if (name.ToLower() == "happppy song")
+                {
+                    var wishedPp = PpCalculator.GetPpFromWishedAccByCurrentPpAndAcc(acc, map.Pp, wishedAcc);
+
+                    continue;
+                }
+
+                try
+                {
+                    ppleftList.Add($"**{map.Name} ({map.Diff.Replace("_", " ").Trim().Split(' ')[0]})**", ppLeft);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                
+            }
+
+            List<double> sortedPpLeftList = ppleftList.Values.OrderByDescending(d => d).ToList();            
+
+            var MapMessage = "";
+            for (var x = 0; x < 10; x++)
+            {
+                MapMessage += $"{ppleftList.First(d => d.Value == sortedPpLeftList[x]).Key}: {sortedPpLeftList[x]}pp \n\n";
+            }
+
+                return new EmbedBuilder()
+            {
+                Title = "To Improve",
+                Description = MapMessage
+            };
+
+            
+        }
     }
 }

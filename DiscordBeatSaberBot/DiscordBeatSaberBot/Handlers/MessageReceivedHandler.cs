@@ -45,6 +45,10 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     GlobalScoresaberCommands.NewSearch(discordSocketClient, message);
                 }
+                else if (messageCommand.Contains(" improve"))
+                {
+                    GlobalScoresaberCommands.Improve(discordSocketClient, message);
+                }
                 else if (messageCommand.Contains(" updateroles"))
                 {
                     DutchServerCommands.UpdateRoles(discordSocketClient, message);

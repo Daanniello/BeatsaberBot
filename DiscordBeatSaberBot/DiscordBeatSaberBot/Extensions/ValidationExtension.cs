@@ -25,7 +25,7 @@ namespace DiscordBeatSaberBot
 
         public static async Task<bool> IsDutch(string ID)
         {
-            string url = "https://scoresaber.com/u/" + ID;
+            string url = $"https://new.scoresaber.com/api/player/{ID}/full";
             using (var client = new HttpClient())
             {
                 var playerInfoRaw = await client.GetAsync(url);

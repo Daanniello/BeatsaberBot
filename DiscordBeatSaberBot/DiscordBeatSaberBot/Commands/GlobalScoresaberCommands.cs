@@ -47,7 +47,7 @@ namespace DiscordBeatSaberBot.Commands
             if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 14)
             {
                 var scoresaberId = r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                
+
                 var embedTask = await BeatSaberInfoExtension.GetNewRecentSongWithScoresaberId(scoresaberId);
                 await message.Channel.SendMessageAsync("", false, embedTask.Build());
             }
@@ -96,7 +96,7 @@ namespace DiscordBeatSaberBot.Commands
                 var embedTask = await BeatSaberInfoExtension.GetNewRecentSongWithScoresaberId(id);
                 await message.Channel.SendMessageAsync("", false, embedTask.Build());
             }
-        }     
+        }
 
         [Help("Typing", "Turn on typing in the channel 'On' or 'Off'", HelpAttribute.Catergories.General)]
         public static async Task Typing(DiscordSocketClient discordSocketClient, SocketMessage message)
@@ -104,13 +104,13 @@ namespace DiscordBeatSaberBot.Commands
             var option = message.Content.Substring(10);
             if (option.Contains("on"))
             {
-                GlobalScoresaberCommands.triggerState = message.Channel.EnterTypingState(new Discord.RequestOptions() { RetryMode = Discord.RetryMode.AlwaysFail, Timeout = 1});
+                GlobalScoresaberCommands.triggerState = message.Channel.EnterTypingState(new Discord.RequestOptions() { RetryMode = Discord.RetryMode.AlwaysFail, Timeout = 1 });
                 message.Channel.SendMessageAsync("Let me tell you something...");
 
             }
             else if (option.Contains("off"))
             {
-                if(GlobalScoresaberCommands.triggerState != null)
+                if (GlobalScoresaberCommands.triggerState != null)
                 {
                     GlobalScoresaberCommands.triggerState.Dispose();
 
@@ -118,9 +118,24 @@ namespace DiscordBeatSaberBot.Commands
             }
             else
             {
-            
+
 
             }
+        }
+
+        [Help("Improve", "Gives you a list of scoresaber maps to improve on", HelpAttribute.Catergories.General)]
+        public static async Task Improve(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var r = new RoleAssignment(discordSocketClient);
+            if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
+            {
+                var scoresaberId = r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var embedBuilder = await BeatSaberInfoExtension.GetImprovableMapsByAccFromToplist(scoresaberId, Convert.ToDouble(message.Content.Substring(12)));
+                message.Channel.SendMessageAsync("", false, embedBuilder.Build());
+            }
+       
+
+
         }
 
         [Help("Search", "Shows new scoresaber information about a player", HelpAttribute.Catergories.General)]
@@ -146,8 +161,8 @@ namespace DiscordBeatSaberBot.Commands
                         EmbedBuilderExtension.NullEmbed("Error",
                             ex.Message).Build());
                     }
-               
-                    if(embedTask.Count() == 0)
+
+                    if (embedTask.Count() == 0)
                     {
                         await message.Channel.SendMessageAsync("", false,
                         EmbedBuilderExtension.NullEmbed("No results",
@@ -175,7 +190,7 @@ namespace DiscordBeatSaberBot.Commands
                 {
                     await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
                 }
-                
+
             }
             else
             {
