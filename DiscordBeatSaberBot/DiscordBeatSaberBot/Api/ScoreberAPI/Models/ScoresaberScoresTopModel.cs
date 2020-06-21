@@ -19,7 +19,7 @@ namespace DiscordBeatSaberBot.Api.ScoreberAPI.Models
         [JsonProperty("leaderboardId")]
         public long LeaderboardId { get; set; }
 
-        [JsonProperty("score")]
+        [JsonProperty("unmodififiedScore")]
         public long ScoreScore { get; set; }
 
         [JsonProperty("uScore")]
@@ -43,7 +43,7 @@ namespace DiscordBeatSaberBot.Api.ScoreberAPI.Models
         [JsonProperty("id")]
         public string Id { get; set; }
 
-        [JsonProperty("name")]
+        [JsonProperty("songName")]
         public string Name { get; set; }
 
         [JsonProperty("songSubName")]
@@ -58,7 +58,7 @@ namespace DiscordBeatSaberBot.Api.ScoreberAPI.Models
         [JsonProperty("diff")]
         public string Diff { get; set; }
 
-        [JsonProperty("maxScoreEx")]
+        [JsonProperty("maxScore")]
         public long MaxScoreEx { get; set; }
 
         [JsonProperty("rank")]

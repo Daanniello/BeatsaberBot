@@ -12,56 +12,56 @@ namespace DiscordBeatSaberBot.Models.ScoreberAPI
 
         public class ScoresaberScoreRecentModel
         {
-            [JsonProperty(PropertyName = "scoreId")]
-            public ulong ScoreId { get; set; }
+            [JsonProperty("scoreId")]
+            public long ScoreId { get; set; }
 
-            [JsonProperty(PropertyName = "leaderboardId")]
-            public int Leaderboard { get; set; }
+            [JsonProperty("leaderboardId")]
+            public long LeaderboardId { get; set; }
 
-            [JsonProperty(PropertyName = "score")]
-            public ulong Score { get; set; }
+            [JsonProperty("unmodififiedScore")]
+            public long ScoreScore { get; set; }
 
-            [JsonProperty(PropertyName = "uScore")]
-            public ulong UScore { get; set; }
+            [JsonProperty("uScore")]
+            public long UScore { get; set; }
 
-            [JsonProperty(PropertyName = "mods")]
+            [JsonProperty("mods")]
             public string Mods { get; set; }
 
-            [JsonProperty(PropertyName = "playerId")]
-            public ulong PlayerId { get; set; }
+            [JsonProperty("playerId")]
+            public string PlayerId { get; set; }
 
-            [JsonIgnore]
-            public DateTime Timeset { get; set; }
+            [JsonProperty("timeset")]
+            public DateTimeOffset Timeset { get; set; }
 
-            [JsonProperty(PropertyName = "pp")]
+            [JsonProperty("pp")]
             public double Pp { get; set; }
 
-            [JsonProperty(PropertyName = "weight")]
-            public float Weight { get; set; }
+            [JsonProperty("weight")]
+            public double Weight { get; set; }
 
-            [JsonProperty(PropertyName = "id")]
+            [JsonProperty("id")]
             public string Id { get; set; }
 
-            [JsonProperty(PropertyName = "name")]
+            [JsonProperty("songName")]
             public string Name { get; set; }
 
-            [JsonProperty(PropertyName = "songSubName")]
+            [JsonProperty("songSubName")]
             public string SongSubName { get; set; }
 
-            [JsonProperty(PropertyName = "songAuthorName")]
-            public string SongAutherName { get; set; }
+            [JsonProperty("songAuthorName")]
+            public string SongAuthorName { get; set; }
 
-            [JsonProperty(PropertyName = "levelAuthorName")]
+            [JsonProperty("levelAuthorName")]
             public string LevelAuthorName { get; set; }
 
-            [JsonProperty(PropertyName = "diff")]
+            [JsonProperty("diff")]
             public string Diff { get; set; }
 
-            [JsonProperty(PropertyName = "maxScoreEx")]
-            public ulong MaxScoreEx { get; set; }
+            [JsonProperty("maxScore")]
+            public long MaxScoreEx { get; set; }
 
-            [JsonProperty(PropertyName = "rank")]
-            public int Rank { get; set; }
+            [JsonProperty("rank")]
+            public long Rank { get; set; }
         }
 
       

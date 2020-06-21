@@ -576,7 +576,7 @@ namespace DiscordBeatSaberBot.Extensions
                 {
                     Title = $"**Recent Song From: {playerInfo.Name} :flag_{playerInfo.Country.ToLower()}:**",
                     ImageUrl =
-                $"https://scoresaber.com/imports/images/songs/{TopSong.Id}.png",
+                $"https://new.scoresaber.com/api/static/covers/{TopSong.Id}.png",
                     Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}",
                 };
 
@@ -702,237 +702,7 @@ namespace DiscordBeatSaberBot.Extensions
 
             return builder;
         }
-
-        public static async Task<(string, string)> GetRecentSongInfoWithId(string playerId)
-        {
-            var playerTopSongImg = "";
-            var playerTopSongLink = "";
-            var playerTopSongName = "";
-            var playerTopSongPP = "";
-            var playerTopSongAcc = "";
-            var songName = "";
-            var songDifficulty = "";
-            var songAuthor = "";
-            var playerName = "";
-
-            var url = "https://scoresaber.com" + playerId + "&sort=2";
-            using (var client = new HttpClient())
-            {
-                var html = await client.GetStringAsync(url);
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
-
-                var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking songs']");
-                playerTopSongImg = "https://scoresaber.com" + table.Descendants("tbody")
-                                       .Select(tr =>
-                                           tr.Descendants("img").Select(a =>
-                                               WebUtility.HtmlDecode(a.GetAttributeValue("src", ""))).ToList()).ToList()
-                                       .First().First();
-                playerTopSongLink = table.Descendants("tbody").Select(tr =>
-                        tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", "")))
-                            .ToList())
-                    .ToList().First().First();
-                playerTopSongName = table.Descendants("tbody")
-                    .Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()).ToList()
-                    .First().First();
-                playerTopSongPP = doc.DocumentNode.SelectSingleNode("//span[@class='scoreTop ppValue']").InnerText;
-                playerTopSongAcc = doc.DocumentNode.SelectSingleNode("//span[@class='scoreBottom']").InnerText;
-                songName = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").InnerText;
-                songDifficulty = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").Descendants("span")
-                    .First().InnerText;
-                songAuthor = doc.DocumentNode.SelectSingleNode("//span[@class='songTop mapper']").InnerText;
-                playerName = doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']").InnerText;
-            }
-
-            var songDetails = playerTopSongName;
-
-            return (playerName, songName);
-        }
-
-        public static async Task<EmbedBuilder> GetTopxCountry(string search)
-        {
-            var input = search.Split(" ");
-            if (input.Count() == 1)
-            {
-                var name = search;
-                var player = await GetPlayerInfo(name);
-                var countryrank = player.First().countryRank;
-                var countryName = player.First().countryName;
-                return await GetTopCountryWithName(countryrank, countryName, search);
-            }
-
-            if (!input[1].Any(char.IsDigit))
-            {
-                var name = search;
-                var player = await GetPlayerInfo(name);
-                var countryrank = player.First().countryRank;
-                var countryName = player.First().countryName;
-                return await GetTopCountryWithName(countryrank, countryName, search);
-            }
-
-            if (int.Parse(input[1]) > 100)
-                return EmbedBuilderExtension.NullEmbed("Sorry", "Search amount is too big", null, null);
-
-            decimal t = int.Parse(input[1]) / 50;
-            var tab = Math.Ceiling(t) + 1;
-            var count = int.Parse(input[1]);
-            var Names = new List<string>();
-            var ids = new List<string>();
-
-            var client = new HttpClient();
-
-            for (var x = 1; x <= tab; x++)
-            {
-                var url = "https://scoresaber.com/global/" + x + "&country=" + input[0];
-
-                var html = await client.GetStringAsync(url);
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
-
-                var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
-                Names.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList());
-
-                table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
-                ids = table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList();
-            }
-
-            client.Dispose();
-
-            var topx = new List<string>();
-            for (var x = 0; x < int.Parse(input[1]); x++)
-            {
-                var add = Names[x].Replace("\r\n", " ").Replace("&nbsp&nbsp", "");
-                add = add.Trim();
-                topx.Add(add);
-            }
-
-            var builder = new EmbedBuilder();
-            var output = "";
-            var counter = 1;
-            foreach (var rank in topx)
-            {
-                output += "#" + counter + " " + rank + "\n";
-
-                counter += 1;
-            }
-
-            builder.AddField("Top " + input[1] + " " + input[0].ToUpper() + " :flag_" + input[0] + ":", output);
-            return builder;
-        }
-
-        public static async Task<EmbedBuilder> GetTopCountryWithName(int Rank,
-            string country,
-            string playerName)
-        {
-            var countryName = country;
-            double countryRank = Rank;
-            var t = countryRank / 50;
-            var tab = Math.Ceiling(t);
-            var rankOnTab = countryRank % 50;
-            var count = countryRank;
-            var Names = new List<string>();
-            var namesTop = new List<string>();
-            var namesBottom = new List<string>();
-
-            var url = "https://scoresaber.com/global/" + tab + "&country=" + country;
-            await GetNames(url);
-
-            async Task GetNames(string infoUrl,
-                int otherPage = 0)
-            {
-                using (var client = new HttpClient())
-                {
-                    var html = await client.GetStringAsync(infoUrl);
-                    var doc = new HtmlDocument();
-                    doc.LoadHtml(html);
-
-                    var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
-                    if (otherPage == 1)
-                        namesBottom.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText))
-                            .ToList());
-                    else if (otherPage == 2)
-                        namesTop.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText))
-                            .ToList());
-                    else
-                        Names.AddRange(table.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList());
-                }
-            }
-
-            if (rankOnTab < 4 && rankOnTab != 0 && tab != 1)
-            {
-                url = "https://scoresaber.com/global/" + (tab - 1) + "&country=" + country;
-                await GetNames(url, 1);
-            }
-
-            if (rankOnTab > 47 || rankOnTab == 0)
-            {
-                url = "https://scoresaber.com/global/" + (tab + 1) + "&country=" + country;
-                await GetNames(url, 2);
-            }
-
-            var topx = new List<string>();
-            for (var x = 0; x < 50; x++)
-                if (x < rankOnTab + 3 && x > rankOnTab - 3)
-                {
-                    var add = Names[x].Replace("\r\n", " ").Replace("&nbsp&nbsp", "");
-                    add = add.Trim();
-                    topx.Add(add);
-                }
-
-            var outputList = new List<string>();
-            outputList.AddRange(namesBottom);
-            outputList.AddRange(Names);
-            outputList.AddRange(namesTop);
-
-            var builder = new EmbedBuilder();
-            var output = "";
-            var counter = 1;
-
-            foreach (var rank in outputList)
-            {
-                if (counter > Rank - 4 && counter < Rank + 4)
-                {
-                    if (counter == Rank)
-                    {
-                        var name = rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim();
-                        var player = new Player(name);
-                        try
-                        {
-                            var temp = await GetPlayerInfo(name);
-                            player = temp.First();
-                        }
-                        catch
-                        {
-                        }
-
-                        output += "***#" + counter + " " + name + "\t" + player.pp + "*** \n";
-                    }
-                    else
-                    {
-                        var name = rank.Replace("\r\n", " ").Replace("&nbsp&nbsp", "").Trim();
-                        var player = new Player(name);
-                        try
-                        {
-                            var temp = await GetPlayerInfo(name);
-                            player = temp.First();
-                        }
-                        catch
-                        {
-                        }
-
-                        output += "#" + counter + " " + name + "\t" + player.pp + "\n";
-                    }
-                }
-
-                counter += 1;
-            }
-
-            builder.AddField(
-                "RankList from " + playerName + " \nCountry: " + country + " " + " :flag_" + country.ToLower() + ":",
-                output);
-            return builder;
-        }
-
+     
         public static async Task<(string, string)> RankedNeighbours(string playerName, int playerRank,
             int recursionLoop = 0)
         {
@@ -1384,59 +1154,81 @@ namespace DiscordBeatSaberBot.Extensions
             }
 
             var ppleftList = new Dictionary<string, double>();
+            var ppAndCurrentWeightList = new Dictionary<double, double>();
+            var mapsAccList = new Dictionary<string, double>();
 
-            foreach(var map in playerTopList)
+            foreach (var map in playerTopList)
             {
                 
 
                 double percentage = Convert.ToDouble(map.UScore) / Convert.ToDouble(map.MaxScoreEx) * 100;
                 var acc = Math.Round(percentage, 2);
 
-
-                //var f = map.Pp * map.MaxScoreEx;
-                //var ppLeft = (f / map.UScore) - map.Pp;
-
-                //ADD THE PP GRAPH POINTS TO CALCULATE THE MAX PP
-
                 if (acc >= wishedAcc) continue;
                 var name = map.Name;
-                var maxPp = PpCalculator.GetMaxPpByCurrentPpAndAcc(acc, map.Pp);
-                //var wishedPp = PpCalculator.GetPpFromWishedAccByCurrentPpAndAcc(acc, map.Pp, wishedAcc);
+                double wishedPp = 0;
 
-                var ppLeft = Math.Round(maxPp - map.Pp, 2);
+                wishedPp = PpCalculator.GetPpFromWishedAccByCurrentPpAndAcc(acc, map.UScore, map.MaxScoreEx, wishedAcc);
 
-                //test
-                if (name.ToLower() == "happppy song")
+                //Adding weight
+                ppAndCurrentWeightList.Add(map.Pp, map.Weight);
+
+                var wishedRank = 1;
+                for (var x = 0; x < playerTopList.Count(); x++)
                 {
-                    var wishedPp = PpCalculator.GetPpFromWishedAccByCurrentPpAndAcc(acc, map.Pp, wishedAcc);
-
-                    continue;
+                    if (wishedPp + map.Pp < playerTopList[x].Pp)
+                    {
+                        wishedRank = x;
+                    }
                 }
+
+                var wishedPpWeight = Math.Pow(0.965, wishedRank - 1);//0.965 ^ (n - 1)
+                var wishedPpWeighted = wishedPp * wishedPpWeight;
 
                 try
                 {
-                    ppleftList.Add($"**{map.Name} ({map.Diff.Replace("_", " ").Trim().Split(' ')[0]})**", ppLeft);
+                    ppleftList.Add($"**{map.Name} ({map.Diff.Replace("_", " ").Trim().Split(' ')[0]})** \n" +
+                        $"Pp for current acc {acc}%: {map.Pp}pp \n" +
+                        $"Pp for {wishedAcc}%: {Math.Round(wishedPp + map.Pp, 2)}pp \n" +
+                        $"Pp gain: ", Math.Round(wishedPpWeighted, 2));
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
                 }
-
-                
+                mapsAccList.Add($"**{map.Name} ({map.Diff.Replace("_", " ").Trim().Split(' ')[0]})** \n" +
+                        $"Pp for current acc {acc}%: {map.Pp}pp \n" +
+                        $"Pp for {wishedAcc}%: {Math.Round(wishedPp + map.Pp, 2)}pp \n" +
+                        $"Pp gain: ", acc);
             }
 
-            List<double> sortedPpLeftList = ppleftList.Values.OrderByDescending(d => d).ToList();            
-
-            var MapMessage = "";
-            for (var x = 0; x < 10; x++)
+            double avgAcc = 0;
+            for (var x = 0; x < mapsAccList.Count(); x++)
             {
-                MapMessage += $"{ppleftList.First(d => d.Value == sortedPpLeftList[x]).Key}: {sortedPpLeftList[x]}pp \n\n";
+                avgAcc += mapsAccList.Values.ToArray()[x];
+            }
+            avgAcc = avgAcc / mapsAccList.Count();
+
+            List<double> sortedPpLeftList = ppleftList.Values.OrderByDescending(d => d).ToList();
+            var MapMessage = "";
+            var messageCount = 0;
+            for (var x = 0; x < sortedPpLeftList.Count(); x++)
+            {
+                if (x >= sortedPpLeftList.Count()) break;
+                var f = ppleftList.First(d => d.Value == sortedPpLeftList[x]).Key;
+                var g = mapsAccList.GetValueOrDefault(f);
+                if (g < (avgAcc)) { continue; };
+                //if (x >= 10) break;
+                if (messageCount >= 10) break;
+                messageCount += 1;
+                MapMessage += $"{ppleftList.First(d => d.Value == sortedPpLeftList[x]).Key}: **{sortedPpLeftList[x]}pp** \n\n";
             }
 
                 return new EmbedBuilder()
             {
-                Title = "To Improve",
-                Description = MapMessage
+                Title = "To Improve",                
+                Description = $"Average acc: **{Math.Round(avgAcc, 2)}** \nAvg acc is from maps lower than the wished acc, from the player's top {playerTopList.Count()} maps. \nMaps with a current acc lower than the avg acc are considered 'not passable'. \n\n" + MapMessage,
+                Footer = new EmbedFooterBuilder() { Text = "The values are currently not correct, this is still just a test function"}
             };
 
             

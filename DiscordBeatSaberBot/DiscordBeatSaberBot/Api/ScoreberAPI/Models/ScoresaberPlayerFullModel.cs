@@ -28,8 +28,11 @@ namespace DiscordBeatSaberBot.Models.ScoreberAPI
             [JsonProperty(PropertyName = "inactive")]
             public bool Inactive { get; set; }
 
-            [JsonProperty(PropertyName = "name")]
+            [JsonProperty(PropertyName = "playerName")]
             public string Name { get; set; }
+
+            [JsonProperty("permissions")]
+            public long Permissions { get; set; }
 
             [JsonProperty(PropertyName = "country")]
             public string Country { get; set; }

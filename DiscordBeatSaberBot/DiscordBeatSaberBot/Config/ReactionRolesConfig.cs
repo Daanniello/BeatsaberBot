@@ -56,7 +56,8 @@ namespace DiscordBeatSaberBot.Config
         public static Dictionary<string, string> SilverhazeReactions = new Dictionary<string, string>
         {
             { "<:AWEE:588758943686328330>", "Anime" },
-            { "<:silverGasm:628988811329929276>", "NSFW" }
+            { "<:silverGasm:628988811329929276>", "NSFW" },
+            { "<:silverHug:681594969336709380>", "Community" }
         };
 
         public static Dictionary<string, string> GetReactionRoles()
