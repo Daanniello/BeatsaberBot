@@ -504,7 +504,20 @@ namespace DiscordBeatSaberBot.Extensions
                 }
 
                 var metadataDynamic = recentSongsInfoBeatSaver.Metadata.Characteristics[0].Difficulties;
-                dynamic difficulty = metadataDynamic.GetType().GetProperty(recentSong.Diff.Substring(1).Split('_')[0]).GetValue(metadataDynamic, null);
+                dynamic difficulty = metadataDynamic.GetType().GetProperty(recentSong.GetDifficulty()).GetValue(metadataDynamic, null);
+                var mapExtraDetails = "";
+                if (difficulty != null)
+                {
+                    mapExtraDetails = $"```cs\n" +
+                    $"Bpm:                '{recentSongsInfoBeatSaver.Metadata.Bpm}' \n" +
+                    $"Duration:           '{recentSongsInfoBeatSaver.Metadata.Duration}' \n" +
+                    $"Notes:              '{difficulty.Notes}' \n" +
+                    $"Njs:                '{difficulty.Njs}' \n" +
+                    $"NjsOffset:          '{difficulty.NjsOffset}' \n" +
+                    $"Bombs:              '{difficulty.Bombs}' \n" +
+                    $"Obstacles:          '{difficulty.Obstacles}' \n" +
+                    $"```";
+                }
 
                 var actualWeight = Math.Round(recentSong.Pp * recentSong.Weight, 2);
 
@@ -512,7 +525,7 @@ namespace DiscordBeatSaberBot.Extensions
                     $"```cs\n" +
                     //$"Song Name:          {recentSong.Name} \n" +
                     //$"Song Sub name:            {recentSong.SongSubName} \n\n" +
-                    $"Difficulty:         {recentSong.Diff.Replace("_", " ").Trim()} \n" +
+                    $"Difficulty:         {recentSong.GetDifficulty()} \n" +
                     $"Song Author name:   {recentSong.SongAuthorName} \n" +
                     $"Map Author name:    {recentSong.LevelAuthorName} \n" +
                     $"```" +
@@ -531,15 +544,7 @@ namespace DiscordBeatSaberBot.Extensions
                     mods +
                     $"```" +
 
-                    $"```cs\n" +
-                    $"Bpm:                '{recentSongsInfoBeatSaver.Metadata.Bpm}' \n" +
-                    $"Duration:           '{recentSongsInfoBeatSaver.Metadata.Duration}' \n" +
-                    $"Notes:              '{difficulty.Notes}' \n" +
-                    $"Njs:                '{difficulty.Njs}' \n" +
-                    $"NjsOffset:          '{difficulty.NjsOffset}' \n" +
-                    $"Bombs:              '{difficulty.Bombs}' \n" +
-                    $"Obstacles:          '{difficulty.Obstacles}' \n" +
-                    $"```" +
+                    mapExtraDetails + 
 
                     "\n" +
                     $"Url:                https://scoresaber.com/leaderboard/{recentSong.LeaderboardId} \n\n" +
@@ -596,7 +601,7 @@ namespace DiscordBeatSaberBot.Extensions
                     $"```cs\n" +
                     //$"Song Name:          {recentSong.Name} \n" +
                     //$"Song Sub name:            {recentSong.SongSubName} \n\n" +
-                    $"Difficulty:         {TopSong.Diff.Replace("_", " ").Trim()} \n" +
+                    $"Difficulty:         {TopSong.GetDifficulty()} \n" +
                     $"Song Author name:   {TopSong.SongAuthorName} \n" +
                     $"Map Author name:    {TopSong.LevelAuthorName} \n" +
                     $"```" +
@@ -1132,7 +1137,7 @@ namespace DiscordBeatSaberBot.Extensions
         
         public static async Task<EmbedBuilder> GetImprovableMapsByAccFromToplist(string scoresaberId, double wishedAcc)
         {            
-            var playerTopPageList = new List<ScoresaberScoresTopModel>();
+            var playerTopPageList = new List<ScoresaberSongsModel>();
 
             using(var client = new HttpClient()){
                 for (var x = 1; x <= 8; x++)
@@ -1140,11 +1145,11 @@ namespace DiscordBeatSaberBot.Extensions
                     var url = $"https://new.scoresaber.com/api/player/{scoresaberId}/scores/top/{x}";
                     var httpCall = await client.GetAsync(url);
                     if (httpCall.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"**Cant find maps on page:** {x}");
-                    playerTopPageList.Add(JsonConvert.DeserializeObject<ScoresaberScoresTopModel>(httpCall.Content.ReadAsStringAsync().Result));
+                    playerTopPageList.Add(JsonConvert.DeserializeObject<ScoresaberSongsModel>(httpCall.Content.ReadAsStringAsync().Result));
                 }
             }
 
-            var playerTopList = new List<DiscordBeatSaberBot.Api.ScoreberAPI.Models.Score>();
+            var playerTopList = new List<Score>();
             foreach(var topModel in playerTopPageList)
             {
                 foreach(var map in topModel.Scores)
@@ -1187,7 +1192,7 @@ namespace DiscordBeatSaberBot.Extensions
 
                 try
                 {
-                    ppleftList.Add($"**{map.Name} ({map.Diff.Replace("_", " ").Trim().Split(' ')[0]})** \n" +
+                    ppleftList.Add($"**{map.Name} ({map.GetDifficulty()})** \n" +
                         $"Pp for current acc {acc}%: {map.Pp}pp \n" +
                         $"Pp for {wishedAcc}%: {Math.Round(wishedPp + map.Pp, 2)}pp \n" +
                         $"Pp gain: ", Math.Round(wishedPpWeighted, 2));
@@ -1196,7 +1201,7 @@ namespace DiscordBeatSaberBot.Extensions
                 {
                     Console.WriteLine(ex);
                 }
-                mapsAccList.Add($"**{map.Name} ({map.Diff.Replace("_", " ").Trim().Split(' ')[0]})** \n" +
+                mapsAccList.Add($"**{map.Name} ({map.GetDifficulty()})** \n" +
                         $"Pp for current acc {acc}%: {map.Pp}pp \n" +
                         $"Pp for {wishedAcc}%: {Math.Round(wishedPp + map.Pp, 2)}pp \n" +
                         $"Pp gain: ", acc);

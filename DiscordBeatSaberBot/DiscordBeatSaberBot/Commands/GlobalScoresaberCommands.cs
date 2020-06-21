@@ -13,14 +13,14 @@ namespace DiscordBeatSaberBot.Commands
     {
         public static System.IDisposable triggerState = null;
 
-        [Help("Compare", "Compares two player's stats with each other.", HelpAttribute.Catergories.General)]
+        [Help("Compare", "Compares two player's stats with each other.", "!bs compare (DiscordTag or ID player1) (DiscordTag or ID player2)", HelpAttribute.Catergories.General)]
         public static async Task Compare(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var embedBuilder = await BeatSaberInfoExtension.GetComparedEmbedBuilder(message.Content.Substring(12), message, discordSocketClient);
             await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
         }
 
-        [Help("Songs", "Searches up the song with the name", HelpAttribute.Catergories.General)]
+        [Help("Songs", "Searches up the song with the name", "!bs songs", HelpAttribute.Catergories.General)]
         public static async Task Songs(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var builderList = await BeatSaberInfoExtension.GetSongs(message.Content.Substring(10));
@@ -40,7 +40,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("RecentSong", "Get info from the latest song played", HelpAttribute.Catergories.General)]
+        [Help("RecentSong", "Get info from the latest song played", "!bs recentsong [DiscordTag or username]", HelpAttribute.Catergories.General)]
         public static async Task NewRecentSong(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
@@ -69,7 +69,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("TopSong", "Get info from the latest song played", HelpAttribute.Catergories.General)]
+        [Help("TopSong", "Get info from the latest song played", "!bs topsong [DiscordTag or username]", HelpAttribute.Catergories.General)]
         public static async Task NewTopSong(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
@@ -98,7 +98,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("Typing", "Turn on typing in the channel 'On' or 'Off'", HelpAttribute.Catergories.General)]
+        [Help("Typing", "Turn on typing in the channel 'On' or 'Off'", "!bs typing (on or off)", HelpAttribute.Catergories.General)]
         public static async Task Typing(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var option = message.Content.Substring(10);
@@ -123,7 +123,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("Improve", "Gives you a list of scoresaber maps to improve on", HelpAttribute.Catergories.General)]
+        [Help("Improve", "Gives you a list of scoresaber maps to improve on", "!bs improve", HelpAttribute.Catergories.General)]
         public static async Task Improve(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
@@ -138,7 +138,7 @@ namespace DiscordBeatSaberBot.Commands
 
         }
 
-        [Help("Search", "Shows new scoresaber information about a player", HelpAttribute.Catergories.General)]
+        [Help("Search", "Shows new scoresaber information about a player", "!bs search [DiscordTag or username]", HelpAttribute.Catergories.General)]
         public static async Task NewSearch(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);

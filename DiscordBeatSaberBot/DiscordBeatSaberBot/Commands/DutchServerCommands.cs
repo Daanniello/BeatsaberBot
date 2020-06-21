@@ -15,7 +15,7 @@ namespace DiscordBeatSaberBot.Commands
 {
     class DutchServerCommands : ICommand
     {
-        [Help("RoleColor", "If you have the dutch 'verslaafd' role, you can chance the color of it.", HelpAttribute.Catergories.DutchFunctions)]
+        [Help("RoleColor", "If you have the dutch 'verslaafd' role, you can chance the color of it.", "!bs rolecolor (#ffffff)",HelpAttribute.Catergories.DutchFunctions)]
         static public async Task RoleColor(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var moderationHelper = new GuildService(discordSocketClient, 505485680344956928);
@@ -42,7 +42,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("UpdateRoles", "Update roles from everyone in the dutch beat saber discord", HelpAttribute.Catergories.AdminCommands)]
+        [Help("UpdateRoles", "Update roles from everyone in the dutch beat saber discord", "!bs updateroles", HelpAttribute.Catergories.AdminCommands)]
         static public async Task UpdateRoles(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (message.Author.IsDutchAdmin(discordSocketClient))
@@ -58,7 +58,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("LinkedNames", "Returns a list of all users linked in the dutch beat saber discord.", HelpAttribute.Catergories.AdminCommands)]
+        [Help("LinkedNames", "Returns a list of all users linked in the dutch beat saber discord.", "!bs linkednames", HelpAttribute.Catergories.AdminCommands)]
         static public async Task LinkedNames(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (new GuildService(discordSocketClient, 505485680344956928).IsStaffInGuild(message.Author.Id, 505486321595187220))
@@ -68,7 +68,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("NotLinkedNames", "Returns a list of all users that are not linked in the dutch beat saber discord.", HelpAttribute.Catergories.AdminCommands)]
+        [Help("NotLinkedNames", "Returns a list of all users that are not linked in the dutch beat saber discord.", "!bs notlinkednames", HelpAttribute.Catergories.AdminCommands)]
         static public async Task NotLinkedNames(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (new GuildService(discordSocketClient, 505485680344956928).IsStaffInGuild(message.Author.Id, 505486321595187220))
@@ -78,7 +78,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("ChangeColor", "If you have the dutch 'verslaafd' role, you can chance the color of it.", HelpAttribute.Catergories.DutchFunctions)]
+        [Help("ChangeColor", "If you have the dutch 'verslaafd' role, you can chance the color of it.", "!bs changecolor (#ffffff)", HelpAttribute.Catergories.DutchFunctions)]
         static public async Task ChangeColor(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (true)
@@ -89,7 +89,7 @@ namespace DiscordBeatSaberBot.Commands
                 }.Build());
         }
 
-        [Help("IRLevent", "Creates and IRL Event for the dutch discord.", HelpAttribute.Catergories.AdminCommands)]
+        [Help("IRLevent", "Creates and IRL Event for the dutch discord.", "!bs irlevent", HelpAttribute.Catergories.AdminCommands)]
         static public async Task IRLevent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194))
@@ -102,7 +102,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("RandomEvent", "Creates and Random Event for the dutch discord.", HelpAttribute.Catergories.AdminCommands)]
+        [Help("RandomEvent", "Creates and Random Event for the dutch discord.", "!bs randomevent", HelpAttribute.Catergories.AdminCommands)]
         static public async Task RandomEvent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194, 505486321595187220))
@@ -115,7 +115,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("Unlink", "Will unlink your current Scoresaber from your Discord account ", HelpAttribute.Catergories.General)]
+        [Help("Unlink", "Will unlink your current Scoresaber from your Discord account ", "!bs unlink", HelpAttribute.Catergories.General)]
         static public async Task UnlinkScoresaberFromDiscord(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
@@ -130,7 +130,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("Mute", "Will unlink your current Scoresaber from your Discord account ", HelpAttribute.Catergories.AdminCommands)]
+        [Help("Mute", "Will unlink your current Scoresaber from your Discord account ", "!mute (DiscordTag or ID)", HelpAttribute.Catergories.AdminCommands)]
         static public async Task Mute(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (message.Author.IsDutchAdmin(discordSocketClient) || message.Author.IsDutchMod(discordSocketClient))
@@ -145,7 +145,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("UnMute", "Will unlink your current Scoresaber from your Discord account ", HelpAttribute.Catergories.AdminCommands)]
+        [Help("UnMute", "Will unlink your current Scoresaber from your Discord account ", "!unmute (DiscordTag or ID)", HelpAttribute.Catergories.AdminCommands)]
         static public async Task UnMute(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (message.Author.IsDutchAdmin(discordSocketClient) || message.Author.IsDutchMod(discordSocketClient))
@@ -160,7 +160,7 @@ namespace DiscordBeatSaberBot.Commands
             }            
         }
 
-        [Help("Link", "Will link your Scoresaber profile to your Discord account ", HelpAttribute.Catergories.General)]
+        [Help("Link", "Will link your Scoresaber profile to your Discord account ", "!link (ScoresaberID)", HelpAttribute.Catergories.General)]
         static public async Task LinkScoresaberWithDiscord(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);

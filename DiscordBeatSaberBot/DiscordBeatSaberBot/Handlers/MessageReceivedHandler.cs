@@ -29,7 +29,11 @@ namespace DiscordBeatSaberBot.Handlers
 
                 Console.WriteLine(message.Content);
 
-                if (messageCommand.Contains(" help"))
+                if (messageCommand.Contains(" helplistraw"))
+                {
+                    GenericCommands.HelpListRaw(discordSocketClient, message);
+                }
+                else if (messageCommand.Contains(" help"))
                 {
                     GenericCommands.Help(discordSocketClient, message);
                 }

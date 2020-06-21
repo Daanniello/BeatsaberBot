@@ -12,19 +12,18 @@ namespace DiscordBeatSaberBot
         {
             var embedFields = new List<EmbedFieldBuilder>();
 
-            var HelpListFinal = new Dictionary<string, string>();
+            var HelpListFinal = new Dictionary<string, CommandHelpProperty>();
 
             foreach (var enumItem in Enum.GetNames(typeof(HelpAttribute.Catergories)))
             {
-                HelpListFinal.Add(enumItem, "----------------------");
                 foreach (var helpItem in ReflectionExtension.GetAllCustomHelpAttributes())
                 {
-                    
-                    if (helpItem.Key.Contains(enumItem))
+
+                    if (helpItem.Value.CommandCatergory.ToString() == enumItem)
                     {
                         HelpListFinal.Add(helpItem.Key, helpItem.Value);
                     }
-                    
+
                 }
             }
 
@@ -34,7 +33,7 @@ namespace DiscordBeatSaberBot
                 embedFields.Add(new EmbedFieldBuilder
                 {
                     Name = help.Key,
-                    Value = help.Value
+                    Value = help.Value.CommandInfo
                 });
             }
 
@@ -64,7 +63,7 @@ namespace DiscordBeatSaberBot
                     embedBuilders.Add(new EmbedBuilder
                     {
                         Title = "**Command List** :question:    Page: [" + (i + 1) + "/" + (pageCount + 1) + "] \n\n" +
-                                "***For more info, use !bs help <Command Name>*** \n*Used by " + Discord.Guilds.Count +
+                                "***For more info, use !bs help (CommandName)*** \n*Used by " + Discord.Guilds.Count +
                                 " servers with a total of " + userCount + " users*\n",
                         Fields = embedArray.ToList(),
                         ThumbnailUrl =
@@ -84,6 +83,42 @@ namespace DiscordBeatSaberBot
 
             if (pagenr == -1) pagenr = 0;
             return embedBuilders[pagenr].Build();
+        }
+
+        static public Embed GetSpecificHelp(string commandName)
+        {
+            var embed = new EmbedBuilder();
+
+            foreach (var helpItem in ReflectionExtension.GetAllCustomHelpAttributes())
+            {
+
+                if (helpItem.Key.ToLower() == commandName.ToLower())
+                {
+                    embed.Title = $"Extra Help for {helpItem.Value.CommandName}";
+                    embed.Description = $"Usage: {helpItem.Value.CommandUsage}";
+                    embed.Color = Color.Gold;
+                    embed.AddField(new EmbedFieldBuilder() { Name = helpItem.Value.CommandName, Value = $"info: {helpItem.Value.CommandInfo} \n Category: {helpItem.Value.CommandCatergory}" });
+                }
+
+
+            }
+
+            return embed.Build();
+        }
+
+
+        static public Embed GetHelpListRaw()
+        {
+            var embed = new EmbedBuilder();
+
+            foreach (var helpItem in ReflectionExtension.GetAllCustomHelpAttributes())
+            {
+                embed.Title = $"Help List Raw";
+                embed.Color = Color.Gold;
+                embed.AddField(new EmbedFieldBuilder() { Name = helpItem.Value.CommandName, Value = $"info: {helpItem.Value.CommandInfo} \n Category: {helpItem.Value.CommandCatergory}" });
+            }
+
+            return embed.Build();
         }
     }
 }

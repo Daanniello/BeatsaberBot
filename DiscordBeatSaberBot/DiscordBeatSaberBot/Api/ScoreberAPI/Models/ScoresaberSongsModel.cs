@@ -6,12 +6,12 @@ using System.Text;
 namespace DiscordBeatSaberBot.Models.ScoreberAPI
 {
 
-    public partial class ScoresaberSongsModel
+    public class ScoresaberSongsModel
     {
         [JsonProperty("scores")]
         public Score[] Scores { get; set; }
     }
-    public partial class Score
+    public class Score
     {
         [JsonProperty("scoreId")]
         public long ScoreId { get; set; }
@@ -61,23 +61,18 @@ namespace DiscordBeatSaberBot.Models.ScoreberAPI
         public string LevelAuthorName { get; set; }
 
         [JsonProperty("difficulty")]
-        private string _diff { get; set; }
-        public string Diff
+        private double _diff { get; set; }
+
+        public string GetDifficulty()
         {
-            get
-            {
-                return _diff;
-            }
-            set
-            {
-                if(value.ToString() == "1") this._diff = "easy";
-                else if (value.ToString() == "3") this._diff = "normal";
-                else if (value.ToString() == "5") this._diff = "hard";
-                else if (value.ToString() == "7") this._diff = "expert";
-                else if (value.ToString() == "9") this._diff = "expert";
-                else this._diff = "owo";           
-            }
-        }
+            var returnItem = "owo";
+            if (_diff == 1) returnItem = "Easy";
+            else if (_diff == 3) returnItem = "Normal";
+            else if (_diff == 5) returnItem = "Hard";
+            else if (_diff == 7) returnItem = "Expert";
+            else if (_diff == 9) returnItem = "ExpertPlus";
+            return returnItem;
+        }     
 
         [JsonProperty("maxScore")]
         public long MaxScoreEx { get; set; }
