@@ -1,0 +1,2 @@
+# BeatsaberBot
+Discord beatsaber bot
