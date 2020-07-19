@@ -51,8 +51,8 @@ namespace DiscordBeatSaberBot
             {
                 discordSocketClient = new DiscordSocketClient();
                 Console.WriteLine("Connecting to Discord...");
-                Console.WriteLine($"Discord Token used: {DiscordBotCode.discordBotCode}");
-                await discordSocketClient.LoginAsync(TokenType.Bot, DiscordBotCode.discordBotCode);
+                
+                await discordSocketClient.LoginAsync(TokenType.Bot, DatabaseContext.ExecuteSelectQuery("Select * from Settings")[0][0].ToString());
                 await discordSocketClient.StartAsync();
 
                 //Events
@@ -87,11 +87,12 @@ namespace DiscordBeatSaberBot
 
                 //Setting up info for the bot
                 _startTime = DateTime.Now;
-                var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");
-                await discordSocketClient.SetGameAsync(settingData.GetValueOrDefault("gamePlaying").ToString());
+                var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");                
+                await discordSocketClient.SetGameAsync(DatabaseContext.ExecuteSelectQuery("Select * from Settings")[0][1].ToString());
                 var updater = new UpdateTimer(discordSocketClient);
                 updater.Start(() => updater.DutchDiscordUserCount(_startTime), 1);
                 updater.Start(() => updater.EventNotification(), 1);
+                //updater.Start(() => updater.AutomaticUnMute(), 0, 1, 0);
 
                 _logger.ConsoleLog("initialization completed.");
             }

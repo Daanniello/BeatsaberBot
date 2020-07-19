@@ -22,6 +22,7 @@ namespace DiscordBeatSaberBot
 
         public void Start(Func<Task> method, int hours, int minutes = 0, int seconds = 0)
         {
+            //The time that the function needs to be called
             var timespan = new TimeSpan(0, hours, minutes, seconds);
 
             var thread = new Thread(() => Update(timespan, method));
@@ -40,7 +41,6 @@ namespace DiscordBeatSaberBot
                 {
                     _logger.Log(Logger.LogCode.error, ex.ToString());
                 }
-
                 await Task.Delay(timespan);
             }
         }
@@ -69,7 +69,20 @@ namespace DiscordBeatSaberBot
             await msg.ModifyAsync(text => text.Embed = embedbuilder.Build());
         }
 
-        public async Task EventNotification()
+        public async Task AutomaticUnMute()
+        {
+            var mutedPeople = DatabaseContext.ExecuteSelectQuery("Select * from PlayerInCountry where Muted IS NOT NULL");
+            foreach(var muted in mutedPeople)
+            {
+                var dateUntillUnmute = Convert.ToDateTime(muted[2]);
+                if (DateTime.Now > dateUntillUnmute)
+                {
+                    new RoleAssignment(discord).UnMutePerson(Convert.ToUInt64(muted[0]), Convert.ToUInt64(muted[1]));
+                }
+            }
+        }
+
+            public async Task EventNotification()
         {
             var eventDetailChannel = (ISocketMessageChannel)discord.GetChannel(572721078359556097);
             var embededMessage = (IUserMessage)await eventDetailChannel.GetMessageAsync(586248421715738629);

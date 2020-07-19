@@ -38,8 +38,9 @@ namespace DiscordBeatSaberBot.Commands
             if (message.Author.IsDutchAdmin(discordSocketClient))
             {
                 var msg = message.Content.Substring(12);
-                //C:\Users\Daan\Documents\GitHub\BeatsaberBot\DiscordBeatSaberBot\DiscordBeatSaberBot\BeatSaberSettings.txt
-                JsonExtension.InsertJsonData(@"../../../BeatSaberSettings.txt", "gamePlaying", msg);
+
+                DatabaseContext.ExecuteInsertQuery($"Insert into Settings (DiscordPlayingGame) values ('{msg}')");
+
                 await discordSocketClient.SetGameAsync(msg);
                 await message.Channel.SendMessageAsync("Game now set to " + msg);
             }
