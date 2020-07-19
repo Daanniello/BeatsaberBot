@@ -3,9 +3,9 @@ Discord beatsaber bot
 
 Invite link: https://discordapp.com/oauth2/authorize?&client_id=504633036902498314&scope=bot&permissions=0
 
-*RoleColor
-info: If you have the dutch 'verslaafd' role, you can chance the color of it.
-Category: DutchFunctions \n
+*RoleColor\
+info: If you have the dutch 'verslaafd' role, you can chance the color of it.\
+Category: DutchFunctions\
 *UpdateRoles
 info: Update roles from everyone in the dutch beat saber discord
 Category: AdminCommands
