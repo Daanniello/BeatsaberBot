@@ -5,7 +5,7 @@ Invite link: https://discordapp.com/oauth2/authorize?&client_id=5046330369024983
 
 *RoleColor
 info: If you have the dutch 'verslaafd' role, you can chance the color of it.
-Category: DutchFunctions
+Category: DutchFunctions \n
 *UpdateRoles
 info: Update roles from everyone in the dutch beat saber discord
 Category: AdminCommands
