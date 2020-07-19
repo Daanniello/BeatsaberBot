@@ -3,75 +3,77 @@ Discord beatsaber bot
 
 Invite link: https://discordapp.com/oauth2/authorize?&client_id=504633036902498314&scope=bot&permissions=0
 
-*RoleColor\
+RoleColor\
 info: If you have the dutch 'verslaafd' role, you can chance the color of it.\
 Category: DutchFunctions\
-*UpdateRoles
-info: Update roles from everyone in the dutch beat saber discord
-Category: AdminCommands
-*LinkedNames
+</br>
+UpdateRoles\
+info: Update roles from everyone in the dutch beat saber discord\
+Category: AdminCommands\
+</br>
+LinkedNames\
 info: Returns a list of all users linked in the dutch beat saber discord.
 Category: AdminCommands
-*NotLinkedNames
+NotLinkedNames
 info: Returns a list of all users that are not linked in the dutch beat saber discord.
 Category: AdminCommands
-*ChangeColor
+ChangeColor
 info: If you have the dutch 'verslaafd' role, you can chance the color of it.
 Category: DutchFunctions
 IRLevent
 info: Creates and IRL Event for the dutch discord.
 Category: AdminCommands
-*RandomEvent
+RandomEvent
 info: Creates and Random Event for the dutch discord.
 Category: AdminCommands
-*Unlink
+Unlink
 info: Will unlink your current Scoresaber from your Discord account
 Category: General
-*Mute
+Mute
 info: Will unlink your current Scoresaber from your Discord account
 Category: AdminCommands
-*UnMute
+UnMute
 info: Will unlink your current Scoresaber from your Discord account
 Category: AdminCommands
-*Link
+Link
 info: Will link your Scoresaber profile to your Discord account
 Category: General
-*Compare
+Compare
 info: Compares two player's stats with each other.
 Category: General
-*Songs
+Songs
 info: Searches up the song with the name
 Category: General
-*RecentSong
+RecentSong
 info: Get info from the latest song played
 Category: General
-*TopSong
+TopSong
 info: Get info from the latest song played
 Category: General
-*Typing
+Typing
 info: Turn on typing in the channel 'On' or 'Off'
 Category: General
-*Improve
+Improve
 info: Gives you a list of scoresaber maps to improve on
 Category: General
-*Search
+Search
 info: Shows new scoresaber information about a player
 Category: General
-*Help
+Help
 info: The help command helps you with getting to know the bot. Use the Help with command name behind it to get more info.
 Category: BotFunctions
-*Playing
+Playing
 info: Sets the game of the discord bot.
 Category: BotFunctions
-*HelpListRaw
+HelpListRaw
 info: Gives a raw list of help functions
 Category: BotFunctions
-*Invite
+Invite
 info: Gives an invite link for the bot to join in other discord servers.
 Category: BotFunctions
-*SendDM
+SendDM
 info: Sends a DM to somone if he is in the server
 Category: BotFunctions
-*Poll
+Poll
 info: Creates a poll with reactions so people can vote on a subject.
 Category: BotFunctions
