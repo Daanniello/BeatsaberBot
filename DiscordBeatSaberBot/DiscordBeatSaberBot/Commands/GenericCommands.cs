@@ -84,6 +84,7 @@ namespace DiscordBeatSaberBot.Commands
         {
             var poll = new QuickPoll(message);
             await poll.CreatePoll();
+            await message.DeleteAsync();
         }
     }
 }

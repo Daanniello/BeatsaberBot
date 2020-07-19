@@ -148,6 +148,7 @@ namespace DiscordBeatSaberBot
         public bool UserHasRole(SocketUser user, string roleName)
         {
             var guildUser = ConvertUserToGuildUser(user);
+            if (guildUser == null) return false;
             var userRoles = guildUser.Roles;
             foreach (var role in userRoles)
             {

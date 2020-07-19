@@ -17,7 +17,7 @@ namespace DiscordBeatSaberBot.Config
                     { "<:vrchat:537413837100548115>", "VRChat" },
                     { "<:pavlov:593542245022695453>", "Pavlov" },
                     { "🗺", "Mapper" },
-                    { "💻", "Modder" },
+                    //{ "💻", "Modder" },
                     { "<:terebilo:508313942297280518>", "Normale-Grip" },
                     { "<:miitchelW:557923575944970241>", "Botchal-Grip" },
                     { "🆕", "Overige-Grip" },
@@ -50,14 +50,15 @@ namespace DiscordBeatSaberBot.Config
                     { "<:peepoZuidHolland:600782037682749448>", "Zuid-Holland" },
                     { "<:peepoZeeland:600782037049409547>", "Zeeland" },
                     { "<:peepoBrabant:600782036642430986>", "Noord-Brabant" },
-                    { "<:peepoLimburg:600782036919123968>", "Limburg" }
+                    { "<:peepoLimburg:600782036919123968>", "Limburg" },
+                    { "<:PETTHEWORLDCUP:725606068386005012>", "729279152712056902" } //Foreign Channel
         };
 
         public static Dictionary<string, string> SilverhazeReactions = new Dictionary<string, string>
         {
-            { "<:AWEE:588758943686328330>", "Anime" },
-            { "<:silverGasm:628988811329929276>", "NSFW" },
-            { "<:silverHug:681594969336709380>", "Community" }
+            { "<:AWEE:588758943686328330>", "627294872365170699" }, //Anime
+            { "<:silverGasm:628988811329929276>", "635918669976829962" }, //NSFW
+            { "<:silverHug:681594969336709380>", "718466543004155915" } //Community
         };
 
         public static Dictionary<string, string> GetReactionRoles()

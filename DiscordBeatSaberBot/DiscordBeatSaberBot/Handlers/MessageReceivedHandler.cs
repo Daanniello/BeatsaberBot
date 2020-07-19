@@ -57,14 +57,6 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     DutchServerCommands.UpdateRoles(discordSocketClient, message);
                 }
-                else if (messageCommand.Contains(" linkednames"))
-                {
-                    DutchServerCommands.LinkedNames(discordSocketClient, message);
-                }
-                else if (messageCommand.Contains(" notlinkednames"))
-                {
-                    DutchServerCommands.NotLinkedNames(discordSocketClient, message);
-                }
                 else if (messageCommand.Contains(" recentsong"))
                 {
                     GlobalScoresaberCommands.NewRecentSong(discordSocketClient, message);
@@ -92,7 +84,7 @@ namespace DiscordBeatSaberBot.Handlers
                 }
                 else if (messageCommand.Contains(" unlink"))
                 {
-                    DutchServerCommands.LinkScoresaberWithDiscord(discordSocketClient, message);
+                    DutchServerCommands.UnLinkScoresaberFromDiscord(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" link"))
                 {

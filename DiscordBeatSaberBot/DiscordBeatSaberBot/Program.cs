@@ -38,7 +38,15 @@ namespace DiscordBeatSaberBot
         }
 
         public async Task MainAsync()
-        {            
+        {
+            /*var players = DatabaseContext.ExecuteSelectQuery("Select * from Player where CountryCode='NL'");
+
+            foreach (var player in players)
+            {
+                DatabaseContext.ExecuteInsertQuery($"Insert into PlayerInCountry (DiscordId, GuildId) values ({player[1]}, 505485680344956928)");
+            }*/
+
+
             try
             {
                 discordSocketClient = new DiscordSocketClient();

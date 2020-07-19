@@ -41,6 +41,42 @@ namespace DiscordBeatSaberBot
                 return false;
         }
 
+        public static async Task<bool> IsDanish(string ID)
+        {
+            string url = $"https://new.scoresaber.com/api/player/{ID}/full";
+            using (var client = new HttpClient())
+            {
+                var playerInfoRaw = await client.GetAsync(url);
+                if (playerInfoRaw.StatusCode != HttpStatusCode.OK) return false;
+                var playerInfo = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
+
+
+                if (playerInfo.playerInfo.Country == "DK")
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static async Task<bool> IsNotDutch(string ID)
+        {
+            string url = $"https://new.scoresaber.com/api/player/{ID}/full";
+            using (var client = new HttpClient())
+            {
+                var playerInfoRaw = await client.GetAsync(url);
+                if (playerInfoRaw.StatusCode != HttpStatusCode.OK) return false;
+                var playerInfo = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
+
+
+                if (playerInfo.playerInfo.Country != "NL")
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static bool IsOwner(ulong Id)
         {
             if (Id == 138439306774577152)

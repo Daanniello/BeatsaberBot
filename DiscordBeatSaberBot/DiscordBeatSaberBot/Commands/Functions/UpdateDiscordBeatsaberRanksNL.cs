@@ -23,9 +23,12 @@ namespace DiscordBeatSaberBot
 
             Console.WriteLine("Starting updating roles from linked NL accounts");
             var accounts = new Dictionary<string, object>();
-            string DutchAccountsPath = "../../../DutchAccounts.txt";
 
-            accounts = JsonExtension.GetJsonData(DutchAccountsPath);
+            var result = DatabaseContext.ExecuteSelectQuery($"Select * from Player where CountryCode='NL'");
+            foreach(var player in result)
+            {
+                accounts.Add(player[1].ToString(), player[0]);
+            }
 
             if (accounts == null || accounts.Count == 0)
                 accounts = new Dictionary<string, object>();

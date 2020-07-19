@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -58,26 +59,6 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("LinkedNames", "Returns a list of all users linked in the dutch beat saber discord.", "!bs linkednames", HelpAttribute.Catergories.AdminCommands)]
-        static public async Task LinkedNames(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            if (new GuildService(discordSocketClient, 505485680344956928).IsStaffInGuild(message.Author.Id, 505486321595187220))
-            {
-                var embed = new RoleAssignment(discordSocketClient).GetLinkedDiscordNamesEmbed();
-                await message.Channel.SendMessageAsync(embed);
-            }
-        }
-
-        [Help("NotLinkedNames", "Returns a list of all users that are not linked in the dutch beat saber discord.", "!bs notlinkednames", HelpAttribute.Catergories.AdminCommands)]
-        static public async Task NotLinkedNames(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            if (new GuildService(discordSocketClient, 505485680344956928).IsStaffInGuild(message.Author.Id, 505486321595187220))
-            {
-                var embed = new RoleAssignment(discordSocketClient).GetNotLinkedDiscordNamesInGuildEmbed(505485680344956928);
-                await message.Channel.SendMessageAsync(embed);
-            }
-        }
-
         [Help("ChangeColor", "If you have the dutch 'verslaafd' role, you can chance the color of it.", "!bs changecolor (#ffffff)", HelpAttribute.Catergories.DutchFunctions)]
         static public async Task ChangeColor(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
@@ -115,28 +96,14 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("Unlink", "Will unlink your current Scoresaber from your Discord account ", "!bs unlink", HelpAttribute.Catergories.General)]
-        static public async Task UnlinkScoresaberFromDiscord(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            var r = new RoleAssignment(discordSocketClient);
-
-            if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
-            {
-                return;
-            }
-            else
-            {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Hmmmm?", "Your Discord does not seemed to be already linked. You can link a new scoresaber account with !bs link [ScoresaberID]").Build());
-            }
-        }
-
-        [Help("Mute", "Will unlink your current Scoresaber from your Discord account ", "!mute (DiscordTag or ID)", HelpAttribute.Catergories.AdminCommands)]
+        [Help("Mute", "Will mute a person in the dutch discord", "!mute (DiscordTag or ID)", HelpAttribute.Catergories.DutchFunctions)]
         static public async Task Mute(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (message.Author.IsDutchAdmin(discordSocketClient) || message.Author.IsDutchMod(discordSocketClient))
             {
                 var discordId = message.Content.Substring(9).Replace("<@!", "").Replace(">", "");
-                new RoleAssignment(discordSocketClient).MutePerson(ulong.Parse(discordId));
+                var guildChannel = (SocketGuildChannel)message.Channel;
+                new RoleAssignment(discordSocketClient).MutePerson(ulong.Parse(discordId), guildChannel.Guild.Id);
                 message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("User has been muted", $"{discordId} has been muted").Build());
             }
             else
@@ -145,13 +112,14 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("UnMute", "Will unlink your current Scoresaber from your Discord account ", "!unmute (DiscordTag or ID)", HelpAttribute.Catergories.AdminCommands)]
+        [Help("UnMute", "Will unmute a person in the dutch discord", "!unmute (DiscordTag or ID)", HelpAttribute.Catergories.DutchFunctions)]
         static public async Task UnMute(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (message.Author.IsDutchAdmin(discordSocketClient) || message.Author.IsDutchMod(discordSocketClient))
             {
                 var discordId = message.Content.Substring(11).Replace("<@!", "").Replace(">", "");
-                new RoleAssignment(discordSocketClient).UnMutePerson(ulong.Parse(discordId));
+                var guildChannel = (SocketGuildChannel)message.Channel;
+                new RoleAssignment(discordSocketClient).UnMutePerson(ulong.Parse(discordId), guildChannel.Guild.Id);
                 message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("User has been unmuted", $"{discordId} has been unmuted").Build());
             }
             else
@@ -164,6 +132,8 @@ namespace DiscordBeatSaberBot.Commands
         static public async Task LinkScoresaberWithDiscord(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
+            var moderationHelper = new GuildService(discordSocketClient, 505485680344956928);
+
 
             if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
             {
@@ -190,23 +160,66 @@ namespace DiscordBeatSaberBot.Commands
                     {
                         message.Channel.SendMessageAsync("It seems that you are Dutch and trying to link your account outside the Dutch Discord. A Dutch request needs to be validated. Consider joining the Dutch Beat Saber Discord. (https://discord.gg/cH7mTyq)");
                     }
-                    r.MakeRequest(message);
+
+                    r.MakeRequest(message, 505485680344956928, 549350982081970176);
+
+                    var user = message.Author;
+                    if (moderationHelper.UserHasRole(user, "Nieuwkomer"))
+                    {
+                        await moderationHelper.AddRole("Unverified", user);
+                        await moderationHelper.DeleteRole("Nieuwkomer", user);
+                    }
+                }
+                //Test code for different country registration
+                else if (await ValidationExtension.IsDanish(ScoresaberId))
+                {
+                    var guildChannel = message.Channel as SocketGuildChannel;
+                    if (guildChannel.Guild.Id != 505485680344956928)
+                    {
+                        message.Channel.SendMessageAsync("It seems that you are Danish and trying to link your account outside the Danish Discord. A Danish request needs to be validated. Consider joining the Danish Beat Saber Discord. (Discord Link)");
+                    }
+
+                    //Make the request in the danish discord
+                    r.MakeRequest(message, 505485680344956928, 550288233272180752);
+
+                    //Add roles for the danish user
+                }
+                else if(await ValidationExtension.IsNotDutch(ScoresaberId))
+                {
+                    DatabaseContext.ExecuteInsertQuery($"Insert into Player (ScoresaberId, DiscordId) values ({ScoresaberId}, {message.Author.Id.ToString()})");
+
+                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added user to the list", "Added " + message.Author.Id.ToString() + " with scoresaberID " + ScoresaberId + " to the global list", null, null).Build());
+
+                    var guildChannel = message.Channel as SocketGuildChannel;
+                    if (guildChannel.Guild.Id == 505485680344956928)
+                    {
+                        await moderationHelper.AddRole("Foreign channel", message.Author);
+                        await moderationHelper.DeleteRole("Nieuwkomer", message.Author);
+                    }
+
+                    return;
                 }
                 else
                 {
-                    JsonExtension.InsertJsonData("../../../GlobalAccounts.txt", message.Author.Id.ToString(), ScoresaberId);
-                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added user to the list", "Added " + message.Author.Id.ToString() + " with scoresaberID " + ScoresaberId + " to the global list", null, null).Build());
-                    return;
+                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Your account does not exist on the scoresaber API. It might be because it is new. Try again later.", null, null).Build());
                 }
             }
+        }
 
-            var moderationHelper = new GuildService(discordSocketClient, 505485680344956928);
-
-            var user = message.Author;
-            if (moderationHelper.UserHasRole(user, "Nieuwkomer"))
+        [Help("Unlink", "Will unlink your Scoresaber profile from your Discord account ", "!unlink", HelpAttribute.Catergories.General)]
+        static public async Task UnLinkScoresaberFromDiscord(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var r = new RoleAssignment(discordSocketClient);
+            var discordId = message.Author.Id.ToString();
+            if (r.CheckIfDiscordIdIsLinked(discordId))
             {
-                await moderationHelper.AddRole("Link my discord please", user);
-                await moderationHelper.DeleteRole("Nieuwkomer", user);
+                r.UnlinkAccount(discordId);
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Succesfully Unlinked", $"Your discordId {discordId} is now unlinked from your scoresabeId").Build());
+                return;
+            }
+            else
+            {
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Hmmmm?", "Your Discord does not seemed to be linked. You can link a new scoresaber account with !bs link [ScoresaberID]").Build());
             }
         }
     }
