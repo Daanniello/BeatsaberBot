@@ -41,6 +41,18 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     DutchServerCommands.RoleColor(discordSocketClient, message);
                 }
+                else if (messageCommand.Contains(" seal"))
+                {
+                    GlobalScoresaberCommands.Seal(discordSocketClient, message);
+                }
+                else if (messageCommand.Contains(" randomgif"))
+                {
+                    GlobalScoresaberCommands.RandomGif(discordSocketClient, message);
+                }
+                else if (messageCommand.Contains(" topsongs"))
+                {
+                    GlobalScoresaberCommands.TopSongs(discordSocketClient, message);
+                }
                 else if (messageCommand.Contains(" topsong"))
                 {
                     GlobalScoresaberCommands.NewTopSong(discordSocketClient, message);
@@ -57,10 +69,14 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     DutchServerCommands.UpdateRoles(discordSocketClient, message);
                 }
+                else if (messageCommand.Contains(" recentsongs"))
+                {
+                    GlobalScoresaberCommands.Recentsongs(discordSocketClient, message);
+                }
                 else if (messageCommand.Contains(" recentsong"))
                 {
                     GlobalScoresaberCommands.NewRecentSong(discordSocketClient, message);
-                }
+                }                
                 else if (messageCommand.Contains(" changecolor"))
                 {
                     DutchServerCommands.ChangeColor(discordSocketClient, message);
@@ -90,18 +106,34 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     DutchServerCommands.LinkScoresaberWithDiscord(discordSocketClient, message);
                 }
+                else if (messageCommand.Contains(" profile"))
+                {
+                    GlobalScoresaberCommands.Profile(discordSocketClient, message);
+                }
                 else if (messageCommand.Contains(" unmute"))
                 {
                     DutchServerCommands.UnMute(discordSocketClient, message);
                 }
+                else if (messageCommand.Contains(" interviewtest"))
+                {
+                    new WelcomeInterviewHandler(discordSocketClient, message.Channel, message.Author.Id).AskForInterview();
+                }
                 else if (messageCommand.Contains(" mute"))
                 {
                     DutchServerCommands.Mute(discordSocketClient, message);
-                }             
+                }
+                else if (messageCommand.Contains(" number"))
+                {
+                    GenericCommands.Number(discordSocketClient, message);
+                }
                 else if (messageCommand.Contains(" typing"))
                 {
                     GlobalScoresaberCommands.Typing(discordSocketClient, message);
                     message.DeleteAsync();
+                }
+                else if (messageCommand.Contains(" createrankmapfeed"))
+                {
+                    GlobalScoresaberCommands.CreateRankMapFeed(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" ranks"))
                 {
@@ -123,7 +155,7 @@ namespace DiscordBeatSaberBot.Handlers
 
                         var guildService = new GuildService(discordSocketClient, 505485680344956928);
 
-                        await guildService.AddRole("Koos Rankloos", user);
+                        await guildService.AddRole("Unverified", user);
                         await program.UserJoinedMessage(user);
                     }
 

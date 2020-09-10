@@ -16,7 +16,6 @@ namespace DiscordBeatSaberBot
     {
         public static async Task UpdateNLAsync(DiscordSocketClient discord, SocketMessage message)
         {
-            
 
             var embed = await message.Channel.SendMessageAsync("Starting Roles update");
             await Task.Delay(1000);
@@ -24,9 +23,11 @@ namespace DiscordBeatSaberBot
             Console.WriteLine("Starting updating roles from linked NL accounts");
             var accounts = new Dictionary<string, object>();
 
-            var result = DatabaseContext.ExecuteSelectQuery($"Select * from Player where CountryCode='NL'");
+            var result = await DatabaseContext.ExecuteSelectQuery($"Select * from Player where CountryCode='NL'");
             foreach(var player in result)
             {
+                //0: scoresaberId
+                //1: discordId
                 accounts.Add(player[1].ToString(), player[0]);
             }
 
@@ -37,6 +38,8 @@ namespace DiscordBeatSaberBot
             var spaceCount = accounts.Count;
             var accountsProcessCount = 0;
 
+            //key: discordId
+            //Value: scoresaberId
             using (HttpClient client = new HttpClient())
             {
                 foreach (var account in accounts)
@@ -47,7 +50,7 @@ namespace DiscordBeatSaberBot
                     var playerInfoRaw = await client.GetAsync(url);
                     if (playerInfoRaw.StatusCode != HttpStatusCode.OK)
                     {
-                        Console.WriteLine("Delete " + account.Value.ToString() + "He left the discord");
+                        Console.WriteLine("User " + account.Value.ToString() + "Does not have an scoresaber anymore");
                         continue;
                     }
                     else
@@ -58,7 +61,7 @@ namespace DiscordBeatSaberBot
                     
                         if (rank == 0)
                         {
-                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Koos Rankloos", discord);
+                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Rankloos", discord);
                             continue;
                         }
 

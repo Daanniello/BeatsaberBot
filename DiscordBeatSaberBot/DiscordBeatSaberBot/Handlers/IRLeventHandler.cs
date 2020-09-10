@@ -35,9 +35,9 @@ namespace DiscordBeatSaberBot.Handlers
                 CreateChannels().Wait();
                 ModifyEmbed(msg, "Event is succesvol aangemaakt");
             }
-            catch
+            catch(Exception ex)
             {
-                ModifyEmbed(msg, "Er is iets fout gegaan :c");
+                ModifyEmbed(msg, $"Er is iets fout gegaan :c \n {ex.Message}");
                 infoChannel.DeleteAsync();
                 generalChannel.DeleteAsync();
             }
@@ -135,16 +135,34 @@ namespace DiscordBeatSaberBot.Handlers
         {
             infoChannel = await discord.GetGuild(505485680344956928).CreateTextChannelAsync(irlEventModel.title + "-irlevent-info", null, new RequestOptions());
             //await infoChannel.AddPermissionOverwriteAsync(discord.GetGuild(505485680344956928).Roles.FirstOrDefault(x => x.Id == 611102875241676811), new OverwritePermissions().Modify(readMessageHistory:Discord.PermValue.Allow, viewChannel: Discord.PermValue.Allow, sendMessages: Discord.PermValue.Deny));
-            await infoChannel.AddPermissionOverwriteAsync(discord.GetGuild(505485680344956928).Roles.FirstOrDefault(x => x.Id == 505485680344956928), new OverwritePermissions().Modify(readMessageHistory: Discord.PermValue.Allow, viewChannel: Discord.PermValue.Allow, useExternalEmojis: Discord.PermValue.Deny, sendMessages: Discord.PermValue.Deny));
+            await infoChannel.AddPermissionOverwriteAsync(discord.GetGuild(505485680344956928).Roles.FirstOrDefault(x => x.Id == 505485680344956928), new OverwritePermissions().Modify(
+                readMessageHistory: Discord.PermValue.Allow, 
+                viewChannel: Discord.PermValue.Allow, 
+                useExternalEmojis: Discord.PermValue.Deny, 
+                sendMessages: Discord.PermValue.Deny));
+
+            infoChannel.ModifyAsync(x => x.CategoryId = 671662624718585887);
 
             generalChannel = await discord.GetGuild(505485680344956928).CreateTextChannelAsync(irlEventModel.title + "-irlevent-general", null, new RequestOptions());
-            await generalChannel.AddPermissionOverwriteAsync(discord.GetGuild(505485680344956928).Roles.FirstOrDefault(x => x.Id == 505485680344956928), new OverwritePermissions().Modify(readMessageHistory: Discord.PermValue.Deny, viewChannel: Discord.PermValue.Deny));
+            await generalChannel.AddPermissionOverwriteAsync(discord.GetGuild(505485680344956928).Roles.FirstOrDefault(x => x.Id == 505485680344956928), new OverwritePermissions().Modify(
+                readMessageHistory: Discord.PermValue.Deny, 
+                viewChannel: Discord.PermValue.Deny));
 
-            if (double.Parse(irlEventModel.price) > 0)
+            generalChannel.ModifyAsync(x => x.CategoryId = 671662624718585887);
+
+
+            try
             {
-                irlEventModel.price = irlEventModel.price + " Euro";
+                if (double.Parse(irlEventModel.price) > 0)
+                {
+                    irlEventModel.price = irlEventModel.price + " Euro";
+                }
+                else
+                {
+                    irlEventModel.price = "Gratis";
+                }
             }
-            else
+            catch
             {
                 irlEventModel.price = "Gratis";
             }

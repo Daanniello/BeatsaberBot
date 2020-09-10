@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Dynamic;
 using System.Globalization;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
+using Color = Discord.Color;
 using Discord.WebSocket;
 using DiscordBeatSaberBot.Api.ScoreberAPI;
 using DiscordBeatSaberBot.Api.ScoreberAPI.Models;
@@ -193,7 +195,7 @@ namespace DiscordBeatSaberBot.Extensions
                 Url = $"https://new.scoresaber.com/u/{searchedPlayerInfo.playerInfo.PlayerId}",
             };
             embedBuilder.AddField(
-                $"`ID: {searchedPlayerInfo.playerInfo.PlayerId}`",  
+                $"`ID: {searchedPlayerInfo.playerInfo.PlayerId}`",
                 $"```cs\n" +
                 $"Global Rank:              #{searchedPlayerInfo.playerInfo.rank} \n\n" +
                 $"Country Rank:             #{searchedPlayerInfo.playerInfo.CountryRank} \n\n" +
@@ -224,7 +226,7 @@ namespace DiscordBeatSaberBot.Extensions
             embedBuilderList.Add(embedBuilder);
             foreach (var badge in searchedPlayerInfo.playerInfo.Badges)
             {
-                embedBuilderList.Add(new EmbedBuilder() { ImageUrl = $"https://new.scoresaber.com/api/static/badges/{badge.Image}", Title = badge.Description});
+                embedBuilderList.Add(new EmbedBuilder() { ImageUrl = $"https://new.scoresaber.com/api/static/badges/{badge.Image}", Title = badge.Description });
             }
 
             return embedBuilderList;
@@ -498,7 +500,8 @@ namespace DiscordBeatSaberBot.Extensions
                 object mods = "";
 
                 if (recentSong.Mods != "") mods = $"Mods:               '{recentSong.Mods}' \n";
-                if (recentSong.MaxScoreEx != 0){
+                if (recentSong.MaxScoreEx != 0)
+                {
                     double percentage = Convert.ToDouble(recentSong.UScore) / Convert.ToDouble(recentSong.MaxScoreEx) * 100;
                     acc = $"Accuracy:           { Math.Round(percentage, 2)}% \n";
                 }
@@ -529,7 +532,7 @@ namespace DiscordBeatSaberBot.Extensions
                     $"Song Author name:   {recentSong.SongAuthorName} \n" +
                     $"Map Author name:    {recentSong.LevelAuthorName} \n" +
                     $"```" +
-               
+
                     $"```cs\n" +
                     $"Rank:               #{recentSong.Rank} \n" +
                     $"Score:              {recentSong.ScoreScore} \n" +
@@ -537,14 +540,14 @@ namespace DiscordBeatSaberBot.Extensions
                     $"PP:                 {recentSong.Pp} \n" +
                     $"PP Weight:          {actualWeight} \n" +
                     $"```" +
-    
+
                     $"```cs\n" +
                     $"Time Set:           '{recentSong.Timeset.DateTime.ToShortDateString()} {recentSong.Timeset.DateTime.ToShortTimeString()}' \n" +
                     $"Max Score Ex:       '{recentSong.MaxScoreEx}' \n" +
                     mods +
                     $"```" +
 
-                    mapExtraDetails + 
+                    mapExtraDetails +
 
                     "\n" +
                     $"Url:                https://scoresaber.com/leaderboard/{recentSong.LeaderboardId} \n\n" +
@@ -595,7 +598,7 @@ namespace DiscordBeatSaberBot.Extensions
                     acc = $"Accuracy:           { Math.Round(percentage, 2)}% \n";
                 }
 
-                var actualWeight = Math.Round(TopSong.Pp * TopSong.Weight,2);
+                var actualWeight = Math.Round(TopSong.Pp * TopSong.Weight, 2);
 
                 embedBuilder.AddField($"Song Name: {TopSong.Name}",
                     $"```cs\n" +
@@ -707,7 +710,7 @@ namespace DiscordBeatSaberBot.Extensions
 
             return builder;
         }
-     
+
         public static async Task<(string, string)> RankedNeighbours(string playerName, int playerRank,
             int recursionLoop = 0)
         {
@@ -807,8 +810,8 @@ namespace DiscordBeatSaberBot.Extensions
 
         public static async Task<string> GetPlayerCountryRank(string name)
         {
-            var playerInfo = (List<List<string>>) null;
-            var playerInfo2 = (List<List<string>>) null;
+            var playerInfo = (List<List<string>>)null;
+            var playerInfo2 = (List<List<string>>)null;
             var playerId = await GetPlayerId(name);
             var url = "https://scoresaber.com" + playerId.First();
             using (var client = new HttpClient())
@@ -847,9 +850,9 @@ namespace DiscordBeatSaberBot.Extensions
 
             var recursionCounter = recursionLoop;
 
-            var playerInfo = (List<List<string>>) null;
-            var playerInfo2 = (List<List<string>>) null;
-            var playerImg = (List<List<string>>) null;
+            var playerInfo = (List<List<string>>)null;
+            var playerInfo2 = (List<List<string>>)null;
+            var playerImg = (List<List<string>>)null;
             var url = "https://scoresaber.com/global?search=" + playerName.Replace(" ", "+");
 
 
@@ -955,7 +958,7 @@ namespace DiscordBeatSaberBot.Extensions
             if (message.Length == 0 || message == null) return EmbedBuilderExtension.NullEmbed("Format is not set up correctly", "Use the following format: !bs compare player1 player2");
 
             //Prepare player data             
-            var players = message.Split(' ');            
+            var players = message.Split(' ');
 
             if (players.Count() > 2) return EmbedBuilderExtension.NullEmbed("oh oh...", $"One of your inputs contains a space. Connect the name as the following: !bs compare silverhaze Duh<>Hello");
 
@@ -968,11 +971,10 @@ namespace DiscordBeatSaberBot.Extensions
             if (player1.Contains("@"))
             {
                 var r = new RoleAssignment(discordSocketClient);
-                
                 var discordId = player1.Replace("<@!", "").Replace(">", "");
-                if (r.CheckIfDiscordIdIsLinked(discordId))
+                if (await r.CheckIfDiscordIdIsLinked(discordId))
                 {
-                    player1 = r.GetScoresaberIdWithDiscordId(discordId);
+                    player1 = await r.GetScoresaberIdWithDiscordId(discordId);
                     player1containsmention = true;
                 }
                 else
@@ -985,9 +987,9 @@ namespace DiscordBeatSaberBot.Extensions
             {
                 var r = new RoleAssignment(discordSocketClient);
                 var discordId = player2.Replace("<@!", "").Replace(">", "");
-                if (r.CheckIfDiscordIdIsLinked(discordId))
+                if (await r.CheckIfDiscordIdIsLinked(discordId))
                 {
-                    player2 = r.GetScoresaberIdWithDiscordId(discordId);
+                    player2 = await r.GetScoresaberIdWithDiscordId(discordId);
                     player2containsmention = true;
                 }
                 else
@@ -1007,7 +1009,8 @@ namespace DiscordBeatSaberBot.Extensions
                 var player1ScoresaberID = player1;
                 var player2ScoresaberID = player2;
 
-                if (!player1containsmention) {
+                if (!player1containsmention)
+                {
                     var infoPlayer1Raw = await hc.GetAsync(urlPlayer1);
                     if (infoPlayer1Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"**Player 1 status:** {infoPlayer1Raw.StatusCode}");
                     var players1ScoresaberID = JsonConvert.DeserializeObject<List<ScoreSaberSearchByNameModel>>(infoPlayer1Raw.Content.ReadAsStringAsync().Result);
@@ -1078,8 +1081,8 @@ namespace DiscordBeatSaberBot.Extensions
                 else
                 {
                     if (Math.Max(value, value2) == value)
-                    { 
-                        color = "< "; 
+                    {
+                        color = "< ";
                         isYellow = true;
                     }
                 }
@@ -1094,9 +1097,9 @@ namespace DiscordBeatSaberBot.Extensions
                 {
 
                 }
-               
-                string v = value.ToString("#,##0,,M", CultureInfo.InvariantCulture); 
-                if ( value.ToString().Length > 7)
+
+                string v = value.ToString("#,##0,,M", CultureInfo.InvariantCulture);
+                if (value.ToString().Length > 7)
                 {
                     value = v;
                 }
@@ -1120,26 +1123,233 @@ namespace DiscordBeatSaberBot.Extensions
             {
                 var spaces = "";
 
-                for(var x = 6; x > value.Length; x--)
+                for (var x = 6; x > value.Length; x--)
                 {
                     spaces += " ";
                 }
 
                 if (!isYellow) spaces += " ";
 
-                return value+spaces;
+                return value + spaces;
             }
 
 
 
             return embedBuilder;
         }
-        
+
+        public static async Task GetAndCreateUserCardImage(string scoresaberId, string topic)
+        {
+            var playerRaw = new ScoresaberAPI(scoresaberId);
+            var playerData = await playerRaw.GetPlayerFull();
+
+            var player = playerData.playerInfo;
+            var playerStats = playerData.scoreStats;
+
+            var rankingCardCreator = new ImageCreator("../../../Resources/img/UserCard-Template.png");
+
+            //Add player main info
+            rankingCardCreator.AddText(player.Name.ToUpper(), System.Drawing.Color.White, 20, 120, 10);
+            rankingCardCreator.AddText(player.Country.ToUpper(), System.Drawing.Color.White, 12, 120, 45);
+            var rankWidth = rankingCardCreator.AddText($"#{player.rank}", System.Drawing.Color.White, 12, 120, 68).Width;
+            rankingCardCreator.AddText($"#{player.CountryRank}", System.Drawing.Color.FromArgb(176, 176, 176), 8, 120 + rankWidth, 72);
+            rankingCardCreator.AddText($"{player.Pp}PP", System.Drawing.Color.White, 15, 120, 88);
+            rankingCardCreator.AddText(topic, System.Drawing.Color.White, 15, 340, 88);
+
+            rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{player.Country}.png", 150, 50, 20, 15);
+            rankingCardCreator.AddImage($"https://new.scoresaber.com{player.Avatar}", 15, 13, 100, 100);            
+
+            //Finish Card
+            rankingCardCreator.Create("../../../Resources/img/UserCard.png");
+        }
+
+        public static async Task GetAndCreateRecentsongsCardImage(string scoresaberId)
+        {
+            var playerRaw = new ScoresaberAPI(scoresaberId);
+            var playerRecentScores = await playerRaw.GetScoresRecent();
+            
+
+            var rankingCardCreator = new ImageCreator("../../../Resources/img/RecentsongsCard-Template.png");
+
+            //Add SongInfo
+            var marigin = 0;
+            for (var x = 0; x < 5; x++)
+            {
+                rankingCardCreator.AddText($"{playerRecentScores.Scores[x].Name}", System.Drawing.Color.White, 50, 320, marigin + 40);
+
+                var rankcolor = System.Drawing.Color.Gray;
+                if (playerRecentScores.Scores[x].Rank == 1) rankcolor = System.Drawing.Color.Goldenrod;
+                if (playerRecentScores.Scores[x].Rank == 2) rankcolor = System.Drawing.Color.Silver;
+                if (playerRecentScores.Scores[x].Rank == 3) rankcolor = System.Drawing.Color.SaddleBrown;
+
+                rankingCardCreator.AddText($"#{playerRecentScores.Scores[x].Rank}", rankcolor, 50, 320, marigin + 135);
+
+                if (playerRecentScores.Scores[x].Pp > 0)
+                {
+                    double percentage = Convert.ToDouble(playerRecentScores.Scores[x].UScore) / Convert.ToDouble(playerRecentScores.Scores[x].MaxScoreEx) * 100;
+                    var acc = Math.Round(percentage, 2);
+                    rankingCardCreator.AddText($"{acc}%", rankcolor, 50, 520, marigin + 135);
+                }
+                
+
+                var ppfontsize = 60;
+                if (playerRecentScores.Scores[x].Pp > 300) ppfontsize = 65;
+                if (playerRecentScores.Scores[x].Pp > 400) ppfontsize = 70;
+                if (playerRecentScores.Scores[x].Pp > 500) ppfontsize = 80;
+
+                if (playerRecentScores.Scores[x].Pp != 0) rankingCardCreator.AddText($"+ {Math.Round(playerRecentScores.Scores[x].Pp,2)}PP", System.Drawing.Color.Green, ppfontsize, 1320, marigin + 120);
+                rankingCardCreator.AddText($"{playerRecentScores.Scores[x].GetDifficulty()}", System.Drawing.Color.White, 30, 80, marigin + 255);
+                rankingCardCreator.AddText($"Time set: {playerRecentScores.Scores[x].Timeset.DateTime.ToShortDateString()} {playerRecentScores.Scores[x].Timeset.DateTime.ToShortTimeString()}     {Math.Round((DateTime.Now - playerRecentScores.Scores[x].Timeset).TotalDays, 1)} days ago", System.Drawing.Color.Gray, 30, 1000, marigin + 260);
+
+                rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerRecentScores.Scores[x].Id}.png", 15, marigin, 250, 250);
+                marigin += 330 - (x * 3);
+            }
+            
+            //Finish Card
+            rankingCardCreator.Create("../../../Resources/img/RecentsongsCard.png");
+        }
+
+        public static async Task GetAndCreateTopsongsCardImage(string scoresaberId)
+        {
+            var playerRaw = new ScoresaberAPI(scoresaberId);
+            var playerTopScores = await playerRaw.GetTopScores();
+
+
+            var rankingCardCreator = new ImageCreator("../../../Resources/img/RecentsongsCard-Template.png");
+
+            //Add SongInfo
+            var marigin = 0;
+            for (var x = 0; x < 5; x++)
+            {
+                rankingCardCreator.AddText($"{playerTopScores.Scores[x].Name}", System.Drawing.Color.White, 50, 320, marigin + 40);
+
+                var rankcolor = System.Drawing.Color.Gray;
+                if (playerTopScores.Scores[x].Rank == 1) rankcolor = System.Drawing.Color.Goldenrod;
+                if (playerTopScores.Scores[x].Rank == 2) rankcolor = System.Drawing.Color.Silver;
+                if (playerTopScores.Scores[x].Rank == 3) rankcolor = System.Drawing.Color.SaddleBrown;
+
+                rankingCardCreator.AddText($"#{playerTopScores.Scores[x].Rank}", rankcolor, 50, 320, marigin + 135);
+
+                if (playerTopScores.Scores[x].Pp > 0)
+                {
+                    double percentage = Convert.ToDouble(playerTopScores.Scores[x].UScore) / Convert.ToDouble(playerTopScores.Scores[x].MaxScoreEx) * 100;
+                    var acc = Math.Round(percentage, 2);
+                    rankingCardCreator.AddText($"{acc}%", rankcolor, 50, 520, marigin + 135);
+                }
+
+
+                var ppfontsize = 60;
+                if (playerTopScores.Scores[x].Pp > 300) ppfontsize = 65;
+                if (playerTopScores.Scores[x].Pp > 400) ppfontsize = 70;
+                if (playerTopScores.Scores[x].Pp > 500) ppfontsize = 80;
+
+                if (playerTopScores.Scores[x].Pp != 0) rankingCardCreator.AddText($"+ {Math.Round(playerTopScores.Scores[x].Pp, 2)}PP", System.Drawing.Color.Green, ppfontsize, 1320, marigin + 120);
+                rankingCardCreator.AddText($"{playerTopScores.Scores[x].GetDifficulty()}", System.Drawing.Color.White, 30, 80, marigin + 255);
+                rankingCardCreator.AddText($"Time set: {playerTopScores.Scores[x].Timeset.DateTime.ToShortDateString()} {playerTopScores.Scores[x].Timeset.DateTime.ToShortTimeString()}     {Math.Round((DateTime.Now - playerTopScores.Scores[x].Timeset).TotalDays, 1)} days ago", System.Drawing.Color.Gray, 30, 1000, marigin + 260);
+
+                rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerTopScores.Scores[x].Id}.png", 15, marigin, 250, 250);
+                marigin += 330 - (x * 3);
+            }
+
+            //Finish Card
+            rankingCardCreator.Create("../../../Resources/img/RecentsongsCard.png");
+        }
+
+        public static async Task GetAndCreateProfileImage(string scoresaberId)
+        {
+            var playerRaw = new ScoresaberAPI(scoresaberId);
+            var playerData = await playerRaw.GetPlayerFull();
+            var playerScoresData = await playerRaw.GetTopScores();
+            var player = playerData.playerInfo;
+            var playerStats = playerData.scoreStats;
+            var playerTopStats = playerScoresData.Scores[0];
+            
+
+            var rankingCardCreator = new ImageCreator("../../../Resources/img/RankingCard-Template.png");
+            //Add player main info
+
+            rankingCardCreator.AddText(player.Name.ToUpper(), System.Drawing.Color.White, 100, 1100, 800);
+            rankingCardCreator.AddText(player.Country.ToUpper(), System.Drawing.Color.White, 100, 1250, 950);
+            var rankWidth = rankingCardCreator.AddText($"#{player.rank}", System.Drawing.Color.White, 100, 1100, 1200).Width;
+            rankingCardCreator.AddText($"#{player.CountryRank}", System.Drawing.Color.FromArgb(176, 176, 176), 60, 1080 + rankWidth, 1250);
+            rankingCardCreator.AddText($"{player.Pp}PP", System.Drawing.Color.White, 100, 1100, 1350);
+
+            rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{player.Country}.png", 1120, 1000, 120, 100);
+            rankingCardCreator.AddNoteSlashEffect($"https://new.scoresaber.com{player.Avatar}", 200, 800, 800, 800);
+
+            //Add Date
+            rankingCardCreator.AddText(DateTime.UtcNow.ToString("dd MMM. yyyy"), System.Drawing.Color.White, 100, 3600, 650);
+            rankingCardCreator.AddText(DateTime.UtcNow.ToString("HH:mm"), System.Drawing.Color.FromArgb(176, 176, 176), 70, 3950, 800);
+
+            var customNumberSeperator = new NumberFormatInfo { NumberGroupSeparator = " " };
+
+            //Add scorestats 
+            rankingCardCreator.AddText("ACC.", System.Drawing.Color.FromArgb(251, 211, 64), 90, 3350, 1140);
+            rankingCardCreator.AddText($"{playerStats.AvarageRankedAccuracy}%", System.Drawing.Color.FromArgb(251, 211, 64), 100, 3750, 1125);
+
+            rankingCardCreator.AddText("SCORE", System.Drawing.Color.FromArgb(251, 211, 64), 90, 3350, 1300);
+            rankingCardCreator.AddText(playerStats.TotalScore.ToString("n", customNumberSeperator).Split('.')[0], System.Drawing.Color.FromArgb(251, 211, 64), 110, 3750, 1280);
+
+            rankingCardCreator.AddText("RANKED", System.Drawing.Color.FromArgb(251, 211, 64), 40, 3370, 1470);
+            rankingCardCreator.AddText(playerStats.TotalRankedScore.ToString("n", customNumberSeperator).Split('.')[0], System.Drawing.Color.FromArgb(251, 211, 64), 60, 3760, 1450);
+
+            rankingCardCreator.AddText("PLAYS", System.Drawing.Color.FromArgb(251, 211, 64), 90, 3350, 1560);
+            rankingCardCreator.AddText(playerStats.TotalPlayCount.ToString("n", customNumberSeperator).Split('.')[0], System.Drawing.Color.FromArgb(251, 211, 64), 110, 3750, 1540);
+
+            rankingCardCreator.AddText("RANKED", System.Drawing.Color.FromArgb(251, 211, 64), 40, 3370, 1720);
+            rankingCardCreator.AddText(playerStats.RankedPlayerCount.ToString("n", customNumberSeperator).Split('.')[0], System.Drawing.Color.FromArgb(251, 211, 64), 60, 3760, 1700);
+
+            //Add best score
+            var nameFontSize = 130;
+            if (playerTopStats.Name.Length >= 25) { 
+                nameFontSize = 70;
+                var spaces = playerTopStats.Name.Split(" ");
+
+                var firstname = "";
+                var lastname = "";
+                var splitcount = 0;
+                var length = 0;
+                foreach(var space in spaces)
+                {
+                    if (length > 25)
+                    {
+                        lastname += space + " ";
+                        continue;
+                    }
+                    else
+                    {
+                        splitcount++;
+                        firstname += space + " ";
+                        length += space.Length;
+                    }
+                    
+                    
+                }
+                rankingCardCreator.AddText(firstname, System.Drawing.Color.White, nameFontSize, 100, 2300);
+                rankingCardCreator.AddText(lastname, System.Drawing.Color.White, nameFontSize, 100, 2415);
+
+            }else if (playerTopStats.Name.Length >= 52)
+            {
+                rankingCardCreator.AddText("Fuck this map name", System.Drawing.Color.White, nameFontSize, 100, 2300);
+            }
+            else
+            {
+                rankingCardCreator.AddText(playerTopStats.Name, System.Drawing.Color.White, nameFontSize, 100, 2300);
+            }
+            rankingCardCreator.AddText(playerTopStats.GetDifficulty().Replace("Plus", "+"), System.Drawing.Color.FromArgb(176, 176, 176), 110, 100, 2500);
+            rankingCardCreator.AddText($"{playerTopStats.Pp.ToString("0.00")}PP", System.Drawing.Color.White, 160, 2950, 2270);
+            rankingCardCreator.AddText($"{Math.Round(Convert.ToDouble(playerTopStats.UScore) / Convert.ToDouble(playerTopStats.MaxScoreEx) * 100, 3).ToString("0.00")}%", System.Drawing.Color.FromArgb(176, 176, 176), 110, 3320, 2500);
+            rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerTopStats.Id}.png", 3950, 2020, 800, 800);
+
+            rankingCardCreator.Create("../../../Resources/img/RankingCard.png");         
+        }
+
         public static async Task<EmbedBuilder> GetImprovableMapsByAccFromToplist(string scoresaberId, double wishedAcc)
-        {            
+        {
             var playerTopPageList = new List<ScoresaberSongsModel>();
 
-            using(var client = new HttpClient()){
+            using (var client = new HttpClient())
+            {
                 for (var x = 1; x <= 8; x++)
                 {
                     var url = $"https://new.scoresaber.com/api/player/{scoresaberId}/scores/top/{x}";
@@ -1150,9 +1360,9 @@ namespace DiscordBeatSaberBot.Extensions
             }
 
             var playerTopList = new List<Score>();
-            foreach(var topModel in playerTopPageList)
+            foreach (var topModel in playerTopPageList)
             {
-                foreach(var map in topModel.Scores)
+                foreach (var map in topModel.Scores)
                 {
                     playerTopList.Add(map);
                 }
@@ -1164,7 +1374,7 @@ namespace DiscordBeatSaberBot.Extensions
 
             foreach (var map in playerTopList)
             {
-                
+
 
                 double percentage = Convert.ToDouble(map.UScore) / Convert.ToDouble(map.MaxScoreEx) * 100;
                 var acc = Math.Round(percentage, 2);
@@ -1229,14 +1439,14 @@ namespace DiscordBeatSaberBot.Extensions
                 MapMessage += $"{ppleftList.First(d => d.Value == sortedPpLeftList[x]).Key}: **{sortedPpLeftList[x]}pp** \n\n";
             }
 
-                return new EmbedBuilder()
+            return new EmbedBuilder()
             {
-                Title = "To Improve",                
+                Title = "To Improve",
                 Description = $"Average acc: **{Math.Round(avgAcc, 2)}** \nAvg acc is from maps lower than the wished acc, from the player's top {playerTopList.Count()} maps. \nMaps with a current acc lower than the avg acc are considered 'not passable'. \n\n" + MapMessage,
-                Footer = new EmbedFooterBuilder() { Text = "The values are currently not correct, this is still just a test function"}
+                Footer = new EmbedFooterBuilder() { Text = "The values are currently not correct, this is still just a test function" }
             };
 
-            
+
         }
     }
 }

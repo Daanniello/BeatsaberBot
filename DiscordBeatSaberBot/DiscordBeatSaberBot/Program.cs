@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using DiscordBeatSaberBot.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using DiscordBeatSaberBot.Config;
+using DiscordBeatSaberBot.Api.GiphyApi;
 
 namespace DiscordBeatSaberBot
 {
@@ -39,20 +40,16 @@ namespace DiscordBeatSaberBot
 
         public async Task MainAsync()
         {
-            /*var players = DatabaseContext.ExecuteSelectQuery("Select * from Player where CountryCode='NL'");
-
-            foreach (var player in players)
-            {
-                DatabaseContext.ExecuteInsertQuery($"Insert into PlayerInCountry (DiscordId, GuildId) values ({player[1]}, 505485680344956928)");
-            }*/
+            
 
 
             try
             {
                 discordSocketClient = new DiscordSocketClient();
                 Console.WriteLine("Connecting to Discord...");
-                
-                await discordSocketClient.LoginAsync(TokenType.Bot, DatabaseContext.ExecuteSelectQuery("Select * from Settings")[0][0].ToString());
+
+                var loginCode = await DatabaseContext.ExecuteSelectQuery("Select * from Settings");
+                await discordSocketClient.LoginAsync(TokenType.Bot, loginCode[0][0].ToString());
                 await discordSocketClient.StartAsync();
 
                 //Events
@@ -62,7 +59,8 @@ namespace DiscordBeatSaberBot
                 discordSocketClient.ReactionRemoved += ReactionRemoved;
                 discordSocketClient.UserJoined += OnUserJoined;
                 discordSocketClient.Ready += Init;
-                Console.WriteLine("Connecting to Discord...");
+           
+                Console.WriteLine("Connecting to Discord...");                
                 await Task.Delay(-1);
             }
             catch (Exception ex)
@@ -87,14 +85,18 @@ namespace DiscordBeatSaberBot
 
                 //Setting up info for the bot
                 _startTime = DateTime.Now;
-                var settingData = JsonExtension.GetJsonData("../../../BeatSaberSettings.txt");                
-                await discordSocketClient.SetGameAsync(DatabaseContext.ExecuteSelectQuery("Select * from Settings")[0][1].ToString());
+                var playingGame = await DatabaseContext.ExecuteSelectQuery("Select * from Settings");
+                await discordSocketClient.SetGameAsync(playingGame[0][1].ToString());
                 var updater = new UpdateTimer(discordSocketClient);
-                updater.Start(() => updater.DutchDiscordUserCount(_startTime), 1);
-                updater.Start(() => updater.EventNotification(), 1);
-                //updater.Start(() => updater.AutomaticUnMute(), 0, 1, 0);
+                //updater.Start(() => updater.DutchDiscordUserCount(_startTime), 1);
+                //updater.Start(() => updater.EventNotification(), 1);
+                updater.Start(() => updater.AutomaticUnMute(), 0, 1, 0);
+                //updater.Start(() => new Giphy().PostTrendingGif(discordSocketClient, 627156958880858113, 749742808851808266), 5, 0, 0);
+                //updater.Start(() => new ScoresaberRankMapsFeed(discordSocketClient).CheckIfRankedRequestTopChanged(), 0, 30, 0);
 
                 _logger.ConsoleLog("initialization completed.");
+  
+
             }
             catch (Exception ex)
             {
@@ -247,6 +249,25 @@ namespace DiscordBeatSaberBot
 
                 Console.WriteLine("Task token: " + token.IsCancellationRequested);
             }
+        }
+
+        //Quick Functions
+
+        private async void CreateEmbedInChannel(ulong GuildID, ulong ChannelID)
+        {
+            var guild = discordSocketClient.GetGuild(GuildID);
+            var channel = guild.GetTextChannel(ChannelID);
+
+            var embed = new EmbedBuilder()
+            {
+                Title = "Website",
+                Color = Color.Orange,
+                Url = "https://silverhaze.live/",
+                ThumbnailUrl = "https://www.solid-optics.com/wp-content/uploads/dev_icon.png",
+                Description = "My website with all kind of handy information. With also a merch store! :)"
+            };
+
+            await channel.SendMessageAsync("", false, embed.Build());
         }
     }
 }

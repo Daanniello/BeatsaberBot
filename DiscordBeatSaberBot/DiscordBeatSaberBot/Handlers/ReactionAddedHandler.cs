@@ -62,8 +62,10 @@ namespace DiscordBeatSaberBot.Handlers
                     var generalChannel = discordSocketClient.GetGuild(505485680344956928)
                         .GetChannel(ulong.Parse(d.First()));
                     await generalChannel.AddPermissionOverwriteAsync(user,
-                        new OverwritePermissions().Modify(sendMessages: PermValue.Allow,
-                            viewChannel: PermValue.Allow, readMessageHistory: PermValue.Allow));
+                        new OverwritePermissions().Modify(
+                            sendMessages: PermValue.Inherit,
+                            viewChannel: PermValue.Allow, 
+                            readMessageHistory: PermValue.Allow));
 
                     await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
                 }
@@ -76,8 +78,10 @@ namespace DiscordBeatSaberBot.Handlers
                     var generalChannel = discordSocketClient.GetGuild(505485680344956928)
                         .GetChannel(ulong.Parse(d.First()));
                     await generalChannel.AddPermissionOverwriteAsync(user,
-                        new OverwritePermissions().Modify(sendMessages: PermValue.Allow,
-                            viewChannel: PermValue.Allow, readMessageHistory: PermValue.Allow));
+                        new OverwritePermissions().Modify(
+                            sendMessages: PermValue.Inherit,
+                            viewChannel: PermValue.Allow, 
+                            readMessageHistory: PermValue.Allow));
                 }
                 else if (reaction.Emote.ToString() == "<:red_check:671413258468720650>")
                 {
@@ -85,7 +89,9 @@ namespace DiscordBeatSaberBot.Handlers
                     var generalChannel = discordSocketClient.GetGuild(505485680344956928)
                         .GetChannel(reaction.Channel.Id);
                     await generalChannel.AddPermissionOverwriteAsync(user,
-                        new OverwritePermissions().Modify(sendMessages: PermValue.Deny, viewChannel: PermValue.Deny,
+                        new OverwritePermissions().Modify(
+                            sendMessages: PermValue.Deny, 
+                            viewChannel: PermValue.Deny,
                             readMessageHistory: PermValue.Deny));
                 }
             }
@@ -104,7 +110,7 @@ namespace DiscordBeatSaberBot.Handlers
                 foreach (var role in userRoles)
                     if (role.Name == "Nieuwkomer")
                     {
-                        var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Koos Rankloos");
+                        var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Unverified");
                         var deleteRole = guild.Roles.FirstOrDefault(x => x.Name == "Nieuwkomer");
                         await user.AddRoleAsync(addRole);
                         await user.RemoveRoleAsync(deleteRole);
@@ -190,6 +196,7 @@ namespace DiscordBeatSaberBot.Handlers
                         }
 
                         var guildChannel = channel as SocketGuildChannel;
+                        //Adds user in the players table and in the players in country table
                         var check = await new RoleAssignment(discordSocketClient).LinkAccount(discordId, scoresaberId, guildChannel.Guild.Id);
                         if (check)
                         {
@@ -198,16 +205,15 @@ namespace DiscordBeatSaberBot.Handlers
                         }
 
                         var player = await new ScoresaberAPI(scoresaberId).GetPlayerFull();
-
+                        
 
                         DutchRankFeed.GiveRoleWithRank(player.playerInfo.CountryRank, scoresaberId, discordSocketClient);
                         var dutchGuild = new GuildService(discordSocketClient, 505485680344956928);
-                        var linkingUser = dutchGuild.Guild.GetUser(new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId));
+                        var linkingUser = dutchGuild.Guild.GetUser(await new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId));
                         await dutchGuild.AddRole("Verified", linkingUser);
 
 
                         await dutchGuild.DeleteRole("Unverified", linkingUser);
-                        await dutchGuild.DeleteRole("Koos Rankloos", linkingUser);
 
                         await program.UserJoinedMessage(linkingUser);
                     }

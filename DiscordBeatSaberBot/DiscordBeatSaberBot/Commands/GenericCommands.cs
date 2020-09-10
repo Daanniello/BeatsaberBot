@@ -3,6 +3,8 @@ using Discord.WebSocket;
 using System.Threading.Tasks;
 using Discord;
 using DiscordBeatSaberBot.Extensions;
+using System.Net.Http;
+using System.Net;
 
 namespace DiscordBeatSaberBot.Commands
 {
@@ -48,6 +50,19 @@ namespace DiscordBeatSaberBot.Commands
             {
                 await message.Channel.SendMessageAsync("Please don't touch this command you normie");
             }            
+        }
+
+        [Help("Number", "Gives random info about a number", "!bs number (x)", HelpAttribute.Catergories.BotFunctions)]
+        static public async Task Number(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var nr = message.Content.Substring(11);
+            
+            using (var client = new HttpClient())
+            {
+                var numberdata = await client.GetAsync("http://numbersapi.com/" + nr);
+                if (numberdata.StatusCode != HttpStatusCode.OK) return;
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Number Data from " + nr, await numberdata.Content.ReadAsStringAsync()).Build());
+            }
         }
 
         [Help("HelpListRaw", "Gives a raw list of help functions", "!bs playing (gameName)", HelpAttribute.Catergories.BotFunctions)]

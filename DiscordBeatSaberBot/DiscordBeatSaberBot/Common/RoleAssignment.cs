@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore.Storage;
 using Newtonsoft.Json;
 
 namespace DiscordBeatSaberBot
@@ -78,8 +81,8 @@ namespace DiscordBeatSaberBot
         {
             try
             {
-                DatabaseContext.ExecuteInsertQuery($"Insert into Player (ScoresaberId, DiscordId, CountryCode) values ({scoresaberId}, {discordId}, 'NL')");
-                DatabaseContext.ExecuteInsertQuery($"Insert into PlayerInCountry (DiscordId, GuildId) values ({discordId}, {guildId})");
+                await DatabaseContext.ExecuteInsertQuery($"Insert into Player (ScoresaberId, DiscordId, CountryCode) values ({scoresaberId}, {discordId}, 'NL')");
+                await DatabaseContext.ExecuteInsertQuery($"Insert into PlayerInCountry (DiscordId, GuildId) values ({discordId}, {guildId})");
                 return true;
             }
             catch (Exception ex)
@@ -92,34 +95,35 @@ namespace DiscordBeatSaberBot
         {
             try
             {
-                DatabaseContext.ExecuteRemoveQuery($"Delete from Player where DiscordId={discordId}");
-                DatabaseContext.ExecuteRemoveQuery($"Delete from PlayerInCountry where DiscordId={discordId}");
+                await DatabaseContext.ExecuteRemoveQuery($"Delete from Player where DiscordId={discordId}");
+                await DatabaseContext.ExecuteRemoveQuery($"Delete from PlayerInCountry where DiscordId={discordId}");
                 return true;
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Unlink error: " + ex);
                 return false;
             }
         }
 
-        public ulong GetDiscordIdWithScoresaberId(string scoresaberId)
+        public async Task<ulong> GetDiscordIdWithScoresaberId(string scoresaberId)
         {
             try
             {
-                var result = DatabaseContext.ExecuteSelectQuery($"Select * from Player where ScoresaberId={scoresaberId}");
+                var result = await DatabaseContext.ExecuteSelectQuery($"Select * from Player where ScoresaberId={scoresaberId}");
                 return Convert.ToUInt64(result[0][1]);
             }
             catch (Exception ex)
             {
                 return 0;
-            }          
+            }
         }
 
-        public bool CheckIfDiscordIdIsLinked(string DiscordId)
+        public async Task<bool> CheckIfDiscordIdIsLinked(string DiscordId)
         {
             try
             {
-                var result = DatabaseContext.ExecuteSelectQuery($"Select * from Player where DiscordId={DiscordId}");
+                var result = await DatabaseContext.ExecuteSelectQuery($"Select * from Player where DiscordId={DiscordId}");
                 if (result.Count() > 0) return true;
             }
             catch (Exception ex)
@@ -129,39 +133,77 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        public string GetScoresaberIdWithDiscordId(string DiscordId)
+        public async Task<string> GetScoresaberIdWithDiscordId(string DiscordId)
         {
             try
             {
-                var result = DatabaseContext.ExecuteSelectQuery($"Select * from Player where DiscordId={DiscordId}");
+                var result = await DatabaseContext.ExecuteSelectQuery($"Select * from Player where DiscordId={DiscordId}");
                 return result[0][0].ToString();
             }
             catch (Exception ex)
             {
                 return "";
-            }           
+            }
         }
 
-        public async void MutePerson(ulong discordId, ulong guildId)
+        public async void MutePerson(ulong discordId, ulong guildId, string timerange = null)
         {
+            DateTime dateTillUnmute = DateTime.Now;
+
+            //2y1M5w3d6h10m43s
+            if (timerange != null)
+            {
+
+                var timesRaw = Regex.Split(timerange, @"([0-9]+[a-zA-Z])");
+                var times = timesRaw.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                
+                foreach (var time in times)
+                {
+                    var values = Regex.Replace(time, @"(?<=\d)(?=\p{L})", " ").Split(" ");
+                    if (values[1] == "s") dateTillUnmute = dateTillUnmute.AddSeconds(Convert.ToInt32(values[0]));
+                    if (values[1] == "m") dateTillUnmute = dateTillUnmute.AddMinutes(Convert.ToInt32(values[0]));
+                    if (values[1] == "h") dateTillUnmute = dateTillUnmute.AddHours(Convert.ToInt32(values[0]));
+                    if (values[1] == "d") dateTillUnmute = dateTillUnmute.AddDays(Convert.ToInt32(values[0]));
+                    if (values[1] == "w") dateTillUnmute = dateTillUnmute.AddDays(Convert.ToInt32(values[0]) * 7);
+                    if (values[1] == "M") dateTillUnmute = dateTillUnmute.AddMonths(Convert.ToInt32(values[0]));
+                    if (values[1] == "y") dateTillUnmute = dateTillUnmute.AddYears(Convert.ToInt32(values[0]));
+                }
+            }           
+
             var guild = _discordSocketClient.GetGuild(Convert.ToUInt64(guildId));
-            var countryInfo = DatabaseContext.ExecuteSelectQuery($"Select * from Country where GuildId={guildId}");
+            var countryInfo = await DatabaseContext.ExecuteSelectQuery($"Select * from Country where GuildId={guildId}");
             var muteRoleId = countryInfo[0][4];
             var muteRole = guild.GetRole(Convert.ToUInt64(muteRoleId));
             var mutedPeopleChannelId = Convert.ToUInt64(countryInfo[0][5]);
 
-               
+
             //Mute role: 550291116667437056
             var user = guild.GetUser(discordId);
             user.AddRoleAsync(muteRole);
 
+            //Add unmute date in database
+            if (dateTillUnmute > DateTime.Now)
+            {
+                await DatabaseContext.ExecuteInsertQuery($"update PlayerInCountry set Muted = ('{dateTillUnmute.ToString()}') where DiscordId={discordId}");
+            }
+            else
+            {
+                await DatabaseContext.ExecuteInsertQuery($"update PlayerInCountry set Muted = NULL where DiscordId={discordId}");
+            }
+
+            //Send message in dutch staff channel 
+            string s = dateTillUnmute < DateTime.Now ? "unmute" : dateTillUnmute.ToString(); 
+            await guild.GetTextChannel(711347912680013825).SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"{user.Username} (id:{user.Id}) is now muted", $"{user.Username} is muted until {s}").Build());
+
             //Make sure all channels have the mute role setup right.
             foreach (var channel in guild.Channels)
             {
+                //TODO announcement channel contorleren
+                if (channel.Id == 510959349263499264) continue;
                 if (channel.Id == mutedPeopleChannelId) continue;
-                channel.AddPermissionOverwriteAsync(muteRole, new OverwritePermissions().Modify(
-                    readMessageHistory: PermValue.Inherit, 
-                    viewChannel: PermValue.Inherit, 
+                await channel.AddPermissionOverwriteAsync(muteRole, new OverwritePermissions().Modify(
+                    readMessageHistory: PermValue.Inherit,
+                    viewChannel: PermValue.Inherit,
                     sendMessages: PermValue.Deny,
                     attachFiles: PermValue.Deny,
                     useExternalEmojis: PermValue.Deny,
@@ -172,14 +214,17 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public void UnMutePerson(ulong discordId, ulong guildId)
+        public async void UnMutePerson(ulong discordId, ulong guildId)
         {
             var guild = _discordSocketClient.GetGuild(Convert.ToUInt64(guildId));
-            var countryInfo = DatabaseContext.ExecuteSelectQuery($"Select * from Country where GuildId={guildId}");
+            var countryInfo = await DatabaseContext.ExecuteSelectQuery($"Select * from Country where GuildId={guildId}");
             var muteRoleId = countryInfo[0][4];
             var muteRole = guild.GetRole(Convert.ToUInt64(muteRoleId));
             var user = guild.GetUser(discordId);
             user.RemoveRoleAsync(muteRole);
+            await DatabaseContext.ExecuteInsertQuery($"update PlayerInCountry set Muted = NULL where DiscordId={discordId}");
+            await guild.GetTextChannel(711347912680013825).SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"{user.Username} (id:{user.Id}) is now unmuted", $":)").Build());
+
         }
     }
 }

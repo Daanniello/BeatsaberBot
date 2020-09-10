@@ -46,7 +46,8 @@ namespace DiscordBeatSaberBot.Models.ScoreberAPI
         public double Weight { get { return Math.Round(_weight, 14); } set { this._weight = Math.Round(value, 14); } }
 
         [JsonProperty("songHash")]
-        public string Id { get; set; }
+        public string _id { get; set; }
+        public string Id { get { return _id.ToUpper(); } set { this._id = value; } }
 
         [JsonProperty("songName")]
         public string Name { get; set; }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -25,8 +26,16 @@ namespace DiscordBeatSaberBot
             //The time that the function needs to be called
             var timespan = new TimeSpan(0, hours, minutes, seconds);
 
-            var thread = new Thread(() => Update(timespan, method));
-            thread.Start();
+            try
+            {
+                var thread = new Thread(() => Update(timespan, method));
+                thread.Start();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            
         }
 
         public async Task Update(TimeSpan timespan, Func<Task> method)
@@ -35,6 +44,7 @@ namespace DiscordBeatSaberBot
             {
                 try
                 {
+                    Console.WriteLine("Updating.. ");
                     await method();
                 }
                 catch (Exception ex)
@@ -71,7 +81,7 @@ namespace DiscordBeatSaberBot
 
         public async Task AutomaticUnMute()
         {
-            var mutedPeople = DatabaseContext.ExecuteSelectQuery("Select * from PlayerInCountry where Muted IS NOT NULL");
+            var mutedPeople = await DatabaseContext.ExecuteSelectQuery("Select * from PlayerInCountry where Muted IS NOT NULL");
             foreach(var muted in mutedPeople)
             {
                 var dateUntillUnmute = Convert.ToDateTime(muted[2]);
@@ -80,6 +90,7 @@ namespace DiscordBeatSaberBot
                     new RoleAssignment(discord).UnMutePerson(Convert.ToUInt64(muted[0]), Convert.ToUInt64(muted[1]));
                 }
             }
+            
         }
 
             public async Task EventNotification()

@@ -96,14 +96,15 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("Mute", "Will mute a person in the dutch discord", "!mute (DiscordTag or ID)", HelpAttribute.Catergories.DutchFunctions)]
+        [Help("Mute", "Will mute a person in the dutch discord", "!mute (DiscordTag or ID) (example: 2w3d5h) y=year M=month w=week d=day h=hour m=minute s=second", HelpAttribute.Catergories.DutchFunctions)]
         static public async Task Mute(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (message.Author.IsDutchAdmin(discordSocketClient) || message.Author.IsDutchMod(discordSocketClient))
             {
-                var discordId = message.Content.Substring(9).Replace("<@!", "").Replace(">", "");
+                var parameters = message.Content.Substring(9).Replace("<@!", "").Replace(">", "").Split(" ");
+                var discordId = parameters[0];
                 var guildChannel = (SocketGuildChannel)message.Channel;
-                new RoleAssignment(discordSocketClient).MutePerson(ulong.Parse(discordId), guildChannel.Guild.Id);
+                new RoleAssignment(discordSocketClient).MutePerson(ulong.Parse(discordId), guildChannel.Guild.Id, parameters.Length > 1 ? parameters[1] : null);
                 message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("User has been muted", $"{discordId} has been muted").Build());
             }
             else
@@ -135,7 +136,7 @@ namespace DiscordBeatSaberBot.Commands
             var moderationHelper = new GuildService(discordSocketClient, 505485680344956928);
 
 
-            if (r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
+            if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
             {
                 await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Pog", $"Your Discord ID is already linked with your scoresaber, No worries {message.Author.Username}. If you want to unlink, type !bs unlink.").Build());
 
@@ -159,7 +160,10 @@ namespace DiscordBeatSaberBot.Commands
                     if (guildChannel.Guild.Id != 505485680344956928)
                     {
                         message.Channel.SendMessageAsync("It seems that you are Dutch and trying to link your account outside the Dutch Discord. A Dutch request needs to be validated. Consider joining the Dutch Beat Saber Discord. (https://discord.gg/cH7mTyq)");
+                        return;
                     }
+
+                    await new WelcomeInterviewHandler(discordSocketClient, message.Channel, message.Author.Id).AskForInterview();
 
                     r.MakeRequest(message, 505485680344956928, 549350982081970176);
 
@@ -169,21 +173,23 @@ namespace DiscordBeatSaberBot.Commands
                         await moderationHelper.AddRole("Unverified", user);
                         await moderationHelper.DeleteRole("Nieuwkomer", user);
                     }
+
+                    
                 }
                 //Test code for different country registration
-                else if (await ValidationExtension.IsDanish(ScoresaberId))
-                {
-                    var guildChannel = message.Channel as SocketGuildChannel;
-                    if (guildChannel.Guild.Id != 505485680344956928)
-                    {
-                        message.Channel.SendMessageAsync("It seems that you are Danish and trying to link your account outside the Danish Discord. A Danish request needs to be validated. Consider joining the Danish Beat Saber Discord. (Discord Link)");
-                    }
+                //else if (await ValidationExtension.IsDanish(ScoresaberId))
+                //{
+                //    var guildChannel = message.Channel as SocketGuildChannel;
+                //    if (guildChannel.Guild.Id != 505485680344956928)
+                //    {
+                //        message.Channel.SendMessageAsync("It seems that you are Danish and trying to link your account outside the Danish Discord. A Danish request needs to be validated. Consider joining the Danish Beat Saber Discord. (Discord Link)");
+                //    }
 
-                    //Make the request in the danish discord
-                    r.MakeRequest(message, 505485680344956928, 550288233272180752);
+                //    //Make the request in the danish discord
+                //    r.MakeRequest(message, 505485680344956928, 550288233272180752);
 
-                    //Add roles for the danish user
-                }
+                //    //Add roles for the danish user
+                //}
                 else if(await ValidationExtension.IsNotDutch(ScoresaberId))
                 {
                     DatabaseContext.ExecuteInsertQuery($"Insert into Player (ScoresaberId, DiscordId) values ({ScoresaberId}, {message.Author.Id.ToString()})");
@@ -211,9 +217,9 @@ namespace DiscordBeatSaberBot.Commands
         {
             var r = new RoleAssignment(discordSocketClient);
             var discordId = message.Author.Id.ToString();
-            if (r.CheckIfDiscordIdIsLinked(discordId))
+            if (await r.CheckIfDiscordIdIsLinked(discordId))
             {
-                r.UnlinkAccount(discordId);
+                await r.UnlinkAccount(discordId);
                 await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Succesfully Unlinked", $"Your discordId {discordId} is now unlinked from your scoresabeId").Build());
                 return;
             }

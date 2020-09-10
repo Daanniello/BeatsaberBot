@@ -238,7 +238,7 @@ namespace DiscordBeatSaberBot
         {
             string message = "";
             if (rank == 0 && oldRank > 0)
-                GiveRole(scoresaberId.ToString(), "Koos Rankloos");
+                GiveRole(scoresaberId.ToString(), "Unverified");
             if (rank == 1 && oldRank > 1)
             {
                 GiveRole(scoresaberId.ToString(), "Nummer 1");
@@ -335,7 +335,7 @@ namespace DiscordBeatSaberBot
                 "Top 501+"
             };
             var r = new RoleAssignment(_discord);
-            ulong userDiscordId = r.GetDiscordIdWithScoresaberId(scoresaberId);
+            ulong userDiscordId = await r.GetDiscordIdWithScoresaberId(scoresaberId);
             if (userDiscordId != 0)
             {              
                 var guild = _discord.GetGuild(505485680344956928);

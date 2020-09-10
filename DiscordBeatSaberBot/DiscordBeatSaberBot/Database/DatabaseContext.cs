@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot
 {
     static class DatabaseContext
     {
 
-        public static List<List<object>> ExecuteSelectQuery(string query)
+        public static async Task<List<List<object>>> ExecuteSelectQuery(string query)
         {
             List<List<object>> items = new List<List<object>>();
 
@@ -19,7 +20,7 @@ namespace DiscordBeatSaberBot
                 connection.Open();
                 try
                 {
-                    using (SqlDataReader reader = oCmd.ExecuteReader())
+                    using (SqlDataReader reader = await oCmd.ExecuteReaderAsync())
                     {
                         while (reader.Read())
                         {
@@ -44,7 +45,7 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public static bool ExecuteInsertQuery(string query)
+        public static async Task<bool> ExecuteInsertQuery(string query)
         {
 
             using (SqlConnection connection = new SqlConnection(ConfigurationManager.ConnectionStrings["BeatSaberDiscordBot"].ToString()))
@@ -53,7 +54,7 @@ namespace DiscordBeatSaberBot
                 connection.Open();
                 try
                 {
-                    oCmd.ExecuteNonQuery();
+                    await oCmd.ExecuteNonQueryAsync();
                 }
                 catch (Exception ex)
                 {
@@ -66,7 +67,7 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public static bool ExecuteRemoveQuery(string query)
+        public static async Task<bool> ExecuteRemoveQuery(string query)
         {
 
             using (SqlConnection connection = new SqlConnection(ConfigurationManager.ConnectionStrings["BeatSaberDiscordBot"].ToString()))
@@ -75,7 +76,7 @@ namespace DiscordBeatSaberBot
                 connection.Open();
                 try
                 {
-                    oCmd.ExecuteNonQuery();
+                    await oCmd.ExecuteNonQueryAsync();
                 }
                 catch (Exception ex)
                 {
