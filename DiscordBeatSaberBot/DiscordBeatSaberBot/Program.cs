@@ -11,6 +11,7 @@ using DiscordBeatSaberBot.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using DiscordBeatSaberBot.Config;
 using DiscordBeatSaberBot.Api.GiphyApi;
+using DiscordBeatSaberBot.Api.Spotify;
 
 namespace DiscordBeatSaberBot
 {
@@ -91,11 +92,14 @@ namespace DiscordBeatSaberBot
                 //updater.Start(() => updater.DutchDiscordUserCount(_startTime), 1);
                 //updater.Start(() => updater.EventNotification(), 1);
                 updater.Start(() => updater.AutomaticUnMute(), 0, 1, 0);
+                updater.Start(() => DutchRankFeed.GetScoresaberLiveFeed(discordSocketClient), 0, 0, 20);
+          
                 //updater.Start(() => new Giphy().PostTrendingGif(discordSocketClient, 627156958880858113, 749742808851808266), 5, 0, 0);
                 //updater.Start(() => new ScoresaberRankMapsFeed(discordSocketClient).CheckIfRankedRequestTopChanged(), 0, 30, 0);
 
                 _logger.ConsoleLog("initialization completed.");
-  
+
+                
 
             }
             catch (Exception ex)
@@ -155,119 +159,6 @@ namespace DiscordBeatSaberBot
                 await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", ex.Message, null, null).Build());
                 await _logger.Log(Logger.LogCode.error, ex.ToString());  
             }
-        }
-
-        private async Task RankFeedTimer(CancellationToken token)
-        {
-            var watch = Stopwatch.StartNew();
-            while (!token.IsCancellationRequested)
-            {
-                try
-                {
-                    var belgiumRankFeed = new CountryRankFeed(discordSocketClient, "BE");
-                    var gbRankFeed = new CountryRankFeed(discordSocketClient, "GB");
-                    var au_nzRankFeed = new CountryRankFeed(discordSocketClient, "AU", "NZ");
-                    var dkRankFeed = new CountryRankFeed(discordSocketClient, "DK");
-
-                    Console.WriteLine("Updating news feed in 60 sec");
-                    await Task.Delay(60000 - (int) (watch.ElapsedMilliseconds % 1000), token);
-
-                    Console.WriteLine("Startin NL feed...");
-                    try
-                    {
-                        var stopwatch = new Stopwatch();
-                        stopwatch.Start();
-                        await DutchRankFeed.DutchRankingFeed(discordSocketClient);
-                        stopwatch.Stop();
-                        Console.WriteLine("NL Feed updatetime: " + stopwatch.Elapsed);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("News Feed Crashed" + ex + "NL");
-                        _logger.Log(Logger.LogCode.error, "NL Feed Crashed \n\n" + ex);
-                    }
-
-                    Console.WriteLine("Ending NL feed...");
-
-                    await Task.Delay(20000 - (int)(watch.ElapsedMilliseconds % 1000), token);
-                    Console.WriteLine("Startin DK feed...");
-                    try
-                    {
-                        await dkRankFeed.SendFeedInCountryDiscord(511188151968989197, 680415200108871784);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("News Feed Crashed" + ex + "DK");
-                    }
-
-                    await Task.Delay(20000 - (int) (watch.ElapsedMilliseconds % 1000), token);
-                    Console.WriteLine("Startin AU_NZ feed...");
-                    try
-                    {
-                        await au_nzRankFeed.SendFeedInCountryDiscord(471250128615899136, 550387948294766611);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("News Feed Crashed" + ex + "AU_NZ");
-                    }
-
-                    Console.WriteLine("Ending AU_NZ feed...");
-
-                    await Task.Delay(20000 - (int) (watch.ElapsedMilliseconds % 1000), token);
-                    Console.WriteLine("Startin GB feed...");
-                    try
-                    {
-                        await gbRankFeed.SendFeedInCountryDiscord(483482746824687616, 535187354122584070);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("News Feed Crashed" + ex + "GB");
-                    }
-
-                    Console.WriteLine("Ending GB feed...");
-
-                    await Task.Delay(20000 - (int) (watch.ElapsedMilliseconds % 1000), token);
-                    Console.WriteLine("Startin BE feed...");
-                    try
-                    {
-                        await belgiumRankFeed.SendFeedInCountryDiscord(561207570669371402, 634091663526199307);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("News Feed Crashed" + ex + "BE");
-                    }
-
-                    Console.WriteLine("Ending BE feed...");
-
-
-                    Console.WriteLine("News Feed Updated");
-                }
-                catch (Exception ex)
-                {
-                    _logger.Log(Logger.LogCode.error, ex.ToString());
-                }
-
-                Console.WriteLine("Task token: " + token.IsCancellationRequested);
-            }
-        }
-
-        //Quick Functions
-
-        private async void CreateEmbedInChannel(ulong GuildID, ulong ChannelID)
-        {
-            var guild = discordSocketClient.GetGuild(GuildID);
-            var channel = guild.GetTextChannel(ChannelID);
-
-            var embed = new EmbedBuilder()
-            {
-                Title = "Website",
-                Color = Color.Orange,
-                Url = "https://silverhaze.live/",
-                ThumbnailUrl = "https://www.solid-optics.com/wp-content/uploads/dev_icon.png",
-                Description = "My website with all kind of handy information. With also a merch store! :)"
-            };
-
-            await channel.SendMessageAsync("", false, embed.Build());
         }
     }
 }

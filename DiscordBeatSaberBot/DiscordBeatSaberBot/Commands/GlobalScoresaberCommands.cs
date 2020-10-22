@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
 using DiscordBeatSaberBot.Api.GiphyApi;
+using DiscordBeatSaberBot.Api.Spotify;
 using DiscordBeatSaberBot.Extensions;
 using GiphyDotNet.Model.Parameters;
 
@@ -167,7 +169,8 @@ namespace DiscordBeatSaberBot.Commands
             {
                 var scoresaberId = await r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
                 await BeatSaberInfoExtension.GetAndCreateProfileImage(scoresaberId);
-                await message.Channel.SendFileAsync("../../../Resources/img/RankingCard.png");
+                await message.Channel.SendFileAsync($"../../../Resources/img/RankingCard_{scoresaberId}.png");
+                File.Delete($"../../../Resources/img/RankingCard_{scoresaberId}.png");
             }
             else
             {
@@ -185,8 +188,10 @@ namespace DiscordBeatSaberBot.Commands
                 //Create UserCard
                 await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, "Recentsongs");
                 await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberId);                
-                await message.Channel.SendFileAsync("../../../Resources/img/UserCard.png");
-                await message.Channel.SendFileAsync("../../../Resources/img/RecentsongsCard.png");
+                await message.Channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberId}.png");
+                await message.Channel.SendFileAsync($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
+                File.Delete($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
+                File.Delete($"../../../Resources/img/UserCard_{scoresaberId}.png");
             }
             else
             {
@@ -204,8 +209,10 @@ namespace DiscordBeatSaberBot.Commands
                 //Create UserCard
                 await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, "Topsongs");
                 await BeatSaberInfoExtension.GetAndCreateTopsongsCardImage(scoresaberId);
-                await message.Channel.SendFileAsync("../../../Resources/img/UserCard.png");
-                await message.Channel.SendFileAsync("../../../Resources/img/RecentsongsCard.png");
+                await message.Channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberId}.png");
+                await message.Channel.SendFileAsync($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
+                File.Delete($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
+                File.Delete($"../../../Resources/img/UserCard_{scoresaberId}.png");
             }
             else
             {

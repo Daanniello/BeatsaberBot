@@ -5,297 +5,209 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Versioning;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using Discord;
 using Discord.WebSocket;
+using DiscordBeatSaberBot.Models.ScoreberAPI;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 
 namespace DiscordBeatSaberBot
 {
+    
     public static class DutchRankFeed
     {
         private static DiscordSocketClient _discord;
-        private static Logger _logger;
+        private static List<Dictionary<ulong, long>> recentPlays = new List<Dictionary<ulong, long>>();
+        private static List<Dictionary<ulong, long>> recentPlaysSoonRemoved = new List<Dictionary<ulong, long>>();
 
-        public static async Task<(List<string>, List<string>, List<string>, List<string>)> GetDutchRankList()
+        public static async Task<Dictionary<double, Dictionary<ScoresaberLiveFeedModel, ScoresaberSongsModel>>> GetScoresaberLiveFeed(DiscordSocketClient discord)
         {
-            int tab = 5;
-            var playerImg = new List<string>();
-            var playerRank = new List<string>();
-            var playerName = new List<string>();
-            var playerId = new List<string>();
 
+            var rankRanked = 100;
+            var rankUnranked = 1;
 
-            using (var client = new HttpClient())
-            {
-                client.Timeout = new TimeSpan(0, 0, 0, 10);
-                for (int x = 1; x <= tab; x++)
-                {
-                    string url = "https://scoresaber.com/global/" + x + "&country=nl";
+            var liveFeedInfo = await ScoresaberAPI.GetLiveFeed();
 
+            var playerListToPost = new List<PlayerListToPost>();
 
-                    string html = "";
-                    try
-                    {
-                        html = await client.GetStringAsync(url);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Log(Logger.LogCode.fatal_error, "Scoresaber ignored me >;d\n\n" + ex);
+            var scoresaberIds = await DatabaseContext.ExecuteSelectQuery($"Select * from ServerSilverhazeAchievementFeed");
+           
 
-                        throw ex;
-                    }
-
-                    var doc = new HtmlDocument();
-                    try
-                    {
-                        doc.LoadHtml(html);
-                    }
-                    catch
-                    {
-                        _logger.Log(Logger.LogCode.error, "Error with HTML: \n" + html);
-                    }
-
-                    var table = doc.DocumentNode.SelectNodes("//figure[@class='image is-24x24']");
-                    playerImg.AddRange(table.Descendants("img").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("src", ""))).ToList());
-
-                    var ranks = doc.DocumentNode.SelectNodes("//td[@class='rank']");
-                    playerRank.AddRange(ranks.Select(a => WebUtility.HtmlDecode(a.InnerText).Replace("#", "").Replace(@"\r\n", "").Trim()).ToList());
-
-                    var names = doc.DocumentNode.SelectNodes("//td[@class='player']");
-                    playerName.AddRange(names.Select(a => WebUtility.HtmlDecode(a.InnerText).Replace(@"\r\n", "").Trim()).ToList());
-                    playerId.AddRange(names.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", ""))).ToList());
-
-                    Console.WriteLine(url);
-                    await Task.Delay(2000);
-                }
-            }
-
-            return (playerImg, playerRank, playerName, playerId);
-        }
-
-        public static async Task<Dictionary<int, List<string>>> GetOldRankList()
-        {
-            string filePath = "../../../CountryRankingLists/DutchRankList.txt";
-
-            var data = new Dictionary<int, List<string>>();
             try
             {
-                using (var r = new StreamReader(filePath))
+                foreach (var playerData in liveFeedInfo)
                 {
-                    string json = r.ReadToEnd();
-                    data = JsonConvert.DeserializeObject<Dictionary<int, List<string>>>(json);
-                }
-            }
-            catch
-            {
-                data.Add(1, new List<string> { "naam", "img" });
-            }
-
-            return data;
-        }
-
-        public static async Task<Dictionary<int, List<string>>> UpdateDutchRankList()
-        {
-            string filePath = "../../../CountryRankingLists/DutchRankList.txt";
-            var rankList = await GetDutchRankList();
-
-            if (rankList.Item1.Count == 0) return null;
-
-            var newData = new Dictionary<int, List<string>>();
-
-            for (int x = 0; x < rankList.Item1.Count; x++)
-            {
-                newData.Add(int.Parse(rankList.Item2[x]), new List<string> { rankList.Item3[x], rankList.Item4[x], rankList.Item1[x] });
-            }
-
-            using (var file = File.CreateText(filePath))
-            {
-                var serializer = new JsonSerializer();
-                serializer.Serialize(file, newData);
-            }
-
-            return newData;
-        }
-
-        public static async Task<List<EmbedBuilder>> MessagesToSend()
-        {
-            var embedBuilders = new List<EmbedBuilder>();
-
-            var oldRankList = await GetOldRankList();
-            await UpdateDutchRankList();
-            var newRankList = await GetDutchRankList();
-
-            if (newRankList.Item1.Count == 0) return new List<EmbedBuilder>();
-
-            var oldCache = new List<string>();
-
-            int counter = 0;
-            foreach (var player in oldRankList)
-            {
-                //player.Key.ToString() != newRankList.Item2[counter] 
-                //OldList                NewList                       OldList            NewList
-                if (player.Value[1] != newRankList.Item4[counter])
-                {
-                    RankDownCheck(int.Parse(newRankList.Item2[counter]),
-                        oldRankList.FirstOrDefault(x => x.Value[1] == newRankList.Item4[counter]).Key,
-                        newRankList.Item4[counter].Replace("/u/", ""));
-
-                    if (!oldCache.Contains(newRankList.Item4[counter]))
+                    var silverhazesChannel = false;
+                    foreach (var id in scoresaberIds)
                     {
-                        string imgUrl = newRankList.Item1[counter].Replace("\"", "");
-                        if (imgUrl == "/imports/images/oculus.png")
-                            imgUrl = "https://scoresaber.com/imports/images/oculus.png";
-                        else
-                            imgUrl = "https://scoresaber.com" + imgUrl;
+                        if (id.First().ToString() == playerData.PlayerId.ToString()) silverhazesChannel = true;
+                    }
 
-                        // No Message
-                        try
+                    if (playerData.Flag.ToLower() == "nl.png" || silverhazesChannel)
+                    {
+                        var scoresaber = new ScoresaberAPI(playerData.PlayerId.ToString());
+                        var recentScores = await scoresaber.GetScoresRecent();
+                        var topScores = await scoresaber.GetTopScores();
+
+                        //Check if player should be called out again or if its the first time
+
+                        bool shouldBeSkipped = false;
+                        foreach (var d in recentPlays)
                         {
-                            embedBuilders.Add(new EmbedBuilder
+                            if(d.Keys.First() == playerData.PlayerId && d.Values.First() == playerData.LeaderboardId)
                             {
-                                Title = "Congrats, " + newRankList.Item3[counter],
-                                Description = newRankList.Item3[counter] + " is nu rank **#" + newRankList.Item2[counter] + "** van de Nederlandse beat saber spelers \n" + GetRankUpNotify(int.Parse(newRankList.Item2[counter]), oldRankList.FirstOrDefault(x => x.Value[1] == newRankList.Item4[counter]).Key, ulong.Parse(newRankList.Item4[counter].Replace("/u/", ""))),
-                                Url = "https://scoresaber.com" + newRankList.Item4[counter],
-                                ThumbnailUrl = imgUrl,
-
-                                Color = GetColorFromRank(int.Parse(newRankList.Item2[counter]))
-                            });
+                                var t = new Dictionary<ulong, long>();
+                                t.Add(playerData.PlayerId, playerData.LeaderboardId);
+                                recentPlaysSoonRemoved.Add(t);
+                                shouldBeSkipped = true;
+                            }
                         }
-                        catch
+                        if(shouldBeSkipped) continue;
+                  
+
+                        //Checks if the player should be called out
+                        if (recentScores.Scores[0].Rank <= rankRanked && playerData.Info.Ranked == Ranked.Ranked)
+                        {                      
+                            var player = new PlayerListToPost() { PlayerId = playerData.PlayerId, ScoresaberLive = playerData, ScoresaberSongsData = recentScores };
+                            playerListToPost.Add(player);
+                        }
+                        if (recentScores.Scores[0].Rank <= rankUnranked && playerData.Info.Ranked == Ranked.Unranked)
                         {
-                            embedBuilders.Add(new EmbedBuilder
-                            {
-                                Title = "Congrats, " + newRankList.Item3[counter],
-                                Description = newRankList.Item3[counter] + " is nu rank **#" + newRankList.Item2[counter] + "** van de Nederlandse beat saber spelers \n" + GetRankUpNotify(int.Parse(newRankList.Item2[counter]), oldRankList.FirstOrDefault(x => x.Value[1] == newRankList.Item4[counter]).Key, ulong.Parse(newRankList.Item4[counter].Replace("/u/", ""))),
-                                Color = GetColorFromRank(int.Parse(newRankList.Item2[counter]))
-                            });
-                            var Logger = new Logger(_discord);
-                            Logger.Log(Logger.LogCode.debug, "-NL feed- \nUrl is not correct. \nWrong url is from: " + newRankList.Item3[counter] + "\nAnd the url is: " + imgUrl);
+                            var player = new PlayerListToPost() { PlayerId = playerData.PlayerId, ScoresaberLive = playerData, ScoresaberSongsData = recentScores };
+                            playerListToPost.Add(player);
                         }
-
-                        Console.WriteLine("Feed NL - Message:" + newRankList.Item3[counter] + " is now rank **#" + newRankList.Item2[counter] + "** from the US beat saber spelers");
+                        if (recentScores.Scores.First().LeaderboardId == topScores.Scores.First().LeaderboardId)
+                        {
+                            var player = new PlayerListToPost() { PlayerId = playerData.PlayerId, ScoresaberLive = playerData, ScoresaberSongsData = recentScores, IsTopPlay = true };
+                            playerListToPost.Add(player);
+                        }
                     }
                 }
-
-                oldCache.Add(player.Value[1]);
-
-                counter++;
-            }
-
-            return embedBuilders;
-        }
-
-        public static async Task DutchRankingFeed(DiscordSocketClient discord)
-        {
-            _discord = discord;
-            _logger = new Logger(discord);
-            var guilds = discord.Guilds.Where(x => x.Id == 439514151040057344);
-            var embeds = new List<EmbedBuilder>();
-            try
-            {
-                embeds = await MessagesToSend();
             }
             catch (Exception ex)
             {
-                return;
-                _logger.Log(Logger.LogCode.warning, "Scoresaber is being annoying NL");
-                _logger.Log(Logger.LogCode.debug, ex.ToString());
-            }
+                Console.WriteLine(ex);
+            }           
+            
+            await SendPostInAchievementFeed(playerListToPost, discord, liveFeedInfo, scoresaberIds);
 
-            //Todo: Might break here
-            foreach (var embed in embeds)
-            {
-                await discord.GetGuild(505485680344956928).GetTextChannel(520613984668221440).SendMessageAsync("", false, embed.Build());
-            }
-
-            return;
-            //NL Server 
-            //505485680344956928
+            return null;
         }
 
-        private static Color GetColorFromRank(int rank)
+
+        private static async Task SendPostInAchievementFeed(List<PlayerListToPost> playerListToPost, DiscordSocketClient discord, List<ScoresaberLiveFeedModel> liveFeedInfo, List<List<object>> scoresaberIds)
         {
-            if (rank < 1)
-                return Color.Red;
-            if (rank <= 3)
-                return Color.Blue;
-            if (rank <= 10)
-                return Color.Green;
-            if (rank <= 25)
-                return Color.Orange;
-            if (rank <= 50)
-                return Color.DarkMagenta;
-            if (rank <= 100)
-                return Color.DarkPurple;
-            if (rank <= 250)
-                return Color.DarkRed;
-            return Color.Default;
+            if (playerListToPost.Count != 0)
+            {
+                foreach (var playerData in playerListToPost)
+                {
+                    var playerInfo = playerData.ScoresaberLive;
+                    var songInfo = playerData.ScoresaberSongsData.Scores.First();
+
+                    var color = Color.Blue;
+                    if (songInfo.Rank == 1) color = Color.Gold;
+                    if (songInfo.Rank == 2) color = Color.LighterGrey;
+                    if (songInfo.Rank == 3) color = Color.DarkRed;
+
+
+                    var img = "https://scoresaber.com/imports/images/oculus.png";
+                    if (!playerInfo.Image.OriginalString.Contains("oculus")) img = playerInfo.Image.OriginalString.Replace(".jpg", "_full.jpg");
+
+                    var title = $":flag_{playerInfo.Flag.Replace(".png", "")}: {playerInfo.Name} just got a #{songInfo.Rank} play!";
+                    if (playerData.IsTopPlay)
+                    {
+                        title = $":flag_{playerInfo.Flag.Replace(".png", "")}: Congrats on your new top play {playerInfo.Name}! with rank #{songInfo.Rank}";
+                    }
+
+                    var embed = new EmbedBuilder()
+                    {
+                        Color = color,
+                        Title = title,
+                        Description = $"**Song name:** {playerInfo.Info.Title} \n" +
+                        $"**Difficulty**: {songInfo.GetDifficulty()}\n" +
+                        $"**Ranked type:** {playerInfo.Info.Ranked}\n" +
+                        $"**PP:** {playerInfo.Pp}\n" +
+                        $"**Total plays:** {playerInfo.Info.Scores}",
+                        ThumbnailUrl = $"{img}",
+                        ImageUrl = $"{playerInfo.Info.Image}",
+                        Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}",
+
+                    };
+
+                    var t = new Dictionary<ulong, long>();
+                    t.Add(playerInfo.PlayerId, playerInfo.LeaderboardId);
+                    recentPlays.Add(t);
+
+                    if (playerInfo.Flag.Contains("nl"))
+                    {
+                        var textChannel = discord.GetGuild(505485680344956928).GetTextChannel(767552138879434772);
+                        await textChannel.SendMessageAsync("", false, embed.Build());
+                    }
+                    foreach (var id in scoresaberIds)
+                    {
+                        if (id[0].ToString() == playerInfo.PlayerId.ToString())
+                        {
+                            var textChannel = discord.GetGuild(627156958880858113).GetTextChannel(768520962206990396);
+                            await textChannel.SendMessageAsync("", false, embed.Build());
+                        }
+                    }
+
+                }
+
+                EmptyRecentPlays(recentPlaysSoonRemoved, liveFeedInfo[liveFeedInfo.Count - 1]);
+            }
         }
 
-        private static string GetRankUpNotify(int rank, int? oldRank, ulong scoresaberId)
+        /// <summary>
+        /// Add player with leaderboard id and score to not let the play post agaian.
+        /// </summary>
+        /// <param name="recentPlaysToRemove"></param>
+        /// <param name="lastPlayOnFeed"></param>
+        /// <returns></returns>
+        static public async Task EmptyRecentPlays(List<Dictionary<ulong, long>> recentPlaysToRemove, ScoresaberLiveFeedModel lastPlayOnFeed)
         {
-            string message = "";
-            if (rank == 0 && oldRank > 0)
-                GiveRole(scoresaberId.ToString(), "Unverified");
-            if (rank == 1 && oldRank > 1)
+            if (recentPlaysToRemove.Count == 0) return;
+
+            var timeLeftForRemoving = 90000;
+            if (lastPlayOnFeed.Timeset.Contains("minutes"))
             {
-                GiveRole(scoresaberId.ToString(), "Nummer 1");
-                //message = "Een nieuwe #1 ;O praise the new King";
+                var temp = lastPlayOnFeed.Timeset;
+                timeLeftForRemoving = int.Parse(temp.Replace(" minutes ago", "")) * 60 * 1000;
             }
-            else if (rank <= 3 && oldRank > 3)
+            if (lastPlayOnFeed.Timeset.Contains("seconds"))
             {
-                GiveRole(scoresaberId.ToString(), "Top 3");
-                //message = "Een nieuwe top #3 makker GGGGGGGGG";
-            }
-            else if (rank <= 10 && oldRank > 10)
-            {
-                GiveRole(scoresaberId.ToString(), "Top 10");
-                //message = "Een nieuwe top #10 gamer, Kolonisatie bitches!!";
-            }
-            else if (rank <= 25 && oldRank > 25)
-            {
-                GiveRole(scoresaberId.ToString(), "Top 25");
-                //message = "Een nieuwe top #25, grats!! watch out tho, iemand komt zn rank weer terug halen";
-            }
-            else if (rank <= 50 && oldRank > 50)
-            {
-                GiveRole(scoresaberId.ToString(), "Top 50");
-                //message = "Een nieuwe top #50!!!, YAY stuur een invite voor de discord >;d nU!";
-            }
-            else if (rank <= 100 && oldRank > 100)
-            {
-                GiveRole(scoresaberId.ToString(), "Top 100");
-                //message = "Een nieuwe top #100, het begin van een nieuwe pro";
-            }
-            else if (rank <= 250 && oldRank == null)
-            {
-                message = "Een nieuwe top #250, Welkom nieuwkomer ;O";
-                GiveRole(scoresaberId.ToString(), "Top 250");
+                var temp = lastPlayOnFeed.Timeset;
+                timeLeftForRemoving = int.Parse(temp.Replace(" seconds ago", "")) * 1000;
             }
 
+            await Task.Delay(timeLeftForRemoving);
 
-            //TODO if rank is bigger as 250
+            var recentPlaysTemp = new List<Dictionary<ulong, long>>();
 
+            foreach (var toRemove in recentPlaysToRemove)
+            {
+                foreach (var r in recentPlays)
+                {
+                    if (r.Keys.First() == toRemove.Keys.First() && r.Values.First() == toRemove.Values.First()) continue;
+                    var t = new Dictionary<ulong, long>();
+                    t.Add(r.Keys.First(), r.Values.First());
+                    recentPlaysTemp.Add(t);
+                }
+                recentPlays.Clear();
+                recentPlays.AddRange(recentPlaysTemp);
+            }
 
-            return message;
         }
 
-        public static async Task RankDownCheck(int rank, int oldRank, string scoresaberId)
+        class PlayerListToPost
         {
-            if (rank > 1 && oldRank == 1 && rank <= 3)
-                GiveRole(scoresaberId, "Top 3");
-            else if (rank > 3 && oldRank <= 3 && rank <= 10)
-                GiveRole(scoresaberId, "Top 10");
-            else if (rank > 10 && oldRank <= 10 && rank <= 25)
-                GiveRole(scoresaberId, "Top 25");
-            else if (rank > 25 && oldRank <= 25 && rank <= 50)
-                GiveRole(scoresaberId, "Top 50");
-            else if (rank > 50 && oldRank <= 50 && rank <= 100)
-                GiveRole(scoresaberId, "Top 100");
-            else if (rank > 100 && oldRank <= 100 && rank <= 250)
-                GiveRole(scoresaberId, "Top 250");
+            public ulong PlayerId;
+            public ScoresaberLiveFeedModel ScoresaberLive;
+            public ScoresaberSongsModel ScoresaberSongsData;
+            public bool IsTopPlay = false;
         }
 
         public static async Task GiveRole(string scoresaberId, string roleName, DiscordSocketClient discord)
@@ -310,7 +222,7 @@ namespace DiscordBeatSaberBot
 
             if (rank == 0) return;
             if (rank <= 1) await GiveRole(scoresaberId, "Nummer 1");
-            else if (rank <= 3) await GiveRole(scoresaberId, "Top 3");
+            else if (rank <= 5) await GiveRole(scoresaberId, "Top 5");
             else if (rank <= 10) await GiveRole(scoresaberId, "Top 10");
             else if (rank <= 25) await GiveRole(scoresaberId, "Top 25");
             else if (rank <= 50) await GiveRole(scoresaberId, "Top 50");
@@ -321,11 +233,11 @@ namespace DiscordBeatSaberBot
         }
 
         public static async Task GiveRole(string scoresaberId, string roleName)
-        {           
+        {
             var rolenames = new[]
             {
                 "Nummer 1",
-                "Top 3",
+                "Top 5",
                 "Top 10",
                 "Top 25",
                 "Top 50",
@@ -337,14 +249,23 @@ namespace DiscordBeatSaberBot
             var r = new RoleAssignment(_discord);
             ulong userDiscordId = await r.GetDiscordIdWithScoresaberId(scoresaberId);
             if (userDiscordId != 0)
-            {              
+            {
                 var guild = _discord.GetGuild(505485680344956928);
                 var user = guild.GetUser(userDiscordId);
                 if (user == null)
                 {
                     Console.WriteLine($"User {userDiscordId} is not in the server");
+                    Console.WriteLine($"Removing User...");
+                    await DatabaseContext.ExecuteRemoveQuery($"Delete from Player where discordid={userDiscordId}");
+                    await DatabaseContext.ExecuteRemoveQuery($"Delete from PlayerInCountry where discordid={userDiscordId}");
+                    Console.WriteLine($"User removed.");
+
                     return;
                 }
+
+                var role = guild.Roles.FirstOrDefault(x => x.Name == roleName);
+
+
                 if (user.Id != 221373638979485696)
                     foreach (var userRole in user.Roles)
                     {
@@ -352,7 +273,6 @@ namespace DiscordBeatSaberBot
                             await user.RemoveRoleAsync(userRole);
                     }
 
-                var role = guild.Roles.FirstOrDefault(x => x.Name == roleName);
                 await user.AddRoleAsync(role);
                 Console.WriteLine("User: " + user.Username + "| Added: " + role.Name);
             }

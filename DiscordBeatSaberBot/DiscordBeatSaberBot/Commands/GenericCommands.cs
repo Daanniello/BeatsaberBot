@@ -41,7 +41,7 @@ namespace DiscordBeatSaberBot.Commands
             {
                 var msg = message.Content.Substring(12);
 
-                DatabaseContext.ExecuteInsertQuery($"Insert into Settings (DiscordPlayingGame) values ('{msg}')");
+                await DatabaseContext.ExecuteInsertQuery($"Insert into Settings (DiscordPlayingGame) values ('{msg}')");
 
                 await discordSocketClient.SetGameAsync(msg);
                 await message.Channel.SendMessageAsync("Game now set to " + msg);
@@ -49,6 +49,31 @@ namespace DiscordBeatSaberBot.Commands
             else
             {
                 await message.Channel.SendMessageAsync("Please don't touch this command you normie");
+            }            
+        }
+
+        [Help("AchievementFeed", "Adds you to the achievementsfeed in Silverhazes discord", "!bs achievement", HelpAttribute.Catergories.BotFunctions)]
+        static public async Task AchievementFeed(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var discordId = message.Author.Id;
+            var r = new RoleAssignment(discordSocketClient);
+            var scoresaberId = await r.GetScoresaberIdWithDiscordId(discordId.ToString());
+            if(scoresaberId != "")
+            {
+                try
+                {
+                    await DatabaseContext.ExecuteInsertQuery($"Insert into ServerSilverhazeAchievementFeed (ScoreSaberId) values ('{scoresaberId}')");
+                }
+                catch
+                {
+                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"Errorrrrr", "are you already in the feed?").Build());
+                }
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"Succesfully added with {scoresaberId}", "Your achievements will now be shown in the achievement channel").Build());
+
+            }
+            else
+            {
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Not linked yet", "You are not linked with the bot yet. Type !bs link [ScoresaberID] to link your scoresaber with discord.").Build());
             }            
         }
 

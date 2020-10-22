@@ -21,6 +21,7 @@ using DiscordBeatSaberBot.Models.ScoreberAPI;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using RestSharp.Serialization.Json;
+using DiscordBeatSaberBot.Api.Spotify;
 
 namespace DiscordBeatSaberBot.Extensions
 {
@@ -490,11 +491,14 @@ namespace DiscordBeatSaberBot.Extensions
 
                 embedBuilder = new EmbedBuilder
                 {
-                    Title = $"**Recent Song From: {playerInfo.Name} :flag_{playerInfo.Country.ToLower()}:**",
+                    Title = $"**{recentSong.Name}**",
                     ImageUrl =
                 $"https://scoresaber.com/imports/images/songs/{recentSong.Id}.png",
-                    Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}",
+                    Url = $"https://scoresaber.com/leaderboard/{recentSong.LeaderboardId}",
                 };
+
+                // :flag_{playerInfo.Country.ToLower()}:
+                embedBuilder.Author = new EmbedAuthorBuilder() { IconUrl = $"https://new.scoresaber.com{playerInfo.Avatar}", Name = $"{ playerInfo.Name}", Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}" };
 
                 object acc = "";
                 object mods = "";
@@ -524,7 +528,7 @@ namespace DiscordBeatSaberBot.Extensions
 
                 var actualWeight = Math.Round(recentSong.Pp * recentSong.Weight, 2);
 
-                embedBuilder.AddField($"Song Name: {recentSong.Name}",
+                embedBuilder.AddField($"-",
                     $"```cs\n" +
                     //$"Song Name:          {recentSong.Name} \n" +
                     //$"Song Sub name:            {recentSong.SongSubName} \n\n" +
@@ -549,12 +553,12 @@ namespace DiscordBeatSaberBot.Extensions
 
                     mapExtraDetails +
 
-                    "\n" +
-                    $"Url:                https://scoresaber.com/leaderboard/{recentSong.LeaderboardId} \n\n" +
-                    $"Direct download:       https://beatsaver.com/{recentSongsInfoBeatSaver.DirectDownload} \n\n"
+                    "\n" +                  
+                    $"[Download Map](https://beatsaver.com/{recentSongsInfoBeatSaver.DirectDownload}) \n" +
+                    $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={recentSongsInfoBeatSaver.Key}) \n" +
+                    $"[Song on Spotify]({await new Spotify().SearchItem(recentSong.Name, recentSong.SongAuthorName)})"
                 );
-
-
+               
             }
             return embedBuilder;
         }
@@ -1156,11 +1160,11 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddText($"{player.Pp}PP", System.Drawing.Color.White, 15, 120, 88);
             rankingCardCreator.AddText(topic, System.Drawing.Color.White, 15, 340, 88);
 
-            rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{player.Country}.png", 150, 50, 20, 15);
+            rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{player.Country.ToLower()}.png", 150, 50, 20, 15);
             rankingCardCreator.AddImage($"https://new.scoresaber.com{player.Avatar}", 15, 13, 100, 100);            
 
             //Finish Card
-            rankingCardCreator.Create("../../../Resources/img/UserCard.png");
+            rankingCardCreator.Create($"../../../Resources/img/UserCard_{scoresaberId}.png");
         }
 
         public static async Task GetAndCreateRecentsongsCardImage(string scoresaberId)
@@ -1206,7 +1210,7 @@ namespace DiscordBeatSaberBot.Extensions
             }
             
             //Finish Card
-            rankingCardCreator.Create("../../../Resources/img/RecentsongsCard.png");
+            rankingCardCreator.Create($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
         }
 
         public static async Task GetAndCreateTopsongsCardImage(string scoresaberId)
@@ -1252,7 +1256,7 @@ namespace DiscordBeatSaberBot.Extensions
             }
 
             //Finish Card
-            rankingCardCreator.Create("../../../Resources/img/RecentsongsCard.png");
+            rankingCardCreator.Create($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
         }
 
         public static async Task GetAndCreateProfileImage(string scoresaberId)
@@ -1274,7 +1278,7 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddText($"#{player.CountryRank}", System.Drawing.Color.FromArgb(176, 176, 176), 60, 1080 + rankWidth, 1250);
             rankingCardCreator.AddText($"{player.Pp}PP", System.Drawing.Color.White, 100, 1100, 1350);
 
-            rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{player.Country}.png", 1120, 1000, 120, 100);
+            rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{player.Country.ToLower()}.png", 1120, 1000, 120, 100);
             rankingCardCreator.AddNoteSlashEffect($"https://new.scoresaber.com{player.Avatar}", 200, 800, 800, 800);
 
             //Add Date
@@ -1341,7 +1345,7 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddText($"{Math.Round(Convert.ToDouble(playerTopStats.UScore) / Convert.ToDouble(playerTopStats.MaxScoreEx) * 100, 3).ToString("0.00")}%", System.Drawing.Color.FromArgb(176, 176, 176), 110, 3320, 2500);
             rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerTopStats.Id}.png", 3950, 2020, 800, 800);
 
-            rankingCardCreator.Create("../../../Resources/img/RankingCard.png");         
+            rankingCardCreator.Create($"../../../Resources/img/RankingCard_{scoresaberId}.png");         
         }
 
         public static async Task<EmbedBuilder> GetImprovableMapsByAccFromToplist(string scoresaberId, double wishedAcc)

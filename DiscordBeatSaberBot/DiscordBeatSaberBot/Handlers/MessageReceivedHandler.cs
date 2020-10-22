@@ -81,6 +81,10 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     DutchServerCommands.ChangeColor(discordSocketClient, message);
                 }
+                else if (messageCommand.Contains(" poll"))
+                {
+                    GenericCommands.Poll(discordSocketClient, message);
+                }
                 else if (messageCommand.Contains(" playing"))
                 {
                     GenericCommands.Playing(discordSocketClient, message);
@@ -89,11 +93,7 @@ namespace DiscordBeatSaberBot.Handlers
                 else if (messageCommand.Contains(" invite"))
                 {
                     GenericCommands.Invite(discordSocketClient, message);
-                }
-                else if (messageCommand.Contains(" poll"))
-                {
-                    GenericCommands.Poll(discordSocketClient, message);
-                }
+                }                
                 else if (messageCommand.Contains(" compare"))
                 {
                     GlobalScoresaberCommands.Compare(discordSocketClient, message);
@@ -125,6 +125,10 @@ namespace DiscordBeatSaberBot.Handlers
                 else if (messageCommand.Contains(" number"))
                 {
                     GenericCommands.Number(discordSocketClient, message);
+                }
+                else if (messageCommand.Contains(" achievement"))
+                {
+                    GenericCommands.AchievementFeed(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" typing"))
                 {

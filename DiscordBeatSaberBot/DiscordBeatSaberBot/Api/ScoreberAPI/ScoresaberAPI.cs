@@ -5,6 +5,7 @@ using DiscordBeatSaberBot.Api.ScoreberAPI.Models.ScoresaberRankedTopRequestsMode
 using DiscordBeatSaberBot.Models.ScoreberAPI;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace DiscordBeatSaberBot
         private string _playerId;
         private SocketMessage _message;
 
-        public ScoresaberAPI (string playerId, SocketMessage message = null)
+        public ScoresaberAPI(string playerId, SocketMessage message = null)
         {
             _playerId = playerId;
             _message = message;
@@ -26,6 +27,7 @@ namespace DiscordBeatSaberBot
 
         public static async Task<ScoresaberRankedTopRequestsModel> GetTopRankedRequests()
         {
+            Console.WriteLine("Scoresaber request for top ranked requests");
             var url = "https://new.scoresaber.com/api/ranking/requests/top";
             var rankedRequests = new ScoresaberRankedTopRequestsModel();
 
@@ -43,6 +45,7 @@ namespace DiscordBeatSaberBot
 
         public static async Task<ScoresaberRankedRequestModel> GetRankedRequests(long requestId)
         {
+            Console.WriteLine("Scoresaber request for ranked requests");
             var url = $"https://new.scoresaber.com/api/ranking/request/{requestId}";
             var rankedRequests = new ScoresaberRankedRequestModel();
 
@@ -60,11 +63,12 @@ namespace DiscordBeatSaberBot
 
         public async Task<ScoresaberPlayerFullModel> GetPlayerFull()
         {
+            Console.WriteLine("Scoresaber request for player full data");
             var scoresaberPlayerFullModel = new ScoresaberPlayerFullModel();
             var apiType = "";
             var endpoint = "/full";
             var result = await GetData(apiType, endpoint);
-            
+
             scoresaberPlayerFullModel = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(result);
 
             return scoresaberPlayerFullModel;
@@ -72,6 +76,7 @@ namespace DiscordBeatSaberBot
 
         public async Task<ScoresaberSongsModel> GetScoresRecent()
         {
+            Console.WriteLine("Scoresaber request for recent scores");
             var RecentScores = new ScoresaberSongsModel();
             var apiType = "/scores";
             var endpoint = "/recent";
@@ -91,6 +96,7 @@ namespace DiscordBeatSaberBot
 
         public async Task<ScoresaberSongsModel> GetTopScores()
         {
+            Console.WriteLine("Scoresaber request for top scores");
             var topScores = new ScoresaberSongsModel();
             var apiType = "/scores";
             var endpoint = "/top";
@@ -106,6 +112,21 @@ namespace DiscordBeatSaberBot
             }
 
             return topScores;
+        }
+
+        public async static Task<List<ScoresaberLiveFeedModel>> GetLiveFeed()
+        {
+            using (var client = new HttpClient())
+            {
+                var url = "https://scoresaber.com/scripts/feed.php";
+                var httpResponseMessage = await client.GetAsync(url);
+
+                if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return null;
+
+                var liveFeedJsonData = await httpResponseMessage.Content.ReadAsStringAsync();
+                var liveFeedInfo = JsonConvert.DeserializeObject<List<ScoresaberLiveFeedModel>>(liveFeedJsonData);
+                return liveFeedInfo;
+            }            
         }
 
         private async Task<string> GetData(string type, string endpoint)
@@ -126,6 +147,6 @@ namespace DiscordBeatSaberBot
             }
             return result;
         }
-        
+
     }
 }
