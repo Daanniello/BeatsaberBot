@@ -130,7 +130,6 @@ namespace DiscordBeatSaberBot
                 var commonPlays = _latestPostablePlays.Where(x => x.PlayerId == play.PlayerId && x.LeaderboardId == play.LeaderboardId); 
                 if (commonPlays.Count() > 0)
                 {
-                    _logger.Log(Logger.LogCode.debug, "Skipped a play " + play.LeaderboardId);
                     continue;
                 }
                 else
@@ -138,12 +137,6 @@ namespace DiscordBeatSaberBot
                     playsToPost.Add(play);
                 }
             }
-
-            var latestplaysString = "";
-            foreach (var latest in _latestPostablePlays) latestplaysString += latest.LeaderboardId.ToString() + "\n";
-            var postablePlaysString = "";
-            foreach (var latest in postablePlays) postablePlaysString += latest.LeaderboardId.ToString() + "\n";
-            _logger.Log(Logger.LogCode.debug, $"Latestplays(old)\n{latestplaysString} \n\n postablePlays(now) \n{postablePlaysString}");
 
             return playsToPost;
         }
@@ -157,8 +150,6 @@ namespace DiscordBeatSaberBot
                 var embed = await CreateEmbedBuilder(play);
                 foreach (var GuildAndChannel in channelsToPostIn)
                 {
-                    _logger.Log(Logger.LogCode.debug, "Posting a in an achievementfeed... \n " +
-                        $"{play.Name} {play.LeaderboardId} {play.PlayerId}");
                     var textChannel = _discord.GetGuild(GuildAndChannel[0]).GetTextChannel(GuildAndChannel[1]);
                     await textChannel.SendMessageAsync("", false, embed.Build());
                 }

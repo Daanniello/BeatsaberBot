@@ -21,6 +21,7 @@ namespace DiscordBeatSaberBot
         private Dictionary<string, string> _reactionWatcher = ReactionRolesConfig.GetReactionRoles();
         private DateTime _startTime;
         private DiscordSocketClient discordSocketClient;
+        private bool hasBeenInitialized = false; 
 
         public static void Main(string[] args)
         {                  
@@ -41,11 +42,10 @@ namespace DiscordBeatSaberBot
 
         public async Task MainAsync()
         {
-            
-
-
+            if (hasBeenInitialized) return;
             try
             {
+                hasBeenInitialized = true;
                 discordSocketClient = new DiscordSocketClient();
                 Console.WriteLine("Connecting to Discord...");
 
