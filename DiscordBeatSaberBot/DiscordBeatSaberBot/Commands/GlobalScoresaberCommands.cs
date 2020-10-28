@@ -49,9 +49,11 @@ namespace DiscordBeatSaberBot.Commands
         public static async Task NewRecentSong(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
-            if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()) && message.Content.Count() == 14)
+            var discordId = message.Author.Id.ToString();
+            if (message.Content.Split(' ').Count() == 3) discordId = message.Content.Split(' ')[2].Replace("<@!", "").Replace(">", "");
+            if (await r.CheckIfDiscordIdIsLinked(discordId))
             {
-                var scoresaberId = await r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var scoresaberId = await r.GetScoresaberIdWithDiscordId(discordId);
 
                 var embedTask = await BeatSaberInfoExtension.GetNewRecentSongWithScoresaberId(scoresaberId);
                 await message.Channel.SendMessageAsync("", false, embedTask.Build());

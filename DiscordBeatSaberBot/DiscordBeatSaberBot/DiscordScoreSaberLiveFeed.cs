@@ -12,6 +12,7 @@ namespace DiscordBeatSaberBot
     {
         private List<ScoresaberLiveFeedModel> _latestPostablePlays = new List<ScoresaberLiveFeedModel>();
         private Discord.WebSocket.DiscordSocketClient _discord;
+        private ILogger _logger;
 
         private int _rankForPostableRanked = 100;
         private int _rankForPostableUnranked = 1;
@@ -19,14 +20,15 @@ namespace DiscordBeatSaberBot
         public DiscordScoreSaberLiveFeed(Discord.WebSocket.DiscordSocketClient discord)
         {
             _discord = discord;
+            _logger = new Logger(discord);
         }
 
         public async Task Start()
         {
             var liveFeedData = await GetLiveFeedData();
-            var postablePlays = await GetPostablePlays(liveFeedData);            
+            var postablePlays = await GetPostablePlays(liveFeedData);
             var playsToPost = await CheckForDoublePost(postablePlays);
-            StoreLatestPlays(playsToPost);           
+            StoreLatestPlays(playsToPost);
             PostPlaysInDiscord(playsToPost);
             await CleanUpLatestPosts();
         }
@@ -51,6 +53,7 @@ namespace DiscordBeatSaberBot
 
         private async Task<List<ScoresaberLiveFeedModel>> GetPostablePlays(List<ScoresaberLiveFeedModel> liveFeedPlays)
         {
+            if (liveFeedPlays == null) return null;
             Console.WriteLine("Checking for potential plays...");
             var postablePlays = new List<ScoresaberLiveFeedModel>();
             var scoresaberIds = await DatabaseContext.ExecuteSelectQuery($"Select * from ServerSilverhazeAchievementFeed");
@@ -75,7 +78,8 @@ namespace DiscordBeatSaberBot
 
         private async Task<List<ScoresaberLiveFeedModel>> CheckForPostablePlays(List<ScoresaberLiveFeedModel> liveFeedPlays)
         {
-            Console.WriteLine("Checking for postable plays...");
+            if (liveFeedPlays == null || liveFeedPlays.Count == 0) return null;
+            Console.WriteLine($"Checking for postable plays... potential play count: {liveFeedPlays.Count}");
             var postablePlays = new List<ScoresaberLiveFeedModel>();
 
             foreach (var play in liveFeedPlays)
@@ -104,22 +108,34 @@ namespace DiscordBeatSaberBot
 
         private void StoreLatestPlays(List<ScoresaberLiveFeedModel> postablePlays)
         {
-            Console.WriteLine("Storing Latest postable plays...");
+            if (postablePlays == null) return;
+            Console.WriteLine($"Storing Latest postable plays... {postablePlays.Count} plays");
             _latestPostablePlays = postablePlays;
         }
 
         private async Task<List<ScoresaberLiveFeedModel>> CheckForDoublePost(List<ScoresaberLiveFeedModel> postablePlays)
         {
-            Console.WriteLine("Removing doubles from plays...");
             if (postablePlays == null || postablePlays.Count == 0) return null;
+            Console.WriteLine("Removing doubles from plays...");
 
             var playsToPost = new List<ScoresaberLiveFeedModel>();
 
             foreach (var play in postablePlays)
             {
-                if (_latestPostablePlays == null || _latestPostablePlays.Contains(play)) continue;
+                if (_latestPostablePlays == null) { }
+                else if (_latestPostablePlays.Where(x => x.PlayerId == play.PlayerId && x.LeaderboardId == play.LeaderboardId) != null)
+                {
+                    _logger.Log(Logger.LogCode.debug, "Skipped a play " + play.LeaderboardId);
+                    continue;
+                }
                 playsToPost.Add(play);
             }
+
+            var latestplaysString = "";
+            foreach (var latest in _latestPostablePlays) latestplaysString += latest.LeaderboardId.ToString() + "\n";
+            var postablePlaysString = "";
+            foreach (var latest in postablePlays) postablePlaysString += latest.LeaderboardId.ToString() + "\n";
+            _logger.Log(Logger.LogCode.debug, $"Latestplays(old)\n{latestplaysString} \n\n postablePlays(now) \n{postablePlaysString}");
 
             return playsToPost;
         }
@@ -127,24 +143,25 @@ namespace DiscordBeatSaberBot
         private async void PostPlaysInDiscord(List<ScoresaberLiveFeedModel> playsToPost)
         {
             if (playsToPost == null || playsToPost.Count == 0) return;
-            foreach(var play in playsToPost)
+            foreach (var play in playsToPost)
             {
                 var channelsToPostIn = await GetGuildAndChannelIDToPostIn(play);
                 var embed = await CreateEmbedBuilder(play);
                 foreach (var GuildAndChannel in channelsToPostIn)
                 {
-                    Console.WriteLine("Posting play in discord...");
+                    _logger.Log(Logger.LogCode.debug, "Posting a in an achievementfeed... \n " +
+                        $"{play.Name} {play.LeaderboardId} {play.PlayerId}");
                     var textChannel = _discord.GetGuild(GuildAndChannel[0]).GetTextChannel(GuildAndChannel[1]);
                     await textChannel.SendMessageAsync("", false, embed.Build());
-                }                
+                }
             }
-            
+
         }
 
         private async Task<Discord.EmbedBuilder> CreateEmbedBuilder(ScoresaberLiveFeedModel play)
         {
             var scoresaber = new ScoresaberAPI(play.PlayerId.ToString());
-            var recentScores = await scoresaber.GetScoresRecent();            
+            var recentScores = await scoresaber.GetScoresRecent();
             var topScores = await scoresaber.GetTopScores();
             var songInfo = recentScores.Scores.First();
 
@@ -204,7 +221,7 @@ namespace DiscordBeatSaberBot
                 if (play.PlayerId.ToString() != id.First().ToString()) continue;
                 isInDatabase = true;
             }
-            if (isInDatabase) channelsToPostIn.Add(new ulong[] { 627156958880858113, 768520962206990396});
+            if (isInDatabase) channelsToPostIn.Add(new ulong[] { 627156958880858113, 768520962206990396 });
 
             return channelsToPostIn;
         }
