@@ -88,14 +88,24 @@ namespace DiscordBeatSaberBot
                 _startTime = DateTime.Now;
                 var playingGame = await DatabaseContext.ExecuteSelectQuery("Select * from Settings");
                 await discordSocketClient.SetGameAsync(playingGame[0][1].ToString());
+
+
+                //Automatic updates
                 var updater = new UpdateTimer(discordSocketClient);
-                //updater.Start(() => updater.DutchDiscordUserCount(_startTime), 1);
-                //updater.Start(() => updater.EventNotification(), 1);
-                updater.Start(() => updater.AutomaticUnMute(), 0, 1, 0);
-                updater.Start(() => DutchRankFeed.GetScoresaberLiveFeed(discordSocketClient), 0, 0, 20);
-          
-                //updater.Start(() => new Giphy().PostTrendingGif(discordSocketClient, 627156958880858113, 749742808851808266), 5, 0, 0);
-                //updater.Start(() => new ScoresaberRankMapsFeed(discordSocketClient).CheckIfRankedRequestTopChanged(), 0, 30, 0);
+                var liveFeed = new DiscordScoreSaberLiveFeed(discordSocketClient);
+                updater.Start(() => liveFeed.Start(), "ScoresaberLiveFeed", 0, 0, 15);
+                updater.Start(() => updateServersAndUsersCount(), "Discord server and user count", 5, 0, 0);
+                Task updateServersAndUsersCount()
+                {
+                    var guild = discordSocketClient.GetGuild(731936395223892028);
+                    guild.GetTextChannel(770821423668920321).ModifyAsync(x => x.Name = $"server-count: {discordSocketClient.Guilds.Count}");
+                    var userCount = 0;
+                    foreach (var g in discordSocketClient.Guilds) userCount += g.Users.Count;
+                    guild.GetTextChannel(770821486914437120).ModifyAsync(x => x.Name = $"user-count: {userCount}");
+                    return Task.CompletedTask;
+                }
+                //updater.Start(() => DutchRankFeed.GetScoresaberLiveFeed(discordSocketClient), "ScoresaberLiveFeed", 0, 0, 20);
+
 
                 _logger.ConsoleLog("initialization completed.");
 

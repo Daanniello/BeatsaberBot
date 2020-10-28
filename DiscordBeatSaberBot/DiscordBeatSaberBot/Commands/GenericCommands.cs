@@ -68,7 +68,7 @@ namespace DiscordBeatSaberBot.Commands
                 {
                     await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"Errorrrrr", "are you already in the feed?").Build());
                 }
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"Succesfully added with {scoresaberId}", "Your achievements will now be shown in the achievement channel").Build());
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"Successfully added with {scoresaberId}", "Your achievements will now be shown in the achievement channel").Build());
 
             }
             else

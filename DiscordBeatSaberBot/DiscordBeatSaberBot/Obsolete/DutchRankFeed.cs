@@ -30,11 +30,12 @@ namespace DiscordBeatSaberBot
             var rankUnranked = 1;
 
             var liveFeedInfo = await ScoresaberAPI.GetLiveFeed();
+            if (liveFeedInfo == null) return null;
 
             var playerListToPost = new List<PlayerListToPost>();
 
             var scoresaberIds = await DatabaseContext.ExecuteSelectQuery($"Select * from ServerSilverhazeAchievementFeed");
-           
+            if (scoresaberIds == null) return null;
 
             try
             {
@@ -57,6 +58,9 @@ namespace DiscordBeatSaberBot
                         bool shouldBeSkipped = false;
                         foreach (var d in recentPlays)
                         {
+                            //Checks if the play is not in recentplays (if yes, it means that its already posted)
+                            //true -> skip
+                            //false -> add to list to not post again 
                             if(d.Keys.First() == playerData.PlayerId && d.Values.First() == playerData.LeaderboardId)
                             {
                                 var t = new Dictionary<ulong, long>();
@@ -69,6 +73,7 @@ namespace DiscordBeatSaberBot
                   
 
                         //Checks if the player should be called out
+                        //Adds the player to the post list if qualified
                         if (recentScores.Scores[0].Rank <= rankRanked && playerData.Info.Ranked == Ranked.Ranked)
                         {                      
                             var player = new PlayerListToPost() { PlayerId = playerData.PlayerId, ScoresaberLive = playerData, ScoresaberSongsData = recentScores };
@@ -79,7 +84,7 @@ namespace DiscordBeatSaberBot
                             var player = new PlayerListToPost() { PlayerId = playerData.PlayerId, ScoresaberLive = playerData, ScoresaberSongsData = recentScores };
                             playerListToPost.Add(player);
                         }
-                        if (recentScores.Scores.First().LeaderboardId == topScores.Scores.First().LeaderboardId)
+                        if (recentScores.Scores.First().LeaderboardId == topScores.Scores.First().LeaderboardId && playerData.Info.Ranked == Ranked.Ranked)
                         {
                             var player = new PlayerListToPost() { PlayerId = playerData.PlayerId, ScoresaberLive = playerData, ScoresaberSongsData = recentScores, IsTopPlay = true };
                             playerListToPost.Add(player);
@@ -90,9 +95,13 @@ namespace DiscordBeatSaberBot
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
+                return null;
             }           
             
-            await SendPostInAchievementFeed(playerListToPost, discord, liveFeedInfo, scoresaberIds);
+            if(playerListToPost.Count != 0)await SendPostInAchievementFeed(playerListToPost, discord, liveFeedInfo, scoresaberIds);
+            if (recentPlays.Count != 0) Console.WriteLine($"Recentplays count: {recentPlays.Count}");
+            if (playerListToPost.Count != 0) Console.WriteLine($"PlayerListToPost count: {playerListToPost.Count}");
+            if (recentPlaysSoonRemoved.Count != 0) Console.WriteLine($"RecentplaysSoonRemoved count: {recentPlaysSoonRemoved.Count}");
 
             return null;
         }
@@ -102,6 +111,7 @@ namespace DiscordBeatSaberBot
         {
             if (playerListToPost.Count != 0)
             {
+                //Goes through every post and send it to the discord channel 
                 foreach (var playerData in playerListToPost)
                 {
                     var playerInfo = playerData.ScoresaberLive;
@@ -114,12 +124,22 @@ namespace DiscordBeatSaberBot
 
 
                     var img = "https://scoresaber.com/imports/images/oculus.png";
-                    if (!playerInfo.Image.OriginalString.Contains("oculus")) img = playerInfo.Image.OriginalString.Replace(".jpg", "_full.jpg");
+                    if (playerInfo.Image != null)
+                    {
+                        if (!playerInfo.Image.OriginalString.Contains("oculus")) img = playerInfo.Image.OriginalString.Replace(".jpg", "_full.jpg");
+                    }     
 
                     var title = $":flag_{playerInfo.Flag.Replace(".png", "")}: {playerInfo.Name} just got a #{songInfo.Rank} play!";
                     if (playerData.IsTopPlay)
                     {
                         title = $":flag_{playerInfo.Flag.Replace(".png", "")}: Congrats on your new top play {playerInfo.Name}! with rank #{songInfo.Rank}";
+                    }
+
+                    var acc = "";
+                    if (songInfo.MaxScoreEx != 0)
+                    {
+                        double percentage = Convert.ToDouble(songInfo.UScore) / Convert.ToDouble(songInfo.MaxScoreEx) * 100;
+                        acc = $"**Accuracy:** { Math.Round(percentage, 2)}% \n";
                     }
 
                     var embed = new EmbedBuilder()
@@ -130,6 +150,7 @@ namespace DiscordBeatSaberBot
                         $"**Difficulty**: {songInfo.GetDifficulty()}\n" +
                         $"**Ranked type:** {playerInfo.Info.Ranked}\n" +
                         $"**PP:** {playerInfo.Pp}\n" +
+                        acc +
                         $"**Total plays:** {playerInfo.Info.Scores}",
                         ThumbnailUrl = $"{img}",
                         ImageUrl = $"{playerInfo.Info.Image}",
@@ -137,10 +158,12 @@ namespace DiscordBeatSaberBot
 
                     };
 
+                    //Adds the play to the recentplays so its not posted again.
                     var t = new Dictionary<ulong, long>();
                     t.Add(playerInfo.PlayerId, playerInfo.LeaderboardId);
                     recentPlays.Add(t);
 
+                    //Checks what channel the post needs to be
                     if (playerInfo.Flag.Contains("nl"))
                     {
                         var textChannel = discord.GetGuild(505485680344956928).GetTextChannel(767552138879434772);
@@ -158,6 +181,8 @@ namespace DiscordBeatSaberBot
                 }
 
                 EmptyRecentPlays(recentPlaysSoonRemoved, liveFeedInfo[liveFeedInfo.Count - 1]);
+                if (recentPlays.Count > 100) recentPlays.Clear();
+                playerListToPost.Clear();
             }
         }
 
@@ -171,6 +196,7 @@ namespace DiscordBeatSaberBot
         {
             if (recentPlaysToRemove.Count == 0) return;
 
+            //Checks what the time needs to be to wait for.
             var timeLeftForRemoving = 90000;
             if (lastPlayOnFeed.Timeset.Contains("minutes"))
             {
@@ -183,23 +209,29 @@ namespace DiscordBeatSaberBot
                 timeLeftForRemoving = int.Parse(temp.Replace(" seconds ago", "")) * 1000;
             }
 
+            //Waits for the time to be over to remove the plays that needs to be removed.
             await Task.Delay(timeLeftForRemoving);
 
             var recentPlaysTemp = new List<Dictionary<ulong, long>>();
 
+            //Checks for every play to be removed if it containts one in recentplays.  
             foreach (var toRemove in recentPlaysToRemove)
             {
-                foreach (var r in recentPlays)
-                {
-                    if (r.Keys.First() == toRemove.Keys.First() && r.Values.First() == toRemove.Values.First()) continue;
-                    var t = new Dictionary<ulong, long>();
-                    t.Add(r.Keys.First(), r.Values.First());
-                    recentPlaysTemp.Add(t);
-                }
-                recentPlays.Clear();
-                recentPlays.AddRange(recentPlaysTemp);
+                recentPlays.Remove(toRemove);
+                //foreach (var r in recentPlays)
+                //{
+                //    // scoresaberID & LeaderboardID
+                //    if (r.Keys.First() == toRemove.Keys.First() && r.Values.First() == toRemove.Values.First()) continue;
+                //    var t = new Dictionary<ulong, long>();
+                //    t.Add(r.Keys.First(), r.Values.First());
+                //    recentPlaysTemp.Add(t);
+                //}
+                
             }
 
+            
+            //recentPlays.Clear();
+            //recentPlays = recentPlaysTemp;
         }
 
         class PlayerListToPost

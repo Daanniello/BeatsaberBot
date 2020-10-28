@@ -53,7 +53,15 @@ namespace DiscordBeatSaberBot
         {
             Image overlayImage = null;
 
-            var request = WebRequest.Create(path);
+            WebRequest request;
+            try
+            {
+                request = WebRequest.Create(path);
+            }
+            catch
+            {
+                request = WebRequest.Create("https://www.thermaxglobal.com/wp-content/uploads/2020/05/image-not-found.jpg"); 
+            }
 
             using (var response = request.GetResponse())
             using (var stream = response.GetResponseStream())

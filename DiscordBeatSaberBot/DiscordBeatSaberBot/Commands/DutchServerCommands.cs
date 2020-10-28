@@ -157,6 +157,7 @@ namespace DiscordBeatSaberBot.Commands
                 if (await ValidationExtension.IsDutch(ScoresaberId))
                 {
                     var guildChannel = message.Channel as SocketGuildChannel;
+                    if(guildChannel == null) message.Channel.SendMessageAsync("Looks like you use this command in DM.This command does not work in DM. Consider joining the Dutch Beat Saber Discord. (https://discord.gg/cH7mTyq)");
                     if (guildChannel.Guild.Id != 505485680344956928)
                     {
                         message.Channel.SendMessageAsync("It seems that you are Dutch and trying to link your account outside the Dutch Discord. A Dutch request needs to be validated. Consider joining the Dutch Beat Saber Discord. (https://discord.gg/cH7mTyq)");

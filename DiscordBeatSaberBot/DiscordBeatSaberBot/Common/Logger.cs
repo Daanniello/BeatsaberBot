@@ -70,7 +70,7 @@ namespace DiscordBeatSaberBot
             //Console.WriteLine(embedbuilder.Title + "\n\n" + embedbuilder.Description);
             try
             {
-                await _discord.GetGuild(505485680344956928).GetTextChannel(592877335355850752).SendMessageAsync("", false, embedbuilder.Build());
+                await _discord.GetGuild(731936395223892028).GetTextChannel(770821971679248394).SendMessageAsync("", false, embedbuilder.Build());
                 //await _discord.GetGuild(677437721081413633).GetTextChannel(682874265594363916).SendMessageAsync("", false, embedbuilder.Build());
             }
             catch

@@ -21,30 +21,33 @@ namespace DiscordBeatSaberBot
             _logger = new Logger(discord);
         }
 
-        public void Start(Func<Task> method, int hours, int minutes = 0, int seconds = 0)
+        public void Start(Func<Task> method, string methodName, int hours, int minutes = 0, int seconds = 0)
         {
             //The time that the function needs to be called
             var timespan = new TimeSpan(0, hours, minutes, seconds);
 
             try
             {
-                var thread = new Thread(() => Update(timespan, method));
-                thread.Start();
+                var task = new Task(() => Update(timespan, method, methodName));
+                task.Start();
+                //var thread = new Thread(() => Update(timespan, method, methodName));
+                //thread.Start();
             }
             catch (Exception ex)
             {
+                Console.WriteLine("UpdateTimer Exception");
                 Console.WriteLine(ex);
             }
             
         }
 
-        public async Task Update(TimeSpan timespan, Func<Task> method)
+        public async Task Update(TimeSpan timespan, Func<Task> method, string methodName)
         {
             while (true)
             {
                 try
                 {
-                    Console.WriteLine("Updating.. ");
+                    Console.WriteLine($"Updating.. {methodName}");
                     await method();
                 }
                 catch (Exception ex)
