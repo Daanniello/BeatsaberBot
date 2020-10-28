@@ -122,13 +122,21 @@ namespace DiscordBeatSaberBot
 
             foreach (var play in postablePlays)
             {
-                if (_latestPostablePlays == null) { }
-                else if (_latestPostablePlays.Where(x => x.PlayerId == play.PlayerId && x.LeaderboardId == play.LeaderboardId) != null)
+                if (_latestPostablePlays == null)
+                {
+                    playsToPost.Add(play);
+                    continue;
+                }
+                var commonPlays = _latestPostablePlays.Where(x => x.PlayerId == play.PlayerId && x.LeaderboardId == play.LeaderboardId); 
+                if (commonPlays.Count() > 0)
                 {
                     _logger.Log(Logger.LogCode.debug, "Skipped a play " + play.LeaderboardId);
                     continue;
                 }
-                playsToPost.Add(play);
+                else
+                {
+                    playsToPost.Add(play);
+                }
             }
 
             var latestplaysString = "";
