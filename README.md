@@ -30,6 +30,8 @@ Usage: !bs topsongs\
 ![Topsongs](https://i.imgur.com/tzK7Kjt.png)\
 
 **Help**\
+**For all commands the bot provides. Use !bs help.**\
 Usage: !bs help or !bs help <function name>\
 ![Help](https://i.imgur.com/s8Ax18o.png)\
 
+*Do you have a Beat Saber server and want special bot functions? Ask me on discord Silverhaze#0001*
