@@ -157,58 +157,59 @@ namespace DiscordBeatSaberBot.Commands
                 if (await ValidationExtension.IsDutch(ScoresaberId))
                 {
                     var guildChannel = message.Channel as SocketGuildChannel;
-                    if(guildChannel == null) message.Channel.SendMessageAsync("Looks like you use this command in DM.This command does not work in DM. Consider joining the Dutch Beat Saber Discord. (https://discord.gg/cH7mTyq)");
                     if (guildChannel.Guild.Id != 505485680344956928)
                     {
-                        message.Channel.SendMessageAsync("It seems that you are Dutch and trying to link your account outside the Dutch Discord. A Dutch request needs to be validated. Consider joining the Dutch Beat Saber Discord. (https://discord.gg/cH7mTyq)");
+                        ProcessNonDutch(ScoresaberId);
                         return;
                     }
-
-                    await new WelcomeInterviewHandler(discordSocketClient, message.Channel, message.Author.Id).AskForInterview();
-
-                    r.MakeRequest(message, 505485680344956928, 549350982081970176);
-
-                    var user = message.Author;
-                    if (moderationHelper.UserHasRole(user, "Nieuwkomer"))
-                    {
-                        await moderationHelper.AddRole("Unverified", user);
-                        await moderationHelper.DeleteRole("Nieuwkomer", user);
-                    }
-
-                    
+                    ProcessDutch(ScoresaberId);
+                    return;
                 }
-                //Test code for different country registration
-                //else if (await ValidationExtension.IsDanish(ScoresaberId))
-                //{
-                //    var guildChannel = message.Channel as SocketGuildChannel;
-                //    if (guildChannel.Guild.Id != 505485680344956928)
-                //    {
-                //        message.Channel.SendMessageAsync("It seems that you are Danish and trying to link your account outside the Danish Discord. A Danish request needs to be validated. Consider joining the Danish Beat Saber Discord. (Discord Link)");
-                //    }
-
-                //    //Make the request in the danish discord
-                //    r.MakeRequest(message, 505485680344956928, 550288233272180752);
-
-                //    //Add roles for the danish user
-                //}
                 else if(await ValidationExtension.IsNotDutch(ScoresaberId))
                 {
-                    DatabaseContext.ExecuteInsertQuery($"Insert into Player (ScoresaberId, DiscordId) values ({ScoresaberId}, {message.Author.Id.ToString()})");
-
-                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added user to the list", "Added " + message.Author.Id.ToString() + " with scoresaberID " + ScoresaberId + " to the global list", null, null).Build());
-
-                    var guildChannel = message.Channel as SocketGuildChannel;
-                    if (guildChannel.Guild.Id == 505485680344956928)
-                    {
-                        await moderationHelper.AddRole("Foreign channel", message.Author);
-                        await moderationHelper.DeleteRole("Nieuwkomer", message.Author);
-                    }
-
+                    ProcessNonDutch(ScoresaberId);
                     return;
                 }
                 else
                 {
                     await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Your account does not exist on the scoresaber API. It might be because it is new. Try again later.", null, null).Build());
+                }
+            }
+
+            async void ProcessDutch(string scoresaberId)
+            {
+                var guildChannel = message.Channel as SocketGuildChannel;
+                if (guildChannel == null) message.Channel.SendMessageAsync("Looks like you use this command in DM.This command does not work in DM. Consider joining the Dutch Beat Saber Discord. (https://discord.gg/cH7mTyq)");
+                if (guildChannel.Guild.Id != 505485680344956928)
+                {
+                    message.Channel.SendMessageAsync("It seems that you are Dutch and trying to link your account outside the Dutch Discord. A Dutch request needs to be validated. Consider joining the Dutch Beat Saber Discord. (<https://discord.gg/cH7mTyq>)");
+                    return;
+                }
+
+                await new WelcomeInterviewHandler(discordSocketClient, message.Channel, message.Author.Id).AskForInterview();
+
+                r.MakeRequest(message, 505485680344956928, 549350982081970176);
+
+                var user = message.Author;
+                if (moderationHelper.UserHasRole(user, "Nieuwkomer"))
+                {
+                    await moderationHelper.AddRole("Unverified", user);
+                    await moderationHelper.DeleteRole("Nieuwkomer", user);
+                }
+            }
+
+                async void ProcessNonDutch(string ScoresaberId)
+            {
+                DatabaseContext.ExecuteInsertQuery($"Insert into Player (ScoresaberId, DiscordId) values ({ScoresaberId}, {message.Author.Id.ToString()})");
+
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added user to the list", "Added " + message.Author.Id.ToString() + " with scoresaberID " + ScoresaberId + " to the global list", null, null).Build());
+
+                var guildChannel = message.Channel as SocketGuildChannel;
+                if (guildChannel == null) await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "This command can not be done in DM", null, null).Build());
+                if (guildChannel.Guild.Id == 505485680344956928)
+                {
+                    await moderationHelper.AddRole("Foreign channel", message.Author);
+                    await moderationHelper.DeleteRole("Nieuwkomer", message.Author);
                 }
             }
         }

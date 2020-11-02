@@ -41,11 +41,10 @@ namespace DiscordBeatSaberBot
         }
 
         public async Task MainAsync()
-        {
-            if (hasBeenInitialized) return;
+        {            
             try
             {
-                hasBeenInitialized = true;
+                
                 discordSocketClient = new DiscordSocketClient();
                 Console.WriteLine("Connecting to Discord...");
 
@@ -72,8 +71,10 @@ namespace DiscordBeatSaberBot
 
         private async Task Init()
         {
+            if (hasBeenInitialized) return;
             try
-            {               
+            {
+                hasBeenInitialized = true;
                 //Setup up the depencendy injection
                 var serviceCollection = new ServiceCollection();
                 serviceCollection.AddSingleton(discordSocketClient);

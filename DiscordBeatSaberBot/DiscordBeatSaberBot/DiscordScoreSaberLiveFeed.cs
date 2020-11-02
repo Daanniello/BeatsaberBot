@@ -47,7 +47,7 @@ namespace DiscordBeatSaberBot
             if (_latestPostablePlays.Count() > 15)
             {
                 Console.WriteLine("Cleaning up plays...");
-                _latestPostablePlays.RemoveRange(15, _latestPostablePlays.Count - 15);
+                _latestPostablePlays.RemoveRange(0, 15);
             }
         }
 
@@ -214,6 +214,7 @@ namespace DiscordBeatSaberBot
 
             var scoresaberIds = await DatabaseContext.ExecuteSelectQuery($"Select * from ServerSilverhazeAchievementFeed");
             var isInDatabase = false;
+
             //Checks if the play contains a ID that needs to be posted
             foreach (var id in scoresaberIds)
             {

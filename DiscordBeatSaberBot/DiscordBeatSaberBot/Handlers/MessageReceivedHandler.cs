@@ -126,10 +126,14 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     GenericCommands.Number(discordSocketClient, message);
                 }
+                else if (messageCommand.Contains(" createachievement"))
+                {
+                    GenericCommands.CreateAchievementFeed(discordSocketClient, message);
+                }
                 else if (messageCommand.Contains(" achievement"))
                 {
                     GenericCommands.AchievementFeed(discordSocketClient, message);
-                }
+                }                
                 else if (messageCommand.Contains(" typing"))
                 {
                     GlobalScoresaberCommands.Typing(discordSocketClient, message);
@@ -148,22 +152,6 @@ namespace DiscordBeatSaberBot.Handlers
                 else if (messageCommand.Contains(" senddm"))
                 {
                     GenericCommands.SendDM(discordSocketClient, message);
-                }
-                else if (messageCommand.Contains(" approvedutchuser"))
-                {
-                    var guildUserSender = message.Author as SocketGuildUser;
-                    if (guildUserSender.IsDutchAdmin())
-                    {
-                        var userId = message.Content.Substring(21).Replace("<@!", "").Replace(">", "").Trim();
-                        var user = discordSocketClient.GetUser(ulong.Parse(userId));
-
-                        var guildService = new GuildService(discordSocketClient, 505485680344956928);
-
-                        await guildService.AddRole("Unverified", user);
-                        await program.UserJoinedMessage(user);
-                    }
-
-                    await message.DeleteAsync();
                 }
                 else if (messageCommand.Contains(" songs"))
                 {
