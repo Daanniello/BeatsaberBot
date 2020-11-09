@@ -16,7 +16,7 @@ namespace DiscordBeatSaberBot.Commands
 {
     class DutchServerCommands : ICommand
     {
-        [Help("RoleColor", "If you have the dutch 'verslaafd' role, you can chance the color of it.", "!bs rolecolor (#ffffff)",HelpAttribute.Catergories.DutchFunctions)]
+        [Help("RoleColor", "If you have the dutch 'verslaafd' role, you can chance the color of it.", "!bs rolecolor (#ffffff)", HelpAttribute.Catergories.DutchFunctions)]
         static public async Task RoleColor(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var moderationHelper = new GuildService(discordSocketClient, 505485680344956928);
@@ -48,7 +48,8 @@ namespace DiscordBeatSaberBot.Commands
         {
             if (message.Author.IsDutchAdmin(discordSocketClient))
             {
-                new Thread(async () => {
+                new Thread(async () =>
+                {
                     await UpdateDiscordBeatsaberRanksNL.UpdateNLAsync(discordSocketClient, message);
                     await message.Channel.SendMessageAsync("Done");
                 }).Start();
@@ -126,7 +127,7 @@ namespace DiscordBeatSaberBot.Commands
             else
             {
                 message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Validation error", "You have not the rights to use this command.").Build());
-            }            
+            }
         }
 
         [Help("Link", "Will link your Scoresaber profile to your Discord account ", "!link (ScoresaberID)", HelpAttribute.Catergories.General)]
@@ -159,15 +160,15 @@ namespace DiscordBeatSaberBot.Commands
                     var guildChannel = message.Channel as SocketGuildChannel;
                     if (guildChannel.Guild.Id != 505485680344956928)
                     {
-                        ProcessNonDutch(ScoresaberId);
+                        await ProcessNonDutch(ScoresaberId);
                         return;
                     }
-                    ProcessDutch(ScoresaberId);
+                    await ProcessDutch(ScoresaberId);
                     return;
                 }
-                else if(await ValidationExtension.IsNotDutch(ScoresaberId))
+                else if (await ValidationExtension.IsNotDutch(ScoresaberId))
                 {
-                    ProcessNonDutch(ScoresaberId);
+                    await ProcessNonDutch(ScoresaberId);
                     return;
                 }
                 else
@@ -176,7 +177,7 @@ namespace DiscordBeatSaberBot.Commands
                 }
             }
 
-            async void ProcessDutch(string scoresaberId)
+            async Task ProcessDutch(string scoresaberId)
             {
                 var guildChannel = message.Channel as SocketGuildChannel;
                 if (guildChannel == null) message.Channel.SendMessageAsync("Looks like you use this command in DM.This command does not work in DM. Consider joining the Dutch Beat Saber Discord. (https://discord.gg/cH7mTyq)");
@@ -198,7 +199,7 @@ namespace DiscordBeatSaberBot.Commands
                 }
             }
 
-                async void ProcessNonDutch(string ScoresaberId)
+            async Task ProcessNonDutch(string ScoresaberId)
             {
                 DatabaseContext.ExecuteInsertQuery($"Insert into Player (ScoresaberId, DiscordId) values ({ScoresaberId}, {message.Author.Id.ToString()})");
 

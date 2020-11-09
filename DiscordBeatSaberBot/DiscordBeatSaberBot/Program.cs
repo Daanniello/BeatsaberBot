@@ -25,18 +25,17 @@ namespace DiscordBeatSaberBot
 
         public static void Main(string[] args)
         {                  
-            AppDomain.CurrentDomain.UnhandledException += Unhandled_Exception;
             try { new Program().MainAsync().GetAwaiter().GetResult(); } catch (Exception ex) { Console.WriteLine(ex); }
         }
 
-        public static async void Unhandled_Exception(object sender, dynamic e)
+        public async void Unhandled_Exception(object sender, dynamic e)
         {
-            Console.WriteLine("Unhandled_Exception\n\n" + e.ExceptionObject.ToString());
+            await _logger.Log(Logger.LogCode.error, e.ExceptionObject.ToString());
         }
 
-        public static void Unhandled_TaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        public async void Unhandled_TaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
-            Console.WriteLine("Unhandled_TaskException\n\n" + e);
+            await _logger.Log(Logger.LogCode.error, e.ToString());
             e.SetObserved();
         }
 
@@ -53,6 +52,7 @@ namespace DiscordBeatSaberBot
                 await discordSocketClient.StartAsync();
 
                 //Events
+                AppDomain.CurrentDomain.UnhandledException += Unhandled_Exception;
                 TaskScheduler.UnobservedTaskException += Unhandled_TaskException;
                 discordSocketClient.MessageReceived += MessageReceived;
                 discordSocketClient.ReactionAdded += ReactionAdded;
