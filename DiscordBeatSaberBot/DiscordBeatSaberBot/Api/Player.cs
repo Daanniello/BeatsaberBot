@@ -95,10 +95,10 @@ namespace DiscordBeatSaberBot
             {
                 var infoPlayerRaw = await client.GetAsync(url);
                 if (infoPlayerRaw.StatusCode != HttpStatusCode.OK) return null;
-                var players1ScoresaberID = JsonConvert.DeserializeObject<List<ScoreSaberSearchByNameModel>>(infoPlayerRaw.Content.ReadAsStringAsync().Result);
-                var player1search = players1ScoresaberID.Where(x => x.Name.ToLower() == name.ToLower());
+                var playerList = JsonConvert.DeserializeObject<ScoreSaberSearchByNameModel>(infoPlayerRaw.Content.ReadAsStringAsync().Result).Players;
+                var player1search = playerList.Where(x => x.PlayerName.ToLower() == name.ToLower());
                 if (player1search.Count() == 0) return null;
-                scoresaberId = players1ScoresaberID.Where(x => x.Name.ToLower() == name.ToLower()).First().Playerid;
+                scoresaberId = player1search.First().PlayerId;
             }
 
             return scoresaberId;

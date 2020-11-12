@@ -93,11 +93,15 @@ namespace DiscordBeatSaberBot.Handlers
                 else if (messageCommand.Contains(" invite"))
                 {
                     GenericCommands.Invite(discordSocketClient, message);
-                }                
-                else if (messageCommand.Contains(" compare"))
+                }
+                else if (messageCommand.Contains(" comparetext"))
                 {
                     GlobalScoresaberCommands.Compare(discordSocketClient, message);
                 }
+                else if (messageCommand.Contains(" compare"))
+                {
+                    GlobalScoresaberCommands.CompareNew(discordSocketClient, message);
+                }                      
                 else if (messageCommand.Contains(" unlink"))
                 {
                     DutchServerCommands.UnLinkScoresaberFromDiscord(discordSocketClient, message);

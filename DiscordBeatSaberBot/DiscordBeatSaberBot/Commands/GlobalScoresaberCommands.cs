@@ -25,6 +25,13 @@ namespace DiscordBeatSaberBot.Commands
             await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
         }
 
+        [Help("CompareNew", "Compares two player's stats with each other.", "!bs compare (DiscordTag or ID player1) (DiscordTag or ID player2)", HelpAttribute.Catergories.General)]
+        public static async Task CompareNew(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var embedBuilder = await BeatSaberInfoExtension.GetComparedEmbedBuilderNew(message.Content.Substring(12), message, discordSocketClient);     
+            if(embedBuilder != null) await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
+        }
+
         [Help("Songs", "Searches up the song with the name", "!bs songs", HelpAttribute.Catergories.General)]
         public static async Task Songs(DiscordSocketClient discordSocketClient, SocketMessage message)
         {

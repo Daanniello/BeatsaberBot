@@ -33,6 +33,17 @@ namespace DiscordBeatSaberBot
             }
         }
 
+        public SizeF AddTextFloatRight(string text, Color color, int fontsize, float x, float y)
+        {          
+            using (Font arialFont = new Font("Tourmaline", fontsize))
+            using (Graphics graphics = Graphics.FromImage(_bitmap))
+            {
+                PointF firstLocation = new PointF(_bitmap.Width - x - graphics.MeasureString(text, arialFont).Width, y);
+                graphics.DrawString(text, arialFont, new SolidBrush(color), firstLocation);
+                return graphics.MeasureString(text, arialFont);
+            }
+        }
+
         public void AddImage(string path, float x, float y, int width, int height)
         {
             Image overlayImage = null;
