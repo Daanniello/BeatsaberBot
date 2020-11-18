@@ -967,8 +967,8 @@ namespace DiscordBeatSaberBot.Extensions
 
             if (players.Count() > 2) return EmbedBuilderExtension.NullEmbed("oh oh...", $"One of your inputs contains a space. Connect the name as the following: !bs compare silverhaze Duh_Hello with underscore");
 
-            var player1 = players[0].Replace("<>", " ");
-            var player2 = players[1].Replace("<>", " ");
+            var player1 = players[0];
+            var player2 = players[1];
 
             var player1containsmention = false;
             var player2containsmention = false;
@@ -976,7 +976,7 @@ namespace DiscordBeatSaberBot.Extensions
             if (player1.Contains("@"))
             {
                 var r = new RoleAssignment(discordSocketClient);
-                var discordId = player1.Replace("<@!", "").Replace(">", "");
+                var discordId = player1.Replace("<@", "").Replace(">", "").Replace("!", "");
                 if (await r.CheckIfDiscordIdIsLinked(discordId))
                 {
                     player1 = await r.GetScoresaberIdWithDiscordId(discordId);
@@ -991,7 +991,7 @@ namespace DiscordBeatSaberBot.Extensions
             if (player2.Contains("@"))
             {
                 var r = new RoleAssignment(discordSocketClient);
-                var discordId = player2.Replace("<@!", "").Replace(">", "");
+                var discordId = player2.Replace("<@", "").Replace(">", "").Replace("!", "");
                 if (await r.CheckIfDiscordIdIsLinked(discordId))
                 {
                     player2 = await r.GetScoresaberIdWithDiscordId(discordId);
