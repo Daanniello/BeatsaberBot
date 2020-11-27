@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using DiscordBeatSaberBot.Config;
 using DiscordBeatSaberBot.Api.GiphyApi;
 using DiscordBeatSaberBot.Api.Spotify;
+using DiscordBeatSaberBot.Api.BeatSaviourApi;
 
 namespace DiscordBeatSaberBot
 {
@@ -95,6 +96,13 @@ namespace DiscordBeatSaberBot
                 var updater = new UpdateTimer(discordSocketClient);
                 var liveFeed = new DiscordScoreSaberLiveFeed(discordSocketClient);
                 updater.Start(() => liveFeed.Start(), "ScoresaberLiveFeed", 0, 0, 15);
+                updater.Start(() => UpdateSilverhazeDiscordRank(), "SilverhazeDiscordRankUpdate", 0, 30, 0);
+                async Task UpdateSilverhazeDiscordRank()
+                {
+                    var guild = discordSocketClient.GetGuild(627156958880858113);
+                    var stats = await new ScoresaberAPI("76561198033166451").GetPlayerFull();
+                    await guild.GetCategoryChannel(780597859527557130).ModifyAsync(x => x.Name = $"Rank: #{stats.playerInfo.rank} | PP: {stats.playerInfo.Pp}");
+                }
                 updater.Start(() => updateServersAndUsersCount(), "Discord server and user count", 5, 0, 0);
                 Task updateServersAndUsersCount()
                 {
@@ -106,7 +114,6 @@ namespace DiscordBeatSaberBot
                     return Task.CompletedTask;
                 }
                 //updater.Start(() => DutchRankFeed.GetScoresaberLiveFeed(discordSocketClient), "ScoresaberLiveFeed", 0, 0, 20);
-
 
                 _logger.ConsoleLog("initialization completed.");
 

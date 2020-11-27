@@ -62,8 +62,7 @@ namespace DiscordBeatSaberBot.Commands
             {
                 var scoresaberId = await r.GetScoresaberIdWithDiscordId(discordId);
 
-                var embedTask = await BeatSaberInfoExtension.GetNewRecentSongWithScoresaberId(scoresaberId);
-                await message.Channel.SendMessageAsync("", false, embedTask.Build());
+                await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberId(scoresaberId, message);         
             }
             else
             {
@@ -77,9 +76,16 @@ namespace DiscordBeatSaberBot.Commands
                 }
 
                 var username = message.Content.Substring(14);
-                var id = await BeatSaberInfoExtension.GetPlayerId(username);
-                var embedTask = await BeatSaberInfoExtension.GetNewRecentSongWithScoresaberId(id);
-                await message.Channel.SendMessageAsync("", false, embedTask.Build());
+                var id = username.Trim();
+                if (id.All(char.IsDigit))
+                {
+
+                }
+                else
+                {
+                    id = await BeatSaberInfoExtension.GetPlayerId(username);
+                }               
+                await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberId(id, message);
             }
         }
 
@@ -107,7 +113,7 @@ namespace DiscordBeatSaberBot.Commands
 
                 var username = message.Content.Substring(11);
                 var id = await BeatSaberInfoExtension.GetPlayerIdsWithUsername(username);
-                var embedTask = await BeatSaberInfoExtension.GetNewRecentSongWithScoresaberId(id);
+                var embedTask = await BeatSaberInfoExtension.GetNewTopSongWithScoresaberId(id);
                 await message.Channel.SendMessageAsync("", false, embedTask.Build());
             }
         }

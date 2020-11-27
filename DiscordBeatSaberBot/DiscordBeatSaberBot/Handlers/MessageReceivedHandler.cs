@@ -76,7 +76,7 @@ namespace DiscordBeatSaberBot.Handlers
                 else if (messageCommand.Contains(" recentsong"))
                 {
                     GlobalScoresaberCommands.NewRecentSong(discordSocketClient, message);
-                }                
+                }
                 else if (messageCommand.Contains(" changecolor"))
                 {
                     DutchServerCommands.ChangeColor(discordSocketClient, message);
