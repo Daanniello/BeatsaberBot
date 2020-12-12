@@ -530,45 +530,51 @@ namespace DiscordBeatSaberBot.Extensions
                 var beatsaviourExtraDetails = "";
                 if (playerMostRecentLiveData != null)
                 {
-                    beatsaviourExtraDetails = $"\n*BeatSaviour Data*```cs\n" +
-                    ConvertForEmbedBuilder("Misses:               ", "" + playerMostRecentLiveData.Trackers.HitTracker.Miss == "0" ? "'FC'" : playerMostRecentLiveData.Trackers.HitTracker.Miss.ToString()) +
-                    ConvertForEmbedBuilder("Pauses:               ", "" + playerMostRecentLiveData.Trackers.WinTracker.NbOfPause) +
-                    ConvertForEmbedBuilder("Max Combo:            ", "" + playerMostRecentLiveData.Trackers.HitTracker.MaxCombo) +
-                    ConvertForEmbedBuilder("PB increase:          ", "" + (playerMostRecentLiveData.Trackers.ScoreTracker.RawScore - playerMostRecentLiveData.Trackers.ScoreTracker.PersonalBest), " points") +
-                    ConvertForEmbedBuilder("avg acc:              ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AverageAcc, 2), "%") +
-                    ConvertForEmbedBuilder("Left Hand avg acc:    ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AccLeft, 2), "%") +
-                    ConvertForEmbedBuilder("Right Hand avg acc:   ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AccRight, 2), "%") +
-                    ConvertForEmbedBuilder("Left hand distance:   ", "" + Math.Round(playerMostRecentLiveData.Trackers.DistanceTracker.LeftHand, 2), " m") +
-                    ConvertForEmbedBuilder("Left saber distance:  ", "" + Math.Round(playerMostRecentLiveData.Trackers.DistanceTracker.LeftSaber, 2), " m") +
-                    ConvertForEmbedBuilder("Right hand distance:  ", "" + Math.Round(playerMostRecentLiveData.Trackers.DistanceTracker.RightHand, 2), " m") +
-                    ConvertForEmbedBuilder("Right saber distance: ", "" + Math.Round(playerMostRecentLiveData.Trackers.DistanceTracker.RightSaber, 2), " m") +
-                    ConvertForEmbedBuilder("Left hand speed:      ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.LeftSpeed, 2), " m/s") +
-                    ConvertForEmbedBuilder("Right hand speed:     ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.RightSpeed, 2), " m/s") +
+                    beatsaviourExtraDetails = $"\n*BeatSavior Data*```cs\n" +
+                    ConvertForEmbedBuilder("Misses:              ", "" + playerMostRecentLiveData.Trackers.HitTracker.Miss == "0" ? "'FC'" : playerMostRecentLiveData.Trackers.HitTracker.Miss.ToString()) +
+                    ConvertForEmbedBuilder("Pauses:              ", "" + playerMostRecentLiveData.Trackers.WinTracker.NbOfPause) +
+                    ConvertForEmbedBuilder("Max Combo:           ", "" + playerMostRecentLiveData.Trackers.HitTracker.MaxCombo) +
+                    ConvertForEmbedBuilder("PB increase:         ", "" + (playerMostRecentLiveData.Trackers.ScoreTracker.RawScore - playerMostRecentLiveData.Trackers.ScoreTracker.PersonalBest), " points") +
+                    ConvertForEmbedBuilder("avg acc:             ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AverageAcc, 2)) +
+                    ConvertForEmbedBuilder("Left Hand avg acc:   ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AccLeft, 2)) +
+                    ConvertForEmbedBuilder("Right Hand avg acc:  ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AccRight, 2)) +
+                    ConvertForEmbedBuilder("Left hand distance:  ", "" + Math.Round(playerMostRecentLiveData.Trackers.DistanceTracker.LeftHand / 1000, 2), "km") +
+                    ConvertForEmbedBuilder("Right hand distance: ", "" + Math.Round(playerMostRecentLiveData.Trackers.DistanceTracker.RightHand / 1000, 2), "km") +
+                    ConvertForEmbedBuilder("Left hand speed:     ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.LeftSpeed * 3.6, 2), " km/h") +
+                    ConvertForEmbedBuilder("Right hand speed:    ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.RightSpeed * 3.6, 2), " km/h") +
                     $"```";
                 }
 
-                embedBuilder.AddField($"Map Author:  {recentSong.LevelAuthorName}",
-                    $"```cs\n" +
-                    ConvertForEmbedBuilder("Ranked Type:        ", "" + rankType) +
-                    $"```" +
+                try
+                {
+                    embedBuilder.AddField($"Map Author:  {recentSong.LevelAuthorName}",
+                  $"```cs\n" +
+                  ConvertForEmbedBuilder("Ranked Type:        ", "" + rankType) +
+                  $"```" +
 
-                    $"```cs\n" +
-                    ConvertForEmbedBuilder("Rank:               ", "#" + recentSong.Rank) +
-                    ConvertForEmbedBuilder("Score:              ", "" + recentSong.ScoreScore) +
-                    ConvertForEmbedBuilder("Accuracy:           ", Math.Round(Convert.ToDouble(recentSong.UScore) / Convert.ToDouble(recentSong.MaxScoreEx) * 100, 2) + "%") +
-                    ConvertForEmbedBuilder("PP:                 ", "" + recentSong.Pp) +
-                    ConvertForEmbedBuilder("PP Weight:          ", "" + Math.Round(recentSong.Pp * recentSong.Weight, 2)) +
-                    $"```" +
+                  $"```cs\n" +
+                  ConvertForEmbedBuilder("Rank:               ", "#" + recentSong.Rank) +
+                  ConvertForEmbedBuilder("Score:              ", "" + recentSong.ScoreScore) +
+                  ConvertForEmbedBuilder("Accuracy:           ", Math.Round(Convert.ToDouble(recentSong.UScore) / Convert.ToDouble(recentSong.MaxScoreEx) * 100, 2) + "%") +
+                  ConvertForEmbedBuilder("PP:                 ", "" + recentSong.Pp) +
+                  ConvertForEmbedBuilder("PP Weight:          ", "" + Math.Round(recentSong.Pp * recentSong.Weight, 2)) +
+                  $"```" +
 
-                    mapExtraDetails +
+                  mapExtraDetails +
 
-                    beatsaviourExtraDetails +
+                  beatsaviourExtraDetails +
 
-                    "\n" +
-                    $"[Download Map](https://beatsaver.com/{recentSongsInfoBeatSaver?.DirectDownload}) - " +
-                    $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={recentSongsInfoBeatSaver?.Key}) - " +
-                    $"[Song on Spotify]({await new Spotify().SearchItem(recentSong.Name, recentSong.SongAuthorName)})"
-                );
+                  "\n" +
+                  $"[Download Map](https://beatsaver.com/{recentSongsInfoBeatSaver?.DirectDownload}) - " +
+                  $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={recentSongsInfoBeatSaver?.Key}) - " +
+                  $"[Song on Spotify]({await new Spotify().SearchItem(recentSong.Name, recentSong.SongAuthorName)})"
+                    );
+                }
+                catch (Exception ex)
+                {
+
+                }
+
 
                 await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
 
@@ -577,23 +583,37 @@ namespace DiscordBeatSaberBot.Extensions
                 {
                     var imageCreator = new ImageCreator($"../../../Resources/img/AccGrid-Template.png");
                     var accGrid = playerMostRecentLiveData.Trackers.AccuracyTracker.GridAcc;
+                    var hitGrid = playerMostRecentLiveData.Trackers.AccuracyTracker.GridCut;
 
-                    imageCreator.AddText(accGrid[8].String == null ? Math.Round(float.Parse(accGrid[0].Double.ToString()), 2).ToString() : accGrid[0].String, System.Drawing.Color.White, 20, 25, 35);
-                    imageCreator.AddText(accGrid[9].String == null ? Math.Round(float.Parse(accGrid[1].Double.ToString()), 2).ToString() : accGrid[1].String, System.Drawing.Color.White, 20, 125, 35);
-                    imageCreator.AddText(accGrid[10].String == null ? Math.Round(float.Parse(accGrid[2].Double.ToString()), 2).ToString() : accGrid[2].String, System.Drawing.Color.White, 20, 225, 35);
-                    imageCreator.AddText(accGrid[11].String == null ? Math.Round(float.Parse(accGrid[3].Double.ToString()), 2).ToString() : accGrid[3].String, System.Drawing.Color.White, 20, 325, 35);
+                    imageCreator.AddText(accGrid[8].String == null ? Math.Round(float.Parse(accGrid[8].Double.ToString()), 2).ToString() : accGrid[8].String, System.Drawing.Color.White, 20, 25, 35);
+                    imageCreator.AddText(accGrid[9].String == null ? Math.Round(float.Parse(accGrid[9].Double.ToString()), 2).ToString() : accGrid[9].String, System.Drawing.Color.White, 20, 125, 35);
+                    imageCreator.AddText(accGrid[10].String == null ? Math.Round(float.Parse(accGrid[10].Double.ToString()), 2).ToString() : accGrid[10].String, System.Drawing.Color.White, 20, 225, 35);
+                    imageCreator.AddText(accGrid[11].String == null ? Math.Round(float.Parse(accGrid[11].Double.ToString()), 2).ToString() : accGrid[11].String, System.Drawing.Color.White, 20, 325, 35);
                     imageCreator.AddText(accGrid[4].String == null ? Math.Round(float.Parse(accGrid[4].Double.ToString()), 2).ToString() : accGrid[4].String, System.Drawing.Color.White, 20, 25, 135);
                     imageCreator.AddText(accGrid[5].String == null ? Math.Round(float.Parse(accGrid[5].Double.ToString()), 2).ToString() : accGrid[5].String, System.Drawing.Color.White, 20, 125, 135);
                     imageCreator.AddText(accGrid[6].String == null ? Math.Round(float.Parse(accGrid[6].Double.ToString()), 2).ToString() : accGrid[6].String, System.Drawing.Color.White, 20, 225, 135);
                     imageCreator.AddText(accGrid[7].String == null ? Math.Round(float.Parse(accGrid[7].Double.ToString()), 2).ToString() : accGrid[7].String, System.Drawing.Color.White, 20, 325, 135);
-                    imageCreator.AddText(accGrid[0].String == null ? Math.Round(float.Parse(accGrid[8].Double.ToString()), 2).ToString() : accGrid[8].String, System.Drawing.Color.White, 20, 25, 235);
-                    imageCreator.AddText(accGrid[1].String == null ? Math.Round(float.Parse(accGrid[9].Double.ToString()), 2).ToString() : accGrid[9].String, System.Drawing.Color.White, 20, 125, 235);
-                    imageCreator.AddText(accGrid[2].String == null ? Math.Round(float.Parse(accGrid[10].Double.ToString()), 2).ToString() : accGrid[10].String, System.Drawing.Color.White, 20, 225, 235);
-                    imageCreator.AddText(accGrid[3].String == null ? Math.Round(float.Parse(accGrid[11].Double.ToString()), 2).ToString() : accGrid[11].String, System.Drawing.Color.White, 20, 325, 235);
+                    imageCreator.AddText(accGrid[0].String == null ? Math.Round(float.Parse(accGrid[0].Double.ToString()), 2).ToString() : accGrid[0].String, System.Drawing.Color.White, 20, 25, 235);
+                    imageCreator.AddText(accGrid[1].String == null ? Math.Round(float.Parse(accGrid[1].Double.ToString()), 2).ToString() : accGrid[1].String, System.Drawing.Color.White, 20, 125, 235);
+                    imageCreator.AddText(accGrid[2].String == null ? Math.Round(float.Parse(accGrid[2].Double.ToString()), 2).ToString() : accGrid[2].String, System.Drawing.Color.White, 20, 225, 235);
+                    imageCreator.AddText(accGrid[3].String == null ? Math.Round(float.Parse(accGrid[3].Double.ToString()), 2).ToString() : accGrid[3].String, System.Drawing.Color.White, 20, 325, 235);
+
+                    imageCreator.AddText(hitGrid[8].ToString(), System.Drawing.Color.White, 12, 5, 5);
+                    imageCreator.AddText(hitGrid[9].ToString(), System.Drawing.Color.White, 12, 105, 5);
+                    imageCreator.AddText(hitGrid[10].ToString(), System.Drawing.Color.White, 12, 205, 5);
+                    imageCreator.AddText(hitGrid[11].ToString(), System.Drawing.Color.White, 12, 305, 5);
+                    imageCreator.AddText(hitGrid[4].ToString(), System.Drawing.Color.White, 12, 5, 105);
+                    imageCreator.AddText(hitGrid[5].ToString(), System.Drawing.Color.White, 12, 105, 105);
+                    imageCreator.AddText(hitGrid[6].ToString(), System.Drawing.Color.White, 12, 205, 105);
+                    imageCreator.AddText(hitGrid[7].ToString(), System.Drawing.Color.White, 12, 305, 105);
+                    imageCreator.AddText(hitGrid[0].ToString(), System.Drawing.Color.White, 12, 5, 205);
+                    imageCreator.AddText(hitGrid[1].ToString(), System.Drawing.Color.White, 12, 105, 205);
+                    imageCreator.AddText(hitGrid[2].ToString(), System.Drawing.Color.White, 12, 205, 205);
+                    imageCreator.AddText(hitGrid[3].ToString(), System.Drawing.Color.White, 12, 305, 205);
 
                     imageCreator.Create($"../../../Resources/img/AccGrid-{playerId}.png");
 
-                    await message.Channel.SendFileAsync($"../../../Resources/img/AccGrid-{playerId}.png");
+                    await message.Channel.SendFileAsync($"../../../Resources/img/AccGrid-{playerId}.png", "**Accuracy grid** \nThis tells you how many average points you get on all note placements. The small number in the corner is the amount of notes in the map on that position.");
                 }
 
             }
@@ -602,7 +622,7 @@ namespace DiscordBeatSaberBot.Extensions
             {
 
                 if (data.Replace("'", "").Replace("%", "").Replace("∞", "") == "" || data == null || data.Replace("'", "").Replace("%", "").Replace("∞", "") == "0") return "";
-                if(extraInfo != "")
+                if (extraInfo != "")
                 {
                     return $"{type}'{data}{extraInfo}' \n";
                 }
@@ -1633,8 +1653,8 @@ namespace DiscordBeatSaberBot.Extensions
                 rankingCardCreator.AddText(playerTopStats.Name, System.Drawing.Color.White, nameFontSize, 100, 2300);
             }
             rankingCardCreator.AddText(playerTopStats.GetDifficulty().Replace("Plus", "+"), System.Drawing.Color.FromArgb(176, 176, 176), 110, 100, 2500);
-            rankingCardCreator.AddText($"{playerTopStats.Pp.ToString("0.00")}PP", System.Drawing.Color.White, 160, 2950, 2270);
-            rankingCardCreator.AddText($"{Math.Round(Convert.ToDouble(playerTopStats.UScore) / Convert.ToDouble(playerTopStats.MaxScoreEx) * 100, 3).ToString("0.00")}%", System.Drawing.Color.FromArgb(176, 176, 176), 110, 3320, 2500);
+            rankingCardCreator.AddTextFloatRight($"{playerTopStats.Pp.ToString("0.00")}PP", System.Drawing.Color.White, 160, 950, 2270);
+            rankingCardCreator.AddTextFloatRight($"{Math.Round(Convert.ToDouble(playerTopStats.UScore) / Convert.ToDouble(playerTopStats.MaxScoreEx) * 100, 3).ToString("0.00")}%", System.Drawing.Color.FromArgb(176, 176, 176), 110, 950, 2500);
             rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerTopStats.Id}.png", 3950, 2020, 800, 800);
 
             rankingCardCreator.Create($"../../../Resources/img/RankingCard_{scoresaberId}.png");

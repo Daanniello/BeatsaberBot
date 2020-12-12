@@ -237,7 +237,14 @@ namespace DiscordBeatSaberBot.Handlers
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == reactionDic.Value);
                         if (role == null) role = guild.Roles.FirstOrDefault(x => x.Id.ToString() == reactionDic.Value);
-                        await guild.GetUser(reaction.UserId).AddRoleAsync(role);
+                        try
+                        {
+                            await guild.GetUser(reaction.UserId).AddRoleAsync(role);
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
                     }
 
             }

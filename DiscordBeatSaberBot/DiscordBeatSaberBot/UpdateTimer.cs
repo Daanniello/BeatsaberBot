@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using DiscordBeatSaberBot.Extensions;
 
 namespace DiscordBeatSaberBot
 {
@@ -154,6 +156,32 @@ namespace DiscordBeatSaberBot
             };
 
             await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
+        }
+
+        public async Task UpdateSilverhazeStatsInDiscordServer()
+        {
+            var scoresaberid = "76561198033166451";
+            var channel = discord.GetGuild(627156958880858113).GetTextChannel(782565201206575125);
+            var messages = await channel.GetMessagesAsync(20).FlattenAsync();
+            foreach(var message in messages)
+            {
+                await message.DeleteAsync();
+            }
+            await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberid, "Topsongs");
+            await BeatSaberInfoExtension.GetAndCreateTopsongsCardImage(scoresaberid);
+            await channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberid}.png", "");
+            await channel.SendFileAsync($"../../../Resources/img/TopsongsCard_{scoresaberid}.png", "");
+            await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberid, "Recentsongs");
+            await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberid);
+            await channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberid}.png", "");
+            await channel.SendFileAsync($"../../../Resources/img/RecentsongsCard_{scoresaberid}.png", "");
+            await BeatSaberInfoExtension.GetAndCreateProfileImage(scoresaberid);
+            await channel.SendFileAsync($"../../../Resources/img/RankingCard_{scoresaberid}.png", "");
+    
+            File.Delete($"../../../Resources/img/UserCard_{scoresaberid}.png");
+            File.Delete($"../../../Resources/img/TopsongsCard_{scoresaberid}.png");
+            File.Delete($"../../../Resources/img/RecentsongsCard_{scoresaberid}.png");
+            File.Delete($"../../../Resources/img/RankingCard_{scoresaberid}.png");        
         }
     }
 }
