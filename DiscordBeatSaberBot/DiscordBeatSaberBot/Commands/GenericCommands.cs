@@ -37,7 +37,7 @@ namespace DiscordBeatSaberBot.Commands
         [Help("Playing", "Sets the game of the discord bot.", "!bs playing (gameName)", HelpAttribute.Catergories.BotFunctions)]
         static public async Task Playing(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            if (message.Author.IsDutchAdmin(discordSocketClient))
+            if (await message.Author.IsDutchAdmin(discordSocketClient))
             {
                 var msg = message.Content.Substring(12);
 
@@ -126,23 +126,6 @@ namespace DiscordBeatSaberBot.Commands
         {
             var embedTask = await BeatSaberInfoExtension.GetInviteLink();
             await message.Channel.SendMessageAsync("", false, embedTask.Build());
-        }
-
-        [Help("SendDM", "Sends a DM to somone if he is in the server", "!bs senddm (DiscordTag or ID) (Message)", HelpAttribute.Catergories.BotFunctions)]
-        static public async Task SendDM(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            var guildUserSender = message.Author as SocketGuildUser;
-            if (guildUserSender.IsDutchAdmin() || ValidationExtension.IsOwner(message.Author.Id))
-            {
-                //!bs senddm <@!32432424> hello
-                var content = message.Content.Substring(11);
-                var splitContent = Regex.Split(content, @"<@!([0-9]+)>");
-                var user = discordSocketClient.GetUser(ulong.Parse(splitContent[1]));
-
-                await user.SendDMMessage(splitContent[2], discordSocketClient);
-                await message.Channel.SendMessageAsync($"DM send to {splitContent[1]}");
-
-            }
         }
 
         [Help("Poll", "Creates a poll with reactions so people can vote on a subject.", "!bs poll (Question)", HelpAttribute.Catergories.BotFunctions)]

@@ -119,18 +119,19 @@ namespace DiscordBeatSaberBot.Handlers
 
             if (channel.Id == 549350982081970176)
             {
-                bool authenticationCheck()
+                async Task<bool> authenticationCheck()
                 {
                     var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
-                    var userRoles = guild.GetUser(reaction.User.Value.Id).Roles;
-                    foreach (var role in userRoles)
-                        if (role.Name == "Staff")
+                    var user = await discordSocketClient.Rest.GetGuildUserAsync(505485680344956928, reaction.UserId);
+                    
+                    foreach (var roleId in user.RoleIds)
+                        if (roleId == 505486321595187220)//Staff Role ID
                             return true;
 
                     return false;
                 }
 
-                if (authenticationCheck())
+                if (await authenticationCheck())
                 {
                     //{✅}
                     //{⛔}
@@ -209,7 +210,7 @@ namespace DiscordBeatSaberBot.Handlers
 
                         DutchRankFeed.GiveRoleWithRank(player.playerInfo.CountryRank, scoresaberId, discordSocketClient);
                         var dutchGuild = new GuildService(discordSocketClient, 505485680344956928);
-                        var linkingUser = dutchGuild.Guild.GetUser(await new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId));
+                        IUser linkingUser = dutchGuild.Guild.GetUser(await new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId));
                         await dutchGuild.AddRole("Verified", linkingUser);
 
 
@@ -228,7 +229,7 @@ namespace DiscordBeatSaberBot.Handlers
                     guild = discordSocketClient.GetGuild(505485680344956928);
                 else if (channel.Id == 627292184143724544)
                     guild = discordSocketClient.GetGuild(627156958880858113);
-                var user = guild.GetUser(reaction.UserId);
+                var user = await discordSocketClient.Rest.GetGuildUserAsync(guild.Id, reaction.UserId);
 
                 var t = reaction.Emote.ToString().Replace("<a:", "<:");
 
@@ -239,7 +240,7 @@ namespace DiscordBeatSaberBot.Handlers
                         if (role == null) role = guild.Roles.FirstOrDefault(x => x.Id.ToString() == reactionDic.Value);
                         try
                         {
-                            await guild.GetUser(reaction.UserId).AddRoleAsync(role);
+                            await user.AddRoleAsync(role);
                         }
                         catch (Exception ex)
                         {

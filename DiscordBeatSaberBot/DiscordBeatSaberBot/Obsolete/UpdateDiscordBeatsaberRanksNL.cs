@@ -67,8 +67,8 @@ namespace DiscordBeatSaberBot
 
                         if (rank == 1)
                             await DutchRankFeed.GiveRole(account.Value.ToString(), "Nummer 1", discord);
-                        else if (rank <= 5)
-                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 5", discord);
+                        else if (rank <= 3)
+                            await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 3", discord);
                         else if (rank <= 10)
                             await DutchRankFeed.GiveRole(account.Value.ToString(), "Top 10", discord);
                         else if (rank <= 25)

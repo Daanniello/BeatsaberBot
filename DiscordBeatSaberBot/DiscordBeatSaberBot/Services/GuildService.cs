@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using DiscordBeatSaberBot.Handlers;
 
@@ -37,13 +38,14 @@ namespace DiscordBeatSaberBot
             Guild = _discord.Guilds.FirstOrDefault(x => x.Id == serverId);
         }
 
-        public async Task UserJoinedMessage(SocketGuildUser guildUser)
+        public async Task UserJoinedMessage(RestGuildUser guildUser)
         {
+            var guild = _discord.GetGuild(guildUser.GuildId);
             //Welkom message voor de nederlandse beat saber discord.
-            if (guildUser.Guild.Id == 505485680344956928)
+            if (guild.Id == 505485680344956928)
             {
                 var user = _discord.GetUser(guildUser.Id);
-                var welkomChannel = guildUser.Guild.Channels.FirstOrDefault(x => x.Name == "welkom") as ISocketMessageChannel;
+                var welkomChannel = guild.Channels.FirstOrDefault(x => x.Name == "welkom") as ISocketMessageChannel;
                 var dmChannel = await user.GetOrCreateDMChannelAsync();
                 var r = new Random();
 
@@ -98,10 +100,10 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        public async Task<bool> AddRole(string roleName, SocketUser user)
+        public async Task<bool> AddRole(string roleName, IUser user)
         {
-            var guildUser = ConvertUserToGuildUser(user);
-            var userRoles = guildUser.Roles;
+            var guildUser = await ConvertUserToGuildUser(user);
+            var userRoles = guildUser.RoleIds;
             foreach (var role in Guild.Roles)
             {
                 if (role.Name == roleName)
@@ -116,8 +118,7 @@ namespace DiscordBeatSaberBot
 
         public async Task<bool> AddRole(ulong roleId, SocketUser user)
         {
-            var guildUser = ConvertUserToGuildUser(user);
-            var userRoles = guildUser.Roles;
+            var guildUser = await ConvertUserToGuildUser(user);
             foreach (var role in Guild.Roles)
             {
                 if (role.Id == roleId)
@@ -130,11 +131,11 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        public async Task<bool> DeleteRole(ulong roleId, SocketUser user)
+        public async Task<bool> DeleteRole(ulong roleId, IUser user)
         {
-            var guildUser = ConvertUserToGuildUser(user);
-            var userRoles = guildUser.Roles;
-            foreach (var role in userRoles)
+            var guildUser = await ConvertUserToGuildUser(user);
+
+            foreach (var role in Guild.Roles)
             {
                 if (role.Id == roleId)
                 {
@@ -146,11 +147,11 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        public async Task<bool> DeleteRole(string roleName, SocketUser user)
+        public async Task<bool> DeleteRole(string roleName, IUser user)
         {
-            var guildUser = ConvertUserToGuildUser(user);
-            var userRoles = guildUser.Roles;
-            foreach (var role in userRoles)
+            var guildUser = await ConvertUserToGuildUser(user);
+
+            foreach (var role in Guild.Roles)
             {
                 if (role.Name == roleName)
                 {
@@ -162,12 +163,12 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        public bool UserHasRole(SocketUser user, string roleName)
+        public async Task<bool> UserHasRole(SocketUser user, string roleName)
         {
-            var guildUser = ConvertUserToGuildUser(user);
+            var guildUser = await ConvertUserToGuildUser(user);
             if (guildUser == null) return false;
-            var userRoles = guildUser.Roles;
-            foreach (var role in userRoles)
+            var userRoles = _discord.GetGuild(guildUser.GuildId);
+            foreach (var role in userRoles.Roles)
             {
                 if (role.Name == roleName)
                 {
@@ -177,10 +178,11 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        public SocketGuildUser ConvertUserToGuildUser(SocketUser user)
+        public async Task<RestGuildUser> ConvertUserToGuildUser(IUser user)
         {
+            
             var guild = _discord.Guilds.FirstOrDefault(x => x.Id == ServerId);
-            return guild.GetUser(user.Id);
+            return await _discord.Rest.GetGuildUserAsync(guild.Id, user.Id);
         }
 
         //Checks if a user should be verified.

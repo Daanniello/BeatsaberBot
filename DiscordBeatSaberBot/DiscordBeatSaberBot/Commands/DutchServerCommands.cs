@@ -20,7 +20,7 @@ namespace DiscordBeatSaberBot.Commands
         static public async Task RoleColor(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var moderationHelper = new GuildService(discordSocketClient, 505485680344956928);
-            if (moderationHelper.UserHasRole(message.Author, "Staff") || moderationHelper.UserHasRole(message.Author, "Verslaafd"))
+            if (await moderationHelper.UserHasRole(message.Author, "Staff") || await moderationHelper.UserHasRole(message.Author, "Verslaafd"))
             {
                 var roles = discordSocketClient.GetGuild(505485680344956928).Roles;
                 var role = roles.FirstOrDefault(r => r.Name == "Verslaafd");
@@ -46,7 +46,7 @@ namespace DiscordBeatSaberBot.Commands
         [Help("UpdateRoles", "Update roles from everyone in the dutch beat saber discord", "!bs updateroles", HelpAttribute.Catergories.AdminCommands)]
         static public async Task UpdateRoles(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            if (message.Author.IsDutchAdmin(discordSocketClient))
+            if (await message.Author.IsDutchAdmin(discordSocketClient))
             {
                 new Thread(async () =>
                 {
@@ -74,7 +74,7 @@ namespace DiscordBeatSaberBot.Commands
         [Help("IRLevent", "Creates and IRL Event for the dutch discord.", "!bs irlevent", HelpAttribute.Catergories.AdminCommands)]
         static public async Task IRLevent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            if (message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194))
+            if (await message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194))
             {
                 var embedBuilder = EmbedBuilderExtension.NullEmbed("IRL Event handler", "Starting IRL Event handler...", null, null);
                 var msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
@@ -87,46 +87,13 @@ namespace DiscordBeatSaberBot.Commands
         [Help("RandomEvent", "Creates and Random Event for the dutch discord.", "!bs randomevent", HelpAttribute.Catergories.AdminCommands)]
         static public async Task RandomEvent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            if (message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194, 505486321595187220))
+            if (await message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194, 505486321595187220))
             {
                 var embedBuilder = EmbedBuilderExtension.NullEmbed("Random Event Generator", "Starting random event handler...", null, null);
                 var msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
 
 
                 var randomEventHandler = new RandomEventHandler(message, discordSocketClient, msg);
-            }
-        }
-
-        [Help("Mute", "Will mute a person in the dutch discord", "!mute (DiscordTag or ID) (example: 2w3d5h) y=year M=month w=week d=day h=hour m=minute s=second", HelpAttribute.Catergories.DutchFunctions)]
-        static public async Task Mute(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            if (message.Author.IsDutchAdmin(discordSocketClient) || message.Author.IsDutchMod(discordSocketClient))
-            {
-                var parameters = message.Content.Substring(9).Replace("<@!", "").Replace(">", "").Split(" ");
-                var discordId = parameters[0];
-                var guildChannel = (SocketGuildChannel)message.Channel;
-                new RoleAssignment(discordSocketClient).MutePerson(ulong.Parse(discordId), guildChannel.Guild.Id, parameters.Length > 1 ? parameters[1] : null);
-                message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("User has been muted", $"{discordId} has been muted").Build());
-            }
-            else
-            {
-                message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Validation error", "You have not the rights to use this command.").Build());
-            }
-        }
-
-        [Help("UnMute", "Will unmute a person in the dutch discord", "!unmute (DiscordTag or ID)", HelpAttribute.Catergories.DutchFunctions)]
-        static public async Task UnMute(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            if (message.Author.IsDutchAdmin(discordSocketClient) || message.Author.IsDutchMod(discordSocketClient))
-            {
-                var discordId = message.Content.Substring(11).Replace("<@!", "").Replace(">", "");
-                var guildChannel = (SocketGuildChannel)message.Channel;
-                new RoleAssignment(discordSocketClient).UnMutePerson(ulong.Parse(discordId), guildChannel.Guild.Id);
-                message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("User has been unmuted", $"{discordId} has been unmuted").Build());
-            }
-            else
-            {
-                message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Validation error", "You have not the rights to use this command.").Build());
             }
         }
 
@@ -192,7 +159,7 @@ namespace DiscordBeatSaberBot.Commands
                 r.MakeRequest(message, 505485680344956928, 549350982081970176);
 
                 var user = message.Author;
-                if (moderationHelper.UserHasRole(user, "Nieuwkomer"))
+                if (await moderationHelper.UserHasRole(user, "Nieuwkomer"))
                 {
                     await moderationHelper.AddRole("Unverified", user);
                     await moderationHelper.DeleteRole("Nieuwkomer", user);

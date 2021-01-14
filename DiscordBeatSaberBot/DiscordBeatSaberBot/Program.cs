@@ -43,8 +43,7 @@ namespace DiscordBeatSaberBot
         public async Task MainAsync()
         {            
             try
-            {
-                
+            {                
                 discordSocketClient = new DiscordSocketClient();
                 Console.WriteLine("Connecting to Discord...");
 
@@ -134,10 +133,10 @@ namespace DiscordBeatSaberBot
             await guildUser.AddRoleAsync(addRole);
         }
 
-        public async Task UserJoinedMessage(SocketUser user)
+        public async Task UserJoinedMessage(IUser user)
         {
             var server = new GuildService(discordSocketClient, 505485680344956928);
-            var guildUser = server.ConvertUserToGuildUser(user);
+            var guildUser = await server.ConvertUserToGuildUser(user);
             await server.UserJoinedMessage(guildUser);
         }
 

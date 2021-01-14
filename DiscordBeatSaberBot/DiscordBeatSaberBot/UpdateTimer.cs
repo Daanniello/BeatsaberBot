@@ -84,20 +84,6 @@ namespace DiscordBeatSaberBot
             await msg.ModifyAsync(text => text.Embed = embedbuilder.Build());
         }
 
-        public async Task AutomaticUnMute()
-        {
-            var mutedPeople = await DatabaseContext.ExecuteSelectQuery("Select * from PlayerInCountry where Muted IS NOT NULL");
-            foreach(var muted in mutedPeople)
-            {
-                var dateUntillUnmute = Convert.ToDateTime(muted[2]);
-                if (DateTime.Now > dateUntillUnmute)
-                {
-                    new RoleAssignment(discord).UnMutePerson(Convert.ToUInt64(muted[0]), Convert.ToUInt64(muted[1]));
-                }
-            }
-            
-        }
-
             public async Task EventNotification()
         {
             var eventDetailChannel = (ISocketMessageChannel)discord.GetChannel(572721078359556097);

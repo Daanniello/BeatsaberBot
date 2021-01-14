@@ -598,19 +598,21 @@ namespace DiscordBeatSaberBot.Extensions
                     imageCreator.AddText(accGrid[2].String == null ? Math.Round(float.Parse(accGrid[2].Double.ToString()), 2).ToString() : accGrid[2].String, System.Drawing.Color.White, 20, 225, 235);
                     imageCreator.AddText(accGrid[3].String == null ? Math.Round(float.Parse(accGrid[3].Double.ToString()), 2).ToString() : accGrid[3].String, System.Drawing.Color.White, 20, 325, 235);
 
-                    imageCreator.AddText(hitGrid[8].ToString(), System.Drawing.Color.White, 12, 5, 5);
-                    imageCreator.AddText(hitGrid[9].ToString(), System.Drawing.Color.White, 12, 105, 5);
-                    imageCreator.AddText(hitGrid[10].ToString(), System.Drawing.Color.White, 12, 205, 5);
-                    imageCreator.AddText(hitGrid[11].ToString(), System.Drawing.Color.White, 12, 305, 5);
-                    imageCreator.AddText(hitGrid[4].ToString(), System.Drawing.Color.White, 12, 5, 105);
-                    imageCreator.AddText(hitGrid[5].ToString(), System.Drawing.Color.White, 12, 105, 105);
-                    imageCreator.AddText(hitGrid[6].ToString(), System.Drawing.Color.White, 12, 205, 105);
-                    imageCreator.AddText(hitGrid[7].ToString(), System.Drawing.Color.White, 12, 305, 105);
-                    imageCreator.AddText(hitGrid[0].ToString(), System.Drawing.Color.White, 12, 5, 205);
-                    imageCreator.AddText(hitGrid[1].ToString(), System.Drawing.Color.White, 12, 105, 205);
-                    imageCreator.AddText(hitGrid[2].ToString(), System.Drawing.Color.White, 12, 205, 205);
-                    imageCreator.AddText(hitGrid[3].ToString(), System.Drawing.Color.White, 12, 305, 205);
-
+                    if (hitGrid != null)
+                    {
+                        imageCreator.AddText(hitGrid[8].ToString(), System.Drawing.Color.White, 12, 5, 5);
+                        imageCreator.AddText(hitGrid[9].ToString(), System.Drawing.Color.White, 12, 105, 5);
+                        imageCreator.AddText(hitGrid[10].ToString(), System.Drawing.Color.White, 12, 205, 5);
+                        imageCreator.AddText(hitGrid[11].ToString(), System.Drawing.Color.White, 12, 305, 5);
+                        imageCreator.AddText(hitGrid[4].ToString(), System.Drawing.Color.White, 12, 5, 105);
+                        imageCreator.AddText(hitGrid[5].ToString(), System.Drawing.Color.White, 12, 105, 105);
+                        imageCreator.AddText(hitGrid[6].ToString(), System.Drawing.Color.White, 12, 205, 105);
+                        imageCreator.AddText(hitGrid[7].ToString(), System.Drawing.Color.White, 12, 305, 105);
+                        imageCreator.AddText(hitGrid[0].ToString(), System.Drawing.Color.White, 12, 5, 205);
+                        imageCreator.AddText(hitGrid[1].ToString(), System.Drawing.Color.White, 12, 105, 205);
+                        imageCreator.AddText(hitGrid[2].ToString(), System.Drawing.Color.White, 12, 205, 205);
+                        imageCreator.AddText(hitGrid[3].ToString(), System.Drawing.Color.White, 12, 305, 205);
+                    }
                     imageCreator.Create($"../../../Resources/img/AccGrid-{playerId}.png");
 
                     await message.Channel.SendFileAsync($"../../../Resources/img/AccGrid-{playerId}.png", "**Accuracy grid** \nThis tells you how many average points you get on all note placements. The small number in the corner is the amount of notes in the map on that position.");

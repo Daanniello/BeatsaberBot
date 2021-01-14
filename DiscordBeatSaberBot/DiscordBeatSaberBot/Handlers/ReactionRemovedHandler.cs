@@ -98,12 +98,15 @@ namespace DiscordBeatSaberBot.Handlers
             if (channel.Id == 510227606822584330 || channel.Id == 627292184143724544)
             {
                 var guild = discordSocketClient.GetGuild(505485680344956928);
+
                 if (channel.Id == 510227606822584330)
                     guild = discordSocketClient.GetGuild(505485680344956928);
                 else if (channel.Id == 627292184143724544)
                     guild = discordSocketClient.GetGuild(627156958880858113);
+                
+                //var user = guild.GetUser(reaction.UserId);
 
-                var user = guild.GetUser(reaction.UserId);
+                var user = await discordSocketClient.Rest.GetGuildUserAsync(guild.Id, reaction.UserId); 
 
                 var t = reaction.Emote.ToString();
 
@@ -112,7 +115,8 @@ namespace DiscordBeatSaberBot.Handlers
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == reactionDic.Value);
                         if (role == null) role = guild.Roles.FirstOrDefault(x => x.Id.ToString() == reactionDic.Value);
-                        await (user as IGuildUser).RemoveRoleAsync(role);
+                        
+                        await user.RemoveRoleAsync(role);
                     }
             }
 

@@ -98,15 +98,15 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        public static bool IsDutchAdmin(this SocketUser user, DiscordSocketClient discord) // Staff ID : 505486321595187220
+        public static async Task<bool> IsDutchAdmin(this SocketUser user, DiscordSocketClient discord) // Staff ID : 505486321595187220
         {
-            var guildUser = new GuildService(discord, 505485680344956928).ConvertUserToGuildUser(user);
+            var guildUser = await new GuildService(discord, 505485680344956928).ConvertUserToGuildUser(user);
 
             if (guildUser == null) return false;
 
-            foreach (var role in guildUser.Roles)
+            foreach (var roleId in guildUser.RoleIds)
             {
-                if (role.Id == 505486321595187220)
+                if (roleId == 505486321595187220)
                 {
                     return true;
                 }
@@ -114,15 +114,15 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        public static bool IsDutchMod(this SocketUser user, DiscordSocketClient discord) // Staff ID : 505486321595187220
+        public static async Task<bool> IsDutchMod(this SocketUser user, DiscordSocketClient discord) // Staff ID : 505486321595187220
         {
-            var guildUser = new GuildService(discord, 505485680344956928).ConvertUserToGuildUser(user);
+            var guildUser = await new GuildService(discord, 505485680344956928).ConvertUserToGuildUser(user);
 
             if (guildUser == null) return false;
 
-            foreach (var role in guildUser.Roles)
+            foreach (var roleId in guildUser.RoleIds)
             {
-                if (role.Id == 711348102241583184)
+                if (roleId == 711348102241583184)
                 {
                     return true;
                 }
@@ -130,9 +130,9 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        public static bool HasCertainRoleInNBSG(this SocketMessage message, DiscordSocketClient discord, params ulong[] RoleId)
+        public static async  Task<bool> HasCertainRoleInNBSG(this SocketMessage message, DiscordSocketClient discord, params ulong[] RoleId)
         {
-            var guildUser = new GuildService(discord, 505485680344956928).ConvertUserToGuildUser(message.Author);
+            var guildUser = await new GuildService(discord, 505485680344956928).ConvertUserToGuildUser(message.Author);
 
             if (guildUser == null)
             {
@@ -140,11 +140,11 @@ namespace DiscordBeatSaberBot
                 return false;
             }
 
-            foreach (var role in guildUser.Roles)
+            foreach (var roleId in guildUser.RoleIds)
             {
                 foreach(var id in RoleId)
                 {
-                    if (role.Id == id)
+                    if (roleId == id)
                     {
                         return true;
                     }

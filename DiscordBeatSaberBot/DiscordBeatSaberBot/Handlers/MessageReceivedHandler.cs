@@ -114,17 +114,9 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     GlobalScoresaberCommands.Profile(discordSocketClient, message);
                 }
-                else if (messageCommand.Contains(" unmute"))
-                {
-                    DutchServerCommands.UnMute(discordSocketClient, message);
-                }
                 else if (messageCommand.Contains(" interviewtest"))
                 {
                     new WelcomeInterviewHandler(discordSocketClient, message.Channel, message.Author.Id).AskForInterview();
-                }
-                else if (messageCommand.Contains(" mute"))
-                {
-                    DutchServerCommands.Mute(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" number"))
                 {
@@ -152,10 +144,6 @@ namespace DiscordBeatSaberBot.Handlers
                     var builderList = await BeatSaberInfoExtension.GetRanks();
                     foreach (var builder in builderList)
                         await message.Channel.SendMessageAsync("", false, builder.Build());
-                }
-                else if (messageCommand.Contains(" senddm"))
-                {
-                    GenericCommands.SendDM(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" songs"))
                 {

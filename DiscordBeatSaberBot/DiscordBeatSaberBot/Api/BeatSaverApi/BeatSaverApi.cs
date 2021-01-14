@@ -9,9 +9,10 @@ using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot.Api.BeatSaverApi
 {
-    class BeatSaverApi
+    public class BeatSaverApi
     {
         private string _songId;
+        public int apiCallCount;
         public BeatSaverApi(string songId)
         {
             _songId = songId;
@@ -34,13 +35,13 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
                 client.DefaultRequestHeaders.Connection.Add("keep-alive");
 
                 var httpResponseMessage2 = await client.SendAsync(request);
-
+                apiCallCount++;
                 if (httpResponseMessage2.StatusCode != HttpStatusCode.OK) return null;
 
                 var recentSongsJsonDataBeatSaver = await httpResponseMessage2.Content.ReadAsStringAsync();
                 var recentSongsInfoBeatSaver = JsonConvert.DeserializeObject<BeatSaverMapInfoModel>(recentSongsJsonDataBeatSaver);
                 return recentSongsInfoBeatSaver;
-            }
+            }            
         }
     }
 }

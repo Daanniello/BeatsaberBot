@@ -254,7 +254,7 @@ namespace DiscordBeatSaberBot
 
             if (rank == 0) return;
             if (rank <= 1) await GiveRole(scoresaberId, "Nummer 1");
-            else if (rank <= 5) await GiveRole(scoresaberId, "Top 5");
+            else if (rank <= 3) await GiveRole(scoresaberId, "Top 3");
             else if (rank <= 10) await GiveRole(scoresaberId, "Top 10");
             else if (rank <= 25) await GiveRole(scoresaberId, "Top 25");
             else if (rank <= 50) await GiveRole(scoresaberId, "Top 50");
@@ -269,7 +269,7 @@ namespace DiscordBeatSaberBot
             var rolenames = new[]
             {
                 "Nummer 1",
-                "Top 5",
+                "Top 3",
                 "Top 10",
                 "Top 25",
                 "Top 50",
@@ -287,10 +287,10 @@ namespace DiscordBeatSaberBot
                 if (user == null)
                 {
                     Console.WriteLine($"User {userDiscordId} is not in the server");
-                    Console.WriteLine($"Removing User...");
-                    await DatabaseContext.ExecuteRemoveQuery($"Delete from Player where discordid={userDiscordId}");
-                    await DatabaseContext.ExecuteRemoveQuery($"Delete from PlayerInCountry where discordid={userDiscordId}");
-                    Console.WriteLine($"User removed.");
+                    //Console.WriteLine($"Removing User...");
+                    //await DatabaseContext.ExecuteRemoveQuery($"Delete from Player where discordid={userDiscordId}");
+                    //await DatabaseContext.ExecuteRemoveQuery($"Delete from PlayerInCountry where discordid={userDiscordId}");
+                    //Console.WriteLine($"User removed.");
 
                     return;
                 }
