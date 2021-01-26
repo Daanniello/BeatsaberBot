@@ -44,7 +44,7 @@ namespace DiscordBeatSaberBot
             {
                 foreach (var account in accounts)
                 {
-                    string url = $"https://new.ScoreSaber.com/api/player/{account.Value.ToString()}/full";
+                    string url = $"https://new.scoresaber.com/api/player/{account.Value.ToString()}/full";
                     int rank = 0;
 
                     var playerInfoRaw = await client.GetAsync(url);

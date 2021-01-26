@@ -361,8 +361,8 @@ namespace DiscordBeatSaberBot
                     Title = rankedRequest.Request.Info.Name + " - " + rankedRequest.Request.Info.LevelAuthorName,
                     Description = $"{Math.Round((timeTillRanked - DateTime.Now).TotalHours, 1)}h left",
                     Footer = new EmbedFooterBuilder() { Text = Convert.ToInt64(qm[0]).ToString() },
-                    ThumbnailUrl = $"https://new.ScoreSaber.com/api/static/covers/{rankedRequest.Request.Info.Id}.png",
-                    Url = $"https://new.ScoreSaber.com/ranking/request/{Convert.ToInt64(qm[0]).ToString()}"
+                    ThumbnailUrl = $"https://new.scoresaber.com/api/static/covers/{rankedRequest.Request.Info.Id}.png",
+                    Url = $"https://new.scoresaber.com/ranking/request/{Convert.ToInt64(qm[0]).ToString()}"
                 };
 
                 var message = await guildChannel.SendMessageAsync("", false, embed.Build());
@@ -390,8 +390,8 @@ namespace DiscordBeatSaberBot
                     Title = rankedRequest.Request.Info.Name + " - " + rankedRequest.Request.Info.LevelAuthorName,
                     Description = $"{Math.Round((timeTillRanked - DateTime.Now).TotalHours, 1)}h left",
                     Footer = new EmbedFooterBuilder() { Text = Convert.ToInt64(qm[0]).ToString() },
-                    ThumbnailUrl = $"https://new.ScoreSaber.com/api/static/covers/{rankedRequest.Request.Info.Id}.png",
-                    Url = $"https://new.ScoreSaber.com/ranking/request/{Convert.ToInt64(qm[0]).ToString()}"
+                    ThumbnailUrl = $"https://new.scoresaber.com/api/static/covers/{rankedRequest.Request.Info.Id}.png",
+                    Url = $"https://new.scoresaber.com/ranking/request/{Convert.ToInt64(qm[0]).ToString()}"
                 };
 
                 var message = await guildChannel.SendMessageAsync("", false, embed.Build());

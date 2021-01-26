@@ -90,7 +90,7 @@ namespace DiscordBeatSaberBot
         {
             string ScoreSaberId = null;
 
-            string url = "https://new.ScoreSaber.com/api/players/by-name/" + name;
+            string url = "https://new.scoresaber.com/api/players/by-name/" + name;
             using (var client = new HttpClient())
             {
                 var infoPlayerRaw = await client.GetAsync(url);

@@ -15,7 +15,7 @@ namespace DiscordBeatSaberBot
     class ScoreSaberAPI
     {
 
-        private string _baseUrl = "https://new.ScoreSaber.com/api/player/";
+        private string _baseUrl = "https://new.scoresaber.com/api/player/";
         private string _playerId;
         private SocketMessage _message;
 
@@ -28,7 +28,7 @@ namespace DiscordBeatSaberBot
         public static async Task<ScoreSaberRankedTopRequestsModel> GetTopRankedRequests()
         {
             Console.WriteLine("ScoreSaber request for top ranked requests");
-            var url = "https://new.ScoreSaber.com/api/ranking/requests/top";
+            var url = "https://new.scoresaber.com/api/ranking/requests/top";
             var rankedRequests = new ScoreSaberRankedTopRequestsModel();
 
             using (var client = new HttpClient())
@@ -46,7 +46,7 @@ namespace DiscordBeatSaberBot
         public static async Task<ScoreSaberRankedRequestModel> GetRankedRequests(long requestId)
         {
             Console.WriteLine("ScoreSaber request for ranked requests");
-            var url = $"https://new.ScoreSaber.com/api/ranking/request/{requestId}";
+            var url = $"https://new.scoresaber.com/api/ranking/request/{requestId}";
             var rankedRequests = new ScoreSaberRankedRequestModel();
 
             using (var client = new HttpClient())
