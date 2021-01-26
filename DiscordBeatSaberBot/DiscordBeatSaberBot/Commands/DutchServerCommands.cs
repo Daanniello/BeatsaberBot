@@ -16,7 +16,7 @@ namespace DiscordBeatSaberBot.Commands
 {
     class DutchServerCommands : ICommand
     {
-        [Help("RoleColor", "If you have the dutch 'verslaafd' role, you can chance the color of it.", "!bs rolecolor (#ffffff)", HelpAttribute.Catergories.DutchFunctions)]
+        [Help("RoleColor", "If you have the Dutch 'verslaafd' role, you can chance the color of it.", "!bs rolecolor (#ffffff)", HelpAttribute.Catergories.DutchFunctions)]
         static public async Task RoleColor(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var moderationHelper = new GuildService(discordSocketClient, 505485680344956928);
@@ -43,7 +43,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("UpdateRoles", "Update roles from everyone in the dutch beat saber discord", "!bs updateroles", HelpAttribute.Catergories.AdminCommands)]
+        [Help("UpdateRoles", "Update roles from everyone in the Dutch beat saber discord", "!bs updateroles", HelpAttribute.Catergories.AdminCommands)]
         static public async Task UpdateRoles(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (await message.Author.IsDutchAdmin(discordSocketClient))
@@ -60,18 +60,18 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("ChangeColor", "If you have the dutch 'verslaafd' role, you can chance the color of it.", "!bs changecolor (#ffffff)", HelpAttribute.Catergories.DutchFunctions)]
+        [Help("ChangeColor", "If you have the Dutch 'verslaafd' role, you can change the color of it.", "!bs changecolor (#ffffff)", HelpAttribute.Catergories.DutchFunctions)]
         static public async Task ChangeColor(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (true)
                 await message.Channel.SendMessageAsync("", false, new EmbedBuilder
                 {
-                    Title = "Je bent niet gemachtigt om je kleur aan te passen.",
+                    Title = "Je bent niet gemachtigd om je kleur aan te passen.",
                     Description = "Win het weekelijkse 'meeste uren event' om deze functie te krijgen"
                 }.Build());
         }
 
-        [Help("IRLevent", "Creates and IRL Event for the dutch discord.", "!bs irlevent", HelpAttribute.Catergories.AdminCommands)]
+        [Help("IRLevent", "Creates and IRL Event for the Dutch discord.", "!bs irlevent", HelpAttribute.Catergories.AdminCommands)]
         static public async Task IRLevent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (await message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194))
@@ -84,7 +84,7 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("RandomEvent", "Creates and Random Event for the dutch discord.", "!bs randomevent", HelpAttribute.Catergories.AdminCommands)]
+        [Help("RandomEvent", "Creates and Random Event for the Dutch discord.", "!bs randomevent", HelpAttribute.Catergories.AdminCommands)]
         static public async Task RandomEvent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             if (await message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194, 505486321595187220))
@@ -97,8 +97,8 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("Link", "Will link your Scoresaber profile to your Discord account ", "!link (ScoresaberID)", HelpAttribute.Catergories.General)]
-        static public async Task LinkScoresaberWithDiscord(DiscordSocketClient discordSocketClient, SocketMessage message)
+        [Help("Link", "Will link your ScoreSaber profile to your Discord account ", "!link (ScoreSaberID)", HelpAttribute.Catergories.General)]
+        static public async Task LinkScoreSaberWithDiscord(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
             var moderationHelper = new GuildService(discordSocketClient, 505485680344956928);
@@ -106,48 +106,48 @@ namespace DiscordBeatSaberBot.Commands
 
             if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
             {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Pog", $"Your Discord ID is already linked with your scoresaber, No worries {message.Author.Username}. If you want to unlink, type !bs unlink.").Build());
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Pog", $"Your Discord ID is already linked with your ScoreSaber, No worries {message.Author.Username}. If you want to unlink, type !bs unlink.").Build());
 
-                await message.Channel.SendMessageAsync("Your Discord ID is already linked with your scoresaber, No worries " + message.Author.Username);
+                await message.Channel.SendMessageAsync("Your Discord ID is already linked with your ScoreSaber, No worries " + message.Author.Username);
                 return;
             }
             else
             {
-                var ScoresaberId = message.Content.Substring(9);
-                ScoresaberId = Regex.Replace(ScoresaberId, "[^0-9]", "");
+                var ScoreSaberId = message.Content.Substring(9);
+                ScoreSaberId = Regex.Replace(ScoreSaberId, "[^0-9]", "");
 
-                if (!ValidationExtension.IsDigitsOnly(ScoresaberId))
+                if (!ValidationExtension.IsDigitsOnly(ScoreSaberId))
                 {
-                    await message.Channel.SendMessageAsync("Scoresaber ID is wrong");
+                    await message.Channel.SendMessageAsync("ScoreSaber ID is wrong");
                     return;
                 }
 
-                if (await ValidationExtension.IsDutch(ScoresaberId))
+                if (await ValidationExtension.IsDutch(ScoreSaberId))
                 {
                     var guildChannel = message.Channel as SocketGuildChannel;
                     if (guildChannel.Guild.Id != 505485680344956928)
                     {
-                        await ProcessNonDutch(ScoresaberId);
+                        await ProcessNonDutch(ScoreSaberId);
                         return;
                     }
-                    await ProcessDutch(ScoresaberId);
+                    await ProcessDutch(ScoreSaberId);
                     return;
                 }
-                else if (await ValidationExtension.IsNotDutch(ScoresaberId))
+                else if (!await ValidationExtension.IsDutch(ScoreSaberId))
                 {
-                    await ProcessNonDutch(ScoresaberId);
+                    await ProcessNonDutch(ScoreSaberId);
                     return;
                 }
                 else
                 {
-                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Your account does not exist on the scoresaber API. It might be because it is new. Try again later.", null, null).Build());
+                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Your account does not exist on the ScoreSaber API. It might be because it is new. Try again later.", null, null).Build());
                 }
             }
 
-            async Task ProcessDutch(string scoresaberId)
+            async Task ProcessDutch(string ScoreSaberId)
             {
                 var guildChannel = message.Channel as SocketGuildChannel;
-                if (guildChannel == null) message.Channel.SendMessageAsync("Looks like you use this command in DM.This command does not work in DM. Consider joining the Dutch Beat Saber Discord. (https://discord.gg/cH7mTyq)");
+                if (guildChannel == null) message.Channel.SendMessageAsync("Looks like you use this command in DM. This command does not work in DM. Consider joining the Dutch Beat Saber Discord. (https://discord.gg/cH7mTyq)");
                 if (guildChannel.Guild.Id != 505485680344956928)
                 {
                     message.Channel.SendMessageAsync("It seems that you are Dutch and trying to link your account outside the Dutch Discord. A Dutch request needs to be validated. Consider joining the Dutch Beat Saber Discord. (<https://discord.gg/cH7mTyq>)");
@@ -166,11 +166,11 @@ namespace DiscordBeatSaberBot.Commands
                 }
             }
 
-            async Task ProcessNonDutch(string ScoresaberId)
+            async Task ProcessNonDutch(string ScoreSaberId)
             {
-                DatabaseContext.ExecuteInsertQuery($"Insert into Player (ScoresaberId, DiscordId) values ({ScoresaberId}, {message.Author.Id.ToString()})");
+                DatabaseContext.ExecuteInsertQuery($"Insert into Player (ScoreSaberId, DiscordId) values ({ScoreSaberId}, {message.Author.Id.ToString()})");
 
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added user to the list", "Added " + message.Author.Id.ToString() + " with scoresaberID " + ScoresaberId + " to the global list", null, null).Build());
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added user to the list", "Added " + message.Author.Id.ToString() + " with ScoreSaberID " + ScoreSaberId + " to the global list", null, null).Build());
 
                 var guildChannel = message.Channel as SocketGuildChannel;
                 if (guildChannel == null) await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "This command can not be done in DM", null, null).Build());
@@ -182,20 +182,20 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("Unlink", "Will unlink your Scoresaber profile from your Discord account ", "!unlink", HelpAttribute.Catergories.General)]
-        static public async Task UnLinkScoresaberFromDiscord(DiscordSocketClient discordSocketClient, SocketMessage message)
+        [Help("Unlink", "Will unlink your ScoreSaber profile from your Discord account ", "!unlink", HelpAttribute.Catergories.General)]
+        static public async Task UnLinkScoreSaberFromDiscord(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
             var discordId = message.Author.Id.ToString();
             if (await r.CheckIfDiscordIdIsLinked(discordId))
             {
                 await r.UnlinkAccount(discordId);
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Succesfully Unlinked", $"Your discordId {discordId} is now unlinked from your scoresabeId").Build());
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Succesfully Unlinked", $"Your discordId {discordId} is now unlinked from your ScoreSaber ID").Build());
                 return;
             }
             else
             {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Hmmmm?", "Your Discord does not seemed to be linked. You can link a new scoresaber account with !bs link [ScoresaberID]").Build());
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Hmmmm?", "Your Discord does not seemed to be linked. You can link a new ScoreSaber account with !bs link [ScoreSaberID]").Build());
             }
         }
     }

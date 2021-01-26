@@ -5,12 +5,12 @@ using Newtonsoft.Json;
 
 namespace DiscordBeatSaberBot.Models.ScoreberAPI
 {
-    class ScoresaberScoresRecentModel
+    class ScoreSaberScoresRecentModel
     {
         [JsonProperty(PropertyName = "scores")]
-        public ScoresaberScoreRecentModel[] RecentScore { get; set; }
+        public ScoreSaberScoreRecentModel[] RecentScore { get; set; }
 
-        public class ScoresaberScoreRecentModel
+        public class ScoreSaberScoreRecentModel
         {
             [JsonProperty("scoreId")]
             public long ScoreId { get; set; }

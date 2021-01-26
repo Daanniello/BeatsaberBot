@@ -66,14 +66,14 @@ namespace DiscordBeatSaberBot.Commands
         {
             var discordId = message.Author.Id;
             var r = new RoleAssignment(discordSocketClient);
-            var scoresaberId = await r.GetScoresaberIdWithDiscordId(discordId.ToString());
-            if (scoresaberId != "")
+            var ScoreSaberId = await r.GetScoreSaberIdWithDiscordId(discordId.ToString());
+            if (ScoreSaberId != "")
             {
                //todo
             }
             else
             {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Not linked yet", "You are not linked with the bot yet. Type !bs link [ScoresaberID] to link your scoresaber with discord.").Build());
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Not linked yet", "You are not linked with the bot yet. Type !bs link [ScoreSaberID] to link your ScoreSaber with discord.").Build());
             }
         }
 
@@ -82,23 +82,23 @@ namespace DiscordBeatSaberBot.Commands
         {
             var discordId = message.Author.Id;
             var r = new RoleAssignment(discordSocketClient);
-            var scoresaberId = await r.GetScoresaberIdWithDiscordId(discordId.ToString());
-            if(scoresaberId != "")
+            var ScoreSaberId = await r.GetScoreSaberIdWithDiscordId(discordId.ToString());
+            if(ScoreSaberId != "")
             {
                 try
                 {
-                    await DatabaseContext.ExecuteInsertQuery($"Insert into ServerSilverhazeAchievementFeed (ScoreSaberId) values ('{scoresaberId}')");
+                    await DatabaseContext.ExecuteInsertQuery($"Insert into ServerSilverhazeAchievementFeed (ScoreSaberId) values ('{ScoreSaberId}')");
                 }
                 catch
                 {
                     await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"Errorrrrr", "are you already in the feed?").Build());
                 }
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"Successfully added with {scoresaberId}", "Your achievements will now be shown in the achievement channel").Build());
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"Successfully added with {ScoreSaberId}", "Your achievements will now be shown in the achievement channel").Build());
 
             }
             else
             {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Not linked yet", "You are not linked with the bot yet. Type !bs link [ScoresaberID] to link your scoresaber with discord.").Build());
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Not linked yet", "You are not linked with the bot yet. Type !bs link [ScoreSaberID] to link your ScoreSaber with discord.").Build());
             }            
         }
 

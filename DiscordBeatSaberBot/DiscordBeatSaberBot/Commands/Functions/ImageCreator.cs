@@ -10,10 +10,11 @@ namespace DiscordBeatSaberBot
     class ImageCreator
     {
         private Bitmap _bitmap;
-        public ImageCreator(string templatePath)
+        private string _fontFamily;
+        public ImageCreator(string templatePath, string fontFamily = "Tourmaline")
         {
-            string imageFilePath = templatePath;
-            _bitmap = (Bitmap)Image.FromFile(imageFilePath);
+            _bitmap = (Bitmap)Image.FromFile(templatePath);
+            _fontFamily = fontFamily;
         }
 
         public void Create(string path)
@@ -25,22 +26,22 @@ namespace DiscordBeatSaberBot
         {
             PointF firstLocation = new PointF(x, y);
 
-            using (Font arialFont = new Font("Tourmaline", fontsize))
+            using (Font font = new Font(_fontFamily, fontsize))
             using (Graphics graphics = Graphics.FromImage(_bitmap))
             {
-                graphics.DrawString(text, arialFont, new SolidBrush(color), firstLocation);
-                return graphics.MeasureString(text, arialFont);
+                graphics.DrawString(text, font, new SolidBrush(color), firstLocation);
+                return graphics.MeasureString(text, font);
             }
         }
 
         public SizeF AddTextFloatRight(string text, Color color, int fontsize, float x, float y)
         {          
-            using (Font arialFont = new Font("Tourmaline", fontsize))
+            using (Font font = new Font(_fontFamily, fontsize))
             using (Graphics graphics = Graphics.FromImage(_bitmap))
             {
-                PointF firstLocation = new PointF(_bitmap.Width - x - graphics.MeasureString(text, arialFont).Width, y);
-                graphics.DrawString(text, arialFont, new SolidBrush(color), firstLocation);
-                return graphics.MeasureString(text, arialFont);
+                PointF firstLocation = new PointF(_bitmap.Width - x - graphics.MeasureString(text, font).Width, y);
+                graphics.DrawString(text, font, new SolidBrush(color), firstLocation);
+                return graphics.MeasureString(text, font);
             }
         }
 
@@ -128,7 +129,6 @@ namespace DiscordBeatSaberBot
 
         private Tuple<Image, Image> AddNoteSlashEffect(Image StartImage, int CornerRadius, Color BackgroundColor)
         {
-            Image finishedImage = null;
             CornerRadius *= 2;
             Bitmap RoundedImage = new Bitmap(StartImage.Width, StartImage.Height);
             using (Graphics g = Graphics.FromImage(RoundedImage))

@@ -3,7 +3,7 @@ using System;
 
 namespace DiscordBeatSaberBot.Models.ScoreberAPI
 {
-    public class ScoresaberPlayerFullModel
+    public class ScoreSaberPlayerFullModel
     {
         
 

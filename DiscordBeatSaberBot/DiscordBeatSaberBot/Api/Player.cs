@@ -33,7 +33,7 @@ namespace DiscordBeatSaberBot
 
         public string steamLink { get; set; }
 
-        //public string scoresaberLink { get; set; }
+        //public string ScoreSaberLink { get; set; }
 
         public string imgLink { get; set; }
 
@@ -88,9 +88,9 @@ namespace DiscordBeatSaberBot
 
         public async Task<string> GetPlayerId()
         {
-            string scoresaberId = null;
+            string ScoreSaberId = null;
 
-            string url = "https://new.scoresaber.com/api/players/by-name/" + name;
+            string url = "https://new.ScoreSaber.com/api/players/by-name/" + name;
             using (var client = new HttpClient())
             {
                 var infoPlayerRaw = await client.GetAsync(url);
@@ -98,10 +98,10 @@ namespace DiscordBeatSaberBot
                 var playerList = JsonConvert.DeserializeObject<ScoreSaberSearchByNameModel>(infoPlayerRaw.Content.ReadAsStringAsync().Result).Players;
                 var player1search = playerList.Where(x => x.PlayerName.ToLower() == name.ToLower());
                 if (player1search.Count() == 0) return null;
-                scoresaberId = player1search.First().PlayerId;
+                ScoreSaberId = player1search.First().PlayerId;
             }
 
-            return scoresaberId;
+            return ScoreSaberId;
         }
     }
 }

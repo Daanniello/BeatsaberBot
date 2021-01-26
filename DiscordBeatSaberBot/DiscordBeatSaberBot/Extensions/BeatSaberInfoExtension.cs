@@ -75,9 +75,9 @@ namespace DiscordBeatSaberBot.Extensions
             return builder;
         }
 
-        public static async Task<Player> GetPlayerInfoWithScoresaberId(string scoresaberId)
+        public static async Task<Player> GetPlayerInfoWithScoreSaberId(string ScoreSaberId)
         {
-            var url = "https://scoresaber.com/u/" + scoresaberId;
+            var url = "https://scoresaber.com/u/" + ScoreSaberId;
 
             var player = new Player("");
             using (var client = new HttpClient())
@@ -95,9 +95,9 @@ namespace DiscordBeatSaberBot.Extensions
             return player;
         }
 
-        public static async Task<EmbedBuilder> SearchLinkedPlayer(string ScoresaberId)
+        public static async Task<EmbedBuilder> SearchLinkedPlayer(string ScoreSaberId)
         {
-            var url = "https://scoresaber.com/u/" + ScoresaberId;
+            var url = "https://scoresaber.com/u/" + ScoreSaberId;
 
             var player = new Player("");
             using (var client = new HttpClient())
@@ -159,8 +159,8 @@ namespace DiscordBeatSaberBot.Extensions
             {
                 builder.ThumbnailUrl = player.imgLink;
                 builder.Title = "**" + player.name.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
-                builder.Url = "https://scoresaber.com/u/" + ScoresaberId;
-                builder.AddField("`ID: " + ScoresaberId.Replace("/u/", "") + "`",
+                builder.Url = "https://scoresaber.com/u/" + ScoreSaberId;
+                builder.AddField("`ID: " + ScoreSaberId.Replace("/u/", "") + "`",
                     "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" +
                     "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" +
                     "Performance Points: " + player.pp + "\n\n" + "Replays Watched: " + player.ReplaysWatched +
@@ -171,8 +171,8 @@ namespace DiscordBeatSaberBot.Extensions
             {
                 builder.ThumbnailUrl = "https://scoresaber.com/imports/images/oculus.png";
                 builder.Title = "**" + player.name.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
-                builder.Url = "https://scoresaber.com/u/" + ScoresaberId;
-                builder.AddField("`ID: " + ScoresaberId.Replace("/u/", "") + "`",
+                builder.Url = "https://scoresaber.com/u/" + ScoreSaberId;
+                builder.AddField("`ID: " + ScoreSaberId.Replace("/u/", "") + "`",
                     "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" +
                     "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" +
                     "Performance Points: " + player.pp + "\n\n" + "Replays Watched: " + player.ReplaysWatched +
@@ -186,17 +186,17 @@ namespace DiscordBeatSaberBot.Extensions
             return builder;
         }
 
-        static public async Task<List<EmbedBuilder>> GetPlayerSearchInfoEmbed(string scoresaberId, SocketMessage message)
+        static public async Task<List<EmbedBuilder>> GetPlayerSearchInfoEmbed(string ScoreSaberId, SocketMessage message)
         {
             var embedBuilderList = new List<EmbedBuilder>();
 
-            var searchedPlayerInfo = await new ScoresaberAPI(scoresaberId, message).GetPlayerFull();
+            var searchedPlayerInfo = await new ScoreSaberAPI(ScoreSaberId, message).GetPlayerFull();
             var embedBuilder = new EmbedBuilder
             {
                 Title = $"**{searchedPlayerInfo.playerInfo.Name} :flag_{searchedPlayerInfo.playerInfo.Country.ToLower()}:**",
                 ThumbnailUrl =
-                $"https://new.scoresaber.com{searchedPlayerInfo.playerInfo.Avatar}",
-                Url = $"https://new.scoresaber.com/u/{searchedPlayerInfo.playerInfo.PlayerId}",
+                $"https://new.ScoreSaber.com{searchedPlayerInfo.playerInfo.Avatar}",
+                Url = $"https://new.ScoreSaber.com/u/{searchedPlayerInfo.playerInfo.PlayerId}",
             };
             embedBuilder.AddField(
                 $"`ID: {searchedPlayerInfo.playerInfo.PlayerId}`",
@@ -225,12 +225,12 @@ namespace DiscordBeatSaberBot.Extensions
                 $"```"
             );
 
-            //embedBuilder.ImageUrl = $"https://new.scoresaber.com/api/static/badges/{searchedPlayerInfo.playerInfo.Badges.First().Image}";
+            //embedBuilder.ImageUrl = $"https://new.ScoreSaber.com/api/static/badges/{searchedPlayerInfo.playerInfo.Badges.First().Image}";
 
             embedBuilderList.Add(embedBuilder);
             foreach (var badge in searchedPlayerInfo.playerInfo.Badges)
             {
-                embedBuilderList.Add(new EmbedBuilder() { ImageUrl = $"https://new.scoresaber.com/api/static/badges/{badge.Image}", Title = badge.Description });
+                embedBuilderList.Add(new EmbedBuilder() { ImageUrl = $"https://new.ScoreSaber.com/api/static/badges/{badge.Image}", Title = badge.Description });
             }
 
             return embedBuilderList;
@@ -373,8 +373,8 @@ namespace DiscordBeatSaberBot.Extensions
         {
             using (var client = new HttpClient())
             {
-                var playerInfoJsonData = await client.GetStringAsync($"https://new.scoresaber.com/api/players/by-name/{search}");
-                var playerInfo = JsonConvert.DeserializeObject<ScoresaberSearchPlayerModel>(playerInfoJsonData);
+                var playerInfoJsonData = await client.GetStringAsync($"https://new.ScoreSaber.com/api/players/by-name/{search}");
+                var playerInfo = JsonConvert.DeserializeObject<ScoreSaberSearchPlayerModel>(playerInfoJsonData);
                 return playerInfo.Playerid;
             }
         }
@@ -450,24 +450,24 @@ namespace DiscordBeatSaberBot.Extensions
             return builder;
         }
 
-        public static async Task GetAndPostRecentSongWithScoresaberId(string playerId, SocketMessage message)
+        public static async Task GetAndPostRecentSongWithScoreSaberId(string playerId, SocketMessage message)
         {
             var embedBuilder = new EmbedBuilder();
 
             using (var client = new HttpClient())
             {
-                var scoresaberApi = new ScoresaberAPI(playerId);
+                var ScoreSaberApi = new ScoreSaberAPI(playerId);
                 var beatSaviourApi = new BeatSaviourApi(playerId);
 
-                //Download scoresaber recentsong data
-                var recentSongsInfo = await scoresaberApi.GetScoresRecent();
+                //Download ScoreSaber recentsong data
+                var recentSongsInfo = await ScoreSaberApi.GetScoresRecent();
                 var recentSong = recentSongsInfo.Scores[0];
 
                 //Download beatsaver recentsong data
                 var recentSongsInfoBeatSaver = await new BeatSaverApi(recentSong.Id).GetRecentSongData();
 
-                //Download scoresaber full player data
-                var playerFullData = await scoresaberApi.GetPlayerFull();
+                //Download ScoreSaber full player data
+                var playerFullData = await ScoreSaberApi.GetPlayerFull();
                 var playerInfo = playerFullData.playerInfo;
 
                 //Download BeatSaviour livedata 
@@ -484,7 +484,7 @@ namespace DiscordBeatSaberBot.Extensions
                     Footer = new EmbedFooterBuilder() { Text = $"Time Set: {recentSong.Timeset.DateTime.ToShortDateString() + " | " + recentSong.Timeset.DateTime.ToShortTimeString()}" }
                 };
 
-                embedBuilder.Author = new EmbedAuthorBuilder() { IconUrl = $"https://new.scoresaber.com{playerInfo.Avatar}", Name = $"{ playerInfo.Name}", Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}" };
+                embedBuilder.Author = new EmbedAuthorBuilder() { IconUrl = $"https://new.ScoreSaber.com{playerInfo.Avatar}", Name = $"{ playerInfo.Name}", Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}" };
 
                 var rankType = recentSong.MaxScoreEx == 0 ? "'Unranked'" : "'Ranked'";
 
@@ -635,24 +635,24 @@ namespace DiscordBeatSaberBot.Extensions
             }
         }
 
-        public static async Task<EmbedBuilder> GetNewTopSongWithScoresaberId(string playerId)
+        public static async Task<EmbedBuilder> GetNewTopSongWithScoreSaberId(string playerId)
         {
-            var url = $"https://new.scoresaber.com/api/player/{playerId}/scores/top/1";
+            var url = $"https://new.ScoreSaber.com/api/player/{playerId}/scores/top/1";
             var embedBuilder = new EmbedBuilder();
 
             using (var client = new HttpClient())
             {
                 var httpResponseMessage = await client.GetAsync(url);
 
-                if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"Status code: {httpResponseMessage.StatusCode}");
+                if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("ScoreSaber Error", $"Status code: {httpResponseMessage.StatusCode}");
 
                 var TopSongsJsonData = await httpResponseMessage.Content.ReadAsStringAsync();
 
-                var TopSongsJsonInfo = JsonConvert.DeserializeObject<ScoresaberSongsModel>(TopSongsJsonData);
+                var TopSongsJsonInfo = JsonConvert.DeserializeObject<ScoreSaberSongsModel>(TopSongsJsonData);
                 var TopSong = TopSongsJsonInfo.Scores[0];
 
-                var playerInfoJsonData = await client.GetStringAsync($"https://new.scoresaber.com/api/player/{playerId}/full");
-                var playerInfo1 = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoJsonData);
+                var playerInfoJsonData = await client.GetStringAsync($"https://new.ScoreSaber.com/api/player/{playerId}/full");
+                var playerInfo1 = JsonConvert.DeserializeObject<ScoreSaberPlayerFullModel>(playerInfoJsonData);
                 var playerInfo = playerInfo1.playerInfo;
 
 
@@ -660,7 +660,7 @@ namespace DiscordBeatSaberBot.Extensions
                 {
                     Title = $"**Recent Song From: {playerInfo.Name} :flag_{playerInfo.Country.ToLower()}:**",
                     ImageUrl =
-                $"https://new.scoresaber.com/api/static/covers/{TopSong.Id}.png",
+                $"https://new.ScoreSaber.com/api/static/covers/{TopSong.Id}.png",
                     Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}",
                 };
 
@@ -983,7 +983,7 @@ namespace DiscordBeatSaberBot.Extensions
                 player.ReplaysWatched = int.Parse(playerInfo2.First()[4].Replace("\r\n", "")
                     .Replace("Replays Watched by Others: ", "").Trim());
 
-                //player.scoresaberLink = url;
+                //player.ScoreSaberLink = url;
 
                 var nextAndBefore = await RankedNeighbours(playerName, player.rank, 1);
                 var playerNext = new Player(nextAndBefore.Item1)
@@ -1050,12 +1050,12 @@ namespace DiscordBeatSaberBot.Extensions
                 var discordId = player1.Replace("<@", "").Replace(">", "").Replace("!", "");
                 if (await r.CheckIfDiscordIdIsLinked(discordId))
                 {
-                    player1 = await r.GetScoresaberIdWithDiscordId(discordId);
+                    player1 = await r.GetScoreSaberIdWithDiscordId(discordId);
                     player1containsmention = true;
                 }
                 else
                 {
-                    return EmbedBuilderExtension.NullEmbed("Not Linked error", $"{player1} is not linked with his/her scoresaber");
+                    return EmbedBuilderExtension.NullEmbed("Not Linked error", $"{player1} is not linked with his/her ScoreSaber");
                 }
             }
 
@@ -1065,24 +1065,24 @@ namespace DiscordBeatSaberBot.Extensions
                 var discordId = player2.Replace("<@", "").Replace(">", "").Replace("!", "");
                 if (await r.CheckIfDiscordIdIsLinked(discordId))
                 {
-                    player2 = await r.GetScoresaberIdWithDiscordId(discordId);
+                    player2 = await r.GetScoreSaberIdWithDiscordId(discordId);
                     player2containsmention = true;
                 }
                 else
                 {
-                    return EmbedBuilderExtension.NullEmbed("Not Linked error", $"{player2} is not linked with his/her scoresaber");
+                    return EmbedBuilderExtension.NullEmbed("Not Linked error", $"{player2} is not linked with his/her ScoreSaber");
                 }
             }
 
 
-            var urlPlayer1 = $"https://new.scoresaber.com/api/players/by-name/{player1}";
-            var urlPlayer2 = $"https://new.scoresaber.com/api/players/by-name/{player2}";
+            var urlPlayer1 = $"https://new.ScoreSaber.com/api/players/by-name/{player1}";
+            var urlPlayer2 = $"https://new.ScoreSaber.com/api/players/by-name/{player2}";
 
-            var player1Info = new ScoresaberPlayerFullModel();
-            var player2Info = new ScoresaberPlayerFullModel();
+            var player1Info = new ScoreSaberPlayerFullModel();
+            var player2Info = new ScoreSaberPlayerFullModel();
 
-            var player1ScoresaberID = player1;
-            var player2ScoresaberID = player2;
+            var player1ScoreSaberID = player1;
+            var player2ScoreSaberID = player2;
 
             using (HttpClient hc = new HttpClient())
             {
@@ -1093,30 +1093,30 @@ namespace DiscordBeatSaberBot.Extensions
                     if (!player1.All(char.IsDigit))
                     {
                         var infoPlayer1Raw = await hc.GetAsync(urlPlayer1);
-                        if (infoPlayer1Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"**Player 1 status:** {infoPlayer1Raw.StatusCode}");
+                        if (infoPlayer1Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("ScoreSaber Error", $"**Player 1 status:** {infoPlayer1Raw.StatusCode}");
                         var json = await infoPlayer1Raw.Content.ReadAsStringAsync();
                         var playerlist = JsonConvert.DeserializeObject<ScoreSaberSearchByNameModel>(json).Players;
                         var player1search = playerlist.Where(x => x.PlayerName.ToLower() == player1.Replace("_", " ").ToLower());
                         if (player1search.Count() == 0) return EmbedBuilderExtension.NullEmbed("Error", $"{player2} could not be found");
-                        player1ScoresaberID = player1search.First().PlayerId;
-                        var urlPlayerInfo1 = $"https://new.scoresaber.com/api/player/{player1ScoresaberID}/full";
+                        player1ScoreSaberID = player1search.First().PlayerId;
+                        var urlPlayerInfo1 = $"https://new.ScoreSaber.com/api/player/{player1ScoreSaberID}/full";
                         var player1InfoRaw = await hc.GetStringAsync(urlPlayerInfo1);
-                        player1Info = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(player1InfoRaw);
+                        player1Info = JsonConvert.DeserializeObject<ScoreSaberPlayerFullModel>(player1InfoRaw);
                     }
                     else
                     {
                         //GET players info 
-                        var urlPlayerInfo1 = $"https://new.scoresaber.com/api/player/{player1ScoresaberID}/full";
+                        var urlPlayerInfo1 = $"https://new.ScoreSaber.com/api/player/{player1ScoreSaberID}/full";
                         var player1InfoRaw = await hc.GetStringAsync(urlPlayerInfo1);
-                        player1Info = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(player1InfoRaw);
+                        player1Info = JsonConvert.DeserializeObject<ScoreSaberPlayerFullModel>(player1InfoRaw);
                     }
                 }
                 else
                 {
                     //GET players info 
-                    var urlPlayerInfo1 = $"https://new.scoresaber.com/api/player/{player1ScoresaberID}/full";
+                    var urlPlayerInfo1 = $"https://new.ScoreSaber.com/api/player/{player1ScoreSaberID}/full";
                     var player1InfoRaw = await hc.GetStringAsync(urlPlayerInfo1);
-                    player1Info = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(player1InfoRaw);
+                    player1Info = JsonConvert.DeserializeObject<ScoreSaberPlayerFullModel>(player1InfoRaw);
                 }
 
                 if (!player2containsmention)
@@ -1124,37 +1124,37 @@ namespace DiscordBeatSaberBot.Extensions
                     if (!player2.All(char.IsDigit))
                     {
                         var infoPlayer2Raw = await hc.GetAsync(urlPlayer2.Replace("_", " "));
-                        if (infoPlayer2Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"**Player 2 status:** {infoPlayer2Raw.StatusCode}");
+                        if (infoPlayer2Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("ScoreSaber Error", $"**Player 2 status:** {infoPlayer2Raw.StatusCode}");
                         var json = await infoPlayer2Raw.Content.ReadAsStringAsync();
                         var playerlist = JsonConvert.DeserializeObject<ScoreSaberSearchByNameModel>(json).Players;
                         var player2search = playerlist.Where(x => x.PlayerName.ToLower() == player2.Replace("_", " ").ToLower());
                         if (player2search.Count() == 0) return EmbedBuilderExtension.NullEmbed("Error", $"{player2} could not be found");
-                        player2ScoresaberID = player2search.First().PlayerId;
-                        var urlPlayerInfo2 = $"https://new.scoresaber.com/api/player/{player2ScoresaberID}/full";
+                        player2ScoreSaberID = player2search.First().PlayerId;
+                        var urlPlayerInfo2 = $"https://new.ScoreSaber.com/api/player/{player2ScoreSaberID}/full";
                         var player2InfoRaw = await hc.GetStringAsync(urlPlayerInfo2);
-                        player2Info = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(player2InfoRaw);
+                        player2Info = JsonConvert.DeserializeObject<ScoreSaberPlayerFullModel>(player2InfoRaw);
                     }
                     else
                     {
-                        var urlPlayerInfo2 = $"https://new.scoresaber.com/api/player/{player2ScoresaberID}/full";
+                        var urlPlayerInfo2 = $"https://new.ScoreSaber.com/api/player/{player2ScoreSaberID}/full";
                         var player2InfoRaw = await hc.GetStringAsync(urlPlayerInfo2);
-                        player2Info = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(player2InfoRaw);
+                        player2Info = JsonConvert.DeserializeObject<ScoreSaberPlayerFullModel>(player2InfoRaw);
                     }
                 }
                 else
                 {
-                    var urlPlayerInfo2 = $"https://new.scoresaber.com/api/player/{player2ScoresaberID}/full";
+                    var urlPlayerInfo2 = $"https://new.ScoreSaber.com/api/player/{player2ScoreSaberID}/full";
                     var player2InfoRaw = await hc.GetStringAsync(urlPlayerInfo2);
-                    player2Info = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(player2InfoRaw);
+                    player2Info = JsonConvert.DeserializeObject<ScoreSaberPlayerFullModel>(player2InfoRaw);
                 }
             }
 
-            await BeatSaberInfoExtension.GetAndCreateUserCompareImage(player1ScoresaberID, player2ScoresaberID);
-            await socketMessage.Channel.SendFileAsync($"../../../Resources/img/UserCompareCard_{player1}_{player2ScoresaberID}.png");
+            await BeatSaberInfoExtension.GetAndCreateUserCompareImage(player1ScoreSaberID, player2ScoreSaberID);
+            await socketMessage.Channel.SendFileAsync($"../../../Resources/img/UserCompareCard_{player1}_{player2ScoreSaberID}.png");
             File.Delete($"../../../Resources/img/UserCompareCard_{player1}_{player2}.png");
 
             await BeatSaberInfoExtension.GetAndCreateCompareImage(player1Info, player2Info);
-            await socketMessage.Channel.SendFileAsync($"../../../Resources/img/CompareCard_{player1}_{player2ScoresaberID}.png");
+            await socketMessage.Channel.SendFileAsync($"../../../Resources/img/CompareCard_{player1}_{player2ScoreSaberID}.png");
             File.Delete($"../../../Resources/img/CompareCard_{player1}_{player2}.png");
 
             return null;
@@ -1181,12 +1181,12 @@ namespace DiscordBeatSaberBot.Extensions
                 var discordId = player1.Replace("<@!", "").Replace(">", "");
                 if (await r.CheckIfDiscordIdIsLinked(discordId))
                 {
-                    player1 = await r.GetScoresaberIdWithDiscordId(discordId);
+                    player1 = await r.GetScoreSaberIdWithDiscordId(discordId);
                     player1containsmention = true;
                 }
                 else
                 {
-                    return EmbedBuilderExtension.NullEmbed("Not Linked error", $"{player1} is not linked with his/her scoresaber");
+                    return EmbedBuilderExtension.NullEmbed("Not Linked error", $"{player1} is not linked with his/her ScoreSaber");
                 }
             }
 
@@ -1196,54 +1196,54 @@ namespace DiscordBeatSaberBot.Extensions
                 var discordId = player2.Replace("<@!", "").Replace(">", "");
                 if (await r.CheckIfDiscordIdIsLinked(discordId))
                 {
-                    player2 = await r.GetScoresaberIdWithDiscordId(discordId);
+                    player2 = await r.GetScoreSaberIdWithDiscordId(discordId);
                     player2containsmention = true;
                 }
                 else
                 {
-                    return EmbedBuilderExtension.NullEmbed("Not Linked error", $"{player2} is not linked with his/her scoresaber");
+                    return EmbedBuilderExtension.NullEmbed("Not Linked error", $"{player2} is not linked with his/her ScoreSaber");
                 }
             }
 
-            var urlPlayer1 = $"https://new.scoresaber.com/api/players/by-name/{player1}";
-            var urlPlayer2 = $"https://new.scoresaber.com/api/players/by-name/{player2}";
+            var urlPlayer1 = $"https://new.ScoreSaber.com/api/players/by-name/{player1}";
+            var urlPlayer2 = $"https://new.ScoreSaber.com/api/players/by-name/{player2}";
 
-            var player1Info = new ScoresaberPlayerFullModel();
-            var player2Info = new ScoresaberPlayerFullModel();
+            var player1Info = new ScoreSaberPlayerFullModel();
+            var player2Info = new ScoreSaberPlayerFullModel();
 
             using (HttpClient hc = new HttpClient())
             {
-                var player1ScoresaberID = player1;
-                var player2ScoresaberID = player2;
+                var player1ScoreSaberID = player1;
+                var player2ScoreSaberID = player2;
 
                 if (!player1containsmention)
                 {
                     var infoPlayer1Raw = await hc.GetAsync(urlPlayer1);
-                    if (infoPlayer1Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"**Player 1 status:** {infoPlayer1Raw.StatusCode}");
+                    if (infoPlayer1Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("ScoreSaber Error", $"**Player 1 status:** {infoPlayer1Raw.StatusCode}");
                     var playerList = JsonConvert.DeserializeObject<ScoreSaberSearchByNameModel>(infoPlayer1Raw.Content.ReadAsStringAsync().Result).Players;
                     var player1search = playerList.Where(x => x.PlayerName.ToLower() == player1.ToLower());
                     if (player1search.Count() == 0) return null;
-                    player1ScoresaberID = player1search.First().PlayerId;
+                    player1ScoreSaberID = player1search.First().PlayerId;
                 }
 
                 if (!player2containsmention)
                 {
                     var infoPlayer2Raw = await hc.GetAsync(urlPlayer2);
-                    if (infoPlayer2Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"**Player 2 status:** {infoPlayer2Raw.StatusCode}");
+                    if (infoPlayer2Raw.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("ScoreSaber Error", $"**Player 2 status:** {infoPlayer2Raw.StatusCode}");
                     var playerList = JsonConvert.DeserializeObject<ScoreSaberSearchByNameModel>(infoPlayer2Raw.Content.ReadAsStringAsync().Result).Players;
                     var player2search = playerList.Where(x => x.PlayerName.ToLower() == player2.ToLower());
                     if (player2search.Count() == 0) return null;
-                    player2ScoresaberID = player2search.First().PlayerId;
+                    player2ScoreSaberID = player2search.First().PlayerId;
                 }
 
                 //GET players info 
-                var urlPlayerInfo1 = $"https://new.scoresaber.com/api/player/{player1ScoresaberID}/full";
+                var urlPlayerInfo1 = $"https://new.ScoreSaber.com/api/player/{player1ScoreSaberID}/full";
                 var player1InfoRaw = await hc.GetStringAsync(urlPlayerInfo1);
-                player1Info = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(player1InfoRaw);
+                player1Info = JsonConvert.DeserializeObject<ScoreSaberPlayerFullModel>(player1InfoRaw);
 
-                var urlPlayerInfo2 = $"https://new.scoresaber.com/api/player/{player2ScoresaberID}/full";
+                var urlPlayerInfo2 = $"https://new.ScoreSaber.com/api/player/{player2ScoreSaberID}/full";
                 var player2InfoRaw = await hc.GetStringAsync(urlPlayerInfo2);
-                player2Info = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(player2InfoRaw);
+                player2Info = JsonConvert.DeserializeObject<ScoreSaberPlayerFullModel>(player2InfoRaw);
             }
 
             var embedBuilder = new EmbedBuilder
@@ -1345,38 +1345,38 @@ namespace DiscordBeatSaberBot.Extensions
             return embedBuilder;
         }
 
-        public static async Task GetAndCreateCompareImage(ScoresaberPlayerFullModel scoresaberId1, ScoresaberPlayerFullModel scoresaberId2)
+        public static async Task GetAndCreateCompareImage(ScoreSaberPlayerFullModel ScoreSaberId1, ScoreSaberPlayerFullModel ScoreSaberId2)
         {
             var rankingCardCreator = new ImageCreator("../../../Resources/img/CompareCard-Template.png");
-            var topDataPlayerOne = await new ScoresaberAPI(scoresaberId1.playerInfo.PlayerId.ToString()).GetTopScores();
+            var topDataPlayerOne = await new ScoreSaberAPI(ScoreSaberId1.playerInfo.PlayerId.ToString()).GetTopScores();
             var topPpPlayPlayerOne = topDataPlayerOne.Scores.First().Pp;
-            var topDataPlayerTwo = await new ScoresaberAPI(scoresaberId2.playerInfo.PlayerId.ToString()).GetTopScores();
+            var topDataPlayerTwo = await new ScoreSaberAPI(ScoreSaberId2.playerInfo.PlayerId.ToString()).GetTopScores();
             var topPpPlayPlayerTwo = topDataPlayerTwo.Scores.First().Pp;
 
             var offset = 15;
 
             //Player One Info 
-            rankingCardCreator.AddText($"#{FormatNumber(scoresaberId1.playerInfo.rank)}", SelectColorAndAddDifference(scoresaberId1.playerInfo.rank, scoresaberId2.playerInfo.rank, true), 4, 15, 10 + offset);
-            rankingCardCreator.AddText($"#{FormatNumber(scoresaberId1.playerInfo.CountryRank)}", SelectColorAndAddDifference(scoresaberId1.playerInfo.CountryRank, scoresaberId2.playerInfo.CountryRank, true), 4, 15, 35 + offset);
-            rankingCardCreator.AddText($"{FormatNumber(scoresaberId1.playerInfo.Pp)} PP", SelectColorAndAddDifference(scoresaberId1.playerInfo.Pp, scoresaberId2.playerInfo.Pp, false), 4, 15, 60 + offset);
-            rankingCardCreator.AddText($"{scoresaberId1.scoreStats.AvarageRankedAccuracy}%", SelectColorAndAddDifference(scoresaberId1.scoreStats.AvarageRankedAccuracy, scoresaberId2.scoreStats.AvarageRankedAccuracy, false), 4, 15, 85 + offset);
-            rankingCardCreator.AddText($"{FormatNumber(scoresaberId1.scoreStats.TotalPlayCount)}", SelectColorAndAddDifference(scoresaberId1.scoreStats.TotalPlayCount, scoresaberId2.scoreStats.TotalPlayCount, false), 4, 15, 110 + offset);
-            rankingCardCreator.AddText($"{FormatNumber(scoresaberId1.scoreStats.RankedPlayerCount)}", SelectColorAndAddDifference(scoresaberId1.scoreStats.RankedPlayerCount, scoresaberId2.scoreStats.RankedPlayerCount, false), 4, 15, 135 + offset);
-            rankingCardCreator.AddText($"{FormatNumber(scoresaberId1.scoreStats.TotalScore)}", SelectColorAndAddDifference(scoresaberId1.scoreStats.TotalScore, scoresaberId2.scoreStats.TotalScore, false), 4, 15, 160 + offset);
-            rankingCardCreator.AddText($"{FormatNumber(scoresaberId1.scoreStats.TotalRankedScore)}", SelectColorAndAddDifference(scoresaberId1.scoreStats.TotalRankedScore, scoresaberId2.scoreStats.TotalRankedScore, false), 4, 15, 185 + offset);
-            rankingCardCreator.AddText($"{scoresaberId1.playerInfo.Badges.Count()}", SelectColorAndAddDifference(scoresaberId1.playerInfo.Badges.Count(), scoresaberId2.playerInfo.Badges.Count(), false), 4, 15, 210 + offset);
+            rankingCardCreator.AddText($"#{FormatNumber(ScoreSaberId1.playerInfo.rank)}", SelectColorAndAddDifference(ScoreSaberId1.playerInfo.rank, ScoreSaberId2.playerInfo.rank, true), 4, 15, 10 + offset);
+            rankingCardCreator.AddText($"#{FormatNumber(ScoreSaberId1.playerInfo.CountryRank)}", SelectColorAndAddDifference(ScoreSaberId1.playerInfo.CountryRank, ScoreSaberId2.playerInfo.CountryRank, true), 4, 15, 35 + offset);
+            rankingCardCreator.AddText($"{FormatNumber(ScoreSaberId1.playerInfo.Pp)} PP", SelectColorAndAddDifference(ScoreSaberId1.playerInfo.Pp, ScoreSaberId2.playerInfo.Pp, false), 4, 15, 60 + offset);
+            rankingCardCreator.AddText($"{ScoreSaberId1.scoreStats.AvarageRankedAccuracy}%", SelectColorAndAddDifference(ScoreSaberId1.scoreStats.AvarageRankedAccuracy, ScoreSaberId2.scoreStats.AvarageRankedAccuracy, false), 4, 15, 85 + offset);
+            rankingCardCreator.AddText($"{FormatNumber(ScoreSaberId1.scoreStats.TotalPlayCount)}", SelectColorAndAddDifference(ScoreSaberId1.scoreStats.TotalPlayCount, ScoreSaberId2.scoreStats.TotalPlayCount, false), 4, 15, 110 + offset);
+            rankingCardCreator.AddText($"{FormatNumber(ScoreSaberId1.scoreStats.RankedPlayerCount)}", SelectColorAndAddDifference(ScoreSaberId1.scoreStats.RankedPlayerCount, ScoreSaberId2.scoreStats.RankedPlayerCount, false), 4, 15, 135 + offset);
+            rankingCardCreator.AddText($"{FormatNumber(ScoreSaberId1.scoreStats.TotalScore)}", SelectColorAndAddDifference(ScoreSaberId1.scoreStats.TotalScore, ScoreSaberId2.scoreStats.TotalScore, false), 4, 15, 160 + offset);
+            rankingCardCreator.AddText($"{FormatNumber(ScoreSaberId1.scoreStats.TotalRankedScore)}", SelectColorAndAddDifference(ScoreSaberId1.scoreStats.TotalRankedScore, ScoreSaberId2.scoreStats.TotalRankedScore, false), 4, 15, 185 + offset);
+            rankingCardCreator.AddText($"{ScoreSaberId1.playerInfo.Badges.Count()}", SelectColorAndAddDifference(ScoreSaberId1.playerInfo.Badges.Count(), ScoreSaberId2.playerInfo.Badges.Count(), false), 4, 15, 210 + offset);
             rankingCardCreator.AddText($"{topPpPlayPlayerOne}PP", SelectColorAndAddDifference(topPpPlayPlayerOne, topPpPlayPlayerTwo, false), 4, 15, 235 + offset);
 
             //Player Two Info 
-            rankingCardCreator.AddTextFloatRight($"#{FormatNumber(scoresaberId2.playerInfo.rank)}", SelectColorAndAddDifference(scoresaberId2.playerInfo.rank, scoresaberId1.playerInfo.rank, true), 4, 15, 10 + offset);
-            rankingCardCreator.AddTextFloatRight($"#{FormatNumber(scoresaberId2.playerInfo.CountryRank)}", SelectColorAndAddDifference(scoresaberId2.playerInfo.CountryRank, scoresaberId1.playerInfo.CountryRank, true), 4, 15, 35 + offset);
-            rankingCardCreator.AddTextFloatRight($"{FormatNumber(scoresaberId2.playerInfo.Pp)} PP", SelectColorAndAddDifference(scoresaberId2.playerInfo.Pp, scoresaberId1.playerInfo.Pp, false), 4, 15, 60 + offset);
-            rankingCardCreator.AddTextFloatRight($"{scoresaberId2.scoreStats.AvarageRankedAccuracy}%", SelectColorAndAddDifference(scoresaberId2.scoreStats.AvarageRankedAccuracy, scoresaberId1.scoreStats.AvarageRankedAccuracy, false), 4, 15, 85 + offset);
-            rankingCardCreator.AddTextFloatRight($"{FormatNumber(scoresaberId2.scoreStats.TotalPlayCount)}", SelectColorAndAddDifference(scoresaberId2.scoreStats.TotalPlayCount, scoresaberId1.scoreStats.TotalPlayCount, false), 4, 15, 110 + offset);
-            rankingCardCreator.AddTextFloatRight($"{FormatNumber(scoresaberId2.scoreStats.RankedPlayerCount)}", SelectColorAndAddDifference(scoresaberId2.scoreStats.RankedPlayerCount, scoresaberId1.scoreStats.RankedPlayerCount, false), 4, 15, 135 + offset);
-            rankingCardCreator.AddTextFloatRight($"{FormatNumber(scoresaberId2.scoreStats.TotalScore)}", SelectColorAndAddDifference(scoresaberId2.scoreStats.TotalScore, scoresaberId1.scoreStats.TotalScore, false), 4, 15, 160 + offset);
-            rankingCardCreator.AddTextFloatRight($"{FormatNumber(scoresaberId2.scoreStats.TotalRankedScore)}", SelectColorAndAddDifference(scoresaberId2.scoreStats.TotalRankedScore, scoresaberId1.scoreStats.TotalRankedScore, false), 4, 15, 185 + offset);
-            rankingCardCreator.AddTextFloatRight($"{scoresaberId2.playerInfo.Badges.Count()}", SelectColorAndAddDifference(scoresaberId2.playerInfo.Badges.Count(), scoresaberId1.playerInfo.Badges.Count(), false), 4, 15, 210 + offset);
+            rankingCardCreator.AddTextFloatRight($"#{FormatNumber(ScoreSaberId2.playerInfo.rank)}", SelectColorAndAddDifference(ScoreSaberId2.playerInfo.rank, ScoreSaberId1.playerInfo.rank, true), 4, 15, 10 + offset);
+            rankingCardCreator.AddTextFloatRight($"#{FormatNumber(ScoreSaberId2.playerInfo.CountryRank)}", SelectColorAndAddDifference(ScoreSaberId2.playerInfo.CountryRank, ScoreSaberId1.playerInfo.CountryRank, true), 4, 15, 35 + offset);
+            rankingCardCreator.AddTextFloatRight($"{FormatNumber(ScoreSaberId2.playerInfo.Pp)} PP", SelectColorAndAddDifference(ScoreSaberId2.playerInfo.Pp, ScoreSaberId1.playerInfo.Pp, false), 4, 15, 60 + offset);
+            rankingCardCreator.AddTextFloatRight($"{ScoreSaberId2.scoreStats.AvarageRankedAccuracy}%", SelectColorAndAddDifference(ScoreSaberId2.scoreStats.AvarageRankedAccuracy, ScoreSaberId1.scoreStats.AvarageRankedAccuracy, false), 4, 15, 85 + offset);
+            rankingCardCreator.AddTextFloatRight($"{FormatNumber(ScoreSaberId2.scoreStats.TotalPlayCount)}", SelectColorAndAddDifference(ScoreSaberId2.scoreStats.TotalPlayCount, ScoreSaberId1.scoreStats.TotalPlayCount, false), 4, 15, 110 + offset);
+            rankingCardCreator.AddTextFloatRight($"{FormatNumber(ScoreSaberId2.scoreStats.RankedPlayerCount)}", SelectColorAndAddDifference(ScoreSaberId2.scoreStats.RankedPlayerCount, ScoreSaberId1.scoreStats.RankedPlayerCount, false), 4, 15, 135 + offset);
+            rankingCardCreator.AddTextFloatRight($"{FormatNumber(ScoreSaberId2.scoreStats.TotalScore)}", SelectColorAndAddDifference(ScoreSaberId2.scoreStats.TotalScore, ScoreSaberId1.scoreStats.TotalScore, false), 4, 15, 160 + offset);
+            rankingCardCreator.AddTextFloatRight($"{FormatNumber(ScoreSaberId2.scoreStats.TotalRankedScore)}", SelectColorAndAddDifference(ScoreSaberId2.scoreStats.TotalRankedScore, ScoreSaberId1.scoreStats.TotalRankedScore, false), 4, 15, 185 + offset);
+            rankingCardCreator.AddTextFloatRight($"{ScoreSaberId2.playerInfo.Badges.Count()}", SelectColorAndAddDifference(ScoreSaberId2.playerInfo.Badges.Count(), ScoreSaberId1.playerInfo.Badges.Count(), false), 4, 15, 210 + offset);
             rankingCardCreator.AddTextFloatRight($"{topPpPlayPlayerTwo}PP", SelectColorAndAddDifference(topPpPlayPlayerTwo, topPpPlayPlayerOne, false), 4, 15, 235 + offset);
 
 
@@ -1418,12 +1418,12 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddText("Ranked Score", System.Drawing.Color.White, 4, 195, 185 + offset);
             rankingCardCreator.AddText("Badge Count", System.Drawing.Color.White, 4, 200, 210 + offset);
             rankingCardCreator.AddText("Top PP Play", System.Drawing.Color.White, 4, 203, 235 + offset);
-            rankingCardCreator.Create($"../../../Resources/img/CompareCard_{scoresaberId1.playerInfo.PlayerId}_{scoresaberId2.playerInfo.PlayerId}.png");
+            rankingCardCreator.Create($"../../../Resources/img/CompareCard_{ScoreSaberId1.playerInfo.PlayerId}_{ScoreSaberId2.playerInfo.PlayerId}.png");
         }
-        public static async Task GetAndCreateUserCompareImage(string scoresaberId1, string scoresaberId2)
+        public static async Task GetAndCreateUserCompareImage(string ScoreSaberId1, string ScoreSaberId2)
         {
-            var playerOneRaw = new ScoresaberAPI(scoresaberId1);
-            var playerTwoRaw = new ScoresaberAPI(scoresaberId2);
+            var playerOneRaw = new ScoreSaberAPI(ScoreSaberId1);
+            var playerTwoRaw = new ScoreSaberAPI(ScoreSaberId2);
             var playerOneData = await playerOneRaw.GetPlayerFull();
             var playerTwoData = await playerTwoRaw.GetPlayerFull();
 
@@ -1439,24 +1439,24 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddText(playerOne.Country.ToUpper(), System.Drawing.Color.White, 12, 100, 45);
 
             rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{playerOne.Country.ToLower()}.png", 130, 50, 20, 15);
-            rankingCardCreator.AddImageRounded($"https://new.scoresaber.com{playerOne.Avatar}", 15, 43, 70, 70);
+            rankingCardCreator.AddImageRounded($"https://new.ScoreSaber.com{playerOne.Avatar}", 15, 43, 70, 70);
 
             //Add player Two main info
             rankingCardCreator.AddTextFloatRight(playerTwo.Name.ToUpper(), System.Drawing.Color.White, 15, 13, 10);
             rankingCardCreator.AddTextFloatRight(playerTwo.Country.ToUpper(), System.Drawing.Color.White, 12, 100, 45);
 
             rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{playerTwo.Country.ToLower()}.png", 350, 50, 20, 15);
-            rankingCardCreator.AddImageRounded($"https://new.scoresaber.com{playerTwo.Avatar}", 415, 43, 70, 70);
+            rankingCardCreator.AddImageRounded($"https://new.ScoreSaber.com{playerTwo.Avatar}", 415, 43, 70, 70);
 
 
             rankingCardCreator.AddImage($"https://upload.wikimedia.org/wikipedia/commons/7/70/Street_Fighter_VS_logo.png", 225, 28, 70, 70);
 
             //Finish Card
-            rankingCardCreator.Create($"../../../Resources/img/UserCompareCard_{scoresaberId1}_{scoresaberId2}.png");
+            rankingCardCreator.Create($"../../../Resources/img/UserCompareCard_{ScoreSaberId1}_{ScoreSaberId2}.png");
         }
-        public static async Task GetAndCreateUserCardImage(string scoresaberId, string topic)
+        public static async Task GetAndCreateUserCardImage(string ScoreSaberId, string topic)
         {
-            var playerRaw = new ScoresaberAPI(scoresaberId);
+            var playerRaw = new ScoreSaberAPI(ScoreSaberId);
             var playerData = await playerRaw.GetPlayerFull();
 
             var player = playerData.playerInfo;
@@ -1473,15 +1473,15 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddText(topic, System.Drawing.Color.White, 15, 340, 88);
 
             rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{player.Country.ToLower()}.png", 150, 50, 20, 15);
-            rankingCardCreator.AddImage($"https://new.scoresaber.com{player.Avatar}", 15, 13, 100, 100);
+            rankingCardCreator.AddImage($"https://new.ScoreSaber.com{player.Avatar}", 15, 13, 100, 100);
 
             //Finish Card
-            rankingCardCreator.Create($"../../../Resources/img/UserCard_{scoresaberId}.png");
+            rankingCardCreator.Create($"../../../Resources/img/UserCard_{ScoreSaberId}.png");
         }
 
-        public static async Task GetAndCreateRecentsongsCardImage(string scoresaberId)
+        public static async Task GetAndCreateRecentsongsCardImage(string ScoreSaberId)
         {
-            var playerRaw = new ScoresaberAPI(scoresaberId);
+            var playerRaw = new ScoreSaberAPI(ScoreSaberId);
             var playerRecentScores = await playerRaw.GetScoresRecent();
 
 
@@ -1517,17 +1517,17 @@ namespace DiscordBeatSaberBot.Extensions
                 rankingCardCreator.AddText($"{playerRecentScores.Scores[x].GetDifficulty()}", System.Drawing.Color.White, 30, 80, marigin + 255);
                 rankingCardCreator.AddText($"Time set: {playerRecentScores.Scores[x].Timeset.DateTime.ToShortDateString()} {playerRecentScores.Scores[x].Timeset.DateTime.ToShortTimeString()}     {Math.Round((DateTime.Now - playerRecentScores.Scores[x].Timeset).TotalDays, 1)} days ago", System.Drawing.Color.Gray, 30, 1000, marigin + 260);
 
-                rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerRecentScores.Scores[x].Id}.png", 15, marigin, 250, 250);
+                rankingCardCreator.AddImageRounded($"https://new.ScoreSaber.com/api/static/covers/{playerRecentScores.Scores[x].Id}.png", 15, marigin, 250, 250);
                 marigin += 330 - (x * 3);
             }
 
             //Finish Card
-            rankingCardCreator.Create($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
+            rankingCardCreator.Create($"../../../Resources/img/RecentsongsCard_{ScoreSaberId}.png");
         }
 
-        public static async Task GetAndCreateTopsongsCardImage(string scoresaberId)
+        public static async Task GetAndCreateTopsongsCardImage(string ScoreSaberId)
         {
-            var playerRaw = new ScoresaberAPI(scoresaberId);
+            var playerRaw = new ScoreSaberAPI(ScoreSaberId);
             var playerTopScores = await playerRaw.GetTopScores();
 
 
@@ -1563,17 +1563,17 @@ namespace DiscordBeatSaberBot.Extensions
                 rankingCardCreator.AddText($"{playerTopScores.Scores[x].GetDifficulty()}", System.Drawing.Color.White, 30, 80, marigin + 255);
                 rankingCardCreator.AddText($"Time set: {playerTopScores.Scores[x].Timeset.DateTime.ToShortDateString()} {playerTopScores.Scores[x].Timeset.DateTime.ToShortTimeString()}     {Math.Round((DateTime.Now - playerTopScores.Scores[x].Timeset).TotalDays, 1)} days ago", System.Drawing.Color.Gray, 30, 1000, marigin + 260);
 
-                rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerTopScores.Scores[x].Id}.png", 15, marigin, 250, 250);
+                rankingCardCreator.AddImageRounded($"https://new.ScoreSaber.com/api/static/covers/{playerTopScores.Scores[x].Id}.png", 15, marigin, 250, 250);
                 marigin += 330 - (x * 3);
             }
 
             //Finish Card
-            rankingCardCreator.Create($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
+            rankingCardCreator.Create($"../../../Resources/img/TopsongsCard_{ScoreSaberId}.png");
         }
 
-        public static async Task GetAndCreateProfileImage(string scoresaberId)
+        public static async Task GetAndCreateProfileImage(string ScoreSaberId)
         {
-            var playerRaw = new ScoresaberAPI(scoresaberId);
+            var playerRaw = new ScoreSaberAPI(ScoreSaberId);
             var playerData = await playerRaw.GetPlayerFull();
             var playerScoresData = await playerRaw.GetTopScores();
             var player = playerData.playerInfo;
@@ -1591,7 +1591,7 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddText($"{player.Pp}PP", System.Drawing.Color.White, 100, 1100, 1350);
 
             rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{player.Country.ToLower()}.png", 1120, 1000, 120, 100);
-            rankingCardCreator.AddNoteSlashEffect($"https://new.scoresaber.com{player.Avatar}", 200, 800, 800, 800);
+            rankingCardCreator.AddNoteSlashEffect($"https://new.ScoreSaber.com{player.Avatar}", 200, 800, 800, 800);
 
             //Add Date
             rankingCardCreator.AddText(DateTime.UtcNow.ToString("dd MMM. yyyy"), System.Drawing.Color.White, 100, 3600, 650);
@@ -1657,23 +1657,23 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddText(playerTopStats.GetDifficulty().Replace("Plus", "+"), System.Drawing.Color.FromArgb(176, 176, 176), 110, 100, 2500);
             rankingCardCreator.AddTextFloatRight($"{playerTopStats.Pp.ToString("0.00")}PP", System.Drawing.Color.White, 160, 950, 2270);
             rankingCardCreator.AddTextFloatRight($"{Math.Round(Convert.ToDouble(playerTopStats.UScore) / Convert.ToDouble(playerTopStats.MaxScoreEx) * 100, 3).ToString("0.00")}%", System.Drawing.Color.FromArgb(176, 176, 176), 110, 950, 2500);
-            rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerTopStats.Id}.png", 3950, 2020, 800, 800);
+            rankingCardCreator.AddImageRounded($"https://new.ScoreSaber.com/api/static/covers/{playerTopStats.Id}.png", 3950, 2020, 800, 800);
 
-            rankingCardCreator.Create($"../../../Resources/img/RankingCard_{scoresaberId}.png");
+            rankingCardCreator.Create($"../../../Resources/img/RankingCard_{ScoreSaberId}.png");
         }
 
-        public static async Task<EmbedBuilder> GetImprovableMapsByAccFromToplist(string scoresaberId, double wishedAcc)
+        public static async Task<EmbedBuilder> GetImprovableMapsByAccFromToplist(string ScoreSaberId, double wishedAcc)
         {
-            var playerTopPageList = new List<ScoresaberSongsModel>();
+            var playerTopPageList = new List<ScoreSaberSongsModel>();
 
             using (var client = new HttpClient())
             {
                 for (var x = 1; x <= 8; x++)
                 {
-                    var url = $"https://new.scoresaber.com/api/player/{scoresaberId}/scores/top/{x}";
+                    var url = $"https://new.ScoreSaber.com/api/player/{ScoreSaberId}/scores/top/{x}";
                     var httpCall = await client.GetAsync(url);
-                    if (httpCall.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"**Cant find maps on page:** {x}");
-                    playerTopPageList.Add(JsonConvert.DeserializeObject<ScoresaberSongsModel>(httpCall.Content.ReadAsStringAsync().Result));
+                    if (httpCall.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("ScoreSaber Error", $"**Cant find maps on page:** {x}");
+                    playerTopPageList.Add(JsonConvert.DeserializeObject<ScoreSaberSongsModel>(httpCall.Content.ReadAsStringAsync().Result));
                 }
             }
 

@@ -12,7 +12,7 @@ namespace DiscordBeatSaberBot
         void ConsoleLog(string message);
     }
 
-    public class Logger :ILogger
+    public class Logger : ILogger
     {
         public enum LogCode
         {

@@ -14,17 +14,17 @@ namespace DiscordBeatSaberBot.Api.BeatSaviourApi
     {
 
         private string _baseUrl = "https://www.beatsavior.io/api/livescores/player/";
-        private string _scoresaberID;
-        public BeatSaviourApi(string scoresaberId)
+        private string _ScoreSaberID;
+        public BeatSaviourApi(string ScoreSaberId)
         {
-            _scoresaberID = scoresaberId;
+            _ScoreSaberID = ScoreSaberId;
         }
 
         public async Task<List<GridAccElement>> GetMostRecentGridAccAsync()
         {
             using (var client = new HttpClient())
             {
-                var httpResponseMessage = await client.GetAsync(_baseUrl + _scoresaberID);
+                var httpResponseMessage = await client.GetAsync(_baseUrl + _ScoreSaberID);
 
                 if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return null;
 
@@ -40,7 +40,7 @@ namespace DiscordBeatSaberBot.Api.BeatSaviourApi
         {
             using (var client = new HttpClient())
             {
-                var httpResponseMessage = await client.GetAsync(_baseUrl + _scoresaberID);
+                var httpResponseMessage = await client.GetAsync(_baseUrl + _ScoreSaberID);
 
                 if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return null;
 
@@ -55,7 +55,7 @@ namespace DiscordBeatSaberBot.Api.BeatSaviourApi
         {
             using (var client = new HttpClient())
             {
-                var httpResponseMessage = await client.GetAsync(_baseUrl + _scoresaberID);
+                var httpResponseMessage = await client.GetAsync(_baseUrl + _ScoreSaberID);
 
                 if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return null;
 
@@ -68,7 +68,7 @@ namespace DiscordBeatSaberBot.Api.BeatSaviourApi
                     if (mostRecentPlay.Count() == 0) return null;
                     return mostRecentPlay.Last();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex);
                     return null;

@@ -43,27 +43,27 @@ namespace DiscordBeatSaberBot.Handlers
                 }
                 else if (messageCommand.Contains(" seal"))
                 {
-                    GlobalScoresaberCommands.Seal(discordSocketClient, message);
+                    GlobalScoreSaberCommands.Seal(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" randomgif"))
                 {
-                    GlobalScoresaberCommands.RandomGif(discordSocketClient, message);
+                    GlobalScoreSaberCommands.RandomGif(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" topsongs"))
                 {
-                    GlobalScoresaberCommands.TopSongs(discordSocketClient, message);
+                    GlobalScoreSaberCommands.TopSongs(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" topsong"))
                 {
-                    GlobalScoresaberCommands.NewTopSong(discordSocketClient, message);
+                    GlobalScoreSaberCommands.NewTopSong(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" search"))
                 {
-                    GlobalScoresaberCommands.NewSearch(discordSocketClient, message);
+                    GlobalScoreSaberCommands.NewSearch(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" improve"))
                 {
-                    GlobalScoresaberCommands.Improve(discordSocketClient, message);
+                    GlobalScoreSaberCommands.Improve(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" updateroles"))
                 {
@@ -71,11 +71,11 @@ namespace DiscordBeatSaberBot.Handlers
                 }
                 else if (messageCommand.Contains(" recentsongs"))
                 {
-                    GlobalScoresaberCommands.Recentsongs(discordSocketClient, message);
+                    GlobalScoreSaberCommands.Recentsongs(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" recentsong"))
                 {
-                    GlobalScoresaberCommands.NewRecentSong(discordSocketClient, message);
+                    GlobalScoreSaberCommands.NewRecentSong(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" changecolor"))
                 {
@@ -96,23 +96,23 @@ namespace DiscordBeatSaberBot.Handlers
                 }
                 else if (messageCommand.Contains(" comparetext"))
                 {
-                    GlobalScoresaberCommands.Compare(discordSocketClient, message);
+                    GlobalScoreSaberCommands.Compare(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" compare"))
                 {
-                    GlobalScoresaberCommands.CompareNew(discordSocketClient, message);
+                    GlobalScoreSaberCommands.CompareNew(discordSocketClient, message);
                 }                      
                 else if (messageCommand.Contains(" unlink"))
                 {
-                    DutchServerCommands.UnLinkScoresaberFromDiscord(discordSocketClient, message);
+                    DutchServerCommands.UnLinkScoreSaberFromDiscord(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" link"))
                 {
-                    DutchServerCommands.LinkScoresaberWithDiscord(discordSocketClient, message);
+                    DutchServerCommands.LinkScoreSaberWithDiscord(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" profile"))
                 {
-                    GlobalScoresaberCommands.Profile(discordSocketClient, message);
+                    GlobalScoreSaberCommands.Profile(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" interviewtest"))
                 {
@@ -132,12 +132,12 @@ namespace DiscordBeatSaberBot.Handlers
                 }                
                 else if (messageCommand.Contains(" typing"))
                 {
-                    GlobalScoresaberCommands.Typing(discordSocketClient, message);
+                    GlobalScoreSaberCommands.Typing(discordSocketClient, message);
                     message.DeleteAsync();
                 }
                 else if (messageCommand.Contains(" createrankmapfeed"))
                 {
-                    GlobalScoresaberCommands.CreateRankMapFeed(discordSocketClient, message);
+                    GlobalScoreSaberCommands.CreateRankMapFeed(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" ranks"))
                 {
@@ -148,7 +148,7 @@ namespace DiscordBeatSaberBot.Handlers
                 else if (messageCommand.Contains(" songs"))
                 {
                     await message.Channel.SendMessageAsync(null, false, EmbedBuilderExtension.NullEmbed("Ewh..", "This command is outdated. Blame silverhaze to remake it").Build());
-                    //GlobalScoresaberCommands.Songs(discordSocketClient, message);
+                    //GlobalScoreSaberCommands.Songs(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" irlevent create"))
                 {

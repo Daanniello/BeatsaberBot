@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DiscordBeatSaberBot.Api.ScoreberAPI.Models
 {
-    //public class ScoresaberScoresTopModel
+    //public class ScoreSaberScoresTopModel
     //{
     //    [JsonProperty("scores")]
     //    public Score[] Scores { get; set; }

@@ -9,7 +9,7 @@ using Newtonsoft.Json.Converters;
 namespace DiscordBeatSaberBot.Models.ScoreberAPI
 {
 
-    public partial class ScoresaberLiveFeedModel
+    public partial class ScoreSaberLiveFeedModel
     {
         [JsonProperty("leaderboardId")]
         public long LeaderboardId { get; set; }

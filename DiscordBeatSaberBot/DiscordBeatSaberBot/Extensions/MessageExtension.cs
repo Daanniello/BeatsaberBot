@@ -16,7 +16,7 @@ namespace DiscordBeatSaberBot
                 Console.WriteLine("Sending Message to " + user.Username + " in " + timeTillSending + " Sec");
                 await Task.Delay(timeTillSending);
                 await dmChannel.SendMessageAsync(message);
-                Console.WriteLine("Message Send to " + user.Username);
+                Console.WriteLine("Message Sent to " + user.Username);
             }
             catch (Exception ex)
             {

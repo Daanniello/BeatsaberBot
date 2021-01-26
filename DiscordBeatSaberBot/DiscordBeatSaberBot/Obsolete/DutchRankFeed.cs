@@ -23,35 +23,35 @@ namespace DiscordBeatSaberBot
         private static List<Dictionary<ulong, long>> recentPlays = new List<Dictionary<ulong, long>>();
         private static List<Dictionary<ulong, long>> recentPlaysSoonRemoved = new List<Dictionary<ulong, long>>();
 
-        public static async Task<Dictionary<double, Dictionary<ScoresaberLiveFeedModel, ScoresaberSongsModel>>> GetScoresaberLiveFeed(DiscordSocketClient discord)
+        public static async Task<Dictionary<double, Dictionary<ScoreSaberLiveFeedModel, ScoreSaberSongsModel>>> GetScoreSaberLiveFeed(DiscordSocketClient discord)
         {
 
             var rankRanked = 100;
             var rankUnranked = 1;
 
-            var liveFeedInfo = await ScoresaberAPI.GetLiveFeed();
+            var liveFeedInfo = await ScoreSaberAPI.GetLiveFeed();
             if (liveFeedInfo == null) return null;
 
             var playerListToPost = new List<PlayerListToPost>();
 
-            var scoresaberIds = await DatabaseContext.ExecuteSelectQuery($"Select * from ServerSilverhazeAchievementFeed");
-            if (scoresaberIds == null) return null;
+            var ScoreSaberIds = await DatabaseContext.ExecuteSelectQuery($"Select * from ServerSilverhazeAchievementFeed");
+            if (ScoreSaberIds == null) return null;
 
             try
             {
                 foreach (var playerData in liveFeedInfo)
                 {
                     var silverhazesChannel = false;
-                    foreach (var id in scoresaberIds)
+                    foreach (var id in ScoreSaberIds)
                     {
                         if (id.First().ToString() == playerData.PlayerId.ToString()) silverhazesChannel = true;
                     }
 
                     if (playerData.Flag.ToLower() == "nl.png" || silverhazesChannel)
                     {
-                        var scoresaber = new ScoresaberAPI(playerData.PlayerId.ToString());
-                        var recentScores = await scoresaber.GetScoresRecent();
-                        var topScores = await scoresaber.GetTopScores();
+                        var ScoreSaber = new ScoreSaberAPI(playerData.PlayerId.ToString());
+                        var recentScores = await ScoreSaber.GetScoresRecent();
+                        var topScores = await ScoreSaber.GetTopScores();
 
                         //Check if player should be called out again or if its the first time
 
@@ -76,17 +76,17 @@ namespace DiscordBeatSaberBot
                         //Adds the player to the post list if qualified
                         if (recentScores.Scores[0].Rank <= rankRanked && playerData.Info.Ranked == Ranked.Ranked)
                         {                      
-                            var player = new PlayerListToPost() { PlayerId = playerData.PlayerId, ScoresaberLive = playerData, ScoresaberSongsData = recentScores };
+                            var player = new PlayerListToPost() { PlayerId = playerData.PlayerId, ScoreSaberLive = playerData, ScoreSaberSongsData = recentScores };
                             playerListToPost.Add(player);
                         }
                         if (recentScores.Scores[0].Rank <= rankUnranked && playerData.Info.Ranked == Ranked.Unranked)
                         {
-                            var player = new PlayerListToPost() { PlayerId = playerData.PlayerId, ScoresaberLive = playerData, ScoresaberSongsData = recentScores };
+                            var player = new PlayerListToPost() { PlayerId = playerData.PlayerId, ScoreSaberLive = playerData, ScoreSaberSongsData = recentScores };
                             playerListToPost.Add(player);
                         }
                         if (recentScores.Scores.First().LeaderboardId == topScores.Scores.First().LeaderboardId && playerData.Info.Ranked == Ranked.Ranked)
                         {
-                            var player = new PlayerListToPost() { PlayerId = playerData.PlayerId, ScoresaberLive = playerData, ScoresaberSongsData = recentScores, IsTopPlay = true };
+                            var player = new PlayerListToPost() { PlayerId = playerData.PlayerId, ScoreSaberLive = playerData, ScoreSaberSongsData = recentScores, IsTopPlay = true };
                             playerListToPost.Add(player);
                         }
                     }
@@ -98,7 +98,7 @@ namespace DiscordBeatSaberBot
                 return null;
             }           
             
-            if(playerListToPost.Count != 0)await SendPostInAchievementFeed(playerListToPost, discord, liveFeedInfo, scoresaberIds);
+            if(playerListToPost.Count != 0)await SendPostInAchievementFeed(playerListToPost, discord, liveFeedInfo, ScoreSaberIds);
             if (recentPlays.Count != 0) Console.WriteLine($"Recentplays count: {recentPlays.Count}");
             if (playerListToPost.Count != 0) Console.WriteLine($"PlayerListToPost count: {playerListToPost.Count}");
             if (recentPlaysSoonRemoved.Count != 0) Console.WriteLine($"RecentplaysSoonRemoved count: {recentPlaysSoonRemoved.Count}");
@@ -107,15 +107,15 @@ namespace DiscordBeatSaberBot
         }
 
 
-        private static async Task SendPostInAchievementFeed(List<PlayerListToPost> playerListToPost, DiscordSocketClient discord, List<ScoresaberLiveFeedModel> liveFeedInfo, List<List<object>> scoresaberIds)
+        private static async Task SendPostInAchievementFeed(List<PlayerListToPost> playerListToPost, DiscordSocketClient discord, List<ScoreSaberLiveFeedModel> liveFeedInfo, List<List<object>> ScoreSaberIds)
         {
             if (playerListToPost.Count != 0)
             {
                 //Goes through every post and send it to the discord channel 
                 foreach (var playerData in playerListToPost)
                 {
-                    var playerInfo = playerData.ScoresaberLive;
-                    var songInfo = playerData.ScoresaberSongsData.Scores.First();
+                    var playerInfo = playerData.ScoreSaberLive;
+                    var songInfo = playerData.ScoreSaberSongsData.Scores.First();
 
                     var color = Color.Blue;
                     if (songInfo.Rank == 1) color = Color.Gold;
@@ -169,7 +169,7 @@ namespace DiscordBeatSaberBot
                         var textChannel = discord.GetGuild(505485680344956928).GetTextChannel(767552138879434772);
                         await textChannel.SendMessageAsync("", false, embed.Build());
                     }
-                    foreach (var id in scoresaberIds)
+                    foreach (var id in ScoreSaberIds)
                     {
                         if (id[0].ToString() == playerInfo.PlayerId.ToString())
                         {
@@ -192,7 +192,7 @@ namespace DiscordBeatSaberBot
         /// <param name="recentPlaysToRemove"></param>
         /// <param name="lastPlayOnFeed"></param>
         /// <returns></returns>
-        static public async Task EmptyRecentPlays(List<Dictionary<ulong, long>> recentPlaysToRemove, ScoresaberLiveFeedModel lastPlayOnFeed)
+        static public async Task EmptyRecentPlays(List<Dictionary<ulong, long>> recentPlaysToRemove, ScoreSaberLiveFeedModel lastPlayOnFeed)
         {
             if (recentPlaysToRemove.Count == 0) return;
 
@@ -220,7 +220,7 @@ namespace DiscordBeatSaberBot
                 recentPlays.Remove(toRemove);
                 //foreach (var r in recentPlays)
                 //{
-                //    // scoresaberID & LeaderboardID
+                //    // ScoreSaberID & LeaderboardID
                 //    if (r.Keys.First() == toRemove.Keys.First() && r.Values.First() == toRemove.Values.First()) continue;
                 //    var t = new Dictionary<ulong, long>();
                 //    t.Add(r.Keys.First(), r.Values.First());
@@ -237,34 +237,34 @@ namespace DiscordBeatSaberBot
         class PlayerListToPost
         {
             public ulong PlayerId;
-            public ScoresaberLiveFeedModel ScoresaberLive;
-            public ScoresaberSongsModel ScoresaberSongsData;
+            public ScoreSaberLiveFeedModel ScoreSaberLive;
+            public ScoreSaberSongsModel ScoreSaberSongsData;
             public bool IsTopPlay = false;
         }
 
-        public static async Task GiveRole(string scoresaberId, string roleName, DiscordSocketClient discord)
+        public static async Task GiveRole(string ScoreSaberId, string roleName, DiscordSocketClient discord)
         {
             _discord = discord;
-            await GiveRole(scoresaberId, roleName);
+            await GiveRole(ScoreSaberId, roleName);
         }
 
-        public static async Task GiveRoleWithRank(int rank, string scoresaberId, DiscordSocketClient discord = null)
+        public static async Task GiveRoleWithRank(int rank, string ScoreSaberId, DiscordSocketClient discord = null)
         {
             if (_discord == null) _discord = discord;
 
             if (rank == 0) return;
-            if (rank <= 1) await GiveRole(scoresaberId, "Nummer 1");
-            else if (rank <= 3) await GiveRole(scoresaberId, "Top 3");
-            else if (rank <= 10) await GiveRole(scoresaberId, "Top 10");
-            else if (rank <= 25) await GiveRole(scoresaberId, "Top 25");
-            else if (rank <= 50) await GiveRole(scoresaberId, "Top 50");
-            else if (rank <= 100) await GiveRole(scoresaberId, "Top 100");
-            else if (rank <= 250) await GiveRole(scoresaberId, "Top 250");
-            else if (rank <= 500) await GiveRole(scoresaberId, "Top 500");
-            else if (rank > 500) await GiveRole(scoresaberId, "Top 501+");
+            if (rank <= 1) await GiveRole(ScoreSaberId, "Nummer 1");
+            else if (rank <= 3) await GiveRole(ScoreSaberId, "Top 3");
+            else if (rank <= 10) await GiveRole(ScoreSaberId, "Top 10");
+            else if (rank <= 25) await GiveRole(ScoreSaberId, "Top 25");
+            else if (rank <= 50) await GiveRole(ScoreSaberId, "Top 50");
+            else if (rank <= 100) await GiveRole(ScoreSaberId, "Top 100");
+            else if (rank <= 250) await GiveRole(ScoreSaberId, "Top 250");
+            else if (rank <= 500) await GiveRole(ScoreSaberId, "Top 500");
+            else if (rank > 500) await GiveRole(ScoreSaberId, "Top 501+");
         }
 
-        public static async Task GiveRole(string scoresaberId, string roleName)
+        public static async Task GiveRole(string ScoreSaberId, string roleName)
         {
             var rolenames = new[]
             {
@@ -279,7 +279,7 @@ namespace DiscordBeatSaberBot
                 "Top 501+"
             };
             var r = new RoleAssignment(_discord);
-            ulong userDiscordId = await r.GetDiscordIdWithScoresaberId(scoresaberId);
+            ulong userDiscordId = await r.GetDiscordIdWithScoreSaberId(ScoreSaberId);
             if (userDiscordId != 0)
             {
                 var guild = _discord.GetGuild(505485680344956928);
