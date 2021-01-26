@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DiscordBeatSaberBot.Api.ScoreberAPI.Models.ScoresaberRankedTopRequestsModel
+namespace DiscordBeatSaberBot.Api.ScoreberAPI.Models.ScoreSaberRankedTopRequestsModel
 {
-    public partial class ScoresaberRankedTopRequestsModel
+    public partial class ScoreSaberRankedTopRequestsModel
     {
         [JsonProperty("requests")]
         public Request[] Requests { get; set; }

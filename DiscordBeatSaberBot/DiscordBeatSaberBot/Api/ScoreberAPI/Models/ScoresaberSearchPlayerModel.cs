@@ -7,7 +7,7 @@ using System.Text;
 
 namespace DiscordBeatSaberBot.Models.ScoreberAPI
 {
-    public partial class ScoresaberSearchPlayerModel
+    public partial class ScoreSaberSearchPlayerModel
     {
         [JsonProperty("playerid")]
         public string Playerid { get; set; }

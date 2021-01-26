@@ -23,58 +23,27 @@ namespace DiscordBeatSaberBot
             return true;
         }
 
-        public static async Task<bool> IsDutch(string ID)
+        public static async Task<bool> IsLanguage(string ID, string language)
         {
             string url = $"https://new.scoresaber.com/api/player/{ID}/full";
             using (var client = new HttpClient())
             {
                 var playerInfoRaw = await client.GetAsync(url);
                 if (playerInfoRaw.StatusCode != HttpStatusCode.OK) return false;
-                var playerInfo = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
+                var playerInfo = JsonConvert.DeserializeObject<ScoreSaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
 
-
-                if (playerInfo.playerInfo.Country == "NL")
-                {
-                    return true;
-                }
+                return playerInfo.playerInfo.Country == language;
             }
-                return false;
+        }
+
+        public static async Task<bool> IsDutch(string ID)
+        {
+            return await IsLanguage(ID, "NL");
         }
 
         public static async Task<bool> IsDanish(string ID)
         {
-            string url = $"https://new.scoresaber.com/api/player/{ID}/full";
-            using (var client = new HttpClient())
-            {
-                var playerInfoRaw = await client.GetAsync(url);
-                if (playerInfoRaw.StatusCode != HttpStatusCode.OK) return false;
-                var playerInfo = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
-
-
-                if (playerInfo.playerInfo.Country == "DK")
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public static async Task<bool> IsNotDutch(string ID)
-        {
-            string url = $"https://new.scoresaber.com/api/player/{ID}/full";
-            using (var client = new HttpClient())
-            {
-                var playerInfoRaw = await client.GetAsync(url);
-                if (playerInfoRaw.StatusCode != HttpStatusCode.OK) return false;
-                var playerInfo = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
-
-
-                if (playerInfo.playerInfo.Country != "NL")
-                {
-                    return true;
-                }
-            }
-            return false;
+            return await IsLanguage(ID, "DK");
         }
 
         public static bool IsOwner(ulong Id)

@@ -146,28 +146,28 @@ namespace DiscordBeatSaberBot
 
         public async Task UpdateSilverhazeStatsInDiscordServer()
         {
-            var scoresaberid = "76561198033166451";
+            var ScoreSaberid = "76561198033166451";
             var channel = discord.GetGuild(627156958880858113).GetTextChannel(782565201206575125);
             var messages = await channel.GetMessagesAsync(20).FlattenAsync();
             foreach(var message in messages)
             {
                 await message.DeleteAsync();
             }
-            await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberid, "Topsongs");
-            await BeatSaberInfoExtension.GetAndCreateTopsongsCardImage(scoresaberid);
-            await channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberid}.png", "");
-            await channel.SendFileAsync($"../../../Resources/img/TopsongsCard_{scoresaberid}.png", "");
-            await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberid, "Recentsongs");
-            await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberid);
-            await channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberid}.png", "");
-            await channel.SendFileAsync($"../../../Resources/img/RecentsongsCard_{scoresaberid}.png", "");
-            await BeatSaberInfoExtension.GetAndCreateProfileImage(scoresaberid);
-            await channel.SendFileAsync($"../../../Resources/img/RankingCard_{scoresaberid}.png", "");
+            await BeatSaberInfoExtension.GetAndCreateUserCardImage(ScoreSaberid, "Topsongs");
+            await BeatSaberInfoExtension.GetAndCreateTopsongsCardImage(ScoreSaberid);
+            await channel.SendFileAsync($"../../../Resources/img/UserCard_{ScoreSaberid}.png", "");
+            await channel.SendFileAsync($"../../../Resources/img/TopsongsCard_{ScoreSaberid}.png", "");
+            await BeatSaberInfoExtension.GetAndCreateUserCardImage(ScoreSaberid, "Recentsongs");
+            await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(ScoreSaberid);
+            await channel.SendFileAsync($"../../../Resources/img/UserCard_{ScoreSaberid}.png", "");
+            await channel.SendFileAsync($"../../../Resources/img/RecentsongsCard_{ScoreSaberid}.png", "");
+            await BeatSaberInfoExtension.GetAndCreateProfileImage(ScoreSaberid);
+            await channel.SendFileAsync($"../../../Resources/img/RankingCard_{ScoreSaberid}.png", "");
     
-            File.Delete($"../../../Resources/img/UserCard_{scoresaberid}.png");
-            File.Delete($"../../../Resources/img/TopsongsCard_{scoresaberid}.png");
-            File.Delete($"../../../Resources/img/RecentsongsCard_{scoresaberid}.png");
-            File.Delete($"../../../Resources/img/RankingCard_{scoresaberid}.png");        
+            File.Delete($"../../../Resources/img/UserCard_{ScoreSaberid}.png");
+            File.Delete($"../../../Resources/img/TopsongsCard_{ScoreSaberid}.png");
+            File.Delete($"../../../Resources/img/RecentsongsCard_{ScoreSaberid}.png");
+            File.Delete($"../../../Resources/img/RankingCard_{ScoreSaberid}.png");        
         }
     }
 }

@@ -89,7 +89,7 @@ namespace DiscordBeatSaberBot
                     }
                     catch (Exception ex)
                     {
-                        _logger.Log(Logger.LogCode.fatal_error, "Scoresaber ignored me >;d\n\n" + ex);
+                        _logger.Log(Logger.LogCode.fatal_error, "ScoreSaber ignored me >;d\n\n" + ex);
 
                         throw ex;
                     }

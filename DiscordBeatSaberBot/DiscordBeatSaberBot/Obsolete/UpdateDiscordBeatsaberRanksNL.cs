@@ -26,7 +26,7 @@ namespace DiscordBeatSaberBot
             var result = await DatabaseContext.ExecuteSelectQuery($"Select * from Player where CountryCode='NL'");
             foreach(var player in result)
             {
-                //0: scoresaberId
+                //0: ScoreSaberId
                 //1: discordId
                 accounts.Add(player[1].ToString(), player[0]);
             }
@@ -39,7 +39,7 @@ namespace DiscordBeatSaberBot
             var accountsProcessCount = 0;
 
             //key: discordId
-            //Value: scoresaberId
+            //Value: ScoreSaberId
             using (HttpClient client = new HttpClient())
             {
                 foreach (var account in accounts)
@@ -50,12 +50,12 @@ namespace DiscordBeatSaberBot
                     var playerInfoRaw = await client.GetAsync(url);
                     if (playerInfoRaw.StatusCode != HttpStatusCode.OK)
                     {
-                        Console.WriteLine("User " + account.Value.ToString() + "Does not have an scoresaber anymore");
+                        Console.WriteLine("User " + account.Value.ToString() + "Does not have an ScoreSaber anymore");
                         continue;
                     }
                     else
                     {
-                        var playerInfo = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
+                        var playerInfo = JsonConvert.DeserializeObject<ScoreSaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
                         rank = playerInfo.playerInfo.CountryRank;
                     }
                     

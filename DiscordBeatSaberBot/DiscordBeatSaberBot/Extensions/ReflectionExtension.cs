@@ -65,7 +65,7 @@ namespace DiscordBeatSaberBot
             var HelpList = new Dictionary<string, CommandHelpProperty>();
 
             var DSM = GetCustomHelpAttributeListFromClass(new DutchServerCommands());
-            var GSM = GetCustomHelpAttributeListFromClass(new GlobalScoresaberCommands());
+            var GSM = GetCustomHelpAttributeListFromClass(new GlobalScoreSaberCommands());
             var GM = GetCustomHelpAttributeListFromClass(new GenericCommands());
 
             DSM.ToList().ForEach(x => HelpList.Add(x.Key, x.Value));

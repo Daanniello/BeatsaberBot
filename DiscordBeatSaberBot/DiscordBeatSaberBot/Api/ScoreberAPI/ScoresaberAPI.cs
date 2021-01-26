@@ -1,7 +1,7 @@
 ﻿using Discord.WebSocket;
 using DiscordBeatSaberBot.Api.ScoreberAPI.Models;
-using DiscordBeatSaberBot.Api.ScoreberAPI.Models.ScoresaberRankedRequestModel;
-using DiscordBeatSaberBot.Api.ScoreberAPI.Models.ScoresaberRankedTopRequestsModel;
+using DiscordBeatSaberBot.Api.ScoreberAPI.Models.ScoreSaberRankedRequestModel;
+using DiscordBeatSaberBot.Api.ScoreberAPI.Models.ScoreSaberRankedTopRequestsModel;
 using DiscordBeatSaberBot.Models.ScoreberAPI;
 using Newtonsoft.Json;
 using System;
@@ -12,24 +12,24 @@ using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot
 {
-    class ScoresaberAPI
+    class ScoreSaberAPI
     {
 
         private string _baseUrl = "https://new.scoresaber.com/api/player/";
         private string _playerId;
         private SocketMessage _message;
 
-        public ScoresaberAPI(string playerId, SocketMessage message = null)
+        public ScoreSaberAPI(string playerId, SocketMessage message = null)
         {
             _playerId = playerId;
             _message = message;
         }
 
-        public static async Task<ScoresaberRankedTopRequestsModel> GetTopRankedRequests()
+        public static async Task<ScoreSaberRankedTopRequestsModel> GetTopRankedRequests()
         {
-            Console.WriteLine("Scoresaber request for top ranked requests");
+            Console.WriteLine("ScoreSaber request for top ranked requests");
             var url = "https://new.scoresaber.com/api/ranking/requests/top";
-            var rankedRequests = new ScoresaberRankedTopRequestsModel();
+            var rankedRequests = new ScoreSaberRankedTopRequestsModel();
 
             using (var client = new HttpClient())
             {
@@ -38,16 +38,16 @@ namespace DiscordBeatSaberBot
                 if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return null;
 
                 var rankedRequestsJsonData = await httpResponseMessage.Content.ReadAsStringAsync();
-                rankedRequests = JsonConvert.DeserializeObject<ScoresaberRankedTopRequestsModel>(rankedRequestsJsonData);
+                rankedRequests = JsonConvert.DeserializeObject<ScoreSaberRankedTopRequestsModel>(rankedRequestsJsonData);
             }
             return rankedRequests;
         }
 
-        public static async Task<ScoresaberRankedRequestModel> GetRankedRequests(long requestId)
+        public static async Task<ScoreSaberRankedRequestModel> GetRankedRequests(long requestId)
         {
-            Console.WriteLine("Scoresaber request for ranked requests");
+            Console.WriteLine("ScoreSaber request for ranked requests");
             var url = $"https://new.scoresaber.com/api/ranking/request/{requestId}";
-            var rankedRequests = new ScoresaberRankedRequestModel();
+            var rankedRequests = new ScoreSaberRankedRequestModel();
 
             using (var client = new HttpClient())
             {
@@ -56,34 +56,34 @@ namespace DiscordBeatSaberBot
                 if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return null;
 
                 var rankedRequestsJsonData = await httpResponseMessage.Content.ReadAsStringAsync();
-                rankedRequests = JsonConvert.DeserializeObject<ScoresaberRankedRequestModel>(rankedRequestsJsonData);
+                rankedRequests = JsonConvert.DeserializeObject<ScoreSaberRankedRequestModel>(rankedRequestsJsonData);
             }
             return rankedRequests;
         }
 
-        public async Task<ScoresaberPlayerFullModel> GetPlayerFull()
+        public async Task<ScoreSaberPlayerFullModel> GetPlayerFull()
         {
-            Console.WriteLine("Scoresaber request for player full data");
-            var scoresaberPlayerFullModel = new ScoresaberPlayerFullModel();
+            Console.WriteLine("ScoreSaber request for player full data");
+            var ScoreSaberPlayerFullModel = new ScoreSaberPlayerFullModel();
             var apiType = "";
             var endpoint = "/full";
             var result = await GetData(apiType, endpoint);
 
-            scoresaberPlayerFullModel = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(result);
+            ScoreSaberPlayerFullModel = JsonConvert.DeserializeObject<ScoreSaberPlayerFullModel>(result);
 
-            return scoresaberPlayerFullModel;
+            return ScoreSaberPlayerFullModel;
         }
 
-        public async Task<ScoresaberSongsModel> GetScoresRecent()
+        public async Task<ScoreSaberSongsModel> GetScoresRecent()
         {
-            Console.WriteLine("Scoresaber request for recent scores");
-            var RecentScores = new ScoresaberSongsModel();
+            Console.WriteLine("ScoreSaber request for recent scores");
+            var RecentScores = new ScoreSaberSongsModel();
             var apiType = "/scores";
             var endpoint = "/recent";
             var result = await GetData(apiType, endpoint);
             try
             {
-                RecentScores = JsonConvert.DeserializeObject<ScoresaberSongsModel>(result);
+                RecentScores = JsonConvert.DeserializeObject<ScoreSaberSongsModel>(result);
             }
             catch (Exception e)
             {
@@ -94,16 +94,16 @@ namespace DiscordBeatSaberBot
             return RecentScores;
         }
 
-        public async Task<ScoresaberSongsModel> GetTopScores()
+        public async Task<ScoreSaberSongsModel> GetTopScores()
         {
-            Console.WriteLine("Scoresaber request for top scores");
-            var topScores = new ScoresaberSongsModel();
+            Console.WriteLine("ScoreSaber request for top scores");
+            var topScores = new ScoreSaberSongsModel();
             var apiType = "/scores";
             var endpoint = "/top";
             var result = await GetData(apiType, endpoint);
             try
             {
-                topScores = JsonConvert.DeserializeObject<ScoresaberSongsModel>(result);
+                topScores = JsonConvert.DeserializeObject<ScoreSaberSongsModel>(result);
             }
             catch (Exception e)
             {
@@ -114,7 +114,7 @@ namespace DiscordBeatSaberBot
             return topScores;
         }
 
-        public async static Task<List<ScoresaberLiveFeedModel>> GetLiveFeed()
+        public async static Task<List<ScoreSaberLiveFeedModel>> GetLiveFeed()
         {
             using (var client = new HttpClient())
             {
@@ -124,7 +124,7 @@ namespace DiscordBeatSaberBot
                 if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return null;
 
                 var liveFeedJsonData = await httpResponseMessage.Content.ReadAsStringAsync();
-                var liveFeedInfo = JsonConvert.DeserializeObject<List<ScoresaberLiveFeedModel>>(liveFeedJsonData);
+                var liveFeedInfo = JsonConvert.DeserializeObject<List<ScoreSaberLiveFeedModel>>(liveFeedJsonData);
                 return liveFeedInfo;
             }            
         }
@@ -138,7 +138,7 @@ namespace DiscordBeatSaberBot
                 var httpResponseMessage = await Client.GetAsync(url);
                 if (httpResponseMessage.StatusCode != HttpStatusCode.OK && _message != null)
                 {
-                    await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"Status code: {httpResponseMessage.StatusCode}").Build());
+                    await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("ScoreSaber Error", $"Status code: {httpResponseMessage.StatusCode}").Build());
                     return null;
                 }
 

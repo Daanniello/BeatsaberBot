@@ -174,7 +174,7 @@ namespace DiscordBeatSaberBot.Handlers
                         var oneSpace = new Regex("[ ]{2,}");
                         var IDS = oneSpace.Replace(digitsOnly.Replace(usedEmbed.Description, " "), "-").Split("-");
                         var discordId = IDS[2];
-                        var scoresaberId = IDS[1];
+                        var ScoreSaberId = IDS[1];
                         var approvedEmbed = new EmbedBuilder();
                         try
                         {
@@ -198,23 +198,23 @@ namespace DiscordBeatSaberBot.Handlers
 
                         var guildChannel = channel as SocketGuildChannel;
                         //Adds user in the players table and in the players in country table
-                        var check = await new RoleAssignment(discordSocketClient).LinkAccount(discordId, scoresaberId, guildChannel.Guild.Id);
+                        var check = await new RoleAssignment(discordSocketClient).LinkAccount(discordId, ScoreSaberId, guildChannel.Guild.Id);
                         if (check)
                         {
                             await casted.ModifyAsync(msg => msg.Embed = approvedEmbed.Build());
                             await casted.RemoveAllReactionsAsync();
                         }
 
-                        var player = await new ScoresaberAPI(scoresaberId).GetPlayerFull();
+                        var player = await new ScoreSaberAPI(ScoreSaberId).GetPlayerFull();
                         
 
-                        DutchRankFeed.GiveRoleWithRank(player.playerInfo.CountryRank, scoresaberId, discordSocketClient);
-                        var dutchGuild = new GuildService(discordSocketClient, 505485680344956928);
-                        IUser linkingUser = dutchGuild.Guild.GetUser(await new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId));
-                        await dutchGuild.AddRole("Verified", linkingUser);
+                        DutchRankFeed.GiveRoleWithRank(player.playerInfo.CountryRank, ScoreSaberId, discordSocketClient);
+                        var DutchGuild = new GuildService(discordSocketClient, 505485680344956928);
+                        IUser linkingUser = DutchGuild.Guild.GetUser(await new RoleAssignment(discordSocketClient).GetDiscordIdWithScoreSaberId(ScoreSaberId));
+                        await DutchGuild.AddRole("Verified", linkingUser);
 
 
-                        await dutchGuild.DeleteRole("Unverified", linkingUser);
+                        await DutchGuild.DeleteRole("Unverified", linkingUser);
 
                         await program.UserJoinedMessage(linkingUser);
                     }

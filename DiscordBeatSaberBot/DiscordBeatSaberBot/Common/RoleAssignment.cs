@@ -23,7 +23,7 @@ namespace DiscordBeatSaberBot
         }
 
         /// <summary>
-        /// Creates a request to validate the scoresaber account to a specific discord account. 
+        /// Creates a request to validate the ScoreSaber account to a specific discord account. 
         /// </summary>
         /// <param name="message"></param>
         /// <param name="countryGuildId"></param>
@@ -32,12 +32,12 @@ namespace DiscordBeatSaberBot
         public async Task MakeRequest(SocketMessage message, ulong countryGuildId, ulong countryChannelToPostId)
         {
             ulong DiscordId = message.Author.Id;
-            string ScoresaberId = message.Content.Substring(9);
-            ScoresaberId = Regex.Replace(ScoresaberId, "[^0-9]", "");
+            string ScoreSaberId = message.Content.Substring(9);
+            ScoreSaberId = Regex.Replace(ScoreSaberId, "[^0-9]", "");
 
-            if (!ValidationExtension.IsDigitsOnly(ScoresaberId))
+            if (!ValidationExtension.IsDigitsOnly(ScoreSaberId))
             {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Wrong scoresaber ID", "Get you link from the url from your scoresaber page.", null, null).Build());
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Wrong ScoreSaber ID", "Get you link from the url from your ScoreSaber page.", null, null).Build());
 
                 return;
             }
@@ -54,11 +54,11 @@ namespace DiscordBeatSaberBot
                 Title = message.Author.Username,
                 ThumbnailUrl = message.Author.GetAvatarUrl(),
                 Description = "" +
-                              "**Scoresaber ID:** " + ScoresaberId + "\n" +
+                              "**ScoreSaber ID:** " + ScoreSaberId + "\n" +
                               "**Discord ID:** " + DiscordId + "\n" +
-                              "**Scoresaber link:** https://scoresaber.com/u/" + ScoresaberId + " \n" +
+                              "**ScoreSaber link:** https://scoresaber.com/u/" + ScoreSaberId + " \n" +
                               "*Waiting for approval by a Staff*" + " \n\n" +
-                              "***(Reminder) Type !bs link [Scoresaber ID]***",
+                              "***(Reminder) Type !bs link [ScoreSaber ID]***",
                 Color = Color.Orange
             };
 
@@ -72,21 +72,22 @@ namespace DiscordBeatSaberBot
         public async Task PersoonlijkeVragenLijst(SocketMessage message)
         {
             if (message.Channel.Id != 549350982081970176) return;
-            var vragenLijstEmbed = await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Wil je een paar kennismakingsvragen invullen om mensen je te laten leren kennen?", "De antwoorden worden toegevoegd aan je welkoms message. Je hoeft de vragenlijst niet in te vullen. Bepaalde vragen kun je skippen door middel van de reacties", null, null).Build());
+            var vragenLijstEmbed = await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Wil je een paar kennismakingsvragen invullen om mensen je te laten leren kennen?", "De antwoorden worden toegevoegd aan je welkomstbericht. Je hoeft de vragenlijst niet in te vullen. Bepaalde vragen kun je overslaan door middel van de reacties", null, null).Build());
             await vragenLijstEmbed.AddReactionAsync(Emote.Parse("<:green_check:671412276594475018>"));
             await vragenLijstEmbed.AddReactionAsync(Emote.Parse("<:red_check:671413258468720650>"));
         }
 
-        public async Task<bool> LinkAccount(string discordId, string scoresaberId, ulong guildId)
+        public async Task<bool> LinkAccount(string discordId, string ScoreSaberId, ulong guildId)
         {
             try
             {
-                await DatabaseContext.ExecuteInsertQuery($"Insert into Player (ScoresaberId, DiscordId, CountryCode) values ({scoresaberId}, {discordId}, 'NL')");
+                await DatabaseContext.ExecuteInsertQuery($"Insert into Player (ScoreSaberId, DiscordId, CountryCode) values ({ScoreSaberId}, {discordId}, 'NL')");
                 await DatabaseContext.ExecuteInsertQuery($"Insert into PlayerInCountry (DiscordId, GuildId) values ({discordId}, {guildId})");
                 return true;
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 return false;
             }
         }
@@ -101,20 +102,21 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Unlink error: " + ex);
+                Console.WriteLine("Unlink error: " + ex.ToString());
                 return false;
             }
         }
 
-        public async Task<ulong> GetDiscordIdWithScoresaberId(string scoresaberId)
+        public async Task<ulong> GetDiscordIdWithScoreSaberId(string ScoreSaberId)
         {
             try
             {
-                var result = await DatabaseContext.ExecuteSelectQuery($"Select * from Player where ScoresaberId={scoresaberId}");
+                var result = await DatabaseContext.ExecuteSelectQuery($"Select * from Player where ScoreSaberId={ScoreSaberId}");
                 return Convert.ToUInt64(result[0][1]);
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString())
                 return 0;
             }
         }
@@ -133,7 +135,7 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        public async Task<string> GetScoresaberIdWithDiscordId(string DiscordId)
+        public async Task<string> GetScoreSaberIdWithDiscordId(string DiscordId)
         {
             try
             {
@@ -142,6 +144,7 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString())
                 return "";
             }
         }

@@ -6,7 +6,7 @@ using System.Text;
 namespace DiscordBeatSaberBot.Models.ScoreberAPI
 {
 
-    public class ScoresaberSongsModel
+    public class ScoreSaberSongsModel
     {
         [JsonProperty("scores")]
         public Score[] Scores { get; set; }

@@ -14,13 +14,13 @@ using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot
 {
-    class ScoresaberRankMapsFeed
+    class ScoreSaberRankMapsFeed
     {
         private DiscordSocketClient _discord;
         private ulong _guildId;
         private ulong _channelId;
 
-        public ScoresaberRankMapsFeed(DiscordSocketClient discord)
+        public ScoreSaberRankMapsFeed(DiscordSocketClient discord)
         {
             _discord = discord;
         }
@@ -69,7 +69,7 @@ namespace DiscordBeatSaberBot
         public async Task CheckIfRankedRequestTopChanged()
         {
             Console.WriteLine("Updating Rankedmap feed");
-            var rankedRequests = await ScoresaberAPI.GetTopRankedRequests();
+            var rankedRequests = await ScoreSaberAPI.GetTopRankedRequests();
             var newRequestIds = "";
             var newRequestIdsList = new List<long>();
             foreach (var request in rankedRequests.Requests)
@@ -84,7 +84,7 @@ namespace DiscordBeatSaberBot
             }
 
             //Check if new map is in the rank queue top  
-            var currentRequests = await DatabaseContext.ExecuteSelectQuery($"Select * from ScoresaberRankedQueueTopMaps where RequestID IN ({newRequestIds})");
+            var currentRequests = await DatabaseContext.ExecuteSelectQuery($"Select * from ScoreSaberRankedQueueTopMaps where RequestID IN ({newRequestIds})");
 
             foreach (var Id in newRequestIdsList)
             {
@@ -93,13 +93,13 @@ namespace DiscordBeatSaberBot
                     //new map in the queue
                     //Add to database
                     Console.WriteLine("New map is in the top queue");
-                    await DatabaseContext.ExecuteInsertQuery($"Insert into ScoresaberRankedQueueTopMaps(RequestId, Songname) values({Id},'{rankedRequests.Requests.First(x => x.RequestRequest == Id).Name}')");
+                    await DatabaseContext.ExecuteInsertQuery($"Insert into ScoreSaberRankedQueueTopMaps(RequestId, Songname) values({Id},'{rankedRequests.Requests.First(x => x.RequestRequest == Id).Name}')");
 
                 }
             }
 
             //Check if ranked request top map is gone
-            var DatabaseRankedRequests = await DatabaseContext.ExecuteSelectQuery($"Select * from ScoresaberRankedQueueTopMaps");
+            var DatabaseRankedRequests = await DatabaseContext.ExecuteSelectQuery($"Select * from ScoreSaberRankedQueueTopMaps");
 
             //update rankmap top queue embed
             var channelsToModify = await DatabaseContext.ExecuteSelectQuery($"select * from Country where RankedMapQueueChannelId IS NOT NULL");
@@ -125,9 +125,9 @@ namespace DiscordBeatSaberBot
                     Console.WriteLine("Map went into qualified maps!");
                     //map is qualified
                     //remove from database
-                    await DatabaseContext.ExecuteRemoveQuery($"Delete from ScoresaberRankedQueueTopMaps where RequestId={Convert.ToInt64(request[0])}");
+                    await DatabaseContext.ExecuteRemoveQuery($"Delete from ScoreSaberRankedQueueTopMaps where RequestId={Convert.ToInt64(request[0])}");
                     //add to database
-                    await DatabaseContext.ExecuteInsertQuery($"Insert into ScoresaberRankedQualifiedMaps(RequestId, SongName, DateFromQualified) values({Convert.ToInt64(request[0])}, '{request[1].ToString()}', '{DateTime.Now.ToString()}')");
+                    await DatabaseContext.ExecuteInsertQuery($"Insert into ScoreSaberRankedQualifiedMaps(RequestId, SongName, DateFromQualified) values({Convert.ToInt64(request[0])}, '{request[1].ToString()}', '{DateTime.Now.ToString()}')");
                     //Create new embed and send
                     foreach (var chn in channelsToModify)
                     {
@@ -139,16 +139,16 @@ namespace DiscordBeatSaberBot
             }
 
             //Check if qualified map should go to ranked maps
-            var qualifiedMaps = await DatabaseContext.ExecuteSelectQuery($"Select * from ScoresaberRankedQualifiedMaps");
+            var qualifiedMaps = await DatabaseContext.ExecuteSelectQuery($"Select * from ScoreSaberRankedQualifiedMaps");
             foreach (var qualifiedmap in qualifiedMaps)
             {
                 var rankedDate = DateTime.Parse(qualifiedmap[2].ToString());
                 rankedDate = rankedDate.AddDays(4);
                 if (rankedDate < DateTime.Now)
                 {
-                    //ScoresaberRecentRankedMaps
-                    await DatabaseContext.ExecuteRemoveQuery($"Delete from ScoresaberRankedQualifiedMaps where RequestId={qualifiedmap[0]}");
-                    await DatabaseContext.ExecuteInsertQuery($"Insert into ScoresaberRecentRankedMaps(RequestId, SongName, datesinceranked) values({qualifiedmap[0]}, '{qualifiedmap[1].ToString()}', '{DateTime.Now.ToString()}')");
+                    //ScoreSaberRecentRankedMaps
+                    await DatabaseContext.ExecuteRemoveQuery($"Delete from ScoreSaberRankedQualifiedMaps where RequestId={qualifiedmap[0]}");
+                    await DatabaseContext.ExecuteInsertQuery($"Insert into ScoreSaberRecentRankedMaps(RequestId, SongName, datesinceranked) values({qualifiedmap[0]}, '{qualifiedmap[1].ToString()}', '{DateTime.Now.ToString()}')");
                     //Remove embed in channels!
                     foreach (var chn in channelsToModify)
                     {
@@ -159,14 +159,14 @@ namespace DiscordBeatSaberBot
             }
 
             //recent ranked map remove check 
-            var recentRankedmaps = await DatabaseContext.ExecuteSelectQuery($"select * from ScoresaberRecentRankedMaps");
+            var recentRankedmaps = await DatabaseContext.ExecuteSelectQuery($"select * from ScoreSaberRecentRankedMaps");
             foreach (var rrm in recentRankedmaps)
             {
                 var dateToRemove = DateTime.Parse(rrm[2].ToString());
                 dateToRemove = dateToRemove.AddDays(2);
                 if(dateToRemove < DateTime.Now)
                 {
-                    await DatabaseContext.ExecuteRemoveQuery($"Delete from ScoresaberRecentRankedMaps where RequestId={rrm[0]}");
+                    await DatabaseContext.ExecuteRemoveQuery($"Delete from ScoreSaberRecentRankedMaps where RequestId={rrm[0]}");
                 }
             }
 
@@ -183,7 +183,7 @@ namespace DiscordBeatSaberBot
         {
             var guild = _discord.GetGuild(_guildId);
             var guildChannel = guild.GetTextChannel(_channelId);
-            var rankedRequests = await ScoresaberAPI.GetTopRankedRequests();
+            var rankedRequests = await ScoreSaberAPI.GetTopRankedRequests();
 
             var description = "";
             foreach (var rankedRequest in rankedRequests.Requests)
@@ -230,13 +230,13 @@ namespace DiscordBeatSaberBot
         {
             var chn = _discord.GetGuild(guildId).GetTextChannel(channelId);
             var message = chn.GetMessagesAsync(50).Flatten();
-            var qualifiedMaps = await DatabaseContext.ExecuteSelectQuery($"select * from Scoresaberrankedqualifiedmaps");
+            var qualifiedMaps = await DatabaseContext.ExecuteSelectQuery($"select * from ScoreSaberrankedqualifiedmaps");
 
             foreach (var qm in qualifiedMaps)
             {
                 var embedToModify = await message.First(x => x.Embeds.First().Footer.Value.Text == qm[0].ToString()) as RestUserMessage;
 
-                var d = await DatabaseContext.ExecuteSelectQuery($"select * from ScoresaberRankedQualifiedMaps where RequestId={qm[0]}");
+                var d = await DatabaseContext.ExecuteSelectQuery($"select * from ScoreSaberRankedQualifiedMaps where RequestId={qm[0]}");
                 var timeTillRanked = DateTime.Parse(d[0][2].ToString());
                 timeTillRanked = timeTillRanked.AddHours(96);
 
@@ -258,7 +258,7 @@ namespace DiscordBeatSaberBot
         {
             var guild = _discord.GetGuild(guildId);
             var guildChannel = guild.GetTextChannel(channelId);
-            var rankedRequests = await ScoresaberAPI.GetTopRankedRequests();
+            var rankedRequests = await ScoreSaberAPI.GetTopRankedRequests();
 
             var description = "";
             foreach (var rankedRequest in rankedRequests.Requests)
@@ -290,7 +290,7 @@ namespace DiscordBeatSaberBot
             var guildChannel = guild.GetTextChannel(_channelId);
 
             //get latest ranked maps
-            var recentRankedMaps = await DatabaseContext.ExecuteSelectQuery($"select * from scoresaberrecentrankedmaps");
+            var recentRankedMaps = await DatabaseContext.ExecuteSelectQuery($"select * from ScoreSaberrecentrankedmaps");
 
             var description = "";
             foreach (var rm in recentRankedMaps)
@@ -321,7 +321,7 @@ namespace DiscordBeatSaberBot
             var embedToModify = await message.First(x => x.Embeds.First().Footer.Value.Text == "Recent Ranked List") as RestUserMessage;
 
             //get latest ranked maps
-            var recentRankedMaps = await DatabaseContext.ExecuteSelectQuery($"select * from scoresaberrecentrankedmaps");
+            var recentRankedMaps = await DatabaseContext.ExecuteSelectQuery($"select * from ScoreSaberrecentrankedmaps");
 
             var description = "";
             foreach (var rm in recentRankedMaps)
@@ -346,11 +346,11 @@ namespace DiscordBeatSaberBot
             var guild = discord.GetGuild(guildId);
             var guildChannel = guild.GetTextChannel(channelId);
 
-            var qualifiedMaps = await DatabaseContext.ExecuteSelectQuery($"select * from ScoresaberRankedQualifiedMaps");
+            var qualifiedMaps = await DatabaseContext.ExecuteSelectQuery($"select * from ScoreSaberRankedQualifiedMaps");
 
             foreach (var qm in qualifiedMaps)
             {
-                var rankedRequest = await ScoresaberAPI.GetRankedRequests(Convert.ToInt64(qm[0]));
+                var rankedRequest = await ScoreSaberAPI.GetRankedRequests(Convert.ToInt64(qm[0]));
 
                 var timeTillRanked = DateTime.Parse(qm[2].ToString());
                 timeTillRanked = timeTillRanked.AddDays(4);
@@ -375,11 +375,11 @@ namespace DiscordBeatSaberBot
             var guild = discord.GetGuild(guildId);
             var guildChannel = guild.GetTextChannel(channelId);
 
-            var qualifiedMaps = await DatabaseContext.ExecuteSelectQuery($"select * from ScoresaberRankedQualifiedMaps where requestId={requestId}");
+            var qualifiedMaps = await DatabaseContext.ExecuteSelectQuery($"select * from ScoreSaberRankedQualifiedMaps where requestId={requestId}");
 
             foreach (var qm in qualifiedMaps)
             {
-                var rankedRequest = await ScoresaberAPI.GetRankedRequests(Convert.ToInt64(qm[0]));
+                var rankedRequest = await ScoreSaberAPI.GetRankedRequests(Convert.ToInt64(qm[0]));
 
                 var timeTillRanked = DateTime.Parse(qm[2].ToString());
                 timeTillRanked = timeTillRanked.AddDays(4);
