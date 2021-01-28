@@ -6,6 +6,7 @@ using DiscordBeatSaberBot.Models.ScoreberAPI;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -94,6 +95,33 @@ namespace DiscordBeatSaberBot
             return RecentScores;
         }
 
+        public async Task<Score> GetScoresRecent(int recentSongNr = 1)
+        {
+            Console.WriteLine("Scoresaber request for recent scores");
+            var RecentScores = new ScoresaberSongsModel();
+            var apiType = "/scores";
+            var page = Math.DivRem(recentSongNr, 8, out int nr);
+            if (nr == 0)
+            {
+                page -= 1;
+                nr += 8;
+            }
+            var endpoint = $"/recent/{page + 1}";
+            
+            var result = await GetData(apiType, endpoint);
+            try
+            {
+                RecentScores = JsonConvert.DeserializeObject<ScoresaberSongsModel>(result);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+            return RecentScores.Scores[nr - 1];
+        }
+
         public async Task<ScoresaberSongsModel> GetTopScores()
         {
             Console.WriteLine("Scoresaber request for top scores");
@@ -112,6 +140,32 @@ namespace DiscordBeatSaberBot
             }
 
             return topScores;
+        }
+
+        public async Task<Score> GetTopScores(int topSongNr = 1)
+        {
+            Console.WriteLine("Scoresaber request for top scores");
+            var topScores = new ScoresaberSongsModel();
+            var apiType = "/scores";
+            var page = Math.DivRem(topSongNr, 8, out int nr);
+            if (nr == 0)
+            {
+                page -= 1;
+                nr += 8;
+            }
+            var endpoint = $"/top/{page + 1}";
+            var result = await GetData(apiType, endpoint);
+            try
+            {
+                topScores = JsonConvert.DeserializeObject<ScoresaberSongsModel>(result);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+            return topScores.Scores[nr - 1];
         }
 
         public async static Task<List<ScoresaberLiveFeedModel>> GetLiveFeed()

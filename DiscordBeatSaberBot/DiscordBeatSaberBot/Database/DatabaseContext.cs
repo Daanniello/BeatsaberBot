@@ -89,5 +89,11 @@ namespace DiscordBeatSaberBot
             }
         }
 
+        private static void QueryCheck(string query)
+        {
+
+
+        }
+
     }
 }

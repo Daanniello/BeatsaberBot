@@ -107,6 +107,38 @@ namespace DiscordBeatSaberBot.Api.BeatSaviourApi.Models
 
         [JsonProperty("gridCut")]
         public List<long> GridCut { get; set; }
+
+        [JsonProperty("leftHighestSpeed")]
+        public double LeftHighestSpeed { get; set; }
+
+        [JsonProperty("RightHighestSpeed")]
+        public double RightHighestSpeed { get; set; }
+
+        [JsonProperty("averageTimeDependence")]
+        public double AverageTimeDependence { get; set; }
+
+        [JsonProperty("rightTimeDependence")]
+        public double RightTimeDependence { get; set; }
+
+        [JsonProperty("leftTimeDependence")]
+        public double rightTimeDependence { get; set; }
+
+        [JsonProperty("averagePostswing")]
+        public double AveragePostswing { get; set; }
+
+        [JsonProperty("rightPostswing")]
+        public double RightPostswing { get; set; }
+
+        [JsonProperty("leftPostswing")]
+        public double LeftPostswing { get; set; }
+
+        [JsonProperty("averagePreswing")]
+        public double AveragePreswing { get; set; }
+
+        [JsonProperty("rightPreswing")]
+        public double RightPreswing { get; set; }
+        [JsonProperty("leftPreswing")]
+        public double LeftPreswing { get; set; }
     }
 
     public partial class DistanceTracker

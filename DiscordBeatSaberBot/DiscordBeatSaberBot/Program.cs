@@ -94,7 +94,7 @@ namespace DiscordBeatSaberBot
                 //Automatic updates
                 var updater = new UpdateTimer(discordSocketClient);
                 var liveFeed = new DiscordScoreSaberLiveFeed(discordSocketClient);
-                updater.Start(() => liveFeed.Start(), "ScoresaberLiveFeed", 0, 0, 15);
+                //updater.Start(() => liveFeed.Start(), "ScoresaberLiveFeed", 0, 0, 15);
                 updater.Start(() => updater.UpdateSilverhazeStatsInDiscordServer(), "UpdateSilverInfoInSilverhazeServer", 5, 0, 0);
                 updater.Start(() => UpdateSilverhazeDiscordRank(), "SilverhazeDiscordRankUpdate", 0, 30, 0);
                 async Task UpdateSilverhazeDiscordRank()

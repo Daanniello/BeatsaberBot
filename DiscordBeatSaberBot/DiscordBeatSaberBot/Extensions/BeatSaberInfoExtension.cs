@@ -450,7 +450,7 @@ namespace DiscordBeatSaberBot.Extensions
             return builder;
         }
 
-        public static async Task GetAndPostRecentSongWithScoresaberId(string playerId, SocketMessage message)
+        public static async Task GetAndPostRecentSongWithScoresaberIdNew(string playerId, SocketMessage message, int recentsongNr = 1)
         {
             var embedBuilder = new EmbedBuilder();
 
@@ -460,8 +460,205 @@ namespace DiscordBeatSaberBot.Extensions
                 var beatSaviourApi = new BeatSaviourApi(playerId);
 
                 //Download scoresaber recentsong data
-                var recentSongsInfo = await scoresaberApi.GetScoresRecent();
-                var recentSong = recentSongsInfo.Scores[0];
+                var recentSong = await scoresaberApi.GetScoresRecent(recentsongNr);
+
+                //Download beatsaver recentsong data
+                var recentSongsInfoBeatSaver = await new BeatSaverApi(recentSong.Id).GetRecentSongData();
+
+                //Download scoresaber full player data
+                var playerFullData = await scoresaberApi.GetPlayerFull();
+                var playerInfo = playerFullData.playerInfo;
+
+                //Download BeatSaviour livedata 
+                var playerMostRecentLiveData = await beatSaviourApi.GetMostRecentLiveData(recentSong.Id);
+                var hasBeatSaviour = playerMostRecentLiveData == null ? false : true;
+
+                var cardCreator = new ImageCreator("../../../Resources/img/EmbedBackground-Template.png");
+                cardCreator.AddImage($"https://scoresaber.com/imports/images/songs/{recentSong.Id}.png", 0, 0, 1080, 720, 0.1f);
+
+                cardCreator.AddTextFloatRight($"#{recentSong.Rank}", System.Drawing.Color.White, 50, 0, 0);
+                cardCreator.AddTextFloatRight($"{recentSong.Pp}PP", System.Drawing.Color.White, 30, 100, 70);
+                cardCreator.AddTextFloatRight($"({Math.Round(recentSong.Pp * recentSong.Weight, 2)}PP)", System.Drawing.Color.White, 15, 0, 85);
+                cardCreator.AddTextFloatRight($"{Math.Round(Convert.ToDouble(recentSong.UScore) / Convert.ToDouble(recentSong.MaxScoreEx) * 100, 2)}%", System.Drawing.Color.White, 30, 0, 110);
+
+                if (recentSongsInfoBeatSaver != null)
+                {
+                    var metadataDynamic = recentSongsInfoBeatSaver.Metadata.Characteristics[0].Difficulties;
+                    dynamic difficulty = metadataDynamic.GetType().GetProperty(recentSong.GetDifficulty()).GetValue(metadataDynamic, null);
+
+                    cardCreator.AddText($"Bpm:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, 0);
+                    cardCreator.AddText($"{recentSongsInfoBeatSaver.Metadata.Bpm}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, 0);
+
+                    cardCreator.AddText($"Duration:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 30 : 40);
+                    cardCreator.AddText($"{recentSongsInfoBeatSaver.Metadata.Duration}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 30 : 40);
+
+                    cardCreator.AddText($"Notes:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 60 : 80);
+                    cardCreator.AddText($"{(recentSong.GetDifficulty() == "ExpertPlus" ? metadataDynamic.ExpertPlus.Notes : difficulty.notes)}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 60 : 80);
+
+                    cardCreator.AddText($"NJS:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 90 : 120);
+                    cardCreator.AddText($"{(recentSong.GetDifficulty() == "ExpertPlus" ? metadataDynamic.ExpertPlus.Njs : difficulty.njs)}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 90 : 120);
+
+                    cardCreator.AddText($"NJS offset:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 120 : 160);
+                    cardCreator.AddText($"{(recentSong.GetDifficulty() == "ExpertPlus" ? metadataDynamic.ExpertPlus.NjsOffset : difficulty.njsOffset)}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 120 : 160);
+
+                    cardCreator.AddText($"Bombs:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 150 : 200);
+                    cardCreator.AddText($"{(recentSong.GetDifficulty() == "ExpertPlus" ? metadataDynamic.ExpertPlus.Bombs : difficulty.bombs)}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 150 : 200);
+
+                    cardCreator.AddText($"Obstacles:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 180 : 240);
+                    cardCreator.AddText($"{(recentSong.GetDifficulty() == "ExpertPlus" ? metadataDynamic.ExpertPlus.Obstacles : difficulty.obstacles)}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 180 : 240);
+
+                    cardCreator.AddText($"Max Score:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 210 : 280);
+                    cardCreator.AddText($"{recentSong.MaxScoreEx}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 210 : 280);
+
+                    cardCreator.AddText($"Mods:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 240 : 320);
+                    cardCreator.AddText($"{recentSong.Mods}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 240 : 320);
+
+                }
+
+                //Create AccGrid If needed
+                if (hasBeatSaviour)
+                {
+                    var PbIncrease = playerMostRecentLiveData.Trackers.ScoreTracker.PersonalBest == 0 ? "First Play" : $"{(playerMostRecentLiveData.Trackers.ScoreTracker.RawScore * 100) / playerMostRecentLiveData.Trackers.ScoreTracker.PersonalBest}% Increase";
+                    cardCreator.AddTextFloatRight($"{PbIncrease}", System.Drawing.Color.White, 20, 0, 155);
+
+                    var misses = "";
+                    if (playerMostRecentLiveData.Trackers.HitTracker.Miss.ToString() == "0") misses = "FC";
+                    else misses = playerMostRecentLiveData.Trackers.HitTracker.Miss.ToString();
+                    cardCreator.AddText($"Misses:", System.Drawing.Color.Gray, 25, 300, 80);
+                    cardCreator.AddText($"{misses}", System.Drawing.Color.White, 25, 540, 80);
+
+                    cardCreator.AddText($"Pauses:", System.Drawing.Color.Gray, 25, 300, 120);
+                    cardCreator.AddText($"{playerMostRecentLiveData.Trackers.WinTracker.NbOfPause}", System.Drawing.Color.White, 25, 540, 120);
+
+                    cardCreator.AddText($"Max Combo:", System.Drawing.Color.Gray, 25, 300, 160);
+                    cardCreator.AddText($"{playerMostRecentLiveData.Trackers.HitTracker.MaxCombo}", System.Drawing.Color.White, 25, 540, 160);
+
+                    cardCreator.AddImage($"https://i.imgur.com/qYAKHbO.png", 235, 420, 80, 80); //Left Hand
+                    cardCreator.AddImage($"https://i.imgur.com/djd63gV.png", 360, 420, 80, 80); //Right Hand
+                    cardCreator.AddImage($"https://i.imgur.com/fBQueGL.png", 480, 410, 100, 100); //Both Hands
+
+                    cardCreator.AddText($"Acc:", System.Drawing.Color.Gray, 25, 0, 510);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AccLeft, 2)}", System.Drawing.Color.White, 25, 275, 510);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AccRight, 2)}", System.Drawing.Color.White, 25, 410, 510);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AverageAcc, 2)}", System.Drawing.Color.White, 25, 530, 510);
+                    //cardCreator.AddTextCenter($"%", System.Drawing.Color.White, 15, 630, 510);
+
+                    cardCreator.AddText($"Speed:", System.Drawing.Color.Gray, 25, 0, 550);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.LeftSpeed * 3.6, 2)}", System.Drawing.Color.White, 25, 275, 550);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.RightSpeed * 3.6, 2)}", System.Drawing.Color.White, 25, 410, 550);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AverageSpeed * 3.6, 2)}", System.Drawing.Color.White, 25, 530, 550);
+                    cardCreator.AddTextCenter($"KM/H", System.Drawing.Color.Gray, 15, 630, 550);
+
+                    cardCreator.AddText($"Distance:", System.Drawing.Color.Gray, 25, 0, 590);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.DistanceTracker.LeftHand / 1000, 2)}", System.Drawing.Color.White, 25, 275, 590);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.DistanceTracker.RightHand / 1000, 2)}", System.Drawing.Color.White, 25, 410, 590);
+                    cardCreator.AddTextCenter($"{Math.Round((playerMostRecentLiveData.Trackers.DistanceTracker.LeftHand + playerMostRecentLiveData.Trackers.DistanceTracker.RightHand) / 1000, 2)}", System.Drawing.Color.White, 25, 530, 590);
+                    cardCreator.AddTextCenter($"KM", System.Drawing.Color.Gray, 15, 630, 590);
+
+                    cardCreator.AddText($"PreSwing:", System.Drawing.Color.Gray, 25, 0, 630);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.LeftPreswing * 100, 2)}", System.Drawing.Color.White, 25, 275, 630);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.RightPreswing * 100, 2)}", System.Drawing.Color.White, 25, 410, 630);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AveragePreswing * 100, 2)}", System.Drawing.Color.White, 25, 530, 630);
+                    cardCreator.AddTextCenter($"%", System.Drawing.Color.Gray, 15, 630, 630);
+
+                    cardCreator.AddText($"PostSwing:   ", System.Drawing.Color.Gray, 25, 0, 670);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.LeftPostswing * 100, 2)}", System.Drawing.Color.White, 25, 275, 670);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.RightPostswing * 100, 2)}", System.Drawing.Color.White, 25, 410, 670);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AveragePostswing * 100, 2)}", System.Drawing.Color.White, 25, 530, 670);
+                    cardCreator.AddTextCenter($"%", System.Drawing.Color.Gray, 15, 630, 670);
+                    cardCreator.AddTextFloatRight($"Data from the BeatSavior mod", System.Drawing.Color.Gray, 15, 0, 690);
+
+
+                    var accGrid = playerMostRecentLiveData.Trackers.AccuracyTracker.GridAcc;
+                    var hitGrid = playerMostRecentLiveData.Trackers.AccuracyTracker.GridCut;
+
+                    cardCreator.AddText($"Acc Grid", System.Drawing.Color.White, 25, 800, 320);
+
+                    cardCreator.AddTextCenter(accGrid[8].String == null ? Math.Round(float.Parse(accGrid[8].Double.ToString()), 1).ToString() : accGrid[8].String, System.Drawing.Color.White, 22, 750, 400);
+                    cardCreator.AddTextCenter(accGrid[9].String == null ? Math.Round(float.Parse(accGrid[9].Double.ToString()), 1).ToString() : accGrid[9].String, System.Drawing.Color.White, 22, 840, 400);
+                    cardCreator.AddTextCenter(accGrid[10].String == null ? Math.Round(float.Parse(accGrid[10].Double.ToString()), 1).ToString() : accGrid[10].String, System.Drawing.Color.White, 22, 930, 400);
+                    cardCreator.AddTextCenter(accGrid[11].String == null ? Math.Round(float.Parse(accGrid[11].Double.ToString()), 1).ToString() : accGrid[11].String, System.Drawing.Color.White, 22, 1020, 400);
+
+                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 795, 380, 795, 650);
+
+                    cardCreator.AddTextCenter(accGrid[4].String == null ? Math.Round(float.Parse(accGrid[4].Double.ToString()), 2).ToString() : accGrid[4].String, System.Drawing.Color.White, 22, 750, 500);
+                    cardCreator.AddTextCenter(accGrid[5].String == null ? Math.Round(float.Parse(accGrid[5].Double.ToString()), 2).ToString() : accGrid[5].String, System.Drawing.Color.White, 22, 840, 500);
+                    cardCreator.AddTextCenter(accGrid[6].String == null ? Math.Round(float.Parse(accGrid[6].Double.ToString()), 2).ToString() : accGrid[6].String, System.Drawing.Color.White, 22, 930, 500);
+                    cardCreator.AddTextCenter(accGrid[7].String == null ? Math.Round(float.Parse(accGrid[7].Double.ToString()), 2).ToString() : accGrid[7].String, System.Drawing.Color.White, 22, 1020, 500);
+
+                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 885, 380, 885, 650);
+
+                    cardCreator.AddTextCenter(accGrid[0].String == null ? Math.Round(float.Parse(accGrid[0].Double.ToString()), 2).ToString() : accGrid[0].String, System.Drawing.Color.White, 22, 750, 600);
+                    cardCreator.AddTextCenter(accGrid[1].String == null ? Math.Round(float.Parse(accGrid[1].Double.ToString()), 2).ToString() : accGrid[1].String, System.Drawing.Color.White, 22, 840, 600);
+                    cardCreator.AddTextCenter(accGrid[2].String == null ? Math.Round(float.Parse(accGrid[2].Double.ToString()), 2).ToString() : accGrid[2].String, System.Drawing.Color.White, 22, 930, 600);
+                    cardCreator.AddTextCenter(accGrid[3].String == null ? Math.Round(float.Parse(accGrid[3].Double.ToString()), 2).ToString() : accGrid[3].String, System.Drawing.Color.White, 22, 1020, 600);
+
+                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 975, 380, 975, 650);
+
+                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 705, 470, 1065, 470);
+                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 705, 580, 1065, 580);
+
+                    //if (hitGrid != null)
+                    //{
+                    //    cardCreator.AddTextFloatRight(hitGrid[8].ToString(), System.Drawing.Color.White, 12, 305, 5);
+                    //    cardCreator.AddTextFloatRight(hitGrid[9].ToString(), System.Drawing.Color.White, 12, 205, 5);
+                    //    cardCreator.AddTextFloatRight(hitGrid[10].ToString(), System.Drawing.Color.White, 12, 105, 5);
+                    //    cardCreator.AddTextFloatRight(hitGrid[11].ToString(), System.Drawing.Color.White, 12, 5, 5);
+                    //    cardCreator.AddTextFloatRight(hitGrid[4].ToString(), System.Drawing.Color.White, 12, 305, 105);
+                    //    cardCreator.AddTextFloatRight(hitGrid[5].ToString(), System.Drawing.Color.White, 12, 205, 105);
+                    //    cardCreator.AddTextFloatRight(hitGrid[6].ToString(), System.Drawing.Color.White, 12, 105, 105);
+                    //    cardCreator.AddTextFloatRight(hitGrid[7].ToString(), System.Drawing.Color.White, 12, 5, 105);
+                    //    cardCreator.AddTextFloatRight(hitGrid[0].ToString(), System.Drawing.Color.White, 12, 305, 205);
+                    //    cardCreator.AddTextFloatRight(hitGrid[1].ToString(), System.Drawing.Color.White, 12, 205, 205);
+                    //    cardCreator.AddTextFloatRight(hitGrid[2].ToString(), System.Drawing.Color.White, 12, 105, 205);
+                    //    cardCreator.AddTextFloatRight(hitGrid[3].ToString(), System.Drawing.Color.White, 12, 5, 205);
+                    //}
+                }
+
+                await cardCreator.Create($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png");
+
+                embedBuilder = new EmbedBuilder
+                {
+                    Title = $"**{recentSong.SongAuthorName} - {recentSong.Name}**",
+                    ImageUrl = $"attachment://EmbedBackground-{playerInfo.PlayerId}.png",
+                    Url = $"https://scoresaber.com/leaderboard/{recentSong.LeaderboardId}",
+                    ThumbnailUrl = $"https://scoresaber.com/imports/images/songs/{recentSong.Id}.png",
+                    Footer = new EmbedFooterBuilder() { Text = $"Time Set: {recentSong.Timeset.DateTime.ToShortDateString() + " | " + recentSong.Timeset.DateTime.ToShortTimeString()} UTC" }
+                };
+
+                embedBuilder.Author = new EmbedAuthorBuilder() { IconUrl = $"https://new.scoresaber.com{playerInfo.Avatar}", Name = $"{ playerInfo.Name}", Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}" };
+                try
+                {
+                    var clickables =
+                  "\n" +
+                  $"[Download Map](https://beatsaver.com/{recentSongsInfoBeatSaver?.DirectDownload}) - " +
+                  $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={recentSongsInfoBeatSaver?.Key}) - " +
+                  $"[Song on Spotify]({await new Spotify().SearchItem(recentSong.Name, recentSong.SongAuthorName)})";
+                    embedBuilder.AddField(recentSong.GetDifficulty(), clickables);
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+                await message.Channel.SendFileAsync($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png", embed: embedBuilder.Build());
+                File.Delete($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png");
+            }
+
+        }
+
+
+        public static async Task GetAndPostRecentSongWithScoresaberId(string playerId, SocketMessage message, int recentsongNr = 1)
+        {
+            var embedBuilder = new EmbedBuilder();
+
+            using (var client = new HttpClient())
+            {
+                var scoresaberApi = new ScoresaberAPI(playerId);
+                var beatSaviourApi = new BeatSaviourApi(playerId);
+
+                //Download scoresaber recentsong data
+                var recentSong = await scoresaberApi.GetScoresRecent(recentsongNr);
 
                 //Download beatsaver recentsong data
                 var recentSongsInfoBeatSaver = await new BeatSaverApi(recentSong.Id).GetRecentSongData();
@@ -542,6 +739,10 @@ namespace DiscordBeatSaberBot.Extensions
                     ConvertForEmbedBuilder("Right hand distance: ", "" + Math.Round(playerMostRecentLiveData.Trackers.DistanceTracker.RightHand / 1000, 2), "km") +
                     ConvertForEmbedBuilder("Left hand speed:     ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.LeftSpeed * 3.6, 2), " km/h") +
                     ConvertForEmbedBuilder("Right hand speed:    ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.RightSpeed * 3.6, 2), " km/h") +
+                    ConvertForEmbedBuilder("Left Preswing:       ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.LeftPreswing * 100, 2), "%") +
+                    ConvertForEmbedBuilder("Right Preswing:      ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.RightPreswing * 100, 2), "%") +
+                    ConvertForEmbedBuilder("Left Postswing:      ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.LeftPostswing * 100, 2), "%") +
+                    ConvertForEmbedBuilder("Right Postswing:     ", "" + Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.RightPostswing * 100, 2), "%") +
                     $"```";
                 }
 
@@ -635,21 +836,214 @@ namespace DiscordBeatSaberBot.Extensions
             }
         }
 
-        public static async Task<EmbedBuilder> GetNewTopSongWithScoresaberId(string playerId)
+        public static async Task GetNewTopSongWithScoresaberIdNew(string playerId, SocketMessage message, int topsongNr = 1)
+        {
+            var embedBuilder = new EmbedBuilder();
+
+            using (var client = new HttpClient())
+            {
+                var scoresaberApi = new ScoresaberAPI(playerId);
+                var beatSaviourApi = new BeatSaviourApi(playerId);
+
+                //Download scoresaber recentsong data
+                var topSong = await scoresaberApi.GetTopScores(topsongNr);
+
+                //Download beatsaver topSong data
+                var topSongsInfoBeatSaver = await new BeatSaverApi(topSong.Id).GetRecentSongData();
+
+                //Download scoresaber full player data
+                var playerFullData = await scoresaberApi.GetPlayerFull();
+                var playerInfo = playerFullData.playerInfo;
+
+                //Download BeatSaviour livedata 
+                var playerMostRecentLiveData = await beatSaviourApi.GetMostRecentLiveData(topSong.Id);
+                var hasBeatSaviour = playerMostRecentLiveData == null ? false : true;
+
+                var cardCreator = new ImageCreator("../../../Resources/img/EmbedBackground-Template.png");
+                cardCreator.AddImage($"https://scoresaber.com/imports/images/songs/{topSong.Id}.png", 0, 0, 1080, 720, 0.1f);
+
+                cardCreator.AddTextFloatRight($"#{topSong.Rank}", System.Drawing.Color.White, 50, 0, 0);
+                cardCreator.AddTextFloatRight($"{topSong.Pp}PP", System.Drawing.Color.White, 30, 100, 70);
+                cardCreator.AddTextFloatRight($"({Math.Round(topSong.Pp * topSong.Weight, 2)}PP)", System.Drawing.Color.White, 15, 0, 85);
+                cardCreator.AddTextFloatRight($"{Math.Round(Convert.ToDouble(topSong.UScore) / Convert.ToDouble(topSong.MaxScoreEx) * 100, 2)}%", System.Drawing.Color.White, 30, 0, 110);
+
+                if (topSongsInfoBeatSaver != null)
+                {
+                    var metadataDynamic = topSongsInfoBeatSaver.Metadata.Characteristics[0].Difficulties;
+                    dynamic difficulty = metadataDynamic.GetType().GetProperty(topSong.GetDifficulty()).GetValue(metadataDynamic, null);
+
+                    cardCreator.AddText($"Bpm:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, 0);
+                    cardCreator.AddText($"{topSongsInfoBeatSaver.Metadata.Bpm}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, 0);
+
+                    cardCreator.AddText($"Duration:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 30 : 40);
+                    cardCreator.AddText($"{topSongsInfoBeatSaver.Metadata.Duration}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 30 : 40);
+
+                    cardCreator.AddText($"Notes:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 60 : 80);
+                    cardCreator.AddText($"{(topSong.GetDifficulty() == "ExpertPlus" ? metadataDynamic.ExpertPlus.Notes : difficulty.notes)}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 60 : 80);
+
+                    cardCreator.AddText($"NJS:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 90 : 120);
+                    cardCreator.AddText($"{(topSong.GetDifficulty() == "ExpertPlus" ? metadataDynamic.ExpertPlus.Njs : difficulty.njs)}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 90 : 120);
+
+                    cardCreator.AddText($"NJS offset:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 120 : 160);
+                    cardCreator.AddText($"{(topSong.GetDifficulty() == "ExpertPlus" ? metadataDynamic.ExpertPlus.NjsOffset : difficulty.njsOffset)}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 120 : 160);
+
+                    cardCreator.AddText($"Bombs:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 150 : 200);
+                    cardCreator.AddText($"{(topSong.GetDifficulty() == "ExpertPlus" ? metadataDynamic.ExpertPlus.Bombs : difficulty.bombs)}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 150 : 200);
+
+                    cardCreator.AddText($"Obstacles:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 180 : 240);
+                    cardCreator.AddText($"{(topSong.GetDifficulty() == "ExpertPlus" ? metadataDynamic.ExpertPlus.Obstacles : difficulty.obstacles)}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 180 : 240);
+
+                    cardCreator.AddText($"Max Score:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 210 : 280);
+                    cardCreator.AddText($"{topSong.MaxScoreEx}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 210 : 280);
+
+                    cardCreator.AddText($"Mods:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, hasBeatSaviour ? 240 : 320);
+                    cardCreator.AddText($"{topSong.Mods}", System.Drawing.Color.White, hasBeatSaviour ? 15 : 30, hasBeatSaviour ? 140 : 260, hasBeatSaviour ? 240 : 320);
+
+                }
+
+                //Create AccGrid If needed
+                if (hasBeatSaviour)
+                {
+                    var PbIncrease = playerMostRecentLiveData.Trackers.ScoreTracker.PersonalBest == 0 ? "First Play" : $"{(playerMostRecentLiveData.Trackers.ScoreTracker.RawScore * 100) / playerMostRecentLiveData.Trackers.ScoreTracker.PersonalBest}% Increase";
+                    cardCreator.AddTextFloatRight($"{PbIncrease}", System.Drawing.Color.White, 20, 0, 155);
+
+                    var misses = "";
+                    if (playerMostRecentLiveData.Trackers.HitTracker.Miss.ToString() == "0") misses = "FC";
+                    else misses = playerMostRecentLiveData.Trackers.HitTracker.Miss.ToString();
+                    cardCreator.AddText($"Misses:", System.Drawing.Color.Gray, 25, 300, 80);
+                    cardCreator.AddText($"{misses}", System.Drawing.Color.White, 25, 540, 80);
+
+                    cardCreator.AddText($"Pauses:", System.Drawing.Color.Gray, 25, 300, 120);
+                    cardCreator.AddText($"{playerMostRecentLiveData.Trackers.WinTracker.NbOfPause}", System.Drawing.Color.White, 25, 540, 120);
+
+                    cardCreator.AddText($"Max Combo:", System.Drawing.Color.Gray, 25, 300, 160);
+                    cardCreator.AddText($"{playerMostRecentLiveData.Trackers.HitTracker.MaxCombo}", System.Drawing.Color.White, 25, 540, 160);
+
+                    cardCreator.AddImage($"https://i.imgur.com/qYAKHbO.png", 235, 420, 80, 80); //Left Hand
+                    cardCreator.AddImage($"https://i.imgur.com/djd63gV.png", 360, 420, 80, 80); //Right Hand
+                    cardCreator.AddImage($"https://i.imgur.com/fBQueGL.png", 480, 410, 100, 100); //Both Hands
+
+                    cardCreator.AddText($"Acc:", System.Drawing.Color.Gray, 25, 0, 510);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AccLeft, 2)}", System.Drawing.Color.White, 25, 275, 510);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AccRight, 2)}", System.Drawing.Color.White, 25, 410, 510);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AverageAcc, 2)}", System.Drawing.Color.White, 25, 530, 510);
+                    //cardCreator.AddTextCenter($"%", System.Drawing.Color.White, 15, 630, 510);
+
+                    cardCreator.AddText($"Speed:", System.Drawing.Color.Gray, 25, 0, 550);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.LeftSpeed * 3.6, 2)}", System.Drawing.Color.White, 25, 275, 550);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.RightSpeed * 3.6, 2)}", System.Drawing.Color.White, 25, 410, 550);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AverageSpeed * 3.6, 2)}", System.Drawing.Color.White, 25, 530, 550);
+                    cardCreator.AddTextCenter($"KM/H", System.Drawing.Color.Gray, 15, 630, 550);
+
+                    cardCreator.AddText($"Distance:", System.Drawing.Color.Gray, 25, 0, 590);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.DistanceTracker.LeftHand / 1000, 2)}", System.Drawing.Color.White, 25, 275, 590);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.DistanceTracker.RightHand / 1000, 2)}", System.Drawing.Color.White, 25, 410, 590);
+                    cardCreator.AddTextCenter($"{Math.Round((playerMostRecentLiveData.Trackers.DistanceTracker.LeftHand + playerMostRecentLiveData.Trackers.DistanceTracker.RightHand) / 1000, 2)}", System.Drawing.Color.White, 25, 530, 590);
+                    cardCreator.AddTextCenter($"KM", System.Drawing.Color.Gray, 15, 630, 590);
+
+                    cardCreator.AddText($"PreSwing:", System.Drawing.Color.Gray, 25, 0, 630);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.LeftPreswing * 100, 2)}", System.Drawing.Color.White, 25, 275, 630);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.RightPreswing * 100, 2)}", System.Drawing.Color.White, 25, 410, 630);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AveragePreswing * 100, 2)}", System.Drawing.Color.White, 25, 530, 630);
+                    cardCreator.AddTextCenter($"%", System.Drawing.Color.Gray, 15, 630, 630);
+
+                    cardCreator.AddText($"PostSwing:   ", System.Drawing.Color.Gray, 25, 0, 670);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.LeftPostswing * 100, 2)}", System.Drawing.Color.White, 25, 275, 670);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.RightPostswing * 100, 2)}", System.Drawing.Color.White, 25, 410, 670);
+                    cardCreator.AddTextCenter($"{Math.Round(playerMostRecentLiveData.Trackers.AccuracyTracker.AveragePostswing * 100, 2)}", System.Drawing.Color.White, 25, 530, 670);
+                    cardCreator.AddTextCenter($"%", System.Drawing.Color.Gray, 15, 630, 670);
+                    cardCreator.AddTextFloatRight($"Data from the BeatSavior mod", System.Drawing.Color.Gray, 15, 0, 690);
+
+
+                    var accGrid = playerMostRecentLiveData.Trackers.AccuracyTracker.GridAcc;
+                    var hitGrid = playerMostRecentLiveData.Trackers.AccuracyTracker.GridCut;
+
+                    cardCreator.AddText($"Acc Grid", System.Drawing.Color.White, 25, 800, 320);
+
+                    cardCreator.AddTextCenter(accGrid[8].String == null ? Math.Round(float.Parse(accGrid[8].Double.ToString()), 1).ToString() : accGrid[8].String, System.Drawing.Color.White, 22, 750, 400);
+                    cardCreator.AddTextCenter(accGrid[9].String == null ? Math.Round(float.Parse(accGrid[9].Double.ToString()), 1).ToString() : accGrid[9].String, System.Drawing.Color.White, 22, 840, 400);
+                    cardCreator.AddTextCenter(accGrid[10].String == null ? Math.Round(float.Parse(accGrid[10].Double.ToString()), 1).ToString() : accGrid[10].String, System.Drawing.Color.White, 22, 930, 400);
+                    cardCreator.AddTextCenter(accGrid[11].String == null ? Math.Round(float.Parse(accGrid[11].Double.ToString()), 1).ToString() : accGrid[11].String, System.Drawing.Color.White, 22, 1020, 400);
+
+                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 795, 380, 795, 650);
+
+                    cardCreator.AddTextCenter(accGrid[4].String == null ? Math.Round(float.Parse(accGrid[4].Double.ToString()), 2).ToString() : accGrid[4].String, System.Drawing.Color.White, 22, 750, 500);
+                    cardCreator.AddTextCenter(accGrid[5].String == null ? Math.Round(float.Parse(accGrid[5].Double.ToString()), 2).ToString() : accGrid[5].String, System.Drawing.Color.White, 22, 840, 500);
+                    cardCreator.AddTextCenter(accGrid[6].String == null ? Math.Round(float.Parse(accGrid[6].Double.ToString()), 2).ToString() : accGrid[6].String, System.Drawing.Color.White, 22, 930, 500);
+                    cardCreator.AddTextCenter(accGrid[7].String == null ? Math.Round(float.Parse(accGrid[7].Double.ToString()), 2).ToString() : accGrid[7].String, System.Drawing.Color.White, 22, 1020, 500);
+
+                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 885, 380, 885, 650);
+
+                    cardCreator.AddTextCenter(accGrid[0].String == null ? Math.Round(float.Parse(accGrid[0].Double.ToString()), 2).ToString() : accGrid[0].String, System.Drawing.Color.White, 22, 750, 600);
+                    cardCreator.AddTextCenter(accGrid[1].String == null ? Math.Round(float.Parse(accGrid[1].Double.ToString()), 2).ToString() : accGrid[1].String, System.Drawing.Color.White, 22, 840, 600);
+                    cardCreator.AddTextCenter(accGrid[2].String == null ? Math.Round(float.Parse(accGrid[2].Double.ToString()), 2).ToString() : accGrid[2].String, System.Drawing.Color.White, 22, 930, 600);
+                    cardCreator.AddTextCenter(accGrid[3].String == null ? Math.Round(float.Parse(accGrid[3].Double.ToString()), 2).ToString() : accGrid[3].String, System.Drawing.Color.White, 22, 1020, 600);
+
+                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 975, 380, 975, 650);
+
+                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 705, 470, 1065, 470);
+                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 705, 580, 1065, 580);
+
+                    //if (hitGrid != null)
+                    //{
+                    //    cardCreator.AddTextFloatRight(hitGrid[8].ToString(), System.Drawing.Color.White, 12, 305, 5);
+                    //    cardCreator.AddTextFloatRight(hitGrid[9].ToString(), System.Drawing.Color.White, 12, 205, 5);
+                    //    cardCreator.AddTextFloatRight(hitGrid[10].ToString(), System.Drawing.Color.White, 12, 105, 5);
+                    //    cardCreator.AddTextFloatRight(hitGrid[11].ToString(), System.Drawing.Color.White, 12, 5, 5);
+                    //    cardCreator.AddTextFloatRight(hitGrid[4].ToString(), System.Drawing.Color.White, 12, 305, 105);
+                    //    cardCreator.AddTextFloatRight(hitGrid[5].ToString(), System.Drawing.Color.White, 12, 205, 105);
+                    //    cardCreator.AddTextFloatRight(hitGrid[6].ToString(), System.Drawing.Color.White, 12, 105, 105);
+                    //    cardCreator.AddTextFloatRight(hitGrid[7].ToString(), System.Drawing.Color.White, 12, 5, 105);
+                    //    cardCreator.AddTextFloatRight(hitGrid[0].ToString(), System.Drawing.Color.White, 12, 305, 205);
+                    //    cardCreator.AddTextFloatRight(hitGrid[1].ToString(), System.Drawing.Color.White, 12, 205, 205);
+                    //    cardCreator.AddTextFloatRight(hitGrid[2].ToString(), System.Drawing.Color.White, 12, 105, 205);
+                    //    cardCreator.AddTextFloatRight(hitGrid[3].ToString(), System.Drawing.Color.White, 12, 5, 205);
+                    //}
+                }
+
+                await cardCreator.Create($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png");
+
+                embedBuilder = new EmbedBuilder
+                {
+                    Title = $"**{topSong.SongAuthorName} - {topSong.Name}**",
+                    ImageUrl = $"attachment://EmbedBackground-{playerInfo.PlayerId}.png",
+                    Url = $"https://scoresaber.com/leaderboard/{topSong.LeaderboardId}",
+                    ThumbnailUrl = $"https://scoresaber.com/imports/images/songs/{topSong.Id}.png",
+                    Footer = new EmbedFooterBuilder() { Text = $"Time Set: {topSong.Timeset.DateTime.ToShortDateString() + " | " + topSong.Timeset.DateTime.ToShortTimeString()} UTC" }
+                };
+
+                embedBuilder.Author = new EmbedAuthorBuilder() { IconUrl = $"https://new.scoresaber.com{playerInfo.Avatar}", Name = $"{ playerInfo.Name}", Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}" };
+                try
+                {
+                    var clickables =
+                  "\n" +
+                  $"[Download Map](https://beatsaver.com/{topSongsInfoBeatSaver?.DirectDownload}) - " +
+                  $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={topSongsInfoBeatSaver?.Key}) - " +
+                  $"[Song on Spotify]({await new Spotify().SearchItem(topSong.Name, topSong.SongAuthorName)})";
+                    embedBuilder.AddField(topSong.GetDifficulty(), clickables);
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+                await message.Channel.SendFileAsync($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png", embed: embedBuilder.Build());
+                File.Delete($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png");
+            }
+        }
+
+            public static async Task<EmbedBuilder> GetNewTopSongWithScoresaberId(string playerId, int topsongNr = 1)
         {
             var url = $"https://new.scoresaber.com/api/player/{playerId}/scores/top/1";
             var embedBuilder = new EmbedBuilder();
 
             using (var client = new HttpClient())
             {
-                var httpResponseMessage = await client.GetAsync(url);
+                var scoresaberApi = new ScoresaberAPI(playerId);
+                var beatSaviourApi = new BeatSaviourApi(playerId);
 
-                if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return EmbedBuilderExtension.NullEmbed("Scoresaber Error", $"Status code: {httpResponseMessage.StatusCode}");
-
-                var TopSongsJsonData = await httpResponseMessage.Content.ReadAsStringAsync();
-
-                var TopSongsJsonInfo = JsonConvert.DeserializeObject<ScoresaberSongsModel>(TopSongsJsonData);
-                var TopSong = TopSongsJsonInfo.Scores[0];
+                //Download scoresaber recentsong data
+                var TopSong = await scoresaberApi.GetTopScores(topsongNr);
 
                 var playerInfoJsonData = await client.GetStringAsync($"https://new.scoresaber.com/api/player/{playerId}/full");
                 var playerInfo1 = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoJsonData);
@@ -658,7 +1052,7 @@ namespace DiscordBeatSaberBot.Extensions
 
                 embedBuilder = new EmbedBuilder
                 {
-                    Title = $"**Recent Song From: {playerInfo.Name} :flag_{playerInfo.Country.ToLower()}:**",
+                    Title = $"**Top Song From: {playerInfo.Name} :flag_{playerInfo.Country.ToLower()}:**",
                     ImageUrl =
                 $"https://new.scoresaber.com/api/static/covers/{TopSong.Id}.png",
                     Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}",
@@ -1592,6 +1986,10 @@ namespace DiscordBeatSaberBot.Extensions
 
             rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{player.Country.ToLower()}.png", 1120, 1000, 120, 100);
             rankingCardCreator.AddNoteSlashEffect($"https://new.scoresaber.com{player.Avatar}", 200, 800, 800, 800);
+            for (var x = 0; x < player.Badges.Count(); x++)
+            {
+                rankingCardCreator.AddImage($"https://new.scoresaber.com/api/static/badges/{player.Badges[x].Image}", 2730, 650 + x * 175, 80 * 5, 30 * 5);
+            }
 
             //Add Date
             rankingCardCreator.AddText(DateTime.UtcNow.ToString("dd MMM. yyyy"), System.Drawing.Color.White, 100, 3600, 650);
