@@ -62,7 +62,7 @@ namespace DiscordBeatSaberBot
             var guildChannel = guild.GetTextChannel(_channelId);
             var messages = guildChannel.GetMessagesAsync(5).Flatten();
 
-            return await messages.Count() == 0;
+            return await messages.CountAsync() == 0;
         }
 
         //update function 
@@ -212,8 +212,8 @@ namespace DiscordBeatSaberBot
             var message = chn.GetMessagesAsync(50).Flatten();
             try
             {
-                var f = await message.First();
-                var embedToModify = await message.First(x => x.Embeds.First().Footer.Value.Text == id) as RestUserMessage;
+                var f = await message.FirstAsync();
+                var embedToModify = await message.FirstAsync(x => x.Embeds.First().Footer.Value.Text == id) as RestUserMessage;
                 await embedToModify.DeleteAsync();
 
             }
@@ -234,7 +234,7 @@ namespace DiscordBeatSaberBot
 
             foreach (var qm in qualifiedMaps)
             {
-                var embedToModify = await message.First(x => x.Embeds.First().Footer.Value.Text == qm[0].ToString()) as RestUserMessage;
+                var embedToModify = await message.FirstAsync(x => x.Embeds.First().Footer.Value.Text == qm[0].ToString()) as RestUserMessage;
 
                 var d = await DatabaseContext.ExecuteSelectQuery($"select * from ScoresaberRankedQualifiedMaps where RequestId={qm[0]}");
                 var timeTillRanked = DateTime.Parse(d[0][2].ToString());
@@ -279,7 +279,7 @@ namespace DiscordBeatSaberBot
 
             //get message to modify
             var message = guildChannel.GetMessagesAsync(50).Flatten();
-            var embedToModify = await message.First(x => x.Embeds.First().Footer.Value.Text == "Top Queue") as RestUserMessage;
+            var embedToModify = await message.FirstAsync(x => x.Embeds.First().Footer.Value.Text == "Top Queue") as RestUserMessage;
 
             embedToModify.ModifyAsync(x => x.Embed = embed.Build());
         }
@@ -318,7 +318,7 @@ namespace DiscordBeatSaberBot
 
             //get message to modify
             var message = guildChannel.GetMessagesAsync(50).Flatten();
-            var embedToModify = await message.First(x => x.Embeds.First().Footer.Value.Text == "Recent Ranked List") as RestUserMessage;
+            var embedToModify = await message.FirstAsync(x => x.Embeds.First().Footer.Value.Text == "Recent Ranked List") as RestUserMessage;
 
             //get latest ranked maps
             var recentRankedMaps = await DatabaseContext.ExecuteSelectQuery($"select * from scoresaberrecentrankedmaps");

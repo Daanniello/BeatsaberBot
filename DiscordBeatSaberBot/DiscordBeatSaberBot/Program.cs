@@ -109,7 +109,7 @@ namespace DiscordBeatSaberBot
                     var guild = discordSocketClient.GetGuild(731936395223892028);
                     guild.GetTextChannel(770821423668920321).ModifyAsync(x => x.Name = $"server-count: {discordSocketClient.Guilds.Count}");
                     var userCount = 0;
-                    foreach (var g in discordSocketClient.Guilds) userCount += g.Users.Count;
+                    foreach (var g in discordSocketClient.Guilds) userCount += g.MemberCount;
                     guild.GetTextChannel(770821486914437120).ModifyAsync(x => x.Name = $"user-count: {userCount}");
                     return Task.CompletedTask;
                 }

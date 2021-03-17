@@ -44,6 +44,23 @@ namespace DiscordBeatSaberBot
             return rankedRequests;
         }
 
+        public static async Task<ScoreSaberSearchByNameModel> GetTop50Global()
+        {
+            Console.WriteLine("Scoresaber request getting top 50 players");
+            var url = "https://new.scoresaber.com/api/players/1";            
+
+            using (var client = new HttpClient())
+            {
+                var httpResponseMessage = await client.GetAsync(url);
+
+                if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return null;
+
+                var rankedRequestsJsonData = await httpResponseMessage.Content.ReadAsStringAsync();
+                var top100Players = JsonConvert.DeserializeObject<ScoreSaberSearchByNameModel>(rankedRequestsJsonData);
+                return top100Players;
+            }
+        }
+
         public static async Task<ScoresaberRankedRequestModel> GetRankedRequests(long requestId)
         {
             Console.WriteLine("Scoresaber request for ranked requests");

@@ -85,7 +85,7 @@ namespace DiscordBeatSaberBot.Handlers
             string newMessage = "";
             do
             {
-                var iMessage = await message.Channel.GetMessagesAsync(1).Flatten().First();
+                var iMessage = await message.Channel.GetMessagesAsync(1).Flatten().FirstAsync();
 
                 ulong id = iMessage.Author.Id;
 

@@ -47,5 +47,34 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
                 return recentSongsInfoBeatSaver;
             }            
         }
+
+        public static async Task<BeatSaverMapInfoModel> GetMapByKey(string key)
+        {
+            var beatsaverUrl = $"https://beatsaver.com/api/maps/detail/{key}";
+
+            using (var client = new HttpClient())
+            {
+                var request = new HttpRequestMessage()
+                {
+                    RequestUri = new Uri(beatsaverUrl),
+                    Method = HttpMethod.Get,
+                };
+
+                var productValue = new ProductInfoHeaderValue("ScraperBot", "1.0");
+                var commentValue = new ProductInfoHeaderValue("(+http://www.example.com/ScraperBot.html)");
+
+                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("*/*"));
+                client.DefaultRequestHeaders.UserAgent.Add(productValue);
+                client.DefaultRequestHeaders.UserAgent.Add(commentValue);
+
+                var httpResponseMessage2 = await client.SendAsync(request);
+
+                if (httpResponseMessage2.StatusCode != HttpStatusCode.OK) return null;
+
+                var mapJsonDataBeatSaver = await httpResponseMessage2.Content.ReadAsStringAsync();
+                var mapInfoBeatSaver = JsonConvert.DeserializeObject<BeatSaverMapInfoModel>(mapJsonDataBeatSaver);
+                return mapInfoBeatSaver;
+            }
+        }
     }
 }

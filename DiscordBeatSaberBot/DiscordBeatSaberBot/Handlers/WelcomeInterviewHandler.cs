@@ -47,7 +47,7 @@ namespace DiscordBeatSaberBot.Handlers
             bool hasReacted = false;
             do
             {
-                var latestMessage = await _channel.GetMessagesAsync(1).Flatten().First();
+                var latestMessage = await _channel.GetMessagesAsync(1).Flatten().FirstAsync();
 
                 if (latestMessage.Content.ToLower().Contains("ja") && latestMessage.Author.Id == _discordId)
                 {
@@ -100,7 +100,7 @@ namespace DiscordBeatSaberBot.Handlers
             dateTimeLimit = dateTimeLimit.AddMinutes(30);
             do
             {
-                var latestMessage = await _channel.GetMessagesAsync(1).Flatten().First();
+                var latestMessage = await _channel.GetMessagesAsync(1).Flatten().FirstAsync();
                 if(latestMessage.Content.ToLower() == "skip" && latestMessage.Author.Id == _discordId && latestMessage.CreatedAt > _startDate)
                 {
                     _interviewAnswers.Add("skip");

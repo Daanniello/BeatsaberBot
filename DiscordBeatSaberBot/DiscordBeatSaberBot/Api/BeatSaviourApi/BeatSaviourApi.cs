@@ -51,7 +51,7 @@ namespace DiscordBeatSaberBot.Api.BeatSaviourApi
             }
         }
 
-        public async Task<BeatSaviourLivedataModel> GetMostRecentLiveData(string playid)
+        public async Task<BeatSaviourLivedataModel> GetMostRecentLiveData(string playid, string difficulty)
         {
             using (var client = new HttpClient())
             {
@@ -64,7 +64,7 @@ namespace DiscordBeatSaberBot.Api.BeatSaviourApi
                 {
                     var LiveData = JsonConvert.DeserializeObject<List<BeatSaviourLivedataModel>>(LiveDataJsonData);
                     if (LiveData.Count == 0) return null;
-                    var mostRecentPlay = LiveData.Where(x => x.SongId == playid);
+                    var mostRecentPlay = LiveData.Where(x => x.SongId == playid && x.SongDifficulty.ToString().ToLower() == difficulty.ToLower() && x.Trackers.WinTracker.Won == true);
                     if (mostRecentPlay.Count() == 0) return null;
                     return mostRecentPlay.Last();
                 }

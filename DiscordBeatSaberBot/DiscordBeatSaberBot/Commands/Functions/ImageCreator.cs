@@ -65,13 +65,25 @@ namespace DiscordBeatSaberBot
         public void AddImage(string path, float x, float y, int width, int height, float opacity = 1)
         {
             Image overlayImage = null;
-
-            var request = WebRequest.Create(path);
-
-            using (var response = request.GetResponse())
-            using (var stream = response.GetResponseStream())
+    
+            WebRequest request;
+            try
             {
-                overlayImage = Bitmap.FromStream(stream);
+                request = WebRequest.Create(path);
+                using (var response = request.GetResponse())
+                using (var stream = response.GetResponseStream())
+                {
+                    overlayImage = Bitmap.FromStream(stream);
+                }
+            }
+            catch
+            {
+                request = WebRequest.Create("https://www.thermaxglobal.com/wp-content/uploads/2020/05/image-not-found.jpg");
+                using (var response = request.GetResponse())
+                using (var stream = response.GetResponseStream())
+                {
+                    overlayImage = Bitmap.FromStream(stream);
+                }
             }
 
             Graphics g = Graphics.FromImage(_bitmap);
@@ -127,6 +139,31 @@ namespace DiscordBeatSaberBot
             {
                 graphics.DrawLine(Pen, point1, point2);
             }                
+        }
+
+        public void DrawRectangle(int x, int y, int with, int height, Color? fillColor = null, Color? outerColor = null)
+        {
+            // Create pen.
+            SolidBrush brush = new SolidBrush(Color.White);
+            if (fillColor != null) {
+                brush = new SolidBrush((Color)fillColor); 
+            }
+
+            Pen pen = new Pen(Color.Gray, 3);
+            if(outerColor != null)
+            {
+                pen = new Pen((Color)outerColor, 3);
+            }
+
+            // Create rectangle.
+            Rectangle rect = new Rectangle(x, y, with, height);
+
+            // Draw rectangle to screen.
+            using (Graphics graphics = Graphics.FromImage(_bitmap))
+            {
+                graphics.FillRectangle(brush, rect);
+                graphics.DrawRectangle(pen, rect);
+            }
         }
 
         public void AddImageRounded(string path, float x, float y, int width, int height)

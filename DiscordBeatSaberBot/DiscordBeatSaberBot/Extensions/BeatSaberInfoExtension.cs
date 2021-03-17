@@ -342,7 +342,7 @@ namespace DiscordBeatSaberBot.Extensions
         {
             var builder = new EmbedBuilder();
             builder.WithTitle("Invitation Link");
-            builder.WithDescription(GlobalConfiguration.inviteLink);
+            builder.Description = $"[Invite the bot to your server]({GlobalConfiguration.inviteLink})\n\n[Join the bots discord server](https://discord.gg/S3D3Yyu)";
             return builder;
         }
 
@@ -450,6 +450,47 @@ namespace DiscordBeatSaberBot.Extensions
             return builder;
         }
 
+        public static async Task GetAndPostMapInfoWithKey(SocketMessage message, string key)
+        {
+            var embedBuilder = new EmbedBuilder();
+
+            using (var client = new HttpClient())
+            {
+
+                //Download beatsaver recentsong data
+                var mapInfoBeatSaver = await BeatSaverApi.GetMapByKey(key);
+
+                var cardCreator = new ImageCreator("../../../Resources/img/EmbedBackground-Template.png");
+                cardCreator.AddImage($"https://scoresaber.com/imports/images/songs/{mapInfoBeatSaver.Hash}.png", 0, 0, 1080, 720, 0.1f);
+
+                await cardCreator.Create($"../../../Resources/img/EmbedBackground-{key}.png");
+
+                embedBuilder = new EmbedBuilder
+                {
+                    Title = $"**{mapInfoBeatSaver.Name}**",
+                    ImageUrl = $"attachment://EmbedBackground-{key}.png",
+                    Url = $"https://beatsaver.com/beatmap/{mapInfoBeatSaver.Key}",
+                    ThumbnailUrl = $"https://beatsaver.com/cdn/{mapInfoBeatSaver.Key}/{mapInfoBeatSaver.Hash}.jpg",
+                    Footer = new EmbedFooterBuilder() { Text = $"Upload date: {mapInfoBeatSaver.Uploaded.UtcDateTime} UTC" }
+                };
+
+                embedBuilder.Description = "\n" +
+                  $"Difficulties: " +
+                  $"{(mapInfoBeatSaver.Metadata.Difficulties.Easy.ToString() == "False" ? "" : "Easy - ")}" +
+                  $"{(mapInfoBeatSaver.Metadata.Difficulties.Normal.ToString() == "False" ? "" : "Normal - ")}" +
+                  $"{(mapInfoBeatSaver.Metadata.Difficulties.Hard.ToString() == "False" ? "" : "Hard - ")}" +
+                  $"{(mapInfoBeatSaver.Metadata.Difficulties.Expert.ToString() == "False" ? "" : "Expert - ")}" +
+                  $"{(mapInfoBeatSaver.Metadata.Difficulties.ExpertPlus.ToString() == "False" ? "" : "Expert+")}" +
+                  "\n" +
+                  $"[Download Map](https://beatsaver.com{mapInfoBeatSaver?.DirectDownload}) - " +
+                  $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={mapInfoBeatSaver?.Key}) - " +
+                  $"[Song on Spotify]({await new Spotify().SearchItem(mapInfoBeatSaver.Metadata.SongName, mapInfoBeatSaver.Metadata.SongAuthorName)})";
+
+                await message.Channel.SendFileAsync($"../../../Resources/img/EmbedBackground-{key}.png", embed: embedBuilder.Build());
+                File.Delete($"../../../Resources/img/EmbedBackground-{key}.png");
+            }
+        }
+
         public static async Task GetAndPostRecentSongWithScoresaberIdNew(string playerId, SocketMessage message, int recentsongNr = 1)
         {
             var embedBuilder = new EmbedBuilder();
@@ -470,7 +511,7 @@ namespace DiscordBeatSaberBot.Extensions
                 var playerInfo = playerFullData.playerInfo;
 
                 //Download BeatSaviour livedata 
-                var playerMostRecentLiveData = await beatSaviourApi.GetMostRecentLiveData(recentSong.Id);
+                var playerMostRecentLiveData = await beatSaviourApi.GetMostRecentLiveData(recentSong.Id, recentSong.GetDifficulty());
                 var hasBeatSaviour = playerMostRecentLiveData == null ? false : true;
 
                 var cardCreator = new ImageCreator("../../../Resources/img/EmbedBackground-Template.png");
@@ -483,7 +524,7 @@ namespace DiscordBeatSaberBot.Extensions
 
                 if (recentSongsInfoBeatSaver != null)
                 {
-                    var metadataDynamic = recentSongsInfoBeatSaver.Metadata.Characteristics[0].Difficulties;
+                    var metadataDynamic = recentSongsInfoBeatSaver.Metadata.Characteristics.First(x => x.Name == "Standard").Difficulties;
                     dynamic difficulty = metadataDynamic.GetType().GetProperty(recentSong.GetDifficulty()).GetValue(metadataDynamic, null);
 
                     cardCreator.AddText($"Bpm:", System.Drawing.Color.Gray, hasBeatSaviour ? 15 : 30, 0, 0);
@@ -574,29 +615,86 @@ namespace DiscordBeatSaberBot.Extensions
 
                     cardCreator.AddText($"Acc Grid", System.Drawing.Color.White, 25, 800, 320);
 
-                    cardCreator.AddTextCenter(accGrid[8].String == null ? Math.Round(float.Parse(accGrid[8].Double.ToString()), 1).ToString() : accGrid[8].String, System.Drawing.Color.White, 22, 750, 400);
-                    cardCreator.AddTextCenter(accGrid[9].String == null ? Math.Round(float.Parse(accGrid[9].Double.ToString()), 1).ToString() : accGrid[9].String, System.Drawing.Color.White, 22, 840, 400);
-                    cardCreator.AddTextCenter(accGrid[10].String == null ? Math.Round(float.Parse(accGrid[10].Double.ToString()), 1).ToString() : accGrid[10].String, System.Drawing.Color.White, 22, 930, 400);
-                    cardCreator.AddTextCenter(accGrid[11].String == null ? Math.Round(float.Parse(accGrid[11].Double.ToString()), 1).ToString() : accGrid[11].String, System.Drawing.Color.White, 22, 1020, 400);
+                    var smallestAcc = accGrid.Min(x => x.Double);
+                    var biggestAcc = accGrid.Max(x => x.Double);
 
-                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 795, 380, 795, 650);
+                    //Create colors on the grid acc to see what could be improved.
+                    cardCreator.DrawRectangle(705, 375, 90, 90, createGridColor(accGrid[8].Double));
+                    cardCreator.DrawRectangle(795, 375, 90, 90, createGridColor(accGrid[9].Double));
+                    cardCreator.DrawRectangle(885, 375, 90, 90, createGridColor(accGrid[10].Double));
+                    cardCreator.DrawRectangle(975, 375, 90, 90, createGridColor(accGrid[11].Double));
 
-                    cardCreator.AddTextCenter(accGrid[4].String == null ? Math.Round(float.Parse(accGrid[4].Double.ToString()), 2).ToString() : accGrid[4].String, System.Drawing.Color.White, 22, 750, 500);
-                    cardCreator.AddTextCenter(accGrid[5].String == null ? Math.Round(float.Parse(accGrid[5].Double.ToString()), 2).ToString() : accGrid[5].String, System.Drawing.Color.White, 22, 840, 500);
-                    cardCreator.AddTextCenter(accGrid[6].String == null ? Math.Round(float.Parse(accGrid[6].Double.ToString()), 2).ToString() : accGrid[6].String, System.Drawing.Color.White, 22, 930, 500);
-                    cardCreator.AddTextCenter(accGrid[7].String == null ? Math.Round(float.Parse(accGrid[7].Double.ToString()), 2).ToString() : accGrid[7].String, System.Drawing.Color.White, 22, 1020, 500);
+                    cardCreator.DrawRectangle(705, 465, 90, 90, createGridColor(accGrid[4].Double));
+                    cardCreator.DrawRectangle(795, 465, 90, 90, createGridColor(accGrid[5].Double));
+                    cardCreator.DrawRectangle(885, 465, 90, 90, createGridColor(accGrid[6].Double));
+                    cardCreator.DrawRectangle(975, 465, 90, 90, createGridColor(accGrid[7].Double));
 
-                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 885, 380, 885, 650);
+                    cardCreator.DrawRectangle(705, 555, 90, 90, createGridColor(accGrid[0].Double));
+                    cardCreator.DrawRectangle(795, 555, 90, 90, createGridColor(accGrid[1].Double));
+                    cardCreator.DrawRectangle(885, 555, 90, 90, createGridColor(accGrid[2].Double));
+                    cardCreator.DrawRectangle(975, 555, 90, 90, createGridColor(accGrid[3].Double));
 
-                    cardCreator.AddTextCenter(accGrid[0].String == null ? Math.Round(float.Parse(accGrid[0].Double.ToString()), 2).ToString() : accGrid[0].String, System.Drawing.Color.White, 22, 750, 600);
-                    cardCreator.AddTextCenter(accGrid[1].String == null ? Math.Round(float.Parse(accGrid[1].Double.ToString()), 2).ToString() : accGrid[1].String, System.Drawing.Color.White, 22, 840, 600);
-                    cardCreator.AddTextCenter(accGrid[2].String == null ? Math.Round(float.Parse(accGrid[2].Double.ToString()), 2).ToString() : accGrid[2].String, System.Drawing.Color.White, 22, 930, 600);
-                    cardCreator.AddTextCenter(accGrid[3].String == null ? Math.Round(float.Parse(accGrid[3].Double.ToString()), 2).ToString() : accGrid[3].String, System.Drawing.Color.White, 22, 1020, 600);
+                    System.Drawing.Color createGridColor(double? value)
+                    {                      
+                        try
+                        {
+                            if (value == null) return System.Drawing.Color.Gray;
 
-                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 975, 380, 975, 650);
+                            var perPoint = 0.01 * 256 / (biggestAcc - smallestAcc);
+                            var x = (value - smallestAcc) * 100;
+                            var f = perPoint * x + 128;
 
-                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 705, 470, 1065, 470);
-                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 705, 580, 1065, 580);
+                            double r = 0;
+                            double g = 0;
+                            if (f <= 128)
+                            {
+                                r = 128;
+                                g = 0;
+                            }
+
+                            if (f > 128 && f <= 256)
+                            {
+                                r = 128;
+                                g = (double)f - 128;
+                            }
+                            if (f > 256)
+                            {
+                                r = 389 - (double)f;
+                                g = 128;
+                            }
+
+                            return System.Drawing.Color.FromArgb(120, Convert.ToInt32(r), Convert.ToInt32(g), 0);
+                        }
+                        catch (Exception ex)
+                        {
+                            return System.Drawing.Color.Gray;
+                        }
+                    }
+
+                    //Add Data to the grid
+                    cardCreator.AddTextCenter(accGrid[8].String == null ? Math.Round(float.Parse(accGrid[8].Double.ToString()), 1).ToString() : accGrid[8].String, System.Drawing.Color.White, 18, 750, 405);
+                    cardCreator.AddTextCenter(accGrid[9].String == null ? Math.Round(float.Parse(accGrid[9].Double.ToString()), 1).ToString() : accGrid[9].String, System.Drawing.Color.White, 18, 840, 405);
+                    cardCreator.AddTextCenter(accGrid[10].String == null ? Math.Round(float.Parse(accGrid[10].Double.ToString()), 1).ToString() : accGrid[10].String, System.Drawing.Color.White, 18, 930, 405);
+                    cardCreator.AddTextCenter(accGrid[11].String == null ? Math.Round(float.Parse(accGrid[11].Double.ToString()), 1).ToString() : accGrid[11].String, System.Drawing.Color.White, 18, 1020, 405);
+
+                    //cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 795, 380, 795, 650);
+
+                    cardCreator.AddTextCenter(accGrid[4].String == null ? Math.Round(float.Parse(accGrid[4].Double.ToString()), 2).ToString() : accGrid[4].String, System.Drawing.Color.White, 18, 750, 495);
+                    cardCreator.AddTextCenter(accGrid[5].String == null ? Math.Round(float.Parse(accGrid[5].Double.ToString()), 2).ToString() : accGrid[5].String, System.Drawing.Color.White, 18, 840, 495);
+                    cardCreator.AddTextCenter(accGrid[6].String == null ? Math.Round(float.Parse(accGrid[6].Double.ToString()), 2).ToString() : accGrid[6].String, System.Drawing.Color.White, 18, 930, 495);
+                    cardCreator.AddTextCenter(accGrid[7].String == null ? Math.Round(float.Parse(accGrid[7].Double.ToString()), 2).ToString() : accGrid[7].String, System.Drawing.Color.White, 18, 1020, 495);
+
+                    //cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 885, 380, 885, 650);
+
+                    cardCreator.AddTextCenter(accGrid[0].String == null ? Math.Round(float.Parse(accGrid[0].Double.ToString()), 2).ToString() : accGrid[0].String, System.Drawing.Color.White, 18, 750, 585);
+                    cardCreator.AddTextCenter(accGrid[1].String == null ? Math.Round(float.Parse(accGrid[1].Double.ToString()), 2).ToString() : accGrid[1].String, System.Drawing.Color.White, 18, 840, 585);
+                    cardCreator.AddTextCenter(accGrid[2].String == null ? Math.Round(float.Parse(accGrid[2].Double.ToString()), 2).ToString() : accGrid[2].String, System.Drawing.Color.White, 18, 930, 585);
+                    cardCreator.AddTextCenter(accGrid[3].String == null ? Math.Round(float.Parse(accGrid[3].Double.ToString()), 2).ToString() : accGrid[3].String, System.Drawing.Color.White, 18, 1020, 585);
+
+                    //cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 975, 380, 975, 650);
+
+                    //cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 705, 470, 1065, 470);
+                    //cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 705, 580, 1065, 580);
 
                     //if (hitGrid != null)
                     //{
@@ -613,6 +711,7 @@ namespace DiscordBeatSaberBot.Extensions
                     //    cardCreator.AddTextFloatRight(hitGrid[2].ToString(), System.Drawing.Color.White, 12, 105, 205);
                     //    cardCreator.AddTextFloatRight(hitGrid[3].ToString(), System.Drawing.Color.White, 12, 5, 205);
                     //}
+
                 }
 
                 await cardCreator.Create($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png");
@@ -631,7 +730,7 @@ namespace DiscordBeatSaberBot.Extensions
                 {
                     var clickables =
                   "\n" +
-                  $"[Download Map](https://beatsaver.com/{recentSongsInfoBeatSaver?.DirectDownload}) - " +
+                  $"[Download Map](https://beatsaver.com{recentSongsInfoBeatSaver?.DirectDownload}) - " +
                   $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={recentSongsInfoBeatSaver?.Key}) - " +
                   $"[Song on Spotify]({await new Spotify().SearchItem(recentSong.Name, recentSong.SongAuthorName)})";
                     embedBuilder.AddField(recentSong.GetDifficulty(), clickables);
@@ -668,7 +767,7 @@ namespace DiscordBeatSaberBot.Extensions
                 var playerInfo = playerFullData.playerInfo;
 
                 //Download BeatSaviour livedata 
-                var playerMostRecentLiveData = await beatSaviourApi.GetMostRecentLiveData(recentSong.Id);
+                var playerMostRecentLiveData = await beatSaviourApi.GetMostRecentLiveData(recentSong.Id, recentSong.GetDifficulty());
                 var hasBeatSaviour = playerMostRecentLiveData == null ? false : true;
 
 
@@ -856,7 +955,7 @@ namespace DiscordBeatSaberBot.Extensions
                 var playerInfo = playerFullData.playerInfo;
 
                 //Download BeatSaviour livedata 
-                var playerMostRecentLiveData = await beatSaviourApi.GetMostRecentLiveData(topSong.Id);
+                var playerMostRecentLiveData = await beatSaviourApi.GetMostRecentLiveData(topSong.Id, topSong.GetDifficulty());
                 var hasBeatSaviour = playerMostRecentLiveData == null ? false : true;
 
                 var cardCreator = new ImageCreator("../../../Resources/img/EmbedBackground-Template.png");
@@ -960,29 +1059,86 @@ namespace DiscordBeatSaberBot.Extensions
 
                     cardCreator.AddText($"Acc Grid", System.Drawing.Color.White, 25, 800, 320);
 
-                    cardCreator.AddTextCenter(accGrid[8].String == null ? Math.Round(float.Parse(accGrid[8].Double.ToString()), 1).ToString() : accGrid[8].String, System.Drawing.Color.White, 22, 750, 400);
-                    cardCreator.AddTextCenter(accGrid[9].String == null ? Math.Round(float.Parse(accGrid[9].Double.ToString()), 1).ToString() : accGrid[9].String, System.Drawing.Color.White, 22, 840, 400);
-                    cardCreator.AddTextCenter(accGrid[10].String == null ? Math.Round(float.Parse(accGrid[10].Double.ToString()), 1).ToString() : accGrid[10].String, System.Drawing.Color.White, 22, 930, 400);
-                    cardCreator.AddTextCenter(accGrid[11].String == null ? Math.Round(float.Parse(accGrid[11].Double.ToString()), 1).ToString() : accGrid[11].String, System.Drawing.Color.White, 22, 1020, 400);
+                    var smallestAcc = accGrid.Min(x => x.Double);
+                    var biggestAcc = accGrid.Max(x => x.Double);
 
-                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 795, 380, 795, 650);
+                    //Create colors on the grid acc to see what could be improved.
+                    cardCreator.DrawRectangle(705, 375, 90, 90, createGridColor(accGrid[8].Double));
+                    cardCreator.DrawRectangle(795, 375, 90, 90, createGridColor(accGrid[9].Double));
+                    cardCreator.DrawRectangle(885, 375, 90, 90, createGridColor(accGrid[10].Double));
+                    cardCreator.DrawRectangle(975, 375, 90, 90, createGridColor(accGrid[11].Double));
 
-                    cardCreator.AddTextCenter(accGrid[4].String == null ? Math.Round(float.Parse(accGrid[4].Double.ToString()), 2).ToString() : accGrid[4].String, System.Drawing.Color.White, 22, 750, 500);
-                    cardCreator.AddTextCenter(accGrid[5].String == null ? Math.Round(float.Parse(accGrid[5].Double.ToString()), 2).ToString() : accGrid[5].String, System.Drawing.Color.White, 22, 840, 500);
-                    cardCreator.AddTextCenter(accGrid[6].String == null ? Math.Round(float.Parse(accGrid[6].Double.ToString()), 2).ToString() : accGrid[6].String, System.Drawing.Color.White, 22, 930, 500);
-                    cardCreator.AddTextCenter(accGrid[7].String == null ? Math.Round(float.Parse(accGrid[7].Double.ToString()), 2).ToString() : accGrid[7].String, System.Drawing.Color.White, 22, 1020, 500);
+                    cardCreator.DrawRectangle(705, 465, 90, 90, createGridColor(accGrid[4].Double));
+                    cardCreator.DrawRectangle(795, 465, 90, 90, createGridColor(accGrid[5].Double));
+                    cardCreator.DrawRectangle(885, 465, 90, 90, createGridColor(accGrid[6].Double));
+                    cardCreator.DrawRectangle(975, 465, 90, 90, createGridColor(accGrid[7].Double));
 
-                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 885, 380, 885, 650);
+                    cardCreator.DrawRectangle(705, 555, 90, 90, createGridColor(accGrid[0].Double));
+                    cardCreator.DrawRectangle(795, 555, 90, 90, createGridColor(accGrid[1].Double));
+                    cardCreator.DrawRectangle(885, 555, 90, 90, createGridColor(accGrid[2].Double));
+                    cardCreator.DrawRectangle(975, 555, 90, 90, createGridColor(accGrid[3].Double));
 
-                    cardCreator.AddTextCenter(accGrid[0].String == null ? Math.Round(float.Parse(accGrid[0].Double.ToString()), 2).ToString() : accGrid[0].String, System.Drawing.Color.White, 22, 750, 600);
-                    cardCreator.AddTextCenter(accGrid[1].String == null ? Math.Round(float.Parse(accGrid[1].Double.ToString()), 2).ToString() : accGrid[1].String, System.Drawing.Color.White, 22, 840, 600);
-                    cardCreator.AddTextCenter(accGrid[2].String == null ? Math.Round(float.Parse(accGrid[2].Double.ToString()), 2).ToString() : accGrid[2].String, System.Drawing.Color.White, 22, 930, 600);
-                    cardCreator.AddTextCenter(accGrid[3].String == null ? Math.Round(float.Parse(accGrid[3].Double.ToString()), 2).ToString() : accGrid[3].String, System.Drawing.Color.White, 22, 1020, 600);
+                    System.Drawing.Color createGridColor(double? value)
+                    {
+                        try
+                        {
+                            if (value == null) return System.Drawing.Color.Gray;
 
-                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 975, 380, 975, 650);
+                            var perPoint = 0.01 * 256 / (biggestAcc - smallestAcc);
+                            var x = (value - smallestAcc) * 100;
+                            var f = perPoint * x + 128;
 
-                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 705, 470, 1065, 470);
-                    cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 705, 580, 1065, 580);
+                            double r = 0;
+                            double g = 0;
+                            if (f <= 128)
+                            {
+                                r = 128;
+                                g = 0;
+                            }
+
+                            if (f > 128 && f <= 256)
+                            {
+                                r = 128;
+                                g = (double)f - 128;
+                            }
+                            if (f > 256)
+                            {
+                                r = 389 - (double)f;
+                                g = 128;
+                            }
+
+                            return System.Drawing.Color.FromArgb(120, Convert.ToInt32(r), Convert.ToInt32(g), 0);
+                        }
+                        catch (Exception ex)
+                        {
+                            return System.Drawing.Color.Gray;
+                        }
+                    }
+
+                    //Add Data to the grid
+                    cardCreator.AddTextCenter(accGrid[8].String == null ? Math.Round(float.Parse(accGrid[8].Double.ToString()), 1).ToString() : accGrid[8].String, System.Drawing.Color.White, 18, 750, 405);
+                    cardCreator.AddTextCenter(accGrid[9].String == null ? Math.Round(float.Parse(accGrid[9].Double.ToString()), 1).ToString() : accGrid[9].String, System.Drawing.Color.White, 18, 840, 405);
+                    cardCreator.AddTextCenter(accGrid[10].String == null ? Math.Round(float.Parse(accGrid[10].Double.ToString()), 1).ToString() : accGrid[10].String, System.Drawing.Color.White, 18, 930, 405);
+                    cardCreator.AddTextCenter(accGrid[11].String == null ? Math.Round(float.Parse(accGrid[11].Double.ToString()), 1).ToString() : accGrid[11].String, System.Drawing.Color.White, 18, 1020, 405);
+
+                    //cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 795, 380, 795, 650);
+
+                    cardCreator.AddTextCenter(accGrid[4].String == null ? Math.Round(float.Parse(accGrid[4].Double.ToString()), 2).ToString() : accGrid[4].String, System.Drawing.Color.White, 18, 750, 495);
+                    cardCreator.AddTextCenter(accGrid[5].String == null ? Math.Round(float.Parse(accGrid[5].Double.ToString()), 2).ToString() : accGrid[5].String, System.Drawing.Color.White, 18, 840, 495);
+                    cardCreator.AddTextCenter(accGrid[6].String == null ? Math.Round(float.Parse(accGrid[6].Double.ToString()), 2).ToString() : accGrid[6].String, System.Drawing.Color.White, 18, 930, 495);
+                    cardCreator.AddTextCenter(accGrid[7].String == null ? Math.Round(float.Parse(accGrid[7].Double.ToString()), 2).ToString() : accGrid[7].String, System.Drawing.Color.White, 18, 1020, 495);
+
+                    //cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 885, 380, 885, 650);
+
+                    cardCreator.AddTextCenter(accGrid[0].String == null ? Math.Round(float.Parse(accGrid[0].Double.ToString()), 2).ToString() : accGrid[0].String, System.Drawing.Color.White, 18, 750, 585);
+                    cardCreator.AddTextCenter(accGrid[1].String == null ? Math.Round(float.Parse(accGrid[1].Double.ToString()), 2).ToString() : accGrid[1].String, System.Drawing.Color.White, 18, 840, 585);
+                    cardCreator.AddTextCenter(accGrid[2].String == null ? Math.Round(float.Parse(accGrid[2].Double.ToString()), 2).ToString() : accGrid[2].String, System.Drawing.Color.White, 18, 930, 585);
+                    cardCreator.AddTextCenter(accGrid[3].String == null ? Math.Round(float.Parse(accGrid[3].Double.ToString()), 2).ToString() : accGrid[3].String, System.Drawing.Color.White, 18, 1020, 585);
+
+                    //cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 975, 380, 975, 650);
+
+                    //cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 705, 470, 1065, 470);
+                    //cardCreator.DrawLineBetweenPoints(System.Drawing.Color.Gray, 3, 705, 580, 1065, 580);
 
                     //if (hitGrid != null)
                     //{
@@ -1017,7 +1173,7 @@ namespace DiscordBeatSaberBot.Extensions
                 {
                     var clickables =
                   "\n" +
-                  $"[Download Map](https://beatsaver.com/{topSongsInfoBeatSaver?.DirectDownload}) - " +
+                  $"[Download Map](https://beatsaver.com{topSongsInfoBeatSaver?.DirectDownload}) - " +
                   $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={topSongsInfoBeatSaver?.Key}) - " +
                   $"[Song on Spotify]({await new Spotify().SearchItem(topSong.Name, topSong.SongAuthorName)})";
                     embedBuilder.AddField(topSong.GetDifficulty(), clickables);
@@ -1032,7 +1188,7 @@ namespace DiscordBeatSaberBot.Extensions
             }
         }
 
-            public static async Task<EmbedBuilder> GetNewTopSongWithScoresaberId(string playerId, int topsongNr = 1)
+        public static async Task<EmbedBuilder> GetNewTopSongWithScoresaberId(string playerId, int topsongNr = 1)
         {
             var url = $"https://new.scoresaber.com/api/player/{playerId}/scores/top/1";
             var embedBuilder = new EmbedBuilder();

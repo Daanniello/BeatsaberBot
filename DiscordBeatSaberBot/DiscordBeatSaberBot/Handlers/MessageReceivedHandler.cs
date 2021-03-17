@@ -41,10 +41,6 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     DutchServerCommands.RoleColor(discordSocketClient, message);
                 }
-                else if (messageCommand.Contains(" seal"))
-                {
-                    GlobalScoresaberCommands.Seal(discordSocketClient, message);
-                }
                 else if (messageCommand.Contains(" randomgif"))
                 {
                     GlobalScoresaberCommands.RandomGif(discordSocketClient, message);
@@ -56,10 +52,6 @@ namespace DiscordBeatSaberBot.Handlers
                 else if (messageCommand.Contains(" topsong"))
                 {
                     GlobalScoresaberCommands.NewTopSong(discordSocketClient, message);
-                }
-                else if (messageCommand.Contains(" search"))
-                {
-                    GlobalScoresaberCommands.NewSearch(discordSocketClient, message);
                 }
                 else if (messageCommand.Contains(" improve"))
                 {
@@ -89,19 +81,22 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     GenericCommands.Playing(discordSocketClient, message);
                 }
-
+                else if (messageCommand.Contains(" draw"))
+                {
+                    GlobalScoresaberCommands.Draw(discordSocketClient, message);
+                }
                 else if (messageCommand.Contains(" invite"))
                 {
                     GenericCommands.Invite(discordSocketClient, message);
                 }
-                else if (messageCommand.Contains(" comparetext"))
+                else if (messageCommand.Contains(" compare"))
                 {
                     GlobalScoresaberCommands.Compare(discordSocketClient, message);
                 }
-                else if (messageCommand.Contains(" compare"))
+                else if (messageCommand.Contains(" map"))
                 {
-                    GlobalScoresaberCommands.CompareNew(discordSocketClient, message);
-                }                      
+                    GlobalScoresaberCommands.Map(discordSocketClient, message);
+                }
                 else if (messageCommand.Contains(" unlink"))
                 {
                     DutchServerCommands.UnLinkScoresaberFromDiscord(discordSocketClient, message);
@@ -130,11 +125,6 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     GenericCommands.AchievementFeed(discordSocketClient, message);
                 }                
-                else if (messageCommand.Contains(" typing"))
-                {
-                    GlobalScoresaberCommands.Typing(discordSocketClient, message);
-                    message.DeleteAsync();
-                }
                 else if (messageCommand.Contains(" createrankmapfeed"))
                 {
                     GlobalScoresaberCommands.CreateRankMapFeed(discordSocketClient, message);
