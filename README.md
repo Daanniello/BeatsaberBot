@@ -1,4 +1,4 @@
-[logo](https://i.imgur.com/Veoor6q.png)
+![logo](https://i.imgur.com/Veoor6q.png)
 
 # BeatsaberBot
 The Discord Beat Saber bot helps Discord communities to have more interesting Beat Saber related content.
