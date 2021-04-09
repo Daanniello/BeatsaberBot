@@ -5,7 +5,7 @@ The Discord Beat Saber bot helps Discord communities to have more interesting Be
 The bot allows you to share and see others peoples achievements, settings and statistics easily. 
 
 
-[Add Beat Saber Bot to your server](https://discordapp.com/oauth2/authorize?&client_id=504633036902498314&scope=bot&permissions=0)
+[Add Beat Saber Bot to your server](https://discordapp.com/oauth2/authorize?&client_id=504633036902498314&scope=bot&permissions=2617637968)
 
 Join the discord server for more info [BeatSaber bot discord server](https://discord.gg/S3D3Yyu)
 
