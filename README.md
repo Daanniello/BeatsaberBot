@@ -1,8 +1,8 @@
 ![logo](https://i.imgur.com/Veoor6q.png)
 
 # BeatsaberBot
-The Discord Beat Saber bot helps Discord communities to have more interesting Beat Saber related content.
-The bot allows you to share and see others peoples achievements, settings and statistics easily. 
+The Beat Saber Discord bot helps Discord communities to have more interesting Beat Saber related content inside the servers.
+The bot allows you to share achievements, settings and statistics easily. 
 
 
 [Add Beat Saber Bot to your server](https://discordapp.com/oauth2/authorize?&client_id=504633036902498314&scope=bot&permissions=2617637968)
@@ -46,7 +46,7 @@ Usage: !bs statistics\
 ![Settings](https://i.imgur.com/7w08Ngw.png)\
 
 **Help**\
-**For all commands the bot provides. Use !bs help.**\
+**For all the provided commands, Use !bs help.**\
 Usage: !bs help or !bs help <function name>\
 ![Help](https://i.imgur.com/s8Ax18o.png)
 
