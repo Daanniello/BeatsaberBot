@@ -133,7 +133,7 @@ namespace DiscordBeatSaberBot
             return false;
         }
 
-        public async Task<string> GetScoresaberIdWithDiscordId(string DiscordId)
+        public static async Task<string> GetScoresaberIdWithDiscordId(string DiscordId)
         {
             try
             {

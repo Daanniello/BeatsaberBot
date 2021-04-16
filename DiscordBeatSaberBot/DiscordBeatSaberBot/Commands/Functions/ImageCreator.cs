@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,13 +39,13 @@ namespace DiscordBeatSaberBot
 
         public SizeF AddTextCenter(string text, Color color, int fontsize, float x, float y)
         {
-            
+
 
             using (Font arialFont = new Font("Tourmaline", fontsize))
             using (Graphics graphics = Graphics.FromImage(_bitmap))
             {
                 var length = graphics.MeasureString(text, arialFont);
-                PointF firstLocation = new PointF(x - (length.Width / 2 ), y);
+                PointF firstLocation = new PointF(x - (length.Width / 2), y);
 
                 graphics.DrawString(text, arialFont, new SolidBrush(color), firstLocation);
                 return length;
@@ -52,7 +53,7 @@ namespace DiscordBeatSaberBot
         }
 
         public SizeF AddTextFloatRight(string text, Color color, int fontsize, float x, float y)
-        {          
+        {
             using (Font arialFont = new Font("Tourmaline", fontsize))
             using (Graphics graphics = Graphics.FromImage(_bitmap))
             {
@@ -62,10 +63,50 @@ namespace DiscordBeatSaberBot
             }
         }
 
+        public void AddAccGraph(int x, int y, int width, int height, Dictionary<float, float> dataPoints, float dataPointxMax, float dataPointyMax, Color color, float zoomIn = 1)
+        {
+            if (zoomIn != 1)
+            {
+                dataPointxMax = dataPointxMax / zoomIn;
+                dataPointyMax = dataPointyMax / zoomIn;
+                dataPoints = dataPoints.ToDictionary(x => x.Key / zoomIn, x => x.Value / zoomIn);
+            }
+
+            using (Graphics graphics = Graphics.FromImage(_bitmap))
+            {
+                //Drawing the background of the graph
+                var precisionLineJump = height / 5;
+                var precisionPointXJump = (dataPointyMax * 100) / 5; // times 100 for the acc graph...
+                for (var t = 0; t <= 5; t++)
+                {
+                    AddTextFloatRight(Math.Round(100 - ((dataPointyMax * 100) /* times 100 for the acc graph... */ - (precisionPointXJump * t)), 2).ToString() + "%", Color.White, 12, x - 400, (y + height - precisionLineJump * t) - 11);
+                    //graphics.DrawString(Math.Round(100 - ((dataPointyMax * 100) /* times 100 for the acc graph... */ - (precisionPointXJump * t)), 2).ToString() + "%", new Font("Tourmaline", 12), new SolidBrush(color), new PointF(x - 60, (y + height - precisionLineJump * t) - 15));
+                    graphics.DrawLine(new Pen(Color.Gray, 3), x, y + height - precisionLineJump * t, x + width, y + height - precisionLineJump * t);
+                }
+
+                //Drawing the graph points
+                for (var i = 0; i < dataPoints.Count; i++)
+                {
+                    if (i == dataPoints.Count - 1) break;
+                    var x1 = x + (dataPoints.ElementAt(i).Key * width / dataPointxMax);
+                    var y1 = y + (height * zoomIn) - (dataPoints.ElementAt(i).Value * (height * zoomIn) / dataPointyMax);
+                    var x2 = x + (dataPoints.ElementAt(i + 1).Key * width / dataPointxMax);
+                    var y2 = y + (height * zoomIn) - (dataPoints.ElementAt(i + 1).Value * (height * zoomIn) / dataPointyMax);
+
+                    var pointOne = new PointF(x1, y1);
+                    var pointTwo = new PointF(x2, y2);
+
+                    graphics.DrawLine(new Pen(color, 2), pointOne, pointTwo);
+
+                }
+            }
+
+        }
+
         public void AddImage(string path, float x, float y, int width, int height, float opacity = 1)
         {
             Image overlayImage = null;
-    
+
             WebRequest request;
             try
             {
@@ -87,7 +128,7 @@ namespace DiscordBeatSaberBot
             }
 
             Graphics g = Graphics.FromImage(_bitmap);
-            
+
             g.DrawImage(SetImageOpacity(overlayImage, opacity), x, y, width, height);
         }
 
@@ -120,7 +161,7 @@ namespace DiscordBeatSaberBot
                 return bmp;
             }
             catch (Exception ex)
-            {                
+            {
                 return null;
             }
         }
@@ -138,19 +179,20 @@ namespace DiscordBeatSaberBot
             using (Graphics graphics = Graphics.FromImage(_bitmap))
             {
                 graphics.DrawLine(Pen, point1, point2);
-            }                
+            }
         }
 
         public void DrawRectangle(int x, int y, int with, int height, Color? fillColor = null, Color? outerColor = null)
         {
             // Create pen.
             SolidBrush brush = new SolidBrush(Color.White);
-            if (fillColor != null) {
-                brush = new SolidBrush((Color)fillColor); 
+            if (fillColor != null)
+            {
+                brush = new SolidBrush((Color)fillColor);
             }
 
             Pen pen = new Pen(Color.Gray, 3);
-            if(outerColor != null)
+            if (outerColor != null)
             {
                 pen = new Pen((Color)outerColor, 3);
             }
@@ -188,7 +230,7 @@ namespace DiscordBeatSaberBot
                 {
                     overlayImage = Bitmap.FromStream(stream);
                 }
-            }            
+            }
 
             Graphics g = Graphics.FromImage(_bitmap);
 

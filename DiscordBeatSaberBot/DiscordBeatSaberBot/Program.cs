@@ -13,6 +13,7 @@ using DiscordBeatSaberBot.Config;
 using DiscordBeatSaberBot.Api.GiphyApi;
 using DiscordBeatSaberBot.Api.Spotify;
 using DiscordBeatSaberBot.Api.BeatSaviourApi;
+using DiscordBeatSaberBot.Commands.Functions;
 
 namespace DiscordBeatSaberBot
 {
@@ -22,7 +23,8 @@ namespace DiscordBeatSaberBot
         private Dictionary<string, string> _reactionWatcher = ReactionRolesConfig.GetReactionRoles();
         private DateTime _startTime;
         private DiscordSocketClient discordSocketClient;
-        private bool hasBeenInitialized = false; 
+        private bool hasBeenInitialized = false;
+        public int commandsEachHour = 0;
 
         public static void Main(string[] args)
         {                  
@@ -31,12 +33,12 @@ namespace DiscordBeatSaberBot
 
         public async void Unhandled_Exception(object sender, dynamic e)
         {
-            await _logger.Log(Logger.LogCode.error, e.ExceptionObject.ToString());
+            await _logger.Log(Logger.LogCode.error, e.ExceptionObject.ToString(), null, "Unhandled_Exception");
         }
 
         public async void Unhandled_TaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
-            await _logger.Log(Logger.LogCode.error, e.ToString());
+            await _logger.Log(Logger.LogCode.error, e.Exception.Message + "\n\n" + e.Exception.InnerException.ToString(), null, "Unhandled_TaskException");
             e.SetObserved();
         }
 
@@ -103,7 +105,7 @@ namespace DiscordBeatSaberBot
                     var stats = await new ScoresaberAPI("76561198033166451").GetPlayerFull();
                     await guild.GetCategoryChannel(780597859527557130).ModifyAsync(x => x.Name = $"Rank: #{stats.playerInfo.rank} | PP: {stats.playerInfo.Pp}");
                 }
-                updater.Start(() => updateServersAndUsersCount(), "Discord server and user count", 5, 0, 0);
+                updater.Start(() => updateServersAndUsersCount(), "Discord server and user count", 1, 0, 0);
                 Task updateServersAndUsersCount()
                 {
                     var guild = discordSocketClient.GetGuild(731936395223892028);
@@ -111,6 +113,9 @@ namespace DiscordBeatSaberBot
                     var userCount = 0;
                     foreach (var g in discordSocketClient.Guilds) userCount += g.MemberCount;
                     guild.GetTextChannel(770821486914437120).ModifyAsync(x => x.Name = $"user-count: {userCount}");
+
+                    guild.GetTextChannel(821918821076959232).ModifyAsync(x => x.Name = $"Call-each-hour: {commandsEachHour}");
+                    commandsEachHour = 0;
                     return Task.CompletedTask;
                 }
                 //updater.Start(() => DutchRankFeed.GetScoresaberLiveFeed(discordSocketClient), "ScoresaberLiveFeed", 0, 0, 20);
@@ -122,7 +127,7 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
-                _logger.Log(Logger.LogCode.error, "Init Exception!! \n" + ex);
+                _logger.Log(Logger.LogCode.error, "Init Exception!! \n" + ex, null, "Init_Exception");
             }           
         }
 
@@ -148,7 +153,7 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
-                _logger.Log(Logger.LogCode.error, ex.ToString());
+                _logger.Log(Logger.LogCode.error, ex.ToString(), null, "ReactionAddedException");
             }
         }
 
@@ -160,7 +165,7 @@ namespace DiscordBeatSaberBot
             }
             catch (Exception ex)
             {
-                _logger.Log(Logger.LogCode.error, ex.ToString());
+                _logger.Log(Logger.LogCode.error, ex.ToString(), null, "ReactionRemovedException");
             }
         }
 
@@ -168,13 +173,12 @@ namespace DiscordBeatSaberBot
         {      
             try
             {
-                new MessageReceivedHandler().HandleMessage(discordSocketClient, message, this);
+                await new MessageReceivedHandler().HandleMessage(discordSocketClient, message, this);
             }
             catch (Exception ex)
             {
                 //If a command fails its job. return a message to the user and log the error.
                 Console.WriteLine(ex);
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", ex.Message, null, null).Build());
                 await _logger.Log(Logger.LogCode.error, ex.ToString());  
             }
         }

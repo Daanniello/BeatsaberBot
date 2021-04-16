@@ -5,6 +5,7 @@ using Discord;
 using DiscordBeatSaberBot.Extensions;
 using System.Net.Http;
 using System.Net;
+using DiscordBeatSaberBot.Commands.Functions;
 
 namespace DiscordBeatSaberBot.Commands
 {
@@ -51,55 +52,30 @@ namespace DiscordBeatSaberBot.Commands
                 await message.Channel.SendMessageAsync("Please don't touch this command you normie");
             }            
         }
-        
-        [Discord.Commands.RequireOwner]
-        [Help("CreateAchievementFeed", "Creates the current channel to an achievementfeed channel", "!bs createachievementfeed", HelpAttribute.Catergories.AdminCommands)]
-        static public async Task CreateAchievementFeed(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            var chnl = message.Channel as SocketGuildChannel; 
-            await DatabaseContext.ExecuteInsertQuery($"Insert into AchievementFeedSettings (GuildId, ChannelId) values ({chnl.Guild.Id}, {chnl.Id})");
-            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"This channel is now an achievement-feed channel", "Use [!bs achievmentfeed] to be shown in the achievement-feed").Build());
-        }
 
-        [Help("AchievementFeedtest", "Adds you to the achievementsfeed in the current discord server", "!bs achievementfeedtest", HelpAttribute.Catergories.BotFunctions)]
-        static public async Task AchievementFeedTest(DiscordSocketClient discordSocketClient, SocketMessage message)
+        [Help("statistics", "Shows statistics from beat saber players", "`!bs statistics`", HelpAttribute.Catergories.BotFunctions)]
+        static public async Task Statistics(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            var discordId = message.Author.Id;
-            var r = new RoleAssignment(discordSocketClient);
-            var scoresaberId = await r.GetScoresaberIdWithDiscordId(discordId.ToString());
-            if (scoresaberId != "")
-            {
-               //todo
-            }
-            else
-            {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Not linked yet", "You are not linked with the bot yet. Type !bs link [ScoresaberID] to link your scoresaber with discord.").Build());
-            }
-        }
+            var statistics = new Statistics(message);
 
-        [Help("AchievementFeed", "Adds you to the achievementsfeed in Silverhazes discord", "!bs achievement", HelpAttribute.Catergories.BotFunctions)]
-        static public async Task AchievementFeed(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            var discordId = message.Author.Id;
-            var r = new RoleAssignment(discordSocketClient);
-            var scoresaberId = await r.GetScoresaberIdWithDiscordId(discordId.ToString());
-            if(scoresaberId != "")
-            {
-                try
-                {
-                    await DatabaseContext.ExecuteInsertQuery($"Insert into ServerSilverhazeAchievementFeed (ScoreSaberId) values ('{scoresaberId}')");
-                }
-                catch
-                {
-                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"Errorrrrr", "are you already in the feed?").Build());
-                }
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"Successfully added with {scoresaberId}", "Your achievements will now be shown in the achievement channel").Build());
+            var type = await statistics.Start(message);
+            //Create statistics image
+            var categoryType = await statistics.CreateSelectedType(type);
 
-            }
-            else
+            if(categoryType.Item1 == Functions.Statistics.category.Error || categoryType.Item2 == Functions.Statistics.type.Error)
             {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Not linked yet", "You are not linked with the bot yet. Type !bs link [ScoresaberID] to link your scoresaber with discord.").Build());
-            }            
+                await message.Channel.SendMessageAsync($"", false, EmbedBuilderExtension.NullEmbed("Error", "Could not collect data").Build());
+                return;
+            }
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"Category: {categoryType.Item1}",
+                Description = "*Contribute with \n`!bs settings create` \nif you want to help out this data collection.*",
+                ImageUrl = $"attachment://piechart-{categoryType.Item1}-{categoryType.Item2}.png"
+            }.Build();
+            await message.Channel.SendFileAsync($"../../../Resources/img/piechart-{categoryType.Item1}-{categoryType.Item2}.png", embed: embed);
+
         }
 
         [Help("Number", "Gives random info about a number", "!bs number (x)", HelpAttribute.Catergories.BotFunctions)]

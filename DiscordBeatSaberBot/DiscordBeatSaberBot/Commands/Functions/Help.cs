@@ -67,13 +67,13 @@ namespace DiscordBeatSaberBot
                                 " servers with a total of " + userCount + " users*\n",
                         Fields = embedArray.ToList(),
                         ThumbnailUrl =
-                            "https://cdn.discordapp.com/app-icons/504633036902498314/8640cf47aeac6cf7fd071e111467cac5.png?size=512",
+                            "https://cdn.discordapp.com/icons/731936395223892028/0c8bb286f1864f5ff4a917e9423ff5a6.png?size=512",
                         Color = Color.Gold,
                         Footer = new EmbedFooterBuilder
                         {
                             Text = "created by: @SilverHaze#0001",
                             IconUrl =
-                                "https://cdn.discordapp.com/avatars/138439306774577152/a_ece649bd8de91e0cd338bd47e5eabc87.png"
+                                "https://cdn.discordapp.com/avatars/138439306774577152/1084ee232303df04772bf68f1d41ef83.png"
                         }
                     });
                 }

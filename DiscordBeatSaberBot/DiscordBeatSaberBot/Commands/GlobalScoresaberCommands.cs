@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
+using DiscordBeatSaberBot.Api.BeatSaverApi;
 using DiscordBeatSaberBot.Api.GiphyApi;
 using DiscordBeatSaberBot.Api.Spotify;
+using DiscordBeatSaberBot.Api.TenorApi;
+using DiscordBeatSaberBot.Commands.Functions;
 using DiscordBeatSaberBot.Extensions;
 using GiphyDotNet.Model.Parameters;
 
@@ -24,10 +27,45 @@ namespace DiscordBeatSaberBot.Commands
             BeatSaberCardCollection.DrawAndSendRandomCard(message);
         }
 
+        [Help("Settings", "Show your own or someone else his Beat Saber settings and more", "\n`!bs settings` shows your own settings page \n`!bs settings @Silverhaze` shows the settings page from silverhaze \n`!bs settings 76561198033166451` shows the page from silverhaze. \n`!bs settings edit` edits a certain setting. \n`!bs settings create` creates your own settings page. \n`!bs settings remove` removes your page", HelpAttribute.Catergories.General)]
+        public static async Task Settings(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            new Settings(discordSocketClient, message);
+        }
+
+        [Help("Playlist", "Creates a playlist based of key codes as input", "`!bs playlist create`", HelpAttribute.Catergories.General)]
+        public static async Task Playlist(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var parameter = message.Content.Substring(13).Trim();
+
+            if(parameter == "create")
+            {
+                var playlistModel = await Functions.Playlist.AskQuestions(message);
+                var path = Functions.Playlist.Create(playlistModel);
+                await message.Channel.SendFileAsync(path, text: "Done! You can download your file here");
+                File.Delete(path);
+            }
+        }
+
+        [Help("QualifiedMaps", "Shows all the current qualified maps", "`!bs qualifiedmaps`", HelpAttribute.Catergories.General)]
+        public static async Task QualifiedMaps(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var maps = await ScoresaberAPI.GetQualifiedMaps();
+            var description = "";
+            var qualifiedmaps = maps.Songs.Where(x => x.Ranked == 0);            
+            foreach (var map in qualifiedmaps)
+            {
+                if (description.Length > 2000) continue;
+                description += $"[link](https://scoresaber.com/leaderboard/{map.Uid}) | {map.SongAuthorName} - {map.Name} by {map.LevelAuthorName} \n";
+            }
+
+            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Qualified Maps", $"{description}").Build());
+        }
+
         [Help("Compare", "Compares two player's stats with each other.", "!bs compare (DiscordTag or ID player1) (DiscordTag or ID player2)", HelpAttribute.Catergories.General)]
         public static async Task Compare(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            var embedBuilder = await BeatSaberInfoExtension.GetComparedEmbedBuilderNew(message.Content.Substring(12), message, discordSocketClient);
+            var embedBuilder = await BeatSaberInfoExtension.GetComparedEmbedBuilderNew(message.Content.Substring(11).Trim(), message, discordSocketClient);
             if (embedBuilder != null) await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
         }
 
@@ -56,7 +94,7 @@ namespace DiscordBeatSaberBot.Commands
 
             if (await r.CheckIfDiscordIdIsLinked(discordId))
             {
-                var scoresaberId = await r.GetScoresaberIdWithDiscordId(discordId);
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(discordId);
 
                 await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(scoresaberId, message, n);
             }
@@ -72,7 +110,7 @@ namespace DiscordBeatSaberBot.Commands
                 }
                 if (userId != "")
                 {
-                    discordId = await r.GetScoresaberIdWithDiscordId(userId);
+                    discordId = await RoleAssignment.GetScoresaberIdWithDiscordId(userId);
                     if (discordId == "")
                     {
                         await message.Channel.SendMessageAsync("", false,
@@ -104,7 +142,7 @@ namespace DiscordBeatSaberBot.Commands
             var r = new RoleAssignment(discordSocketClient);
             if (await r.CheckIfDiscordIdIsLinked(discordId) && content.Count() == 11)
             {
-                var scoresaberId = await r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
 
                 await BeatSaberInfoExtension.GetNewTopSongWithScoresaberIdNew(scoresaberId, message, n);
 
@@ -122,7 +160,7 @@ namespace DiscordBeatSaberBot.Commands
 
                 if (userId != "")
                 {
-                    discordId = await r.GetScoresaberIdWithDiscordId(userId);
+                    discordId = await RoleAssignment.GetScoresaberIdWithDiscordId(userId);
                     if (discordId == "")
                     {
                         await message.Channel.SendMessageAsync("", false,
@@ -138,32 +176,17 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("CreateRankMapFeed", "Creates a ranmap feed. Topqueue, qualified maps and recent ranked maps as feed", "Do this in a empty channel! no people are allowed to talk in there.", HelpAttribute.Catergories.AdminCommands)]
-        public static async Task CreateRankMapFeed(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            var chnl = message.Channel as SocketGuildChannel;
-            var guild = chnl.Guild;
-            if (message.Author.Id == guild.OwnerId)
-            {
-                await message.DeleteAsync();
-                new ScoresaberRankMapsFeed(discordSocketClient).CreateRankmapFeed(guild.Id, chnl.Id);
-            }
-            else
-            {
-                var msg = await message.Channel.SendMessageAsync("Only the owner of the server can call this command.");
-                await Task.Delay(3000);
-                await msg.DeleteAsync();
-            }
-        }
-
         [Help("Improve", "Gives you a list of scoresaber maps to improve on", "!bs improve", HelpAttribute.Catergories.General)]
         public static async Task Improve(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
             if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
             {
-                var scoresaberId = await r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                var embedBuilder = await BeatSaberInfoExtension.GetImprovableMapsByAccFromToplist(scoresaberId, Convert.ToDouble(message.Content.Substring(12)));
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var acc = message.Content.Substring(11).Trim();
+                double doubleAcc = 0;
+                if (acc != "") doubleAcc = Convert.ToDouble(acc);
+                var embedBuilder = await BeatSaberInfoExtension.GetImprovableMapsByAccFromToplist(scoresaberId, doubleAcc);
                 message.Channel.SendMessageAsync("", false, embedBuilder.Build());
             }
 
@@ -177,7 +200,7 @@ namespace DiscordBeatSaberBot.Commands
             var r = new RoleAssignment(discordSocketClient);
             if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
             {
-                var scoresaberId = await r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
                 await BeatSaberInfoExtension.GetAndCreateProfileImage(scoresaberId);
                 await message.Channel.SendFileAsync($"../../../Resources/img/RankingCard_{scoresaberId}.png");
                 File.Delete($"../../../Resources/img/RankingCard_{scoresaberId}.png");
@@ -194,7 +217,7 @@ namespace DiscordBeatSaberBot.Commands
             var r = new RoleAssignment(discordSocketClient);
             if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
             {
-                var scoresaberId = await r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
                 //Create UserCard
                 await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, "Recentsongs");
                 await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberId);
@@ -215,7 +238,7 @@ namespace DiscordBeatSaberBot.Commands
             var r = new RoleAssignment(discordSocketClient);
             if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
             {
-                var scoresaberId = await r.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
                 //Create UserCard
                 await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, "Topsongs");
                 await BeatSaberInfoExtension.GetAndCreateTopsongsCardImage(scoresaberId);
@@ -230,15 +253,15 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("randomgif", "Gives a random gif from a parameter", "!bs randomgif [parameter]", HelpAttribute.Catergories.General)]
-        public static async Task RandomGif(DiscordSocketClient discordSocketClient, SocketMessage message)
+        [Help("randomcringe", "Gives a random gif from giphy.", "`!bs randomcringe [parameter]` \nShows nsfw if its in a nsfw channel.", HelpAttribute.Catergories.General)]
+        public static async Task RandomCringe(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
 
             var ch = message.Channel as SocketTextChannel;
             var rating = Rating.G;
             if (ch.IsNsfw) rating = Rating.R;
 
-            var parameter = message.Content.Substring(14);
+            var parameter = message.Content.Substring(16).Trim();
             var link = await new Giphy().SearchParameter(parameter, rating);
             if (link == null)
             {
@@ -246,6 +269,29 @@ namespace DiscordBeatSaberBot.Commands
                 return;
             }
             await message.Channel.SendMessageAsync(link);
+        }
+
+        [Help("randomgif", "Gives a random gif from tenor.", "`!bs randomgif [parameter]` \nShows nsfw if its in a nsfw channel.", HelpAttribute.Catergories.General)]
+        public static async Task RandomGif(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var ch = message.Channel as SocketTextChannel;
+
+            var parameter = message.Content.Substring(13).Trim();
+
+            if (parameter == "") parameter = null;
+
+            var filter = Tenor.Schema.ContentFilter.Medium;
+            if (ch.IsNsfw) filter = Tenor.Schema.ContentFilter.Off;
+
+            var link = await TenorApi.GetGif(filter, parameter);
+            if (link == null)
+            {
+                await message.Channel.SendMessageAsync("https://media1.tenor.com/images/6a22b36d7658ceb0d6984bf28c759100/tenor.gif?itemid=10902527");
+            }
+            else
+            {
+                await message.Channel.SendMessageAsync(link);
+            }
         }
     }
 }

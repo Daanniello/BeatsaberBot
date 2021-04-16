@@ -1,6 +1,7 @@
 ﻿using Discord.WebSocket;
 using GiphyDotNet;
 using GiphyDotNet.Model.Parameters;
+using GiphyDotNet.Model.Results;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,7 +15,13 @@ namespace DiscordBeatSaberBot.Api.GiphyApi
 
         public Giphy()
         {
-            _giphy = new GiphyDotNet.Manager.Giphy("ewKEoFkgHEn6TXJyi1J8t2rcZANDIaC6");
+            Init().Wait();
+        }
+
+        public async Task Init()
+        {
+            var loginCode = await DatabaseContext.ExecuteSelectQuery("Select * from Settings");
+            _giphy = new GiphyDotNet.Manager.Giphy((string)loginCode[0][4]);
         }
 
         public async Task<string> SearchParameter(string parameter, Rating rating = Rating.G)
@@ -28,9 +35,18 @@ namespace DiscordBeatSaberBot.Api.GiphyApi
                 Offset = offset,
                 Limit = 5
             };
+
+            if (parameter == "")
+            {
+                var result = await _giphy.RandomGif(new RandomParameter() { Rating = rating });
+                return result.Data.ImageOriginalUrl;
+            }
+
             var gifResult = await _giphy.GifSearch(searchParameter);
 
-            if (gifResult.Pagination.Offset > gifResult.Pagination.TotalCount) {
+
+            if (gifResult.Pagination.Offset > gifResult.Pagination.TotalCount)
+            {
                 offset = gifResult.Pagination.TotalCount - 50;
                 if (offset < 0) offset = 0;
                 gifResult = await _giphy.GifSearch(new SearchParameter()
@@ -53,7 +69,7 @@ namespace DiscordBeatSaberBot.Api.GiphyApi
 
         public async Task PostTrendingGif(DiscordSocketClient discord, ulong guildId, ulong channelId)
         {
-            var trendingGif = await _giphy.TrendingGifs(new TrendingParameter() { Rating = Rating.G});
+            var trendingGif = await _giphy.TrendingGifs(new TrendingParameter() { Rating = Rating.G });
 
             var channel = discord.GetGuild(guildId).GetTextChannel(channelId);
 

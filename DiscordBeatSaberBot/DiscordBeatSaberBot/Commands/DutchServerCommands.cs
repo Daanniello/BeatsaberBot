@@ -16,32 +16,6 @@ namespace DiscordBeatSaberBot.Commands
 {
     class DutchServerCommands : ICommand
     {
-        [Help("RoleColor", "If you have the dutch 'verslaafd' role, you can chance the color of it.", "!bs rolecolor (#ffffff)", HelpAttribute.Catergories.DutchFunctions)]
-        static public async Task RoleColor(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            var moderationHelper = new GuildService(discordSocketClient, 505485680344956928);
-            if (await moderationHelper.UserHasRole(message.Author, "Staff") || await moderationHelper.UserHasRole(message.Author, "Verslaafd"))
-            {
-                var roles = discordSocketClient.GetGuild(505485680344956928).Roles;
-                var role = roles.FirstOrDefault(r => r.Name == "Verslaafd");
-                try
-                {
-                    var hexcode = message.Content.Split(" ")[2].Trim();
-                    var colorConverter = new ColorConverter();
-                    dynamic color = colorConverter.ConvertFromString(hexcode);
-                    await role.ModifyAsync(r => r.Color = new Color(color.R, color.G, color.B));
-                    await message.Channel.SendMessageAsync("Color has been changed");
-                }
-                catch
-                {
-                    await message.Channel.SendMessageAsync("Error: Color is not correct");
-                }
-            }
-            else
-            {
-                await message.Channel.SendMessageAsync("You do not have permission");
-            }
-        }
 
         [Help("UpdateRoles", "Update roles from everyone in the dutch beat saber discord", "!bs updateroles", HelpAttribute.Catergories.AdminCommands)]
         static public async Task UpdateRoles(DiscordSocketClient discordSocketClient, SocketMessage message)
@@ -58,17 +32,6 @@ namespace DiscordBeatSaberBot.Commands
             {
                 await message.Channel.SendMessageAsync("You are not allowed to use this command.");
             }
-        }
-
-        [Help("ChangeColor", "If you have the dutch 'verslaafd' role, you can chance the color of it.", "!bs changecolor (#ffffff)", HelpAttribute.Catergories.DutchFunctions)]
-        static public async Task ChangeColor(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            if (true)
-                await message.Channel.SendMessageAsync("", false, new EmbedBuilder
-                {
-                    Title = "Je bent niet gemachtigt om je kleur aan te passen.",
-                    Description = "Win het weekelijkse 'meeste uren event' om deze functie te krijgen"
-                }.Build());
         }
 
         [Help("IRLevent", "Creates and IRL Event for the dutch discord.", "!bs irlevent", HelpAttribute.Catergories.AdminCommands)]
@@ -113,7 +76,12 @@ namespace DiscordBeatSaberBot.Commands
             }
             else
             {
-                var ScoresaberId = message.Content.Substring(9);
+                var ScoresaberId = message.Content.Substring(8).Trim();
+                if(ScoresaberId == "")
+                {
+                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Format error", $"you would have to add your scoresaberID. use it like `!bs link https://scoresaber.com/u/76561198033166451`").Build());
+                    return;
+                }
                 ScoresaberId = Regex.Replace(ScoresaberId, "[^0-9]", "");
 
                 if (!ValidationExtension.IsDigitsOnly(ScoresaberId))

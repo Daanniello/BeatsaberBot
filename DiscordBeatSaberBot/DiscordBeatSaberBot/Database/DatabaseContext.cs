@@ -89,10 +89,10 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        private static void QueryCheck(string query)
+        public static string QueryCheck(string query)
         {
-
-
+            var validated = query.Replace("'", "`").Replace(";", "");
+            return validated;
         }
 
     }

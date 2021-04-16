@@ -58,8 +58,10 @@ namespace DiscordBeatSaberBot
                     ThumbnailUrl = "https://cdn.discordapp.com/avatars/504633036902498314/8640cf47aeac6cf7fd071e111467cac5.png?size=256"
                 };
                 var embed = embedBuilder.Build();
-                await dmChannel.SendFileAsync(AppDomain.CurrentDomain.BaseDirectory + "\\NLBS.png");
-                await dmChannel.SendMessageAsync("", false, embed);
+
+                //TODO MAAK BETERE WELKOM DM MESSAGE
+                //await dmChannel.SendFileAsync(AppDomain.CurrentDomain.BaseDirectory + "\\NLBS.png");
+                //await dmChannel.SendMessageAsync("", false, embed);
 
                 var userDescription = "Geen extra informatie";
                 var interviewData = await DatabaseContext.ExecuteSelectQuery($"Select * from PlayerInterview where DiscordId={guildUser.Id}");

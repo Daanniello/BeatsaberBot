@@ -51,7 +51,7 @@ namespace DiscordBeatSaberBot.Handlers
 
                 if (latestMessage.Content.ToLower().Contains("ja") && latestMessage.Author.Id == _discordId)
                 {
-                    StartInterview();
+                    await StartInterview();
                     await latestMessage.DeleteAsync();                    
                     hasReacted = true;
                 }
@@ -66,7 +66,7 @@ namespace DiscordBeatSaberBot.Handlers
             return;
         }
 
-        public async void StartInterview()
+        public async Task StartInterview()
         {
             var embed = EmbedBuilderExtension.NullEmbed("Info", "Je kunt vragen skippen door 'skip' te antwoorden. Na 20 minuten bij het niet antwoorden van een vraag stopt het interview automatisch. Het interview start in 3 seconden..", null, null);
             await _interviewEmbed.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("Info", "Je kunt vragen skippen door 'skip' te antwoorden. Het interview start in 3 seconden..", null, null).Build());
@@ -119,7 +119,21 @@ namespace DiscordBeatSaberBot.Handlers
 
         public async void uploadAnswers()
         {
-            await DatabaseContext.ExecuteInsertQuery($"insert into PlayerInterview(DiscordId,vraag1,vraag2,vraag3,vraag4,vraag5,vraag6) values({_discordId},'{_interviewAnswers[0]}','{_interviewAnswers[1]}','{_interviewAnswers[2]}','{_interviewAnswers[3]}','{_interviewAnswers[4]}','{_interviewAnswers[5]}')");
+            try
+            {
+                var isInDatabase = await DatabaseContext.ExecuteSelectQuery($"SELECT * FROM PlayerInterview WHERE DiscordId = {_discordId}");
+                if (isInDatabase.Count() > 0)
+                {
+                    await DatabaseContext.ExecuteInsertQuery($"Update PlayerInterview SET vraag1 = '{_interviewAnswers[0]}', vraag2 = '{_interviewAnswers[1]}', vraag3 = '{_interviewAnswers[2]}', vraag4 = '{_interviewAnswers[3]}', vraag5 = '{_interviewAnswers[4]}', vraag6 = '{_interviewAnswers[5]}' WHERE DiscordId = {_discordId}");
+                }
+                else
+                {
+                    await DatabaseContext.ExecuteInsertQuery($"insert into PlayerInterview(DiscordId,vraag1,vraag2,vraag3,vraag4,vraag5,vraag6) values({_discordId},'{_interviewAnswers[0]}','{_interviewAnswers[1]}','{_interviewAnswers[2]}','{_interviewAnswers[3]}','{_interviewAnswers[4]}','{_interviewAnswers[5]}')");
+                }
+            }
+            catch
+            {
+            }
         }
     }
 }

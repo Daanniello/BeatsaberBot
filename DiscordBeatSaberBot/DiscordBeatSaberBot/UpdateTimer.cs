@@ -54,7 +54,7 @@ namespace DiscordBeatSaberBot
                 }
                 catch (Exception ex)
                 {
-                    _logger.Log(Logger.LogCode.error, ex.ToString());
+                    await _logger.Log(Logger.LogCode.error, ex.ToString(), null, methodName);
                 }
                 await Task.Delay(timespan);
             }
