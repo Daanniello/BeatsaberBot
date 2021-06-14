@@ -145,6 +145,60 @@ namespace DiscordBeatSaberBot.Commands.Functions
             await _message.Channel.SendMessageAsync("", false, embed.Build());
         }
 
+        public static async Task<bool> HasSettingsPage(string scoresaberID)
+        {
+            var results = await DatabaseContext.ExecuteSelectQuery($"select * from UserBeatSaberSettings where ScoreSaberID={scoresaberID}");
+            if (results.Count() > 0) return true;
+            return false;
+        }
+
+        public static async Task<Embed> GetSettingsPageWithScoresaberID(string scoresaberID)
+        {
+            var playerFull = await new ScoresaberAPI(scoresaberID).GetPlayerFull();
+            var results = await DatabaseContext.ExecuteSelectQuery($"select * from UserBeatSaberSettings where ScoreSaberID={playerFull.playerInfo.PlayerId}");
+            if (results.Count() == 0) return null;
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"Beat Saber Settings from {playerFull.playerInfo.Name} :flag_{playerFull.playerInfo.Country.ToLower()}:",
+                ThumbnailUrl = "https://new.scoresaber.com" + playerFull.playerInfo.Avatar,
+                Url = "https://scoresaber.com/u/" + playerFull.playerInfo.PlayerId,
+                Footer = new EmbedFooterBuilder() { Text = "use (!bs settings create) to create your own settings page" }
+            };
+
+            var items = results.First();
+            for (var x = 0; x < items.Count(); x++)
+            {
+                if (items[x].ToString().Trim() == "") results.First()[x] = "-";
+            }
+
+            embed.AddField("Personal info", $"" +
+                $"Age: ***{results[0][13]}*** \n" +
+                $"Height: ***{results[0][14]}*** \n" +
+                $"Weight: ***{results[0][15]}*** \n" +
+                $"Gender: ***{results[0][16]}*** \n");
+
+            embed.AddField("Hardware", $"" +
+                $"Headset: ***{results[0][11]}*** \n" +
+                $"Controllers: ***{results[0][12]}*** \n");
+
+            embed.AddField("Settings", $"" +
+                $"Left Controller: ***{results[0][9]}*** \n" +
+                $"Right Controller: ***{results[0][10]}*** \n" +
+                $"Sabers: ***{results[0][1]}*** \n" +
+                $"FAV Mods: ***{results[0][6]}*** \n" +
+                $"Custom Notes: ***{results[0][5]}*** \n" +
+                $"Avatar: ***{results[0][0]}*** \n" +
+                $"Platform: ***{results[0][4]}*** \n" +
+                $"In-Game height: ***{results[0][17]}*** \n" +
+                $"Note Color RGB Left: ***{results[0][7]}*** \n" +
+                $"Note Color RGB Right: ***{results[0][8]}*** \n");
+
+            embed.AddField("Description", $"{results[0][18]}");
+
+            return embed.Build();
+        }
+
         public async Task Edit()
         {
             var scoreSaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(_message.Author.Id.ToString());

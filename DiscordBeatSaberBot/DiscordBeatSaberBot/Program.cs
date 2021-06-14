@@ -14,6 +14,7 @@ using DiscordBeatSaberBot.Api.GiphyApi;
 using DiscordBeatSaberBot.Api.Spotify;
 using DiscordBeatSaberBot.Api.BeatSaviourApi;
 using DiscordBeatSaberBot.Commands.Functions;
+using DiscordBeatSaberBot.Security;
 
 namespace DiscordBeatSaberBot
 {
@@ -25,6 +26,7 @@ namespace DiscordBeatSaberBot
         private DiscordSocketClient discordSocketClient;
         private bool hasBeenInitialized = false;
         public int commandsEachHour = 0;
+        public RateLimit rateLimit = new RateLimit(5);
 
         public static void Main(string[] args)
         {                  
@@ -146,7 +148,7 @@ namespace DiscordBeatSaberBot
         }
 
         private async Task ReactionAdded(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
-        {
+        {           
             try
             {
                 new ReactionAddedHandler().HandleReaction(discordSocketClient, reaction, channel, _reactionWatcher, this);
@@ -158,7 +160,7 @@ namespace DiscordBeatSaberBot
         }
 
         private async Task ReactionRemoved(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
-        {
+        {            
             try
             {
                 new ReactionRemovedHandler().HandleReaction(discordSocketClient, reaction, channel, _reactionWatcher, this);
@@ -170,17 +172,26 @@ namespace DiscordBeatSaberBot
         }
 
         private async Task MessageReceived(SocketMessage message)
-        {      
+        {
             try
             {
-                await new MessageReceivedHandler().HandleMessage(discordSocketClient, message, this);
+                if (!rateLimit.IsUserRateLimited(message.Author.Id))
+                {
+                    var isBotCall = await new MessageReceivedHandler().HandleMessage(discordSocketClient, message, this);
+                    if (isBotCall)
+                    {
+                        commandsEachHour++;
+                        var rateLimitCount = rateLimit.AddCall(message.Author.Id);
+                        if (rateLimitCount > rateLimit.callsBeforeLimit) message.Channel.SendMessageAsync($"<@!{message.Author.Id}> You are being rate limited from now on. The rate limit is {rateLimit.callsBeforeLimit} calls each minute. No worries, you can use commands soon again.");
+                    }
+                }                
             }
             catch (Exception ex)
             {
                 //If a command fails its job. return a message to the user and log the error.
                 Console.WriteLine(ex);
                 await _logger.Log(Logger.LogCode.error, ex.ToString());  
-            }
+            }            
         }
     }
 }

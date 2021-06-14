@@ -52,6 +52,21 @@ namespace DiscordBeatSaberBot
             }
         }
 
+        public static async Task<ScoreSaberSearchByNameModel> GetPlayerByName(string search)
+        {
+            using (var client = new HttpClient())
+            {
+                var httpResponseMessage = await client.GetAsync($"https://new.scoresaber.com/api/players/by-name/{search}");
+
+                if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return null;
+
+                var playerInfoJsonData = await httpResponseMessage.Content.ReadAsStringAsync();
+                if (playerInfoJsonData == null) return null;
+                var playerInfo = JsonConvert.DeserializeObject<ScoreSaberSearchByNameModel>(playerInfoJsonData);
+                return playerInfo;
+            }          
+        }
+
         public static async Task<ScoreSaberSearchByNameModel> GetTop50Global()
         {
             try

@@ -37,6 +37,21 @@ namespace DiscordBeatSaberBot
             }
         }
 
+        public SizeF AddTextWithBackGround(string text, Color color, int fontsize, Color backgroundColor, float x, float y)
+        {
+            PointF firstLocation = new PointF(x, y);
+
+            using (Font arialFont = new Font("Tourmaline", fontsize))
+            using (Graphics graphics = Graphics.FromImage(_bitmap))
+            {
+                var textSize = graphics.MeasureString(text, arialFont);
+                DrawRectangle((int)x, (int)y, (int)textSize.Width, (int)textSize.Height, backgroundColor);
+                graphics.DrawString(text, arialFont, new SolidBrush(color), firstLocation);
+                
+                return graphics.MeasureString(text, arialFont);
+            }
+        }
+
         public SizeF AddTextCenter(string text, Color color, int fontsize, float x, float y)
         {
 

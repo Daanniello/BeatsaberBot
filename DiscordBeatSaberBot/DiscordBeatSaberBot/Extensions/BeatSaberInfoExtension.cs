@@ -25,6 +25,7 @@ using DiscordBeatSaberBot.Api.Spotify;
 using System.IO;
 using DiscordBeatSaberBot.Api.BeatSaverApi;
 using DiscordBeatSaberBot.Api.BeatSaviourApi;
+using DiscordBeatSaberBot.Commands.Functions;
 
 namespace DiscordBeatSaberBot.Extensions
 {
@@ -459,9 +460,56 @@ namespace DiscordBeatSaberBot.Extensions
 
                 //Download beatsaver recentsong data
                 var mapInfoBeatSaver = await BeatSaverApi.GetMapByKey(key);
+                if (mapInfoBeatSaver == null)
+                {
+                    await message.Channel.SendMessageAsync("oh oh, beat saver died or the input is not correct. try again.");
+                    return;
+                }
+
+                var difficultyToGetDataFrom = mapInfoBeatSaver.Metadata.Difficulties.Easy ? "Easy" : mapInfoBeatSaver.Metadata.Difficulties.Normal ? "Normal" : mapInfoBeatSaver.Metadata.Difficulties.Hard ? "Hard" : mapInfoBeatSaver.Metadata.Difficulties.Expert ? "Expert" : mapInfoBeatSaver.Metadata.Difficulties.ExpertPlus ? "ExpertPlus" : "None";
+                var metadataDynamic = mapInfoBeatSaver.Metadata.Characteristics.First(x => x.Name == "Standard").Difficulties;
+                dynamic difficulty = metadataDynamic.GetType().GetProperty(difficultyToGetDataFrom).GetValue(metadataDynamic, null);
 
                 var cardCreator = new ImageCreator("../../../Resources/img/EmbedBackground-Template.png");
                 cardCreator.AddImage($"https://scoresaber.com/imports/images/songs/{mapInfoBeatSaver.Hash.ToUpper()}.png", 0, 0, 1080, 720, 0.1f);
+
+                cardCreator.AddText($"Lenght:", System.Drawing.Color.White, 24, 50, 50);
+                cardCreator.AddText($"{(difficultyToGetDataFrom == "ExpertPlus" ? metadataDynamic.ExpertPlus.Length : difficulty.lenght)}", System.Drawing.Color.White, 24, 250, 50);
+
+                cardCreator.AddText($"BPM:", System.Drawing.Color.White, 24, 50, 100);
+                cardCreator.AddText($"{mapInfoBeatSaver.Metadata.Bpm}", System.Drawing.Color.White, 24, 250, 100);
+
+                cardCreator.AddText($"NJS:", System.Drawing.Color.White, 24, 50, 150);
+                cardCreator.AddText($"{ (difficultyToGetDataFrom == "ExpertPlus" ? metadataDynamic.ExpertPlus.Njs : difficulty.njs)}", System.Drawing.Color.White, 24, 250, 150);
+
+                cardCreator.AddText($"Notes:", System.Drawing.Color.White, 24, 50, 200);
+                cardCreator.AddText($"{ (difficultyToGetDataFrom == "ExpertPlus" ? metadataDynamic.ExpertPlus.Notes : difficulty.notes)}", System.Drawing.Color.White, 24, 250, 200);
+
+                //Right side
+                cardCreator.AddTextFloatRight($"Downloads:", System.Drawing.Color.White, 24, 230, 50);
+                cardCreator.AddTextFloatRight($"{mapInfoBeatSaver.Stats.Downloads}", System.Drawing.Color.White, 24, 50, 50);
+
+                cardCreator.AddTextFloatRight($"Upvotes:", System.Drawing.Color.White, 24, 230, 100);
+                cardCreator.AddTextFloatRight($"{mapInfoBeatSaver.Stats.UpVotes}", System.Drawing.Color.White, 24, 50, 100);
+
+                cardCreator.AddTextFloatRight($"Downvotes:", System.Drawing.Color.White, 24, 230, 150);
+                cardCreator.AddTextFloatRight($"{mapInfoBeatSaver.Stats.DownVotes}", System.Drawing.Color.White, 24, 50, 150);
+
+                cardCreator.AddTextFloatRight($"Ratio:", System.Drawing.Color.White, 24, 230, 200);
+                cardCreator.AddTextFloatRight($"{Math.Round(100 * mapInfoBeatSaver.Stats.Rating, 2)}%", System.Drawing.Color.White, 24, 50, 200);
+
+                cardCreator.AddTextFloatRight($"Plays:", System.Drawing.Color.White, 24, 230, 250);
+                cardCreator.AddTextFloatRight($"{mapInfoBeatSaver.Stats.Plays}", System.Drawing.Color.White, 24, 50, 250);
+
+                cardCreator.AddTextFloatRight($"Upload Date:", System.Drawing.Color.White, 24, 230, 300);
+                cardCreator.AddTextFloatRight($"{mapInfoBeatSaver.Uploaded.UtcDateTime.ToShortDateString()}", System.Drawing.Color.White, 24, 50, 300);
+
+                //Add available difficulties
+                cardCreator.AddTextWithBackGround("Easy", System.Drawing.Color.White, 24, mapInfoBeatSaver.Metadata.Difficulties.Easy ? System.Drawing.Color.FromArgb(60, 179, 113) : System.Drawing.Color.LightGray, 50, difficultyToGetDataFrom == "Easy" ? 630 - 15 : 630);
+                cardCreator.AddTextWithBackGround("Normal", System.Drawing.Color.White, 24, mapInfoBeatSaver.Metadata.Difficulties.Normal ? System.Drawing.Color.FromArgb(89, 176, 244) : System.Drawing.Color.LightGray, 180, difficultyToGetDataFrom == "Normal" ? 630 - 15 : 630);
+                cardCreator.AddTextWithBackGround("Hard", System.Drawing.Color.White, 24, mapInfoBeatSaver.Metadata.Difficulties.Hard ? System.Drawing.Color.FromArgb(254, 99, 71) : System.Drawing.Color.LightGray, 365, difficultyToGetDataFrom == "Hard" ? 630 - 15 : 630);
+                cardCreator.AddTextWithBackGround("Expert", System.Drawing.Color.White, 24, mapInfoBeatSaver.Metadata.Difficulties.Expert ? System.Drawing.Color.FromArgb(192, 42, 66) : System.Drawing.Color.LightGray, 500, difficultyToGetDataFrom == "Expert" ? 630 - 15 : 630);
+                cardCreator.AddTextWithBackGround("Expert+", System.Drawing.Color.White, 24, mapInfoBeatSaver.Metadata.Difficulties.ExpertPlus ? System.Drawing.Color.FromArgb(143, 72, 219) : System.Drawing.Color.LightGray, 670, difficultyToGetDataFrom == "ExpertPlus" ? 630 - 15 : 630);
 
                 await cardCreator.Create($"../../../Resources/img/EmbedBackground-{key}.png");
 
@@ -469,22 +517,31 @@ namespace DiscordBeatSaberBot.Extensions
                 {
                     Title = $"**{mapInfoBeatSaver.Name} by {mapInfoBeatSaver.Metadata.LevelAuthorName}**",
                     ImageUrl = $"attachment://EmbedBackground-{key}.png",
-                    Url = $"https://beatsaver.com/beatmap/{mapInfoBeatSaver.Key}",
                     ThumbnailUrl = $"https://beatsaver.com/cdn/{mapInfoBeatSaver.Key}/{mapInfoBeatSaver.Hash}.jpg",
-                    Footer = new EmbedFooterBuilder() { Text = $"Upload date: {mapInfoBeatSaver.Uploaded.UtcDateTime} UTC" }
+                    Footer = new EmbedFooterBuilder() { Text = $"Hash: {mapInfoBeatSaver.Hash}\nID: {mapInfoBeatSaver.Id}\nKey: {mapInfoBeatSaver.Key}" }
                 };
 
-                embedBuilder.Description = "\n" +
-                  $"Difficulties: " +
-                  $"{(mapInfoBeatSaver.Metadata.Difficulties.Easy.ToString() == "False" ? "" : "Easy - ")}" +
-                  $"{(mapInfoBeatSaver.Metadata.Difficulties.Normal.ToString() == "False" ? "" : "Normal - ")}" +
-                  $"{(mapInfoBeatSaver.Metadata.Difficulties.Hard.ToString() == "False" ? "" : "Hard - ")}" +
-                  $"{(mapInfoBeatSaver.Metadata.Difficulties.Expert.ToString() == "False" ? "" : "Expert - ")}" +
-                  $"{(mapInfoBeatSaver.Metadata.Difficulties.ExpertPlus.ToString() == "False" ? "" : "Expert+")}" +
+                embedBuilder.AddField("Links",
+                    $"\n[Map link (BeatSaver)](https://beatsaver.com/beatmap/{mapInfoBeatSaver.Key})" +
+                    $"\n[Mapper: {mapInfoBeatSaver.Uploader.Username}](https://beatsaver.com/uploader/{mapInfoBeatSaver.Uploader.Id})" +
+                    $"\n[Image](https://beatsaver.com/{mapInfoBeatSaver.CoverUrl})");
+
+             
+
+                embedBuilder.AddField( "Description", "\n" +
+                  //$"Available Difficulties: " +
+                  //$"{(mapInfoBeatSaver.Metadata.Difficulties.Easy.ToString() == "False" ? "" : "Easy - ")}" +
+                  //$"{(mapInfoBeatSaver.Metadata.Difficulties.Normal.ToString() == "False" ? "" : "Normal - ")}" +
+                  //$"{(mapInfoBeatSaver.Metadata.Difficulties.Hard.ToString() == "False" ? "" : "Hard - ")}" +
+                  //$"{(mapInfoBeatSaver.Metadata.Difficulties.Expert.ToString() == "False" ? "" : "Expert - ")}" +
+                  //$"{(mapInfoBeatSaver.Metadata.Difficulties.ExpertPlus.ToString() == "False" ? "" : "Expert+")}" +
+                  mapInfoBeatSaver.Description + 
                   "\n" +
                   $"[Download Map](https://beatsaver.com{mapInfoBeatSaver?.DirectDownload}) - " +
                   $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={mapInfoBeatSaver?.Key}) - " +
-                  $"[Song on Spotify]({await new Spotify().SearchItem(mapInfoBeatSaver.Metadata.SongName, mapInfoBeatSaver.Metadata.SongAuthorName)})";
+                  $"[Song on Spotify]({await new Spotify().SearchItem(mapInfoBeatSaver.Metadata.SongName, mapInfoBeatSaver.Metadata.SongAuthorName)})");
+
+
 
                 await message.Channel.SendFileAsync($"../../../Resources/img/EmbedBackground-{key}.png", embed: embedBuilder.Build());
                 File.Delete($"../../../Resources/img/EmbedBackground-{key}.png");
@@ -512,7 +569,7 @@ namespace DiscordBeatSaberBot.Extensions
 
                 //Download BeatSaviour livedata 
                 var playerMostRecentLiveData = await beatSaviourApi.GetMostRecentLiveData(recentSong.Id, recentSong.GetDifficulty());
-                var hasBeatSaviour = playerMostRecentLiveData == null ? false : true;              
+                var hasBeatSaviour = playerMostRecentLiveData == null ? false : true;
 
                 var cardCreator = new ImageCreator("../../../Resources/img/EmbedBackground-Template.png");
                 cardCreator.AddImage($"https://scoresaber.com/imports/images/songs/{recentSong.Id}.png", 0, 0, 1080, 720, 0.1f);
@@ -570,7 +627,7 @@ namespace DiscordBeatSaberBot.Extensions
                     cardCreator.AddTextFloatRight($"({Math.Round(recentSong.Pp * recentSong.Weight, 2)}PP)", System.Drawing.Color.White, 15, 0, 85);
                     cardCreator.AddTextFloatRight($"{Math.Round(Convert.ToDouble(recentSong.UScore) / Convert.ToDouble(recentSong.MaxScoreEx) * 100, 2)}%", System.Drawing.Color.White, 30, 0, 110);
                 }
-             
+
                 //Create AccGrid If needed
                 if (hasBeatSaviour)
                 {
@@ -653,7 +710,7 @@ namespace DiscordBeatSaberBot.Extensions
                     cardCreator.DrawRectangle(975 + gridXReplacement, 555 + gridYReplacement, 90, 90, createGridColor(accGrid[3].Double));
 
                     System.Drawing.Color createGridColor(double? value)
-                    {                      
+                    {
                         try
                         {
                             if (value == null) return System.Drawing.Color.Gray;
@@ -733,12 +790,12 @@ namespace DiscordBeatSaberBot.Extensions
                     //add acc graph
                     cardCreator.AddText($"Acc Graph", System.Drawing.Color.White, 25, 760, 30);
 
-                    Dictionary<float, float> graphPoints = playerMostRecentLiveData.Trackers.ScoreGraphTracker.Graph.ToDictionary(x => (float) Convert.ToDouble(x.Key), x => (float) Convert.ToDouble(x.Value));
+                    Dictionary<float, float> graphPoints = playerMostRecentLiveData.Trackers.ScoreGraphTracker.Graph.ToDictionary(x => (float)Convert.ToDouble(x.Key), x => (float)Convert.ToDouble(x.Value));
                     var lowestValue = graphPoints.Values.Min();
                     var highestValue = graphPoints.Values.Max();
                     var zoomFactor = 25 - (float)(((highestValue - lowestValue) * 100) * 2.8);
                     if (zoomFactor < 0) zoomFactor = 2;
-                    cardCreator.AddAccGraph(740, 90, 300, 250, graphPoints,Convert.ToInt32(playerMostRecentLiveData.SongDuration), 1, System.Drawing.Color.White, zoomFactor);
+                    cardCreator.AddAccGraph(740, 90, 300, 250, graphPoints, Convert.ToInt32(playerMostRecentLiveData.SongDuration), 1, System.Drawing.Color.White, zoomFactor);
 
                 }
 
@@ -772,6 +829,96 @@ namespace DiscordBeatSaberBot.Extensions
                 File.Delete($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png");
             }
 
+        }
+
+        public static async Task CreateUserSearchEmbedWithScoresaberIDAndSend(string scoresaberID, SocketMessage message, DiscordSocketClient discord)
+        {
+            var isInDatabase = await new RoleAssignment(discord).GetDiscordIdWithScoresaberId(scoresaberID) != 0;
+            var hasSettingsPage = await SettingsQuestionList.HasSettingsPage(scoresaberID);
+            var playerModel = await new ScoresaberAPI(scoresaberID).GetPlayerFull();
+            if(playerModel == null)
+            {
+                await message.Channel.SendMessageAsync("oh oh... Scoresaber/Discord ID is incorrect or the Scoresaber api crashed. Try again.");
+                return;
+            }
+
+            var embedBuilder = new EmbedBuilder();
+            embedBuilder.Title = playerModel.playerInfo.Name;
+            embedBuilder.Url = $"https://scoresaber.com/u/{playerModel.playerInfo.PlayerId}";
+            embedBuilder.ThumbnailUrl = $"https://new.scoresaber.com{playerModel.playerInfo.Avatar}";
+            embedBuilder.AddField("👤 Get their profile", "-------------------------------------");
+            embedBuilder.AddField($"🔧 {(hasSettingsPage ? "Get their settings" : "~~Get their settings~~")}", "-------------------------------------");
+            embedBuilder.AddField("🔁 Compare yourself to this user", "-------------------------------------");
+            embedBuilder.AddField("🆕 Get their recentsongs", "-------------------------------------");
+            embedBuilder.AddField("📰 Get their recentsong", "-------------------------------------");
+            embedBuilder.AddField("👑 Get their topsongs", "-------------------------------------");
+
+            var msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
+
+            await msg.AddReactionAsync(new Emoji("👤"));
+            if(hasSettingsPage) await msg.AddReactionAsync(new Emoji("🔧"));
+            await msg.AddReactionAsync(new Emoji("🔁"));
+            await msg.AddReactionAsync(new Emoji("🆕"));
+            await msg.AddReactionAsync(new Emoji("📰"));
+            await msg.AddReactionAsync(new Emoji("👑"));
+
+            //Get reactions           
+            var socketReacitonsList = new List<SocketReaction>();
+            discord.ReactionAdded += DiscordSocketClient_ReactionAdded;            
+            async Task DiscordSocketClient_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+            {
+                if (arg1.Id == msg.Id && arg3.UserId != 504633036902498314)
+                {
+                    if (socketReacitonsList.Contains(arg3)) return;
+                    socketReacitonsList.Add(arg3);
+
+                    if (arg3.Emote.Name == "👤")
+                    {
+                        await GetAndCreateProfileImage(scoresaberID);
+                        await message.Channel.SendFileAsync($"../../../Resources/img/RankingCard_{scoresaberID}.png", $"<@!{arg3.UserId}> here you go. What an amazing profile!");
+                        File.Delete($"../../../Resources/img/RankingCard_{scoresaberID}.png");
+                    }
+                    if (arg3.Emote.Name == "🔧")
+                    {
+                        await message.Channel.SendMessageAsync($"<@!{arg3.UserId}> here you go. Did you know you can use `!bs statistics` to see community stats?", false, await SettingsQuestionList.GetSettingsPageWithScoresaberID(scoresaberID));
+                    }
+                    if (arg3.Emote.Name == "🔁")
+                    {
+                        var discordID = arg3.UserId.ToString();
+                        if (!await new RoleAssignment(discord).CheckIfDiscordIdIsLinked(discordID))
+                        {
+                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"You are not linked {arg3.User}", "Link your scoresaber by using the command `!bs link [scoresaberID]`").Build());
+                            return;
+                        }
+                        var scoresaberID2 = await RoleAssignment.GetScoresaberIdWithDiscordId(discordID);
+                        var scoresaberID2FullModel = await new ScoresaberAPI(scoresaberID2).GetPlayerFull();
+                        await GetAndCreateUserCompareImage(scoresaberID2, scoresaberID);
+                        await GetAndCreateCompareImage(scoresaberID2FullModel, playerModel);
+                        await message.Channel.SendFileAsync($"../../../Resources/img/UserCompareCard_{scoresaberID2}_{scoresaberID}.png", $"<@!{arg3.UserId}> here you go. I wonder who is better");
+                        await message.Channel.SendFileAsync($"../../../Resources/img/CompareCard_{scoresaberID2}_{scoresaberID}.png");
+                        
+                        File.Delete($"../../../Resources/img/CompareCard_{scoresaberID2}_{scoresaberID}.png");
+                        File.Delete($"../../../Resources/img/UserCompareCard_{scoresaberID2}_{scoresaberID}.png");
+                    }
+                    if (arg3.Emote.Name == "🆕")
+                    {
+                        await GetAndCreateRecentsongsCardImage(scoresaberID);
+                        await message.Channel.SendFileAsync($"../../../Resources/img/RecentsongsCard_{scoresaberID}.png", $"<@!{arg3.UserId}> here you go.");
+                        File.Delete($"../../../Resources/img/RecentsongsCard_{scoresaberID}.png");                  
+                    }
+                    if (arg3.Emote.Name == "📰")
+                    {
+                        await message.Channel.SendMessageAsync($"<@!{arg3.UserId}> here you go. This data is actually really helpfull!");
+                        await GetAndPostRecentSongWithScoresaberIdNew(scoresaberID, message);
+                    }
+                        if (arg3.Emote.Name == "👑")
+                    {
+                        await GetAndCreateTopsongsCardImage(scoresaberID);
+                        await message.Channel.SendFileAsync($"../../../Resources/img/TopsongsCard_{scoresaberID}.png", $"<@!{arg3.UserId}> here you go. ");
+                        File.Delete($"../../../Resources/img/TopsongsCard_{scoresaberID}.png");  
+                    }       
+                }                
+            }
         }
 
         public static async Task GetNewTopSongWithScoresaberIdNew(string playerId, SocketMessage message, int topsongNr = 1)
@@ -841,7 +988,7 @@ namespace DiscordBeatSaberBot.Extensions
 
                 //Create AccGrid If needed
                 if (hasBeatSaviour)
-                {                    
+                {
                     var PbIncrease = playerMostRecentLiveData.Trackers.ScoreTracker.PersonalBest == 0 ? "First Play" : $"{(playerMostRecentLiveData.Trackers.ScoreTracker.RawScore * 100) / playerMostRecentLiveData.Trackers.ScoreTracker.PersonalBest}% Increase";
                     cardCreator.AddTextFloatRight($"{PbIncrease}", System.Drawing.Color.White, 20, 0, 155);
 
@@ -997,7 +1144,7 @@ namespace DiscordBeatSaberBot.Extensions
 
 
                     //ADD SCORE GRAPH 
-                    
+
                 }
 
                 await cardCreator.Create($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png");
@@ -1853,6 +2000,8 @@ namespace DiscordBeatSaberBot.Extensions
             var playerRaw = new ScoresaberAPI(scoresaberId);
             var playerData = await playerRaw.GetPlayerFull();
 
+            if (playerData == null) return;
+
             var player = playerData.playerInfo;
             var playerStats = playerData.scoreStats;
 
@@ -1892,13 +2041,13 @@ namespace DiscordBeatSaberBot.Extensions
                 if (playerRecentScores.Scores[x].Rank == 2) rankcolor = System.Drawing.Color.Silver;
                 if (playerRecentScores.Scores[x].Rank == 3) rankcolor = System.Drawing.Color.SaddleBrown;
 
-                rankingCardCreator.AddText($"#{playerRecentScores.Scores[x].Rank}", rankcolor, 50, 320, marigin + 135);
+                var rankTextSize = rankingCardCreator.AddText($"#{playerRecentScores.Scores[x].Rank}", rankcolor, 50, 320, marigin + 135);
 
                 if (playerRecentScores.Scores[x].Pp > 0)
                 {
                     double percentage = Convert.ToDouble(playerRecentScores.Scores[x].UScore) / Convert.ToDouble(playerRecentScores.Scores[x].MaxScoreEx) * 100;
                     var acc = Math.Round(percentage, 2);
-                    rankingCardCreator.AddText($"{acc}%", rankcolor, 50, 520, marigin + 135);
+                    rankingCardCreator.AddText($"{acc}%", rankcolor, 50, 350 + rankTextSize.Width, marigin + 135);
                 }
 
 
@@ -1938,13 +2087,13 @@ namespace DiscordBeatSaberBot.Extensions
                 if (playerTopScores.Scores[x].Rank == 2) rankcolor = System.Drawing.Color.Silver;
                 if (playerTopScores.Scores[x].Rank == 3) rankcolor = System.Drawing.Color.SaddleBrown;
 
-                rankingCardCreator.AddText($"#{playerTopScores.Scores[x].Rank}", rankcolor, 50, 320, marigin + 135);
+                var rankTextSize = rankingCardCreator.AddText($"#{playerTopScores.Scores[x].Rank}", rankcolor, 50, 320, marigin + 135);
 
                 if (playerTopScores.Scores[x].Pp > 0)
                 {
                     double percentage = Convert.ToDouble(playerTopScores.Scores[x].UScore) / Convert.ToDouble(playerTopScores.Scores[x].MaxScoreEx) * 100;
                     var acc = Math.Round(percentage, 2);
-                    rankingCardCreator.AddText($"{acc}%", rankcolor, 50, 520, marigin + 135);
+                    rankingCardCreator.AddText($"{acc}%", rankcolor, 50, 350 + rankTextSize.Width, marigin + 135);
                 }
 
 
@@ -1986,9 +2135,16 @@ namespace DiscordBeatSaberBot.Extensions
 
             rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{player.Country.ToLower()}.png", 1120, 1000, 120, 100);
             rankingCardCreator.AddNoteSlashEffect($"https://new.scoresaber.com{player.Avatar}", 200, 800, 800, 800);
-            for (var x = 0; x < player.Badges.Count(); x++)
+
+            var rowCount = Math.Round((double)player.Badges.Count() / 7, 0);
+            for (var i = 0; i < player.Badges.Count(); i++)
             {
-                rankingCardCreator.AddImage($"https://new.scoresaber.com/api/static/badges/{player.Badges[x].Image}", 2730, 650 + x * 175, 80 * 5, 30 * 5);
+                var row = Math.Round((decimal)(i / 7), 0);
+                float x = (float)(2730 - (450 * row));
+                var y = 650 + i * 175;
+                if (row > 0) y = 650 + (i - 7) * 175;
+
+                rankingCardCreator.AddImage($"https://new.scoresaber.com/api/static/badges/{player.Badges[i].Image}", x, y, 80 * 5, 30 * 5);
             }
 
             //Add Date
@@ -2063,7 +2219,7 @@ namespace DiscordBeatSaberBot.Extensions
         public static async Task<EmbedBuilder> GetImprovableMapsByAccFromToplist(string scoresaberId, double wishedAcc)
         {
             if (wishedAcc == 0) return EmbedBuilderExtension.NullEmbed("No wished acc added", "use the command like this `!bs improve 95` or `!bs improve 94,5`");
-            
+
             var playerTopPageList = new List<ScoresaberSongsModel>();
 
             using (var client = new HttpClient())

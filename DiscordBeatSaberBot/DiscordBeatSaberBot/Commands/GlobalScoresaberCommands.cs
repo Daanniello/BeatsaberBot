@@ -21,6 +21,39 @@ namespace DiscordBeatSaberBot.Commands
     {
         public static System.IDisposable triggerState = null;
 
+        [Help("Search", "Get info about a scoresaber user", "!bs search [DiscordTag]/[ScoresaberID]/[Username]", HelpAttribute.Catergories.General)]
+        public static async Task SearchUserCommand(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var parameter = message.Content.Substring(10).Trim();
+            parameter = parameter.Replace("<@!", "").Replace(">", "");
+            if (parameter == "") parameter = message.Author.Id.ToString();
+
+            //Check if the parameter is a name or ID 
+            var isUsername = false;
+            if (!parameter.All(c => char.IsDigit(c))) isUsername = true;
+            else isUsername = false;
+
+            Embed embed = null;
+            if (isUsername)
+            {
+                var player = await ScoresaberAPI.GetPlayerByName(parameter);
+                if (player == null)
+                {
+                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Username not found.", "Could not find a user with this name on scoresaber.").Build());
+                    return;
+                }
+                await BeatSaberInfoExtension.CreateUserSearchEmbedWithScoresaberIDAndSend(player.Players[0].PlayerId, message, discordSocketClient);
+            }
+            else
+            {
+                var scoreSaberID = parameter;
+                if (await new RoleAssignment(discordSocketClient).CheckIfDiscordIdIsLinked(parameter)) scoreSaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(parameter);
+                await BeatSaberInfoExtension.CreateUserSearchEmbedWithScoresaberIDAndSend(scoreSaberID, message, discordSocketClient);
+            }
+
+
+        }
+
         [Help("Draw", "Draws a random card of someone in the top 50", "!bs draw", HelpAttribute.Catergories.General)]
         public static async Task Draw(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
@@ -38,7 +71,7 @@ namespace DiscordBeatSaberBot.Commands
         {
             var parameter = message.Content.Substring(13).Trim();
 
-            if(parameter == "create")
+            if (parameter == "create")
             {
                 var playlistModel = await Functions.Playlist.AskQuestions(message);
                 var path = Functions.Playlist.Create(playlistModel);
@@ -52,7 +85,7 @@ namespace DiscordBeatSaberBot.Commands
         {
             var maps = await ScoresaberAPI.GetQualifiedMaps();
             var description = "";
-            var qualifiedmaps = maps.Songs.Where(x => x.Ranked == 0);            
+            var qualifiedmaps = maps.Songs.Where(x => x.Ranked == 0);
             foreach (var map in qualifiedmaps)
             {
                 if (description.Length > 2000) continue;
@@ -72,8 +105,15 @@ namespace DiscordBeatSaberBot.Commands
         [Help("Map", "Displays a maps info by searching it with the key code", "!bs map (Key)", HelpAttribute.Catergories.General)]
         public static async Task Map(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            var keycode = message.Content.Substring(8);
-            await BeatSaberInfoExtension.GetAndPostMapInfoWithKey(message, keycode);
+            var search = message.Content.Substring(8);
+            if(message.Content.StartsWith("!bsr ")) search = message.Content.Substring(5);
+            if (!message.Content.Substring(0, 4).Contains("!bsr"))
+            {
+                var maps = await BeatSaverApi.GetMapsBySearch(search);
+                search = maps.Docs.First().Key;
+            }
+            
+            await BeatSaberInfoExtension.GetAndPostMapInfoWithKey(message, search);
         }
 
         [Help("RecentSong", "Get info from the latest song played", "!bs recentsong [DiscordTag or username]", HelpAttribute.Catergories.General)]
@@ -123,22 +163,28 @@ namespace DiscordBeatSaberBot.Commands
 
                 await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(discordId, message, n);
             }
-        }
+        }       
 
         [Help("TopSong", "Get info from the latest song played", "!bs topsong [DiscordTag]", HelpAttribute.Catergories.General)]
         public static async Task NewTopSong(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
+            //Configure the content and parameters.
             var content = message.Content;
             var discordId = message.Author.Id.ToString();
             if (int.TryParse(message.Content.Split(' ').Last(), out int n)) content = content.Substring(0, content.IndexOf(content.Split(' ').Last()) - 1);
             if (n == 0) n = 1;
 
+            //Check if the parameter contains a discord tag.
+            //Replaces the discord tag to an discordID
             var userId = "";
             if (message.Content.Contains("@"))
             {
                 discordId = message.Content.Split(' ')[2].Replace("<@!", "").Replace(">", "");
                 userId = discordId;
             }
+
+            //Check if the discord ID is linked with the bot. 
+            //Gets the topsong from scoresaberID by checking the discordID.
             var r = new RoleAssignment(discordSocketClient);
             if (await r.CheckIfDiscordIdIsLinked(discordId) && content.Count() == 11)
             {
@@ -147,6 +193,7 @@ namespace DiscordBeatSaberBot.Commands
                 await BeatSaberInfoExtension.GetNewTopSongWithScoresaberIdNew(scoresaberId, message, n);
 
             }
+            //If the user is not linked, use the parameter for a scoresaber search.
             else
             {
                 if (message.Content.Length <= 11)

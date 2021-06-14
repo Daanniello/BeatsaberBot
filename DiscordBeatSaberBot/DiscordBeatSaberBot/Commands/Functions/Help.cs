@@ -63,15 +63,15 @@ namespace DiscordBeatSaberBot
                     embedBuilders.Add(new EmbedBuilder
                     {
                         Title = "**Command List** :question:    Page: [" + (i + 1) + "/" + (pageCount + 1) + "] \n\n" +
-                                "***For more info, use !bs help (CommandName)*** \n*Used by " + Discord.Guilds.Count +
-                                " servers with a total of " + userCount + " users*\n",
+                                "***For more info, use !bs help (CommandName).*** \n*Used by " + Discord.Guilds.Count +
+                                " servers with a total of " + userCount + " users.*\n",
                         Fields = embedArray.ToList(),
                         ThumbnailUrl =
                             "https://cdn.discordapp.com/icons/731936395223892028/0c8bb286f1864f5ff4a917e9423ff5a6.png?size=512",
                         Color = Color.Gold,
                         Footer = new EmbedFooterBuilder
                         {
-                            Text = "created by: @SilverHaze#0001",
+                            Text = "Created by: @Silverhaze#0001. \nFor more info, join the discord server (https://discord.gg/S3D3Yyu)",
                             IconUrl =
                                 "https://cdn.discordapp.com/avatars/138439306774577152/1084ee232303df04772bf68f1d41ef83.png"
                         }
