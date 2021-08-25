@@ -106,13 +106,13 @@ namespace DiscordBeatSaberBot.Commands
         public static async Task Map(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var search = message.Content.Substring(8);
-            if(message.Content.StartsWith("!bsr ")) search = message.Content.Substring(5);
+            if (message.Content.StartsWith("!bsr ")) search = message.Content.Substring(5);
             if (!message.Content.Substring(0, 4).Contains("!bsr"))
             {
                 var maps = await BeatSaverApi.GetMapsBySearch(search);
                 search = maps.Docs.First().Key;
             }
-            
+
             await BeatSaberInfoExtension.GetAndPostMapInfoWithKey(message, search);
         }
 
@@ -163,7 +163,7 @@ namespace DiscordBeatSaberBot.Commands
 
                 await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(discordId, message, n);
             }
-        }       
+        }
 
         [Help("TopSong", "Get info from the latest song played", "!bs topsong [DiscordTag]", HelpAttribute.Catergories.General)]
         public static async Task NewTopSong(DiscordSocketClient discordSocketClient, SocketMessage message)
@@ -227,9 +227,13 @@ namespace DiscordBeatSaberBot.Commands
         public static async Task Improve(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
-            if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
+
+            var author = message.MentionedUsers != null && message.MentionedUsers.Any() ? message.MentionedUsers.First() : message.Author;
+            string authorID = author.Id.ToString();
+
+            if (await r.CheckIfDiscordIdIsLinked(authorID))
             {
-                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(authorID);
                 var acc = message.Content.Substring(11).Trim();
                 double doubleAcc = 0;
                 if (acc != "") doubleAcc = Convert.ToDouble(acc);
@@ -245,9 +249,13 @@ namespace DiscordBeatSaberBot.Commands
         public static async Task Profile(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
-            if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
+
+            var author = message.MentionedUsers.Any() ? message.MentionedUsers.First() : message.Author;
+            string authorID = author.Id.ToString();
+
+            if (await r.CheckIfDiscordIdIsLinked(authorID))
             {
-                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(authorID);
                 await BeatSaberInfoExtension.GetAndCreateProfileImage(scoresaberId);
                 await message.Channel.SendFileAsync($"../../../Resources/img/RankingCard_{scoresaberId}.png");
                 File.Delete($"../../../Resources/img/RankingCard_{scoresaberId}.png");
@@ -262,9 +270,13 @@ namespace DiscordBeatSaberBot.Commands
         public static async Task Recentsongs(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
-            if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
+
+            var author = message.MentionedUsers.Any() ? message.MentionedUsers.First() : message.Author;
+            string authorID = author.Id.ToString();
+
+            if (await r.CheckIfDiscordIdIsLinked(authorID))
             {
-                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(authorID);
                 //Create UserCard
                 await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, "Recentsongs");
                 await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberId);
@@ -283,9 +295,13 @@ namespace DiscordBeatSaberBot.Commands
         public static async Task TopSongs(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             var r = new RoleAssignment(discordSocketClient);
-            if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
+
+            var author = message.MentionedUsers != null && message.MentionedUsers.Any() ? message.MentionedUsers.First() : message.Author;
+            string authorID = author.Id.ToString();
+
+            if (await r.CheckIfDiscordIdIsLinked(authorID))
             {
-                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(authorID);
                 //Create UserCard
                 await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, "Topsongs");
                 await BeatSaberInfoExtension.GetAndCreateTopsongsCardImage(scoresaberId);
