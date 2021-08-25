@@ -250,7 +250,7 @@ namespace DiscordBeatSaberBot.Commands
         {
             var r = new RoleAssignment(discordSocketClient);
 
-            var author = message.MentionedUsers.Any() ? message.MentionedUsers.First() : message.Author;
+            var author = message.MentionedUsers != null && message.MentionedUsers.Any() ? message.MentionedUsers.First() : message.Author;
             string authorID = author.Id.ToString();
 
             if (await r.CheckIfDiscordIdIsLinked(authorID))
@@ -271,7 +271,7 @@ namespace DiscordBeatSaberBot.Commands
         {
             var r = new RoleAssignment(discordSocketClient);
 
-            var author = message.MentionedUsers.Any() ? message.MentionedUsers.First() : message.Author;
+            var author = message.MentionedUsers != null && message.MentionedUsers.Any() ? message.MentionedUsers.First() : message.Author;
             string authorID = author.Id.ToString();
 
             if (await r.CheckIfDiscordIdIsLinked(authorID))
