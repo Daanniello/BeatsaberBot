@@ -38,6 +38,10 @@ namespace DiscordBeatSaberBot.Handlers
 
             if (reaction.UserId != 504633036902498314 && data.Keys.Contains(reaction.MessageId.ToString()))
             {
+                var guild = discordSocketClient.GetGuild(505485680344956928);
+                await guild.DownloadUsersAsync();
+                var u = guild.GetUser(reaction.UserId);
+
                 if (reaction.Emote.ToString() == "<:green_check:671412276594475018>")
                 {
                     var deelnemersMsgData =
@@ -48,49 +52,55 @@ namespace DiscordBeatSaberBot.Handlers
                         (IUserMessage)await eventDetailChannel.GetMessageAsync(ulong.Parse(msgId));
 
                     var embedInfo = embededMessage.Embeds.First();
-                    var user = discordSocketClient.GetUser(reaction.User.Value.Id);
 
                     var embedBuilder = new EmbedBuilder
                     {
                         Title = embedInfo.Title,
-                        Description = embedInfo.Description + "\n" + "<@!" + user.Id + ">",
+                        Description = embedInfo.Description + "\n" + "<@!" + u.Id + ">",
                         Footer = new EmbedFooterBuilder { Text = embedInfo.Footer.ToString() },
                         Color = embedInfo.Color
                     };
                     //Add permissions to see the general event channel
                     var d = deelnemersMsgData[reaction.MessageId + "0"];
-                    var generalChannel = discordSocketClient.GetGuild(505485680344956928)
-                        .GetChannel(ulong.Parse(d.First()));
-                    await generalChannel.AddPermissionOverwriteAsync(user,
+                    var generalChannel = discordSocketClient.GetGuild(505485680344956928).GetChannel(ulong.Parse(d.First()));
+                    await generalChannel.AddPermissionOverwriteAsync(u,
                         new OverwritePermissions().Modify(
                             sendMessages: PermValue.Inherit,
-                            viewChannel: PermValue.Allow, 
+                            viewChannel: PermValue.Allow,
                             readMessageHistory: PermValue.Allow));
 
                     await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
                 }
                 else if (reaction.Emote.ToString() == "<:blue_check:671413239992549387>")
                 {
-                    var user = discordSocketClient.GetUser(reaction.User.Value.Id);
                     var deelnemersMsgData =
                         JsonExtension.ToDictionary<string[]>(data[reaction.MessageId.ToString()]);
                     var d = deelnemersMsgData[reaction.MessageId + "0"];
                     var generalChannel = discordSocketClient.GetGuild(505485680344956928)
                         .GetChannel(ulong.Parse(d.First()));
-                    await generalChannel.AddPermissionOverwriteAsync(user,
+                    await generalChannel.AddPermissionOverwriteAsync(u,
                         new OverwritePermissions().Modify(
                             sendMessages: PermValue.Inherit,
-                            viewChannel: PermValue.Allow, 
+                            viewChannel: PermValue.Allow,
                             readMessageHistory: PermValue.Allow));
                 }
                 else if (reaction.Emote.ToString() == "<:red_check:671413258468720650>")
                 {
-                    var user = discordSocketClient.GetUser(reaction.User.Value.Id);
-                    var generalChannel = discordSocketClient.GetGuild(505485680344956928)
+                    var infoChannel = discordSocketClient.GetGuild(505485680344956928)
                         .GetChannel(reaction.Channel.Id);
-                    await generalChannel.AddPermissionOverwriteAsync(user,
+                    await infoChannel.AddPermissionOverwriteAsync(u,
                         new OverwritePermissions().Modify(
-                            sendMessages: PermValue.Deny, 
+                            sendMessages: PermValue.Deny,
+                            viewChannel: PermValue.Deny,
+                            readMessageHistory: PermValue.Deny));
+
+                    var deelnemersMsgData = JsonExtension.ToDictionary<string[]>(data[reaction.MessageId.ToString()]);
+                    var d = deelnemersMsgData[reaction.MessageId + "0"];
+                    var generalChannel = discordSocketClient.GetGuild(505485680344956928)
+                        .GetChannel(ulong.Parse(d.First()));
+                    await generalChannel.AddPermissionOverwriteAsync(u,
+                        new OverwritePermissions().Modify(
+                            sendMessages: PermValue.Inherit,
                             viewChannel: PermValue.Deny,
                             readMessageHistory: PermValue.Deny));
                 }
@@ -117,13 +127,14 @@ namespace DiscordBeatSaberBot.Handlers
                     }
             }
 
+            #region Dutch link process            
             if (channel.Id == 549350982081970176)
             {
                 async Task<bool> authenticationCheck()
                 {
                     var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
                     var user = await discordSocketClient.Rest.GetGuildUserAsync(505485680344956928, reaction.UserId);
-                    
+
                     foreach (var roleId in user.RoleIds)
                         if (roleId == 505486321595187220)//Staff Role ID
                             return true;
@@ -206,7 +217,7 @@ namespace DiscordBeatSaberBot.Handlers
                         }
 
                         var player = await new ScoresaberAPI(scoresaberId).GetPlayerFull();
-                        
+
 
                         DutchRankFeed.GiveRoleWithRank(player.playerInfo.CountryRank, scoresaberId, discordSocketClient);
                         var dutchGuild = new GuildService(discordSocketClient, 505485680344956928);
@@ -220,6 +231,7 @@ namespace DiscordBeatSaberBot.Handlers
                     }
                 }
             }
+            #endregion
 
             //Add Roles from reactions added to specific channels 
             if (channel.Id == 510227606822584330 || channel.Id == 627292184143724544)

@@ -6,6 +6,10 @@ using DiscordBeatSaberBot.Extensions;
 using System.Net.Http;
 using System.Net;
 using DiscordBeatSaberBot.Commands.Functions;
+using System.IO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DiscordBeatSaberBot.Commands
 {
@@ -51,6 +55,130 @@ namespace DiscordBeatSaberBot.Commands
             {
                 await message.Channel.SendMessageAsync("Please don't touch this command you normie");
             }            
+        }
+
+        [Help("RemoveBG", "Removes the background of an image", "!bs removebg [add the image png, jpg]", HelpAttribute.Catergories.BotFunctions)]
+        static public async Task RemoveBG(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var removebgKeyList = new List<string>();
+            removebgKeyList.Add("4D9tdgmUy6go4Uj1mPqHmfUc");
+            removebgKeyList.Add("PkAgEVZ331oZNihazQEVGUuS");
+            removebgKeyList.Add("9UE6rGbDxqHRpHQCqek66Fuy");
+
+            var removebgAPI = "https://api.remove.bg/v1.0/removebg";
+
+
+            var unscreenKey = "k2k9KCBmSwwGgdHkDw5BPpZM";
+            var unscreenAPI = "https://api.unscreen.com/v1.0/videos";
+
+            Attachment attachment;
+            string imageUrl;
+            if (message.Content.Split(" ").Length > 2)
+            {
+                imageUrl = message.Content.Substring(13);
+            }
+            else
+            {
+                try
+                {
+                    dynamic attachments = message.Attachments;
+                    attachment = attachments[0];
+                    imageUrl = attachment.Url;
+                }
+                catch
+                {
+                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Could not initialize the attachment").Build());
+                    return;
+                }
+            }                                       
+
+            var saveUrl = $"../../../Resources/img/removebg_{message.Author}.png";
+
+            var isVideo = false;
+            var extension = imageUrl.Split(".")[imageUrl.Split(".").Length - 1].ToLower();
+            if (extension.Contains("gif") || extension.Contains("mp4")) isVideo = true;
+
+            
+            var response = await SendApiCall(0);
+            //await GetApiCall();
+
+            if (response.StatusCode == HttpStatusCode.PaymentRequired)
+            {
+                var retryCount = 0;
+                var wasBreaked = false;
+                HttpResponseMessage retryResponse;
+                do
+                {
+                    retryCount++;
+                    response = await SendApiCall(retryCount);
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        wasBreaked = true;
+                        break;
+                    }
+
+                } while (response.StatusCode == HttpStatusCode.PaymentRequired || retryCount >= removebgKeyList.Count());
+
+                if (!wasBreaked)
+                {
+                    await message.Channel.SendMessageAsync("Silverhaze needs to pay for this service... he broke, so no background removals for a month ORRRR donate your api key for 50 more removals a month ;)");
+                    return;
+                }                
+            }
+
+            if (response.StatusCode != HttpStatusCode.OK) return;
+
+            Byte[] bytes = await response.Content.ReadAsByteArrayAsync();
+            await File.WriteAllBytesAsync(saveUrl, bytes);
+
+
+
+            await message.Channel.SendFileAsync(saveUrl);
+            File.Delete(saveUrl);
+
+
+
+
+            //Api Call method POST
+            async Task<HttpResponseMessage> SendApiCall(int tryCount)
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    using (var request = new HttpRequestMessage(new HttpMethod("POST"), $"{(isVideo ? unscreenAPI : removebgAPI)}"))
+                    {
+                        request.Headers.TryAddWithoutValidation("X-API-Key", $"{(isVideo ? unscreenKey : removebgKeyList[tryCount])}");
+
+                        var multipartContent = new MultipartFormDataContent();
+                        multipartContent.Add(new StringContent(imageUrl), $"{(isVideo ? "video_url" : "image_url")}");
+                        if (isVideo)
+                        {
+                            multipartContent.Add(new StringContent(extension), "format");
+                            if(extension.Contains("mp4")) multipartContent.Add(new StringContent("000000"), "background_color");
+                        }
+                        request.Content = multipartContent;
+
+                        var response = await httpClient.SendAsync(request);
+
+                        return response;
+                    }
+                }
+            }
+
+            //Api Call method Get
+            async Task<HttpResponseMessage> GetApiCall()
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    using (var request = new HttpRequestMessage(new HttpMethod("GET"), $"{unscreenAPI}"))
+                    {
+                        request.Headers.TryAddWithoutValidation("X-API-Key", $"{unscreenKey}");
+
+                        var response = await httpClient.SendAsync(request);
+                        var content = await response.Content.ReadAsStringAsync();
+                        return response;
+                    }
+                }
+            }
         }
 
         [Help("statistics", "Shows statistics from beat saber players", "`!bs statistics`", HelpAttribute.Catergories.BotFunctions)]

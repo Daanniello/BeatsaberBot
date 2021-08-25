@@ -17,13 +17,13 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi.Models
         public long TotalDocs { get; set; }
 
         [JsonProperty("lastPage")]
-        public long LastPage { get; set; }
+        public long? LastPage { get; set; }
 
         [JsonProperty("prevPage")]
         public object PrevPage { get; set; }
 
         [JsonProperty("nextPage")]
-        public long NextPage { get; set; }
+        public long? NextPage { get; set; }
     }
 
     public partial class Doc

@@ -129,6 +129,37 @@ namespace DiscordBeatSaberBot
             }
             return false;
         }
+        public enum IdentityType
+        {
+            ScoresaberID,
+            DiscordID,                                    
+            Username,
+            None
+        }
+
+        public static async Task<KeyValuePair<IdentityType, string>> GetIdentityFromData(string content)
+        {
+            if(content == "") return KeyValuePair.Create(IdentityType.None, content);
+            // transfer a discordTag to a discordID
+            var parameter = content.Replace("<@!", "").Replace(">", "").Trim();
+
+            //Check if the parameter is a username or ID 
+            var isUsername = false;
+            if (!parameter.All(c => char.IsDigit(c))) isUsername = true;
+            else isUsername = false;
+            
+            if (isUsername)
+            {
+                return KeyValuePair.Create(IdentityType.Username, parameter);
+                
+            }
+            else
+            {
+                var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(parameter);
+                if (scoresaberID == "") return KeyValuePair.Create(IdentityType.ScoresaberID, parameter);
+                else return KeyValuePair.Create(IdentityType.DiscordID, parameter);
+            }            
+        }
 
         public static async  Task<bool> HasCertainRoleInNBSG(this SocketMessage message, DiscordSocketClient discord, params ulong[] RoleId)
         {

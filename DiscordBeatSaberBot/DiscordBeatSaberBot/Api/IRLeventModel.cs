@@ -15,7 +15,9 @@ namespace DiscordBeatSaberBot.Models
         public String url = "";
         public String imageUrl = "";
         public string locatie = "";
-
-
+        public string websiteUrl = "";
+        public string payment = "";
+        public string minmaxParticipants = "";
+        public string ageRequirement = "";
     }
 }

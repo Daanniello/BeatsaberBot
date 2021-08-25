@@ -110,6 +110,11 @@ namespace DiscordBeatSaberBot.Commands
             if (!message.Content.Substring(0, 4).Contains("!bsr"))
             {
                 var maps = await BeatSaverApi.GetMapsBySearch(search);
+                if(maps.Docs.Count() == 0)
+                {
+                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", $"**Could not find a map with the search value {search}**\n\n**The following type of searches are available:** \n*Scoresaber Hashcode*\n*BeatSaver KeyCode*\n*Map Name (could add mappers name for better results, or other elements)*").Build());
+                    return;
+                }
                 search = maps.Docs.First().Key;
             }
             
@@ -119,49 +124,79 @@ namespace DiscordBeatSaberBot.Commands
         [Help("RecentSong", "Get info from the latest song played", "!bs recentsong [DiscordTag or username]", HelpAttribute.Catergories.General)]
         public static async Task NewRecentSong(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            var content = message.Content;
-            var r = new RoleAssignment(discordSocketClient);
-            var discordId = message.Author.Id.ToString();
-            var userId = "";
-            if (int.TryParse(message.Content.Split(' ').Last(), out int n)) content = content.Substring(0, content.IndexOf(content.Split(' ').Last()) - 1);
-            if (n == 0) n = 1;
+            var parameters = message.Content.Substring(14).Trim();
+            var parameterAmount = parameters.Split(" ").Count();
+            var identity = await ValidationExtension.GetIdentityFromData(parameters.Split(" ")[0]);
 
-            if (message.Content.Contains("@"))
+            //Self function
+            if(parameters.Length <= 4)
             {
-                discordId = message.Content.Split(' ')[2].Replace("<@!", "").Replace(">", "");
-                userId = discordId;
+                var number = 1;
+                if (parameters != "") number = Convert.ToInt32(parameters.Trim());
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(scoresaberId, message, number);
+                return;
             }
-
-            if (await r.CheckIfDiscordIdIsLinked(discordId))
+            if(identity.Key == ValidationExtension.IdentityType.None)
             {
-                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(discordId);
-
-                await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(scoresaberId, message, n);
+                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", $"Could not find {parameters}").Build());
+                return;
             }
-            else
+            //third person function 
+            else if(parameterAmount == 1)
             {
-                if (content.Length <= 14)
+                if(identity.Key == ValidationExtension.IdentityType.DiscordID)
                 {
-                    await message.Channel.SendMessageAsync("", false,
-                        EmbedBuilderExtension.NullEmbed("Search failed",
-                                "You are not linked with the bot yet. Use (!bs link [scoresaberid]) to link", null, null)
-                            .Build());
+                    var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(identity.Value);
+                    await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(scoresaberId, message);
                     return;
                 }
-                if (userId != "")
+                else if(identity.Key == ValidationExtension.IdentityType.ScoresaberID)
                 {
-                    discordId = await RoleAssignment.GetScoresaberIdWithDiscordId(userId);
-                    if (discordId == "")
+                    await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(identity.Value, message);
+                    return;
+                }
+                else if (identity.Key == ValidationExtension.IdentityType.Username)
+                {
+                    var player = await ScoresaberAPI.GetPlayerByName(identity.Value);
+                    if(player == null)
                     {
-                        await message.Channel.SendMessageAsync("", false,
-                        EmbedBuilderExtension.NullEmbed("Search failed",
-                                "The person you are trying to search on is not linked with the bot", null, null)
-                            .Build());
+                        await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", $"Could not find {identity.Value}").Build());
                         return;
                     }
+                    var scoresaberID = player.Players[0].PlayerId;
+                    await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(scoresaberID, message);
+                    return;
                 }
+            }
+            //third person function with parameter
+            else if (parameterAmount == 2)
+            {
+                var number = Convert.ToInt32(parameters.Split(" ")[1]);
 
-                await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(discordId, message, n);
+                if (identity.Key == ValidationExtension.IdentityType.DiscordID)
+                {
+                    var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(identity.Value);
+                    await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(scoresaberId, message, number);
+                    return;
+                }
+                else if (identity.Key == ValidationExtension.IdentityType.ScoresaberID)
+                {
+                    await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(identity.Value, message, number);
+                    return;
+                }
+                else if (identity.Key == ValidationExtension.IdentityType.Username)
+                {
+                    var player = await ScoresaberAPI.GetPlayerByName(identity.Value);
+                    if (player == null)
+                    {
+                        await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", $"Could not find {identity.Value}").Build());
+                        return;
+                    }
+                    var scoresaberID = player.Players[0].PlayerId;
+                    await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(scoresaberID, message, number);
+                    return;
+                }
             }
         }       
 
@@ -265,9 +300,12 @@ namespace DiscordBeatSaberBot.Commands
             if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
             {
                 var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var pageParameter = message.Content.Split(" ").Last().Trim();
+                var pageNumber = 1;
+                var hasPage = pageParameter.All(x => char.IsDigit(x)) ? pageNumber = Convert.ToInt32(pageParameter) : pageNumber = 1;
                 //Create UserCard
-                await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, "Recentsongs");
-                await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberId);
+                await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, $"Recentsongs {(pageNumber == 1 ? "" : $"p.{ pageNumber}")}");
+                await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberId, pageNumber);
                 await message.Channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberId}.png");
                 await message.Channel.SendFileAsync($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
                 File.Delete($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
@@ -286,9 +324,13 @@ namespace DiscordBeatSaberBot.Commands
             if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
             {
                 var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+                var pageParameter = message.Content.Split(" ").Last().Trim();
+                var pageNumber = 1;
+                var hasPage = pageParameter.All(x => char.IsDigit(x)) ? pageNumber = Convert.ToInt32(pageParameter) : pageNumber = 1;
+
                 //Create UserCard
-                await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, "Topsongs");
-                await BeatSaberInfoExtension.GetAndCreateTopsongsCardImage(scoresaberId);
+                await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, $"Topsongs {(pageNumber == 1 ? "" : $"p.{pageNumber}")}");
+                await BeatSaberInfoExtension.GetAndCreateTopsongsCardImage(scoresaberId, pageNumber);
                 await message.Channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberId}.png");
                 await message.Channel.SendFileAsync($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
                 File.Delete($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
@@ -316,6 +358,34 @@ namespace DiscordBeatSaberBot.Commands
                 return;
             }
             await message.Channel.SendMessageAsync(link);
+        }
+
+        [Help("test", "New function :O test them out SoonTM", "`!bs test`", HelpAttribute.Catergories.General)]
+        public static async Task Test(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            Task.Run(async () => {
+                var embed = EmbedBuilderExtension.NullEmbed("Warning", "Weeeeeee");
+                embed.Color = Color.Red;
+                var msg = await message.Channel.SendMessageAsync("", false, embed.Build());
+
+                for (var i = 0; i < 4; i++)
+                {
+                    await Task.Delay(1000);
+                    if (embed.Color == Color.Red)
+                    {
+                        embed.Description = "Woooooooo";
+                        embed.Color = Color.Blue;
+                    }
+                    else
+                    {
+                        embed.Description = "Weeeeeeee";
+                        embed.Color = Color.Red;
+                    }
+
+                    await msg.ModifyAsync(x => x.Embed = embed.Build());
+                }
+            });           
+            
         }
 
         [Help("randomgif", "Gives a random gif from tenor.", "`!bs randomgif [parameter]` \nShows nsfw if its in a nsfw channel.", HelpAttribute.Catergories.General)]

@@ -19,7 +19,7 @@ namespace DiscordBeatSaberBot
                 builder.AddField(contentTitle, content);
             builder.Timestamp = DateTimeOffset.Now;
 
-            builder.WithColor(Color.DarkRed);
+            builder.WithColor(Color.Blue);
             return builder;
         }
     }

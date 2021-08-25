@@ -47,12 +47,13 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("RandomEvent", "Creates and Random Event for the dutch discord.", "!bs randomevent", HelpAttribute.Catergories.AdminCommands)]
+        [Help("Eventmanager", "A tool to create all type of events for the community", "!bs eventmanager", HelpAttribute.Catergories.AdminCommands)]
         static public async Task RandomEvent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            if (await message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194, 505486321595187220))
+            //Verified ID. user needs to be verified in the dutch discord group
+            if (await message.HasCertainRoleInNBSG(discordSocketClient, 573459086293598209))
             {
-                var embedBuilder = EmbedBuilderExtension.NullEmbed("Random Event Generator", "Starting random event handler...", null, null);
+                var embedBuilder = EmbedBuilderExtension.NullEmbed("Event manager", "Starting event creation...", null, null);
                 var msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
 
 

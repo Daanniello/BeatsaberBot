@@ -134,10 +134,10 @@ namespace DiscordBeatSaberBot.Commands.Functions
             var results = await DatabaseContext.ExecuteSelectQuery("SELECT Age from UserBeatSaberSettings");
             var ItemDictionary = new Dictionary<string, float>();
 
-            var age0to10 = 0;
-            var age10to15 = 0;
-            var age15to20 = 0;
-            var age20to25 = 0;
+            var age0to16 = 0;
+            var age16to18 = 0;
+            var age18to21 = 0;
+            var age21to25 = 0;
             var age25to30 = 0;
             var age30to100 = 0;
             foreach (var row in results)
@@ -147,21 +147,21 @@ namespace DiscordBeatSaberBot.Commands.Functions
                 var age = Convert.ToInt32(Regex.Replace(term, "[^0-9.]", ""));
                 if (age < 100 && age > 0)
                 {
-                    if (age > 0 && age < 10) age0to10++;
-                    else if (age >= 10 && age < 15) age10to15++;
-                    else if (age >= 15 && age < 20) age15to20++;
-                    else if (age >= 20 && age < 25) age20to25++;
+                    if (age > 0 && age < 16) age0to16++;
+                    else if (age >= 16 && age < 18) age16to18++;
+                    else if (age >= 18 && age < 21) age18to21++;
+                    else if (age >= 21 && age < 25) age21to25++;
                     else if (age >= 25 && age < 30) age25to30++;
                     else if (age >= 30 && age < 100) age30to100++;
 
                 }
             }
 
-            ItemDictionary.Add("0 to 10", age0to10);
-            ItemDictionary.Add("10 to 15", age10to15);
-            ItemDictionary.Add("15 to 20", age15to20);
-            ItemDictionary.Add("20 to 25", age20to25);
-            ItemDictionary.Add("25 to 30", age25to30);
+            ItemDictionary.Add("0 to 15", age0to16);
+            ItemDictionary.Add("16 to 17", age16to18);
+            ItemDictionary.Add("18 to 20", age18to21);
+            ItemDictionary.Add("21 to 24", age21to25);
+            ItemDictionary.Add("25 to 29", age25to30);
             ItemDictionary.Add("30 to 100", age30to100);
 
             var agePath = CreatePieChart(category.PersonalInfo, type.Age, ItemDictionary, "Age distribution");

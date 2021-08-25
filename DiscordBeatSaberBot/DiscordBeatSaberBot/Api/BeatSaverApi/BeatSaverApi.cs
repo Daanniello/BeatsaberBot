@@ -46,8 +46,15 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
                 if (httpResponseMessage2.StatusCode != HttpStatusCode.OK) return null;
 
                 var recentSongsJsonDataBeatSaver = await httpResponseMessage2.Content.ReadAsStringAsync();
-                var recentSongsInfoBeatSaver = JsonConvert.DeserializeObject<BeatSaverMapInfoModel>(recentSongsJsonDataBeatSaver);
-                return recentSongsInfoBeatSaver;
+                try
+                {
+                    var recentSongsInfoBeatSaver = JsonConvert.DeserializeObject<BeatSaverMapInfoModel>(recentSongsJsonDataBeatSaver);
+                    return recentSongsInfoBeatSaver;
+                }
+                catch
+                {
+                    return null;
+                }                
             }            
         }
 

@@ -78,6 +78,7 @@ namespace DiscordBeatSaberBot
             if (hasBeenInitialized) return;
             try
             {
+                //await discordSocketClient.DownloadUsersAsync(discordSocketClient.Guilds);
                 hasBeenInitialized = true;
                 //Setup up the depencendy injection
                 var serviceCollection = new ServiceCollection();
@@ -182,7 +183,11 @@ namespace DiscordBeatSaberBot
                     {
                         commandsEachHour++;
                         var rateLimitCount = rateLimit.AddCall(message.Author.Id);
-                        if (rateLimitCount > rateLimit.callsBeforeLimit) message.Channel.SendMessageAsync($"<@!{message.Author.Id}> You are being rate limited from now on. The rate limit is {rateLimit.callsBeforeLimit} calls each minute. No worries, you can use commands soon again.");
+                        if (rateLimitCount > rateLimit.callsBeforeLimit)
+                        {
+                            message.Channel.SendMessageAsync($"<@!{message.Author.Id}> You are being rate limited from now on. The rate limit is {rateLimit.callsBeforeLimit} calls each minute. No worries, you can use commands soon again.");
+
+                        }
                     }
                 }                
             }

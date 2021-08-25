@@ -139,16 +139,33 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public async Task<ScoresaberSongsModel> GetScoresRecent()
+        /// <summary>
+        /// One page is a list of 5 maps from the most recent played tab
+        /// </summary>
+        /// <param name="pageNr"></param>
+        /// <returns></returns>
+        public async Task<ScoresaberSongsModel> GetScoresRecent(int pageNr = 1, int downloadExtraPagesNumber = 0)
         {
             try
             {
                 Console.WriteLine("Scoresaber request for recent scores");
                 var RecentScores = new ScoresaberSongsModel();
                 var apiType = "/scores";
-                var endpoint = "/recent";
+                var endpoint = $"/recent/{pageNr}";
                 var result = await GetData(apiType, endpoint);
                 RecentScores = JsonConvert.DeserializeObject<ScoresaberSongsModel>(result);
+                for (var i = 1; i <= downloadExtraPagesNumber; i++)
+                {
+                    endpoint = $"/recent/{pageNr + i}";
+                    var result2 = await GetData(apiType, endpoint);
+                    var tempResults = JsonConvert.DeserializeObject<ScoresaberSongsModel>(result2);
+                    
+                    foreach (var score in tempResults.Scores)
+                    {
+                        RecentScores.Scores = RecentScores.Scores.Append(score).ToArray();
+                    }                    
+                }
+
                 return RecentScores;
             }
             catch (Exception e)
@@ -158,7 +175,7 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public async Task<Score> GetScoresRecent(int recentSongNr = 1)
+        public async Task<Score> GetRecentScore(int recentSongNr = 1)
         {
             try
             {
@@ -185,15 +202,16 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public async Task<ScoresaberSongsModel> GetTopScores()
+        public async Task<ScoresaberSongsModel> GetTopScores(int page = 1)
         {
             try
             {
                 Console.WriteLine("Scoresaber request for top scores");
                 var topScores = new ScoresaberSongsModel();
                 var apiType = "/scores";
-                var endpoint = "/top";
+                var endpoint = $"/top/{page}";
                 var result = await GetData(apiType, endpoint);
+                if (result == null) return null;
 
                 topScores = JsonConvert.DeserializeObject<ScoresaberSongsModel>(result);
                 return topScores;
@@ -205,7 +223,7 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public async Task<Score> GetTopScores(int topSongNr = 1)
+        public async Task<Score> GetTopScore(int topSongNr = 1)
         {
             try
             {

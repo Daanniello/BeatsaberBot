@@ -39,10 +39,9 @@ namespace DiscordBeatSaberBot.Handlers
 
             if (reaction.UserId != 504633036902498314 && data.Keys.Contains(reaction.MessageId.ToString()))
             {
-                //green_check (671412276594475018)
-                //blue_check (671413239992549387)
-                //red_check (671413258468720650)
-                //<:peepoLimburg:600782036919123968>
+                var guild = discordSocketClient.GetGuild(505485680344956928);
+                await guild.DownloadUsersAsync();
+                var u = guild.GetUser(reaction.UserId);
 
                 if (reaction.Emote.ToString() == "<:green_check:671412276594475018>")
                 {
@@ -52,7 +51,6 @@ namespace DiscordBeatSaberBot.Handlers
                     var embededMessage = (IUserMessage)await eventDetailChannel.GetMessageAsync(ulong.Parse(msgId));
 
                     var embedInfo = embededMessage.Embeds.First();
-                    var user = discordSocketClient.GetUser(reaction.User.Value.Id);
 
                     var des = embedInfo.Description.Split("\n");
                     var description = "";
@@ -73,20 +71,17 @@ namespace DiscordBeatSaberBot.Handlers
                 }
 
                 if (reaction.Emote.ToString() == "<:red_check:671413258468720650>")
-                {
-                    var user = discordSocketClient.GetUser(reaction.User.Value.Id);
+                {                   
                     var deelnemersMsgData = JsonExtension.ToDictionary<string[]>(data[reaction.MessageId.ToString()]);
                     var d = deelnemersMsgData[reaction.MessageId + "0"];
-                    var generalChannel = discordSocketClient.GetGuild(505485680344956928)
-                        .GetChannel(ulong.Parse(d.First()));
-                    await generalChannel.AddPermissionOverwriteAsync(user,
+                    var generalChannel = discordSocketClient.GetGuild(505485680344956928).GetChannel(ulong.Parse(d.First()));
+                    await generalChannel.AddPermissionOverwriteAsync(u,
                         new OverwritePermissions().Modify(sendMessages: PermValue.Deny, viewChannel: PermValue.Deny,
                             readMessageHistory: PermValue.Deny));
 
 
-                    var user2 = discordSocketClient.GetUser(reaction.User.Value.Id);
                     var infoChannel = discordSocketClient.GetGuild(505485680344956928).GetChannel(reaction.Channel.Id);
-                    await generalChannel.AddPermissionOverwriteAsync(user2,
+                    await generalChannel.AddPermissionOverwriteAsync(u,
                         new OverwritePermissions().Modify(sendMessages: PermValue.Deny, viewChannel: PermValue.Deny,
                             readMessageHistory: PermValue.Deny));
                     return;

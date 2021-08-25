@@ -25,7 +25,7 @@ namespace DiscordBeatSaberBot.Handlers
                 var messageCommand = message.Content.ToLower();
 
                 //command debug channel
-                var commandDebugEmbed = EmbedBuilderExtension.NullEmbed("Successfull command", $"**User:** {message.Author.Id} \n\n**Used:** {messageCommand}");
+                var commandDebugEmbed = EmbedBuilderExtension.NullEmbed("Successfull command", $"**User:** <@!{message.Author.Id}> \n\n**Used:** {messageCommand}");
                 commandDebugEmbed.Color = Color.Green;
                 var commandDebugMessage = await discordSocketClient.GetGuild(731936395223892028).GetTextChannel(853921035669340201).SendMessageAsync("", false, commandDebugEmbed.Build());
 
@@ -64,6 +64,11 @@ namespace DiscordBeatSaberBot.Handlers
                         message.Channel.SendMessageAsync("mama");
                         return true;
                     }
+                    else if (messageCommand.Contains(" test"))
+                    {
+                        HandleTaskException(GlobalScoresaberCommands.Test(discordSocketClient, message));
+                        return true;
+                    }
                     else if (messageCommand.Contains(" topsongs"))
                     {
                         HandleTaskException(GlobalScoresaberCommands.TopSongs(discordSocketClient, message));
@@ -97,6 +102,11 @@ namespace DiscordBeatSaberBot.Handlers
                     else if (messageCommand.Contains(" recentsong"))
                     {
                         HandleTaskException(GlobalScoresaberCommands.NewRecentSong(discordSocketClient, message));
+                        return true;
+                    }
+                    else if (messageCommand.Contains(" removebg"))
+                    {
+                        HandleTaskException(GenericCommands.RemoveBG(discordSocketClient, message));
                         return true;
                     }
                     else if (messageCommand.Contains(" poll"))
@@ -175,19 +185,19 @@ namespace DiscordBeatSaberBot.Handlers
                         //GlobalScoresaberCommands.Songs(discordSocketClient, message);
                         return true;
                     }
-                    else if (messageCommand.Contains(" irlevent create"))
-                    {
-                        HandleTaskException(DutchServerCommands.IRLevent(discordSocketClient, message));
-                        return true;
-                    }
-                    else if (messageCommand.Contains(" randomevent create"))
+                    //else if (messageCommand.Contains(" irlevent create"))
+                    //{
+                    //    HandleTaskException(DutchServerCommands.IRLevent(discordSocketClient, message));
+                    //    return true;
+                    //}
+                    else if (messageCommand.Contains(" eventmanager"))
                     {
                         HandleTaskException(DutchServerCommands.RandomEvent(discordSocketClient, message));
                         return true;
                     }
                     else
                     {
-                        if (!messageCommand.Contains("!bsr"))
+                        if (!messageCommand.Contains("!bsr") && messageCommand.Contains("!bs "))
                         {
                             var embedBuilder = EmbedBuilderExtension.NullEmbed("Oops", "There is no command like that, try something else", null, null);
                             await message.Channel.SendMessageAsync(null, false, embedBuilder.Build());

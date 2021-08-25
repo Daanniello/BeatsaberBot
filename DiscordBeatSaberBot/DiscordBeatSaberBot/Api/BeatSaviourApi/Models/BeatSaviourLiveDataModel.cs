@@ -121,7 +121,7 @@ namespace DiscordBeatSaberBot.Api.BeatSaviourApi.Models
         public double RightTimeDependence { get; set; }
 
         [JsonProperty("leftTimeDependence")]
-        public double rightTimeDependence { get; set; }
+        public double LeftTimeDependence { get; set; }
 
         [JsonProperty("averagePostswing")]
         public double AveragePostswing { get; set; }

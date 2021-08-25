@@ -45,16 +45,16 @@ namespace DiscordBeatSaberBot.Handlers
 
         private async Task QuestionRound()
         {
-            ModifyEmbed(msg, "Wat is de titel van het IRL event?");
+            ModifyEmbed(msg, "Wat wordt de titel van het IRL event?");
             irlEventModel.title = await WaitForReaction();
 
-            ModifyEmbed(msg, "Wie is/zijn de eventleiders? *geeft rechten om info toe te voegen of te wijzigen");
+            ModifyEmbed(msg, "Wie is/zijn de eventleiders? *geeft rechten om info toe te voegen of te wijzigen* **gebruik discord tags**");
             irlEventModel.eventLeider = await WaitForReaction();
 
-            ModifyEmbed(msg, "Wat is de website url?");
+            ModifyEmbed(msg, "Wat is de url van de website?");
             irlEventModel.url = await WaitForReaction();
 
-            ModifyEmbed(msg, "Wat is de datum? Bijvoorbeeld (05 02 2020 14:00)");
+            ModifyEmbed(msg, "Wat is de datum van het event? formaat: (05 02 2020 14:00) als in (dag maand jaar uur)");
             var date = await WaitForReaction();
             try
             {
@@ -62,7 +62,7 @@ namespace DiscordBeatSaberBot.Handlers
             }
             catch
             {
-                ModifyEmbed(msg, "Datum formaat is verkeerd. Bijvoorbeeld (05 02 2020 14:00)");
+                ModifyEmbed(msg, "Datum formaat is verkeerd. formaat: (05 02 2020 14:00)");
                 var date2 = await WaitForReaction();
                 irlEventModel.date = DateTime.Parse(date2, new CultureInfo("de-DE"));
             }
@@ -70,10 +70,10 @@ namespace DiscordBeatSaberBot.Handlers
             ModifyEmbed(msg, "Voeg een image toe dat het IRL event beschrijft");
             irlEventModel.imageUrl = await WaitForReaction();
 
-            ModifyEmbed(msg, "Wat is de prijs om deel te nemen aan het event? Bijvoorbeeld (5.00)");
+            ModifyEmbed(msg, "Wat is de prijs om deel te nemen aan het event? Formaat: (5.00)");
             irlEventModel.price = await WaitForReaction();
 
-            ModifyEmbed(msg, "Wat is de beschrijving van het event?");
+            ModifyEmbed(msg, "Wat wordt de beschrijving van het event?");
             irlEventModel.description = await WaitForReaction();
 
 

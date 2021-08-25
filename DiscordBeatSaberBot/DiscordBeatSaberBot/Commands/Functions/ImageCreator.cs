@@ -118,27 +118,33 @@ namespace DiscordBeatSaberBot
 
         }
 
-        public void AddImage(string path, float x, float y, int width, int height, float opacity = 1)
+        public void AddImage(string path, float x, float y, int width, int height, float opacity = 1, bool isLocalFile = false)
         {
             Image overlayImage = null;
-
-            WebRequest request;
-            try
+            if (isLocalFile)
             {
-                request = WebRequest.Create(path);
-                using (var response = request.GetResponse())
-                using (var stream = response.GetResponseStream())
-                {
-                    overlayImage = Bitmap.FromStream(stream);
-                }
+                overlayImage = Image.FromFile(path);                
             }
-            catch
+            else
             {
-                request = WebRequest.Create("https://www.thermaxglobal.com/wp-content/uploads/2020/05/image-not-found.jpg");
-                using (var response = request.GetResponse())
-                using (var stream = response.GetResponseStream())
+                WebRequest request;
+                try
                 {
-                    overlayImage = Bitmap.FromStream(stream);
+                    request = WebRequest.Create(path);
+                    using (var response = request.GetResponse())
+                    using (var stream = response.GetResponseStream())
+                    {
+                        overlayImage = Bitmap.FromStream(stream);
+                    }
+                }
+                catch
+                {
+                    request = WebRequest.Create("https://www.thermaxglobal.com/wp-content/uploads/2020/05/image-not-found.jpg");
+                    using (var response = request.GetResponse())
+                    using (var stream = response.GetResponseStream())
+                    {
+                        overlayImage = Bitmap.FromStream(stream);
+                    }
                 }
             }
 
