@@ -15,7 +15,7 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
     {
         private string _songId;
         public int apiCallCount;
-        private static string _baseURL = "https://beatsaver.com/api/";
+        private static string _baseURL = "https://api.beatsaver.com/";
 
         public BeatSaverApi(string songId)
         {
@@ -58,15 +58,23 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
             }            
         }
 
-        public static async Task<BeatSaverMapInfoModel> GetMapByKey(string key)
+        public static async Task<Api.BeatSaverApi.Models.New.BeatSaverMapModelNew> GetMapByKey(string key)
         {
-            var mapJsonDataBeatSaver = await Get($"maps/detail/{key}");
+            var mapJsonDataBeatSaver = await Get($"maps/id/{key}");
             if (mapJsonDataBeatSaver == null) return null;
-            var mapInfoBeatSaver = JsonConvert.DeserializeObject<BeatSaverMapInfoModel>(mapJsonDataBeatSaver);
+            var mapInfoBeatSaver = JsonConvert.DeserializeObject<Api.BeatSaverApi.Models.New.BeatSaverMapModelNew>(mapJsonDataBeatSaver);
             return mapInfoBeatSaver;
         }
 
-        public static async Task<MapsBySearchModel> GetMapsBySearch(string searchText)
+        public static async Task<Api.BeatSaverApi.Models.New.BeatSaverMapModelNew> GetMapByHash(string hash)
+        {
+            var mapJsonDataBeatSaver = await Get($"maps/hash/{hash}");
+            if (mapJsonDataBeatSaver == null) return null;
+            var mapInfoBeatSaver = JsonConvert.DeserializeObject<Api.BeatSaverApi.Models.New.BeatSaverMapModelNew>(mapJsonDataBeatSaver);
+            return mapInfoBeatSaver;
+        }
+
+        public static async Task<Api.BeatSaverApi.Models.New2.MapsBySearchModel> GetMapsBySearch(string searchText)
         {
             var data = await Get($"search/text/0?q={searchText}&?automapper=1");
             if (data == null) return null;
@@ -74,7 +82,7 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
             {
 
 
-                var recentSongsInfoBeatSaver = JsonConvert.DeserializeObject<MapsBySearchModel>(data);
+                var recentSongsInfoBeatSaver = JsonConvert.DeserializeObject<Api.BeatSaverApi.Models.New2.MapsBySearchModel>(data);
                 return recentSongsInfoBeatSaver;
             }
             catch (Exception ex)

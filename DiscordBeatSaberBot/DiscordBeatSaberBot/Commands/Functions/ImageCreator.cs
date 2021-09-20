@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot
 {
-    class ImageCreator
+    public class ImageCreator
     {
         private Bitmap _bitmap;
         public ImageCreator(string templatePath)
@@ -203,15 +203,16 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public void DrawRectangle(int x, int y, int with, int height, Color? fillColor = null, Color? outerColor = null)
+        public void DrawRectangle(int x, int y, int with, int height, Color? fillColor = null, Color? outerColor = null, int opacity = 255)
         {
             // Create pen.
             SolidBrush brush = new SolidBrush(Color.White);
             if (fillColor != null)
             {
-                brush = new SolidBrush((Color)fillColor);
+                var filling = Color.FromArgb(opacity, (Color)fillColor);
+                brush = new SolidBrush(filling);
             }
-
+            
             Pen pen = new Pen(Color.Gray, 3);
             if (outerColor != null)
             {
@@ -229,7 +230,7 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public void AddImageRounded(string path, float x, float y, int width, int height)
+        public void AddImageRounded(string path, float x, float y, int width, int height, float opacity = 1, int blurSize = 0)
         {
             Image overlayImage = null;
 
@@ -255,9 +256,12 @@ namespace DiscordBeatSaberBot
 
             Graphics g = Graphics.FromImage(_bitmap);
 
-            g.DrawImage(RoundCorners(overlayImage, 25, Color.FromArgb(0, 32, 32, 32)), x, y, width, height);
+            if (blurSize > 0) overlayImage = Blur((Bitmap)overlayImage, blurSize);
 
-        }
+            var imageRounded = RoundCorners(overlayImage, 25, Color.FromArgb(0, 32, 32, 32));
+            g.DrawImage(SetImageOpacity(imageRounded, opacity), x, y, width, height);
+
+        }      
 
         public void AddNoteSlashEffect(string path, float x, float y, int width, int height)
         {
@@ -297,6 +301,59 @@ namespace DiscordBeatSaberBot
                 g.FillPath(brush, gp);
                 return RoundedImage;
             }
+        }
+
+
+        public static Bitmap Blur(Bitmap image, Int32 blurSize)
+        {
+            return Blur(image, new Rectangle(0, 0, image.Width, image.Height), blurSize);
+        }
+
+        private static Bitmap Blur(Bitmap image, Rectangle rectangle, Int32 blurSize)
+        {
+            Bitmap blurred = new Bitmap(image.Width, image.Height);
+
+            // make an exact copy of the bitmap provided
+            using (Graphics graphics = Graphics.FromImage(blurred))
+                graphics.DrawImage(image, new Rectangle(0, 0, image.Width, image.Height),
+                    new Rectangle(0, 0, image.Width, image.Height), GraphicsUnit.Pixel);
+
+            // look at every pixel in the blur rectangle
+            for (int xx = rectangle.X; xx < rectangle.X + rectangle.Width; xx++)
+            {
+                for (int yy = rectangle.Y; yy < rectangle.Y + rectangle.Height; yy++)
+                {
+                    int avgR = 0, avgG = 0, avgB = 0;
+                    int blurPixelCount = 0;
+
+                    // average the color of the red, green and blue for each pixel in the
+                    // blur size while making sure you don't go outside the image bounds
+                    for (int x = xx; (x < xx + blurSize && x < image.Width); x++)
+                    {
+                        for (int y = yy; (y < yy + blurSize && y < image.Height); y++)
+                        {
+                            Color pixel = blurred.GetPixel(x, y);
+
+                            avgR += pixel.R;
+                            avgG += pixel.G;
+                            avgB += pixel.B;
+
+                            blurPixelCount++;
+                        }
+                    }
+
+                    avgR = avgR / blurPixelCount;
+                    avgG = avgG / blurPixelCount;
+                    avgB = avgB / blurPixelCount;
+
+                    // now that we know the average for the blur size, set each pixel to that color
+                    for (int x = xx; x < xx + blurSize && x < image.Width && x < rectangle.Width; x++)
+                        for (int y = yy; y < yy + blurSize && y < image.Height && y < rectangle.Height; y++)
+                            blurred.SetPixel(x, y, Color.FromArgb(avgR, avgG, avgB));
+                }
+            }
+
+            return blurred;
         }
 
         private Tuple<Image, Image> AddNoteSlashEffect(Image StartImage, int CornerRadius, Color BackgroundColor)

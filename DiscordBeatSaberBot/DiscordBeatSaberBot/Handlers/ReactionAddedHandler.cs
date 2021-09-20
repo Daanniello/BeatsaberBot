@@ -35,7 +35,8 @@ namespace DiscordBeatSaberBot.Handlers
             }
 
             var data = JsonExtension.GetJsonData("../../../Resources/irleventdata.txt");
-
+            #region Event Manager
+            //Event Manager reactions
             if (reaction.UserId != 504633036902498314 && data.Keys.Contains(reaction.MessageId.ToString()))
             {
                 var guild = discordSocketClient.GetGuild(505485680344956928);
@@ -105,6 +106,7 @@ namespace DiscordBeatSaberBot.Handlers
                             readMessageHistory: PermValue.Deny));
                 }
             }
+            #endregion
 
             if (reaction.MessageId.ToString() == "586248421715738629")
             {

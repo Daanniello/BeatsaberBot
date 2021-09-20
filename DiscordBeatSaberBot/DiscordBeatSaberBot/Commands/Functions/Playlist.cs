@@ -39,8 +39,8 @@ namespace DiscordBeatSaberBot.Commands.Functions
             Playlist.Song[] songs = new Playlist.Song[keycodes.Length];
             for (var i = 0; i < keycodes.Length; i++)
             {
-                var map = await BeatSaverApi.GetMapByKey(keycodes[i].Trim());
-                songs[i] = new Playlist.Song() { Hash = map.Hash };
+                Api.BeatSaverApi.Models.New.BeatSaverMapModelNew map = await BeatSaverApi.GetMapByKey(keycodes[i].Trim());
+                songs[i] = new Playlist.Song() { Hash = map.Versions.First().Hash };
             }
             playlistModel.Songs = songs;
 
