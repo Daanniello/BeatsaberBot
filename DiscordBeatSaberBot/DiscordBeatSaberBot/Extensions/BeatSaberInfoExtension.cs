@@ -833,6 +833,7 @@ namespace DiscordBeatSaberBot.Extensions
                 }
 
                 await message.Channel.SendFileAsync($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png", embed: embedBuilder.Build());
+                await Task.Delay(2000);
                 File.Delete($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png");
             }
 
@@ -2029,10 +2030,10 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.Create($"../../../Resources/img/UserCard_{scoresaberId}.png");
         }
 
-        public static async Task GetAndCreateRecentsongsCardImage(string scoresaberId, int page = 1)
+        public static async Task GetAndCreateRecentsongsCardImage(string scoresaberId, int page = 1, bool isTopsong = false)
         {
             var playerRaw = new ScoresaberAPI(scoresaberId);
-            var playerRecentScores = await playerRaw.GetScoresRecent(page);
+            var playerRecentScores = isTopsong ? await playerRaw.GetTopScores(page) : await playerRaw.GetScoresRecent(page);
 
 
             var rankingCardCreator = new ImageCreator("../../../Resources/img/RecentsongsCard-Template-new2.png");
@@ -2054,7 +2055,7 @@ namespace DiscordBeatSaberBot.Extensions
                 if (playerRecentScores.Scores[x].Rank == 2) rankcolor = System.Drawing.Color.White;
                 if (playerRecentScores.Scores[x].Rank == 3) rankcolor = System.Drawing.Color.SandyBrown;
 
-                if (rankcolor != System.Drawing.Color.LightGray) rankingCardCreator.DrawRectangle(1555, marigin, 600, 180, rankcolor, opacity: 100);
+                if (rankcolor != System.Drawing.Color.LightGray) rankingCardCreator.DrawRectangle(1555, marigin, 600, 180, rankcolor, opacity: 180);
                 rankingCardCreator.AddText($"{playerRecentScores.Scores[x].Name}", rankcolor, fontsize, 200, marigin + 0);
 
                 var rankTextSize = rankingCardCreator.AddText($"#{playerRecentScores.Scores[x].Rank}", rankcolor, 50, 200, marigin + 110);

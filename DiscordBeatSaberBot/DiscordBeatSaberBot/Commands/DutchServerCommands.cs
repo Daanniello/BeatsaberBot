@@ -123,7 +123,7 @@ namespace DiscordBeatSaberBot.Commands
                     return;
                 }
 
-                await new WelcomeInterviewHandler(discordSocketClient, message.Channel, message.Author.Id).AskForInterview();
+                //await new WelcomeInterviewHandler(discordSocketClient, message.Channel, message.Author.Id).AskForInterview();
 
                 r.MakeRequest(message, 505485680344956928, 549350982081970176);
 

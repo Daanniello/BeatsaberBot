@@ -169,6 +169,32 @@ namespace DiscordBeatSaberBot.Handlers
                         HandleTaskException(DutchServerCommands.LinkScoresaberWithDiscord(discordSocketClient, message));
                         return true;
                     }
+                    else if (messageCommand.Contains(" adminlink"))
+                    {
+                        if(message.Author.Id == 138439306774577152)
+                        {
+                            var content = message.Content.Substring(14);
+                            var elements = content.Split(" ");
+                            var discordId = elements[0];
+                            var scoresaberId = elements[1];
+                            var chnl = message.Channel as SocketGuildChannel;
+
+                            var msg = await message.Channel.SendMessageAsync($"Are you sure you want to add this user to the database? DiscordID: {discordId} | ScoresaberID: {scoresaberId}");
+                            await msg.AddReactionAsync(Emote.Parse("<:green_check:671412276594475018>"));
+                            discordSocketClient.ReactionAdded += DiscordSocketClient_ReactionAdded;
+                            async Task DiscordSocketClient_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+                            {                                
+                                if (arg3.UserId == 138439306774577152 && arg3.Emote.Name == "green_check")
+                                {
+                                    discordSocketClient.ReactionAdded -= DiscordSocketClient_ReactionAdded;
+                                    await message.Channel.SendMessageAsync("Done");
+                                    await new RoleAssignment(discordSocketClient).LinkAccount(discordId, scoresaberId, chnl.Guild.Id);
+                                    return;
+                                }                             
+                                return;
+                            }                            
+                        }                        
+                    }
                     else if (messageCommand.Contains(" profile"))
                     {
                         HandleTaskException(GlobalScoresaberCommands.Profile(discordSocketClient, message));
@@ -217,7 +243,8 @@ namespace DiscordBeatSaberBot.Handlers
                 return false;
             }
             return false;
-        }
+        }       
+
         public Task HandleTaskException(Task task)
         {
             try

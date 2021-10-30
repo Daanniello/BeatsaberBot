@@ -242,7 +242,7 @@ namespace DiscordBeatSaberBot.Commands
         }
 
         [Help("Recentsongs", "Creates a profile from your linked scoresaber with your 5 recentsongs as png", "!bs recentsongs", HelpAttribute.Catergories.General)]
-        public static async Task Recentsongs(DiscordSocketClient discordSocketClient, SocketMessage message)
+        public static async Task Recentsongs(DiscordSocketClient discordSocketClient, SocketMessage message, bool isTopsongs = false)
         {
             var r = new RoleAssignment(discordSocketClient);
             if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
@@ -252,8 +252,8 @@ namespace DiscordBeatSaberBot.Commands
                 var pageNumber = 1;
                 var hasPage = pageParameter.All(x => char.IsDigit(x)) ? pageNumber = Convert.ToInt32(pageParameter) : pageNumber = 1;
                 //Create UserCard
-                await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, $"Recentsongs {(pageNumber == 1 ? "" : $"p.{ pageNumber}")}");
-                await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberId, pageNumber);
+                await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, isTopsongs ? "Topsongs" : "Recentsongs" + $" {(pageNumber == 1 ? "" : $"p.{ pageNumber}")}");
+                await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberId, pageNumber, isTopsongs);
                 await message.Channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberId}.png");
                 await message.Channel.SendFileAsync($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
                 File.Delete($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
@@ -268,26 +268,27 @@ namespace DiscordBeatSaberBot.Commands
         [Help("Topsongs", "Creates a profile from your linked scoresaber with your 5 topsongs as png", "!bs topsongs", HelpAttribute.Catergories.General)]
         public static async Task TopSongs(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            var r = new RoleAssignment(discordSocketClient);
-            if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
-            {
-                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                var pageParameter = message.Content.Split(" ").Last().Trim();
-                var pageNumber = 1;
-                var hasPage = pageParameter.All(x => char.IsDigit(x)) ? pageNumber = Convert.ToInt32(pageParameter) : pageNumber = 1;
+            await Recentsongs(discordSocketClient, message, true);
+            //var r = new RoleAssignment(discordSocketClient);
+            //if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
+            //{
+            //    var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
+            //    var pageParameter = message.Content.Split(" ").Last().Trim();
+            //    var pageNumber = 1;
+            //    var hasPage = pageParameter.All(x => char.IsDigit(x)) ? pageNumber = Convert.ToInt32(pageParameter) : pageNumber = 1;
 
-                //Create UserCard
-                await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, $"Topsongs {(pageNumber == 1 ? "" : $"p.{pageNumber}")}");
-                await BeatSaberInfoExtension.GetAndCreateTopsongsCardImage(scoresaberId, pageNumber);
-                await message.Channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberId}.png");
-                await message.Channel.SendFileAsync($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
-                File.Delete($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
-                File.Delete($"../../../Resources/img/UserCard_{scoresaberId}.png");
-            }
-            else
-            {
-                message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Scoresaber linked", "You have not linked your scoresaber with discord. Use '!bs link [ScoresaberId]' to link your account.").Build());
-            }
+            //    //Create UserCard
+            //    await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, $"Topsongs {(pageNumber == 1 ? "" : $"p.{pageNumber}")}");
+            //    await BeatSaberInfoExtension.GetAndCreateTopsongsCardImage(scoresaberId, pageNumber);
+            //    await message.Channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberId}.png");
+            //    await message.Channel.SendFileAsync($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
+            //    File.Delete($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
+            //    File.Delete($"../../../Resources/img/UserCard_{scoresaberId}.png");
+            //}
+            //else
+            //{
+            //    message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Scoresaber linked", "You have not linked your scoresaber with discord. Use '!bs link [ScoresaberId]' to link your account.").Build());
+            //}
         }
 
         [Help("randomcringe", "Gives a random gif from giphy.", "`!bs randomcringe [parameter]` \nShows nsfw if its in a nsfw channel.", HelpAttribute.Catergories.General)]

@@ -92,7 +92,7 @@ namespace DiscordBeatSaberBot.Commands
                 }
             }                                       
 
-            var saveUrl = $"../../../Resources/img/removebg_{message.Author}.png";
+            var saveUrl = $"../../../Resources/img/removebg_{message.Author}.gif";
 
             var isVideo = false;
             var extension = imageUrl.Split(".")[imageUrl.Split(".").Length - 1].ToLower();

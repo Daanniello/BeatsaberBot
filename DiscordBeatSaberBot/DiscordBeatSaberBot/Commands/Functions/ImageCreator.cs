@@ -209,7 +209,7 @@ namespace DiscordBeatSaberBot
             SolidBrush brush = new SolidBrush(Color.White);
             if (fillColor != null)
             {
-                var filling = Color.FromArgb(opacity, (Color)fillColor);
+                var filling = Color.FromArgb(fillColor.Value.A == null || opacity != 255 ? opacity : fillColor.Value.A, (Color)fillColor);
                 brush = new SolidBrush(filling);
             }
             

@@ -91,6 +91,7 @@ namespace DiscordBeatSaberBot
 
         public static string QueryCheck(string query)
         {
+            query = query.Replace("%27", " ");
             var validated = query.Replace("'", "`").Replace(";", "");
             return validated;
         }
