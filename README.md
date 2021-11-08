@@ -35,7 +35,7 @@ Usage: !bs search\
 
 **TopSong**\
 Usage: !bs topsong\
-*This is data without the BeatSavior mod installed*
+*This is data without the BeatSavior mod installed*\
 ![Topsong](https://i.imgur.com/NmCanqv.png)
 
 **TopSongs**\
