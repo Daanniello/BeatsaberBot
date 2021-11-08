@@ -23,7 +23,7 @@ Usage: !bs profile\
 Usage: !bs recentsong\
 *This is data with the BeatSavior mod installed*
 *Without beatsavior mod the data is limited*
-![Recentsong](https://i.imgur.com/TugJK4z.png)
+![Recentsong](https://i.imgur.com/eOHL61S.png)
 
 **RecentSongs**\
 Usage: !bs recentsongs\
@@ -35,6 +35,7 @@ Usage: !bs search\
 
 **TopSong**\
 Usage: !bs topsong\
+*This is data without the BeatSavior mod installed*
 ![Topsong](https://i.imgur.com/NmCanqv.png)
 
 **TopSongs**\
