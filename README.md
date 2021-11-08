@@ -1,6 +1,6 @@
-![logo](https://i.imgur.com/Veoor6q.png)
-
 # BeatsaberBot
+<img src="https://i.imgur.com/Veoor6q.png" width="200" height="200">
+
 The Beat Saber Discord bot that helps Discord communities to have more\
 interesting Beat Saber related content inside the servers.\
 The bot allows you to share achievements, settings and statistics easily.\
