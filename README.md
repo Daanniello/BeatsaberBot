@@ -27,7 +27,11 @@ Usage: !bs recentsong\
 
 **RecentSongs**\
 Usage: !bs recentsongs\
-![Recentsongs](https://i.imgur.com/sOhCqnI.png)
+![Recentsongs](https://i.imgur.com/rQIx1PK.png)
+
+**Search Everyone**\
+Usage: !bs search\
+![Recentsongs](https://i.imgur.com/VexW2yf.png)
 
 **TopSong**\
 Usage: !bs topsong\
@@ -35,7 +39,7 @@ Usage: !bs topsong\
 
 **TopSongs**\
 Usage: !bs topsongs\
-![Topsongs](https://i.imgur.com/tzK7Kjt.png)
+![Topsongs](https://i.imgur.com/lSH4Whb.png)
 
 **Settings page**\
 Usage: !bs settings\
