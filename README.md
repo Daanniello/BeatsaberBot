@@ -1,8 +1,10 @@
 ![logo](https://i.imgur.com/Veoor6q.png)
 
 # BeatsaberBot
-The Beat Saber Discord bot helps Discord communities to have more interesting Beat Saber related content inside the servers.
-The bot allows you to share achievements, settings and statistics easily. 
+The Beat Saber Discord bot that helps Discord communities to have more\
+interesting Beat Saber related content inside the servers.\
+The bot allows you to share achievements, settings and statistics easily.\
+Currently being **used in over 400 servers** with **a total of 40.000 users** 
 
 
 [Add Beat Saber Bot to your server](https://discordapp.com/oauth2/authorize?&client_id=504633036902498314&scope=bot&permissions=2617637968)
