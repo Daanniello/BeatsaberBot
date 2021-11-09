@@ -24,8 +24,8 @@ Usage: !bs profile\
 
 **RecentSong**\
 Usage: !bs recentsong\
-*This is data with the BeatSavior mod installed*
-*Without beatsavior mod the data is limited*
+*This is data with the BeatSavior mod installed*\
+*Without beatsavior mod the data is limited*\
 ![Recentsong](https://i.imgur.com/eOHL61S.png)
 
 **RecentSongs**\
