@@ -134,7 +134,7 @@ namespace DiscordBeatSaberBot.Commands
                 var number = 1;
                 if (parameters != "") number = Convert.ToInt32(parameters.Trim());
                 var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(scoresaberId, message, number, isTopSong);
+                await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, message, number, isTopSong);
                 return;
             }
             if(identity.Key == ValidationExtension.IdentityType.None)
@@ -148,12 +148,12 @@ namespace DiscordBeatSaberBot.Commands
                 if(identity.Key == ValidationExtension.IdentityType.DiscordID)
                 {
                     var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(identity.Value);
-                    await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(scoresaberId, message,isTopSong: isTopSong);
+                    await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, message,isTopSong: isTopSong);
                     return;
                 }
                 else if(identity.Key == ValidationExtension.IdentityType.ScoresaberID)
                 {
-                    await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(identity.Value, message, isTopSong: isTopSong);
+                    await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(identity.Value, message, isTopSong: isTopSong);
                     return;
                 }
                 else if (identity.Key == ValidationExtension.IdentityType.Username)
@@ -165,7 +165,7 @@ namespace DiscordBeatSaberBot.Commands
                         return;
                     }
                     var scoresaberID = player.Players[0].PlayerId;
-                    await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(scoresaberID, message, isTopSong: isTopSong);
+                    await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberID, message, isTopSong: isTopSong);
                     return;
                 }
             }
@@ -177,12 +177,12 @@ namespace DiscordBeatSaberBot.Commands
                 if (identity.Key == ValidationExtension.IdentityType.DiscordID)
                 {
                     var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(identity.Value);
-                    await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(scoresaberId, message, number, isTopSong);
+                    await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, message, number, isTopSong);
                     return;
                 }
                 else if (identity.Key == ValidationExtension.IdentityType.ScoresaberID)
                 {
-                    await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(identity.Value, message, number, isTopSong);
+                    await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(identity.Value, message, number, isTopSong);
                     return;
                 }
                 else if (identity.Key == ValidationExtension.IdentityType.Username)
@@ -194,7 +194,7 @@ namespace DiscordBeatSaberBot.Commands
                         return;
                     }
                     var scoresaberID = player.Players[0].PlayerId;
-                    await BeatSaberInfoExtension.GetAndPostRecentSongWithScoresaberIdNew(scoresaberID, message, number, isTopSong);
+                    await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberID, message, number, isTopSong);
                     return;
                 }
             }

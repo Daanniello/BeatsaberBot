@@ -20,7 +20,7 @@ namespace DiscordBeatSaberBot
         }
 
         public Task Create(string path)
-        {
+        {       
             _bitmap.Save(path);
             return Task.CompletedTask;
         }
@@ -199,7 +199,7 @@ namespace DiscordBeatSaberBot
             // Draw line to screen.
             using (Graphics graphics = Graphics.FromImage(_bitmap))
             {
-                graphics.DrawLine(Pen, point1, point2);
+                graphics.DrawLine(Pen, point1, point2);                
             }
         }
 
