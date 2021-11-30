@@ -15,6 +15,7 @@ using DiscordBeatSaberBot.Api.Spotify;
 using DiscordBeatSaberBot.Api.BeatSaviourApi;
 using DiscordBeatSaberBot.Commands.Functions;
 using DiscordBeatSaberBot.Security;
+using DiscordBeatSaberBot.Handlers.RankTrackerHandler;
 
 namespace DiscordBeatSaberBot
 {
@@ -48,7 +49,10 @@ namespace DiscordBeatSaberBot
         {            
             try
             {                     
-                discordSocketClient = new DiscordSocketClient();
+                discordSocketClient = new DiscordSocketClient(new DiscordSocketConfig()
+                {
+                    AlwaysDownloadUsers = true
+                });
                 Console.WriteLine("Connecting to Discord...");
 
                 var loginCode = await DatabaseContext.ExecuteSelectQuery("Select * from Settings");
@@ -62,7 +66,7 @@ namespace DiscordBeatSaberBot
                 discordSocketClient.ReactionAdded += ReactionAdded;
                 discordSocketClient.ReactionRemoved += ReactionRemoved;
                 discordSocketClient.UserJoined += OnUserJoined;
-                discordSocketClient.Ready += Init;
+                discordSocketClient.Ready += Init;                
            
                 Console.WriteLine("Connecting to Discord...");                
                 await Task.Delay(-1);
@@ -91,6 +95,16 @@ namespace DiscordBeatSaberBot
                 _logger = serviceProvider.GetService<ILogger>();
                 _logger.ConsoleLog("Discord Bot is now Connected, starting the initialization...");
 
+                //DownloadUsers
+                //_logger.ConsoleLog("Downloading all users...");
+                //var count = 1;
+                //foreach (var guild in discordSocketClient.Guilds)
+                //{
+                //    await guild.DownloadUsersAsync();
+                //    _logger.ConsoleLog($"downloaded {count} / {discordSocketClient.Guilds.Count}...");
+                //    count++;
+                //}
+                
                 //Setting up info for the bot
                 _startTime = DateTime.Now;
                 var playingGame = await DatabaseContext.ExecuteSelectQuery("Select * from Settings");
@@ -103,6 +117,7 @@ namespace DiscordBeatSaberBot
                 //updater.Start(() => liveFeed.Start(), "ScoresaberLiveFeed", 0, 0, 15);
                 updater.Start(() => updater.UpdateSilverhazeStatsInDiscordServer(), "UpdateSilverInfoInSilverhazeServer", 5, 0, 0);
                 updater.Start(() => UpdateSilverhazeDiscordRank(), "SilverhazeDiscordRankUpdate", 0, 30, 0);
+                updater.Start(() => new RankTrackerHandler(discordSocketClient).CheckForAllRankChanges(), "RankTrackerUpdate", 0, 15, 0); ;
                 updater.Start(() => new AutomaticCountryRankUpdateHandler(discordSocketClient).UpdateRanks(), "UpdateRolesInCountryDiscords", 0, 5, 0);
                 async Task UpdateSilverhazeDiscordRank()
                 {

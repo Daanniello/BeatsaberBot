@@ -13,6 +13,7 @@ using DiscordBeatSaberBot.Api.Spotify;
 using DiscordBeatSaberBot.Api.TenorApi;
 using DiscordBeatSaberBot.Commands.Functions;
 using DiscordBeatSaberBot.Extensions;
+using DiscordBeatSaberBot.Handlers.RankTrackerHandler;
 using GiphyDotNet.Model.Parameters;
 
 namespace DiscordBeatSaberBot.Commands
@@ -100,6 +101,49 @@ namespace DiscordBeatSaberBot.Commands
         {
             var embedBuilder = await BeatSaberInfoExtension.GetComparedEmbedBuilderNew(message.Content.Substring(11).Trim(), message, discordSocketClient);
             if (embedBuilder != null) await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
+        }
+
+        [Help("RankTracker", "Gives notifications about changes in ranked stats", "!bs ranktracker", HelpAttribute.Catergories.General)]
+        public static async Task RankTracker(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var rankTracker = new RankTrackerHandler(discordSocketClient);
+            var isBeingTracker = await rankTracker.IsBeingTracked(Convert.ToInt64(message.Author.Id));
+            if (!isBeingTracker)
+            {
+                var msg = await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("RankTracker", "Do you want to turn on the rank tracker? This will notify you in DM about any of the following stat changes \n ```- Global Rank ```\n\n Type `yes` to activate the rank tracker.").Build());
+                var timeNow = DateTime.Now;
+                var timeToEnd = timeNow.AddSeconds(20);
+                do
+                {
+                    await Task.Delay(1000);
+                    var messages = await msg.Channel.GetMessagesAsync(10).FlattenAsync();
+                    if(messages.FirstOrDefault(x => x.Content == "yes") != null && messages.FirstOrDefault(x => x.Content == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author == message.Author)
+                    {
+                        var result = await rankTracker.AddPlayerToRankTracker(Convert.ToInt64(message.Author.Id));
+                        if (result) msg.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("RankTracker", "You have been succesfully added. You will now be notified about rank changes in DM").Build());
+                        else msg.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("RankTracker", "You could not be added to the ranktracker. Make sure you are linked with the bot by typing `!bs link [scoresaberID]`").Build());
+                        break;
+                    }
+                } while (timeNow < timeToEnd);
+            }
+            else
+            {
+                var msg = await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("RankTracker", "You are curently being tracked already. Do you wish to disable the notifications? Type `yes` to deactivate the rank tracker.").Build());
+                var timeNow = DateTime.Now;
+                var timeToEnd = timeNow.AddSeconds(20);
+                do
+                {
+                    await Task.Delay(1000);
+                    var messages = await msg.Channel.GetMessagesAsync(10).FlattenAsync();
+                    if (messages.FirstOrDefault(x => x.Content == "yes") != null && messages.FirstOrDefault(x => x.Content == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author == message.Author)
+                    {
+                        var result = await rankTracker.DeletePlayerFromRankTracker(Convert.ToInt64(message.Author.Id));
+                        if (result) msg.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("RankTracker", "You have been succesfully deleted from the rank tracker. You won't be notified anymore about rank changes in DM").Build());
+                        else msg.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("RankTracker", "You could not be deleted from the ranktracker. Make sure you are linked with the bot by typing `!bs link [scoresaberID]`").Build());
+                        break;
+                    }
+                } while (timeNow < timeToEnd);
+            }
         }
 
         [Help("Map", "Displays a maps info by searching it with the key code", "!bs map (Key)", HelpAttribute.Catergories.General)]

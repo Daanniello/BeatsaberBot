@@ -104,6 +104,11 @@ namespace DiscordBeatSaberBot.Handlers
                         HandleTaskException(GlobalScoresaberCommands.NewRecentSong(discordSocketClient, message));
                         return true;
                     }
+                    else if (messageCommand.Contains(" ranktracker"))
+                    {
+                        HandleTaskException(GlobalScoresaberCommands.RankTracker(discordSocketClient, message));
+                        return true;
+                    }
                     else if (messageCommand.Contains(" removebg"))
                     {
                         HandleTaskException(GenericCommands.RemoveBG(discordSocketClient, message));
