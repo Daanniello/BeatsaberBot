@@ -20,17 +20,15 @@ namespace DiscordBeatSaberBot.Commands
         [Help("UpdateRoles", "Update roles from everyone in the dutch beat saber discord", "!bs updateroles", HelpAttribute.Catergories.AdminCommands)]
         static public async Task UpdateRoles(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
-            if (await message.Author.IsDutchAdmin(discordSocketClient))
+            var rankUpdateHandler = new AutomaticCountryRankUpdateHandler(discordSocketClient);
+            var countryToUpdate = rankUpdateHandler.CountriesToUpdate.FirstOrDefault(x => (ulong)x.serverOwnerID == message.Author.Id);
+            if (countryToUpdate != null)
             {
-                new Thread(async () =>
-                {
-                    await UpdateDiscordBeatsaberRanksNL.UpdateNLAsync(discordSocketClient, message);
-                    await message.Channel.SendMessageAsync("Done");
-                }).Start();
+                rankUpdateHandler.ForceUpdateRanks(countryToUpdate, message);
             }
             else
             {
-                await message.Channel.SendMessageAsync("You are not allowed to use this command.");
+                await message.Channel.SendMessageAsync("You are not allowed to use this command. Only the server owner may. If you think this is a mistake, please contact Silverhaze#0001");
             }
         }
 
@@ -51,14 +49,14 @@ namespace DiscordBeatSaberBot.Commands
         static public async Task RandomEvent(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             //Verified ID. user needs to be verified in the dutch discord group
-            if (await message.HasCertainRoleInNBSG(discordSocketClient, 573459086293598209))
-            {
-                var embedBuilder = EmbedBuilderExtension.NullEmbed("Event manager", "Starting event creation...", null, null);
-                var msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
+            //if (await message.HasCertainRoleInNBSG(discordSocketClient, 573459086293598209))
+            //{
+            var embedBuilder = EmbedBuilderExtension.NullEmbed("Event manager", "Starting event creation...", null, null);
+            var msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
 
 
-                var randomEventHandler = new RandomEventHandler(message, discordSocketClient, msg);
-            }
+            var randomEventHandler = new RandomEventHandler(message, discordSocketClient, msg);
+            //}
         }
 
         [Help("Link", "Will link your Scoresaber profile to your Discord account ", "!link (ScoresaberID)", HelpAttribute.Catergories.General)]
@@ -78,7 +76,7 @@ namespace DiscordBeatSaberBot.Commands
             else
             {
                 var ScoresaberId = message.Content.Substring(8).Trim();
-                if(ScoresaberId == "")
+                if (ScoresaberId == "")
                 {
                     await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Format error", $"you would have to add your scoresaberID. use it like `!bs link https://scoresaber.com/u/76561198033166451`").Build());
                     return;

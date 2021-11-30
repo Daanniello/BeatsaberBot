@@ -254,10 +254,18 @@ namespace DiscordBeatSaberBot.Commands
                 //Create UserCard
                 await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, isTopsongs ? "Topsongs" : "Recentsongs" + $" {(pageNumber == 1 ? "" : $"p.{ pageNumber}")}");
                 await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberId, pageNumber, isTopsongs);
-                await message.Channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberId}.png");
-                await message.Channel.SendFileAsync($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
-                File.Delete($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
-                File.Delete($"../../../Resources/img/UserCard_{scoresaberId}.png");
+                if(File.Exists($"../../../Resources/img/UserCard_{scoresaberId}.png") && File.Exists($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png"))
+                {
+                    await message.Channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberId}.png");
+                    await message.Channel.SendFileAsync($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
+                    File.Delete($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
+                    File.Delete($"../../../Resources/img/UserCard_{scoresaberId}.png");
+                }
+                else
+                {
+                    await message.Channel.SendMessageAsync("Couldn't create recentsongs");
+                }
+                
             }
             else
             {

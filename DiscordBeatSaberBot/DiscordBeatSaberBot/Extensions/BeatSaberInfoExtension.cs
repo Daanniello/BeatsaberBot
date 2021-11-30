@@ -558,6 +558,11 @@ namespace DiscordBeatSaberBot.Extensions
                 if(isTopSong) recentSong = await scoresaberApi.GetTopScore(recentsongNr);
                 else recentSong = await scoresaberApi.GetRecentScore(recentsongNr);
 
+                if(recentSong == null)
+                {
+                    await message.Channel.SendMessageAsync($"This user could not be found id: {playerId}");
+                    return;
+                }
                 //Download beatsaver recentsong data
                 var beatSaverMapInfo = await BeatSaverApi.GetMapByHash(recentSong.Id);
 
@@ -823,9 +828,10 @@ namespace DiscordBeatSaberBot.Extensions
                 {
                     var clickables =
                   "\n" +
-                  $"[Download Map](https://beatsaver.com{beatSaverMapInfo?.Versions.First().DownloadUrl}) - " +
+                  $"[Download Map]({beatSaverMapInfo?.Versions.First().DownloadUrl}) - " +
                   $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={beatSaverMapInfo?.Id}) - " +
-                  $"[Song on Spotify]({await new Spotify().SearchItem(recentSong.Name, recentSong.SongAuthorName)})";
+                  $"[Spotify]({await new Spotify().SearchItem(recentSong.Name, recentSong.SongAuthorName)}) - " +
+                  $"[Beatsaver](https://beatsaver.com/maps/{beatSaverMapInfo.Id})";
                     embedBuilder.AddField(recentSong.GetDifficulty(), clickables);
                 }
                 catch (Exception ex)
@@ -1630,6 +1636,10 @@ namespace DiscordBeatSaberBot.Extensions
             var playerRaw = new ScoresaberAPI(scoresaberId);
             var playerRecentScores = isTopsong ? await playerRaw.GetTopScores(page) : await playerRaw.GetScoresRecent(page);
 
+            if(playerRecentScores == null)
+            {
+                return;
+            }
 
             var rankingCardCreator = new ImageCreator("../../../Resources/img/RecentsongsCard-Template-new2.png");
 

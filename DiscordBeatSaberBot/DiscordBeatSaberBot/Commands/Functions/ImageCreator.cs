@@ -3,26 +3,41 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using AnimatedGif;
 
 namespace DiscordBeatSaberBot
 {
     public class ImageCreator
     {
         private Bitmap _bitmap;
-        public ImageCreator(string templatePath)
+        bool isGif = false;
+        public ImageCreator(string templatePath, bool isGif = false)
         {
+            this.isGif = isGif;
             string imageFilePath = templatePath;
             _bitmap = (Bitmap)Image.FromFile(imageFilePath);
         }
 
         public Task Create(string path)
-        {       
+        {            
             _bitmap.Save(path);
             return Task.CompletedTask;
+        }
+
+        public string CreateZoomEffect(string savePath, string path)
+        {
+            using (var gif = new AnimatedGifCreator($"{savePath}", delay: 1000, repeat: 1))
+            {
+                var fadeImage = DownloadImage(path, 200, 200);
+                gif.AddFrame(ResizeImage(fadeImage, 200, 200));
+                gif.AddFrame(ResizeImage(fadeImage, 300, 300));                       
+            }
+            return savePath;
         }
 
         public SizeF AddText(string text, Color color, int fontsize, float x, float y)
@@ -35,7 +50,7 @@ namespace DiscordBeatSaberBot
                 graphics.DrawString(text, arialFont, new SolidBrush(color), firstLocation);
                 return graphics.MeasureString(text, arialFont);
             }
-        }
+        }        
 
         public SizeF AddTextWithBackGround(string text, Color color, int fontsize, Color backgroundColor, float x, float y)
         {
@@ -47,7 +62,7 @@ namespace DiscordBeatSaberBot
                 var textSize = graphics.MeasureString(text, arialFont);
                 DrawRectangle((int)x, (int)y, (int)textSize.Width, (int)textSize.Height, backgroundColor);
                 graphics.DrawString(text, arialFont, new SolidBrush(color), firstLocation);
-                
+
                 return graphics.MeasureString(text, arialFont);
             }
         }
@@ -123,7 +138,7 @@ namespace DiscordBeatSaberBot
             Image overlayImage = null;
             if (isLocalFile)
             {
-                overlayImage = Image.FromFile(path);                
+                overlayImage = Image.FromFile(path);
             }
             else
             {
@@ -199,7 +214,7 @@ namespace DiscordBeatSaberBot
             // Draw line to screen.
             using (Graphics graphics = Graphics.FromImage(_bitmap))
             {
-                graphics.DrawLine(Pen, point1, point2);                
+                graphics.DrawLine(Pen, point1, point2);
             }
         }
 
@@ -212,7 +227,7 @@ namespace DiscordBeatSaberBot
                 var filling = Color.FromArgb(fillColor.Value.A == null || opacity != 255 ? opacity : fillColor.Value.A, (Color)fillColor);
                 brush = new SolidBrush(filling);
             }
-            
+
             Pen pen = new Pen(Color.Gray, 3);
             if (outerColor != null)
             {
@@ -261,7 +276,7 @@ namespace DiscordBeatSaberBot
             var imageRounded = RoundCorners(overlayImage, 25, Color.FromArgb(0, 32, 32, 32));
             g.DrawImage(SetImageOpacity(imageRounded, opacity), x, y, width, height);
 
-        }      
+        }
 
         public void AddNoteSlashEffect(string path, float x, float y, int width, int height)
         {
@@ -384,5 +399,41 @@ namespace DiscordBeatSaberBot
 
 
         }
+
+        Image DownloadImage(string fromUrl, int width, int height)
+        {
+            using (System.Net.WebClient webClient = new System.Net.WebClient())
+            {
+                using (Stream stream = webClient.OpenRead(fromUrl))
+                {
+                    return ResizeImage(Image.FromStream(stream), width, height);
+                }
+            }
+        }
+
+        public static Bitmap ResizeImage(Image image, int width, int height)
+        {
+            var destRect = new Rectangle(0, 0, width, height);
+            var destImage = new Bitmap(width, height);
+
+            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+
+            using (var graphics = Graphics.FromImage(destImage))
+            {
+                graphics.CompositingMode = CompositingMode.SourceCopy;
+                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                using (var wrapMode = new ImageAttributes())
+                {
+                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                }
+            }
+
+            return destImage;
+        }       
     }
 }
