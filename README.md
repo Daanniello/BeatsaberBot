@@ -52,11 +52,11 @@ Usage: !bs topsongs [pageNr]\
 Usage: !bs tools\
 Usage: !bs tools [toolname]\
 Usage: !bs tools [toolname] vote [1-5]\
-![Community Tools](https://i.imgur.com/clQbrHN.png)
+<img src="https://i.imgur.com/clQbrHN.png" width="400" height="800">
 
 **Ranktracker**\
 Usage: !bs ranktracker\
-![Ranktracker](https://i.imgur.com/F63W5YT.png)
+<img src="https://i.imgur.com/F63W5YT.png" width="400" height="800">
 
 **Settings page**\
 Usage: !bs settings\
