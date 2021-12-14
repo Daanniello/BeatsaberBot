@@ -34,16 +34,29 @@ Usage: !bs recentsongs\
 
 **Search Everyone**\
 Usage: !bs search\
+Usage: !bs search [DiscordID/ScoresaberID/ScoresaberUsername/DiscordTag]\
 ![Recentsongs](https://i.imgur.com/VexW2yf.png)
 
 **TopSong**\
 Usage: !bs topsong\
+Usage: !bs topsong [pageNr]\
 *This is data without the BeatSavior mod installed*\
 ![Topsong](https://i.imgur.com/NmCanqv.png)
 
 **TopSongs**\
 Usage: !bs topsongs\
+Usage: !bs topsongs [pageNr]\
 ![Topsongs](https://i.imgur.com/lSH4Whb.png)
+
+**Community Tools**
+Usage: !bs tools\
+Usage: !bs tools [toolname]\
+Usage: !bs tools [toolname] vote [1-5]\
+![Community Tools](https://i.imgur.com/clQbrHN.png)
+
+**Ranktracker**\
+Usage: !bs ranktracker\
+![Ranktracker](https://i.imgur.com/F63W5YT.png)
 
 **Settings page**\
 Usage: !bs settings\
