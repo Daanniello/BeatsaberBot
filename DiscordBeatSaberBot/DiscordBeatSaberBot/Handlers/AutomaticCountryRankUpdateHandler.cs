@@ -51,12 +51,12 @@ namespace DiscordBeatSaberBot.Handlers
             //Update ranks from each country
             foreach (var country in CountriesToUpdate)
             {
-                var allPlayersFromScoresaber = new List<PlayerInfoModel.PlayerInfo>();
+                var allPlayersFromScoresaber = new List<PlayerInfoModel.Player>();
                 //Get top 500 players == 10 pages of 50 from scoresaber (new data)
                 for (var x = 0; x < 10; x++)
                 {
                     var playersPage = await scoresaberClient.Api.Players.GetPlayers(countryCodes: "NL", page: x + 1);
-                    allPlayersFromScoresaber.AddRange(playersPage);
+                    allPlayersFromScoresaber.AddRange(playersPage.Players);
                 }
 
                 //Get top 500 stores in the json file (old data)
@@ -130,7 +130,7 @@ namespace DiscordBeatSaberBot.Handlers
 
 
         //Saves the top 500 players from a country into a json file.
-        public bool SaveTop500asJson(List<PlayerInfoModel.PlayerInfo> top500Players, country country)
+        public bool SaveTop500asJson(List<PlayerInfoModel.Player> top500Players, country country)
         {
             try
             {
@@ -146,12 +146,12 @@ namespace DiscordBeatSaberBot.Handlers
             }
         }
 
-        public List<PlayerInfoModel.PlayerInfo> OpenTop500fromJson(country country)
+        public List<PlayerInfoModel.Player> OpenTop500fromJson(country country)
         {
             try
             {
                 var json = File.ReadAllText(_savePath + $"{country}.json");
-                return JsonConvert.DeserializeObject<List<PlayerInfoModel.PlayerInfo>>(json);
+                return JsonConvert.DeserializeObject<List<PlayerInfoModel.Player>>(json);
             }
             catch
             {

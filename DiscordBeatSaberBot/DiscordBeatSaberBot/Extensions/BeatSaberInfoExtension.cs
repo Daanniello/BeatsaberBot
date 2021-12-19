@@ -514,6 +514,7 @@ namespace DiscordBeatSaberBot.Extensions
                     Title = $"**{mapInfoBeatSaver.Name} by {mapInfoBeatSaver.Metadata.LevelAuthorName}**",
                     ImageUrl = $"attachment://EmbedBackground-{key}.png",
                     ThumbnailUrl = $"https://beatsaver.com/cdn/{mapInfoBeatSaver.Id}/{mapInfoBeatSaver.Versions.First().Hash}.jpg",
+                    Color = Color.Blue,
                     Footer = new EmbedFooterBuilder() { Text = $"Hash: {mapInfoBeatSaver.Versions.First().Hash}\nID: {mapInfoBeatSaver.Id}\nKey: {mapInfoBeatSaver.Id}" }
                 };
 
@@ -820,6 +821,7 @@ namespace DiscordBeatSaberBot.Extensions
                     ImageUrl = $"attachment://EmbedBackground-{playerInfo.PlayerId}.png",
                     Url = $"https://scoresaber.com/leaderboard/{recentSong.LeaderboardId}",
                     ThumbnailUrl = $"https://scoresaber.com/imports/images/songs/{recentSong.Id}.png",
+                    Color = Color.Blue,
                     Footer = new EmbedFooterBuilder() { Text = $"Time Set: {recentSong.Timeset.DateTime.ToShortDateString() + " | " + recentSong.Timeset.DateTime.ToShortTimeString()} UTC" }
                 };
 
@@ -831,7 +833,7 @@ namespace DiscordBeatSaberBot.Extensions
                   $"[Download Map]({beatSaverMapInfo?.Versions.First().DownloadUrl}) - " +
                   $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={beatSaverMapInfo?.Id}) - " +
                   $"[Spotify]({await new Spotify().SearchItem(recentSong.Name, recentSong.SongAuthorName)}) - " +
-                  $"[Beatsaver](https://beatsaver.com/maps/{beatSaverMapInfo.Id})";
+                  $"[Beatsaver](https://beatsaver.com/maps/{beatSaverMapInfo?.Id})";
                     embedBuilder.AddField(recentSong.GetDifficulty(), clickables);
                 }
                 catch (Exception ex)
@@ -840,7 +842,7 @@ namespace DiscordBeatSaberBot.Extensions
                 }
 
                 await message.Channel.SendFileAsync($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png", embed: embedBuilder.Build());
-                await Task.Delay(200);
+                await Task.Delay(3000);
                 File.Delete($"../../../Resources/img/EmbedBackground-{playerInfo.PlayerId}.png");
             }
 

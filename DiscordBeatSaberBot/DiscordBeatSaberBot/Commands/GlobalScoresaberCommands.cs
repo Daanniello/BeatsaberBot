@@ -117,7 +117,7 @@ namespace DiscordBeatSaberBot.Commands
                 {
                     await Task.Delay(1000);
                     var messages = await msg.Channel.GetMessagesAsync(10).FlattenAsync();
-                    if(messages.FirstOrDefault(x => x.Content == "yes") != null && messages.FirstOrDefault(x => x.Content == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author == message.Author)
+                    if(messages.FirstOrDefault(x => x.Content == "yes") != null && messages.FirstOrDefault(x => x.Content.ToLower() == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author == message.Author)
                     {
                         var result = await rankTracker.AddPlayerToRankTracker(Convert.ToInt64(message.Author.Id));
                         if (result) msg.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("RankTracker", "You have been succesfully added. You will now be notified about rank changes in DM").Build());
@@ -135,7 +135,7 @@ namespace DiscordBeatSaberBot.Commands
                 {
                     await Task.Delay(1000);
                     var messages = await msg.Channel.GetMessagesAsync(10).FlattenAsync();
-                    if (messages.FirstOrDefault(x => x.Content == "yes") != null && messages.FirstOrDefault(x => x.Content == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author == message.Author)
+                    if (messages.FirstOrDefault(x => x.Content == "yes") != null && messages.FirstOrDefault(x => x.Content.ToLower() == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author == message.Author)
                     {
                         var result = await rankTracker.DeletePlayerFromRankTracker(Convert.ToInt64(message.Author.Id));
                         if (result) msg.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("RankTracker", "You have been succesfully deleted from the rank tracker. You won't be notified anymore about rank changes in DM").Build());
@@ -168,10 +168,10 @@ namespace DiscordBeatSaberBot.Commands
         [Help("RecentSong", "Get info from the latest song played", "!bs recentsong [DiscordTag or username]", HelpAttribute.Catergories.General)]
         public static async Task NewRecentSong(DiscordSocketClient discordSocketClient, SocketMessage message, bool isTopSong = false)
         {
-            var parameters = message.Content.Substring(isTopSong ? 12 : 14).Trim();
+            var parameters = message.Content.Substring(isTopSong ? 11 : 14).Trim();
             var parameterAmount = parameters.Split(" ").Count();
             var identity = await ValidationExtension.GetIdentityFromData(parameters.Split(" ")[0]);
-
+            
             //Self function
             if(parameters.Length <= 4)
             {
@@ -359,34 +359,6 @@ namespace DiscordBeatSaberBot.Commands
                 return;
             }
             await message.Channel.SendMessageAsync(link);
-        }
-
-        [Help("test", "New function :O test them out SoonTM", "`!bs test`", HelpAttribute.Catergories.General)]
-        public static async Task Test(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            Task.Run(async () => {
-                var embed = EmbedBuilderExtension.NullEmbed("Warning", "Weeeeeee");
-                embed.Color = Color.Red;
-                var msg = await message.Channel.SendMessageAsync("", false, embed.Build());
-
-                for (var i = 0; i < 4; i++)
-                {
-                    await Task.Delay(1000);
-                    if (embed.Color == Color.Red)
-                    {
-                        embed.Description = "Woooooooo";
-                        embed.Color = Color.Blue;
-                    }
-                    else
-                    {
-                        embed.Description = "Weeeeeeee";
-                        embed.Color = Color.Red;
-                    }
-
-                    await msg.ModifyAsync(x => x.Embed = embed.Build());
-                }
-            });           
-            
         }
 
         [Help("randomgif", "Gives a random gif from tenor.", "`!bs randomgif [parameter]` \nShows nsfw if its in a nsfw channel.", HelpAttribute.Catergories.General)]

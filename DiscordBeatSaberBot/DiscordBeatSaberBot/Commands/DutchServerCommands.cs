@@ -140,7 +140,11 @@ namespace DiscordBeatSaberBot.Commands
                 await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added user to the list", "Added " + message.Author.Id.ToString() + " with scoresaberID " + ScoresaberId + " to the global list", null, null).Build());
 
                 var guildChannel = message.Channel as SocketGuildChannel;
-                if (guildChannel == null) await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "This command can not be done in DM", null, null).Build());
+                if (guildChannel == null)
+                {
+                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "This command can not be done in DM", null, null).Build());
+                    return;
+                }
                 if (guildChannel.Guild.Id == 505485680344956928)
                 {
                     await moderationHelper.AddRole("Foreign channel", message.Author);

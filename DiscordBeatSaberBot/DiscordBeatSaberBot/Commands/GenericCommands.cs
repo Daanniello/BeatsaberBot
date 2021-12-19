@@ -28,7 +28,7 @@ namespace DiscordBeatSaberBot.Commands
             {
                 var extraInfoName = message.Content.Substring(9).Trim();
                 var embed = DiscordBeatSaberBot.Help.GetSpecificHelp(extraInfoName);
-                if(embed.Title == null)
+                if (embed.Title == null)
                 {
                     await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Wrong command name", "The command name does not exist").Build());
                 }
@@ -54,7 +54,7 @@ namespace DiscordBeatSaberBot.Commands
             else
             {
                 await message.Channel.SendMessageAsync("Please don't touch this command you normie");
-            }            
+            }
         }
 
         [Help("RemoveBG", "Removes the background of an image", "!bs removebg [add the image png, jpg]", HelpAttribute.Catergories.BotFunctions)]
@@ -90,7 +90,7 @@ namespace DiscordBeatSaberBot.Commands
                     await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", "Could not initialize the attachment").Build());
                     return;
                 }
-            }                                       
+            }
 
             var saveUrl = $"../../../Resources/img/removebg_{message.Author}.gif";
 
@@ -98,7 +98,7 @@ namespace DiscordBeatSaberBot.Commands
             var extension = imageUrl.Split(".")[imageUrl.Split(".").Length - 1].ToLower();
             if (extension.Contains("gif") || extension.Contains("mp4")) isVideo = true;
 
-            
+
             var response = await SendApiCall(0);
             //await GetApiCall();
 
@@ -123,7 +123,7 @@ namespace DiscordBeatSaberBot.Commands
                 {
                     await message.Channel.SendMessageAsync("Silverhaze needs to pay for this service... he broke, so no background removals for a month ORRRR donate your api key for 50 more removals a month ;)");
                     return;
-                }                
+                }
             }
 
             if (response.StatusCode != HttpStatusCode.OK) return;
@@ -153,7 +153,7 @@ namespace DiscordBeatSaberBot.Commands
                         if (isVideo)
                         {
                             multipartContent.Add(new StringContent(extension), "format");
-                            if(extension.Contains("mp4")) multipartContent.Add(new StringContent("000000"), "background_color");
+                            if (extension.Contains("mp4")) multipartContent.Add(new StringContent("000000"), "background_color");
                         }
                         request.Content = multipartContent;
 
@@ -190,7 +190,7 @@ namespace DiscordBeatSaberBot.Commands
             //Create statistics image
             var categoryType = await statistics.CreateSelectedType(type);
 
-            if(categoryType.Item1 == Functions.Statistics.category.Error || categoryType.Item2 == Functions.Statistics.type.Error)
+            if (categoryType.Item1 == Functions.Statistics.category.Error || categoryType.Item2 == Functions.Statistics.type.Error)
             {
                 await message.Channel.SendMessageAsync($"", false, EmbedBuilderExtension.NullEmbed("Error", "Could not collect data").Build());
                 return;
@@ -206,20 +206,7 @@ namespace DiscordBeatSaberBot.Commands
 
         }
 
-        [Help("Number", "Gives random info about a number", "!bs number (x)", HelpAttribute.Catergories.BotFunctions)]
-        static public async Task Number(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            var nr = message.Content.Substring(11);
-            
-            using (var client = new HttpClient())
-            {
-                var numberdata = await client.GetAsync("http://numbersapi.com/" + nr);
-                if (numberdata.StatusCode != HttpStatusCode.OK) return;
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Number Data from " + nr, await numberdata.Content.ReadAsStringAsync()).Build());
-            }
-        }
-
-        [Help("HelpListRaw", "Gives a raw list of help functions", "!bs playing (gameName)", HelpAttribute.Catergories.BotFunctions)]
+        [Help("HelpListRaw", "Gives a raw list of help functions", "!bs helplistraw", HelpAttribute.Catergories.BotFunctions)]
         static public async Task HelpListRaw(DiscordSocketClient discordSocketClient, SocketMessage message)
         {
             await message.Channel.SendMessageAsync("", false, DiscordBeatSaberBot.Help.GetHelpListRaw());
@@ -230,6 +217,54 @@ namespace DiscordBeatSaberBot.Commands
         {
             var embedTask = await BeatSaberInfoExtension.GetInviteLink();
             await message.Channel.SendMessageAsync("", false, embedTask.Build());
+        }
+
+        [Help("Leaderboard", "Gives a leaderboard with 25 players based on stats", "`!bs leaderboard [leaderboardID] [countrycode]`", HelpAttribute.Catergories.BotFunctions)]
+        static public async Task Leaderboard(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            var parameter = message.Content.Substring(15).Trim().Split(" ");
+            string mapID = null;
+            string countryCode = parameter.First();
+            if (parameter.First().All(char.IsDigit) && parameter.First() != "")
+            {
+                mapID = parameter.First();
+                if (parameter.Length > 1) countryCode = parameter[1];
+                else countryCode = "";
+            }
+            await new Leaderboard(discordSocketClient).GetLeaderboardAndPost(message, countryCode, mapID);
+        }
+
+        [Help("Tools", "Gives a list of important community tools with description and link", "`!bs tools` | `!bs tools [ToolName]` | `!bs tools [ToolName] vote [1-5]`", HelpAttribute.Catergories.BotFunctions)]
+        static public async Task Tools(DiscordSocketClient discordSocketClient, SocketMessage message)
+        {
+            if (message.Content.Length > 10)
+            {
+                if(message.Content.Contains(" vote "))
+                {
+                    var contentArray = message.Content.ToLower().Substring(9).Trim().Split(" ");
+                    var toolName = "";
+                    var stars = 0;
+                    var count = 0;
+
+                    foreach (var param in contentArray)
+                    {                        
+                        if (param == "vote")
+                        {
+                            stars = Convert.ToInt32(contentArray[count + 1]);
+                            break;
+                        }
+                        toolName += param + " ";
+                        count++;
+                    }
+
+                    await new ToolsList(discordSocketClient).VoteOnTool(toolName.Trim(),stars, message);
+                }
+                else
+                {
+                    await new ToolsList(discordSocketClient).SendMessageWithToolName(message, message.Content.Substring(9));
+                }                
+            }
+            else await new ToolsList(discordSocketClient).SendMessage(message);           
         }
 
         [Help("Poll", "Creates a poll with reactions so people can vote on a subject.", "!bs poll (Question)", HelpAttribute.Catergories.BotFunctions)]

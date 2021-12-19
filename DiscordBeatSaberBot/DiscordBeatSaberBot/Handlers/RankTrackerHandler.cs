@@ -26,8 +26,8 @@ namespace DiscordBeatSaberBot.Handlers.RankTrackerHandler
             var scoresaberClient = new ScoreSaberClient();
             var players = OpenRankTrackerListFromJson();
             if (players == null) return;
-            var updatedPlayers = new List<PlayerInfoModel.PlayerInfo>();
-            var roleAssignment = new RoleAssignment(_discord);            
+            var updatedPlayers = new List<PlayerInfoModel.Player>();
+            var roleAssignment = new RoleAssignment(_discord);
             foreach (var player in players)
             {
                 var oldPlayerData = player;
@@ -38,6 +38,7 @@ namespace DiscordBeatSaberBot.Handlers.RankTrackerHandler
                 if (oldPlayerData.Rank != newPlayerData.Rank)
                 {
                     var discordID = await roleAssignment.GetDiscordIdWithScoresaberId(player.Id);
+                    if (discordID == 0) continue;
                     NotifyPlayerOfRankChanges(discordID, oldPlayerData, newPlayerData);
                 }
             }
@@ -45,24 +46,33 @@ namespace DiscordBeatSaberBot.Handlers.RankTrackerHandler
             SaveRankTrackerListToJson(updatedPlayers);
         }
 
-        private async void NotifyPlayerOfRankChanges(ulong discordID, PlayerInfoModel.PlayerInfo oldPlayerData, PlayerInfoModel.PlayerInfo newPlayerData)
+        private async void NotifyPlayerOfRankChanges(ulong discordID, PlayerInfoModel.Player oldPlayerData, PlayerInfoModel.Player newPlayerData)
         {
-            var user = await _discord.Rest.GetUserAsync(discordID);            
-            var dm = await user.GetOrCreateDMChannelAsync();
 
-            var embedBuilder = EmbedBuilderExtension.EmbedBuilder();
-            embedBuilder.Title = "Rank Tracker";
-            embedBuilder.Color = Discord.Color.Gold;
-            embedBuilder.ThumbnailUrl = newPlayerData.ProfilePicture.ToString();
-            embedBuilder.Url = $"https://scoresaber.com/u/{newPlayerData.Id}";
+            try
+            {
+                var user = await _discord.Rest.GetUserAsync(discordID);
+                var dm = await user.GetOrCreateDMChannelAsync();
 
-            var description = "";
-            if (oldPlayerData.Rank > newPlayerData.Rank) description = $"Your rank has improved from **{oldPlayerData.Rank}** to **{newPlayerData.Rank}**";
-            if (oldPlayerData.Rank < newPlayerData.Rank) description = $"Your rank has lowered from **{oldPlayerData.Rank}** to **{newPlayerData.Rank}**";
+                var embedBuilder = EmbedBuilderExtension.EmbedBuilder();
+                embedBuilder.Title = "Rank Tracker";
+                embedBuilder.Color = oldPlayerData.Rank > newPlayerData.Rank ? Discord.Color.Green : Discord.Color.Red;
+                embedBuilder.ThumbnailUrl = newPlayerData.ProfilePicture.ToString();
+                embedBuilder.Url = $"https://scoresaber.com/u/{newPlayerData.Id}";
 
-            embedBuilder.Description = description;
+                var description = "";
+                if (oldPlayerData.Rank > newPlayerData.Rank) description = $"Your rank has improved from **{oldPlayerData.Rank}** to **{newPlayerData.Rank}**";
+                if (oldPlayerData.Rank < newPlayerData.Rank) description = $"Your rank has lowered from **{oldPlayerData.Rank}** to **{newPlayerData.Rank}**";
 
-            await dm.SendMessageAsync("", false, embedBuilder.Build());
+                embedBuilder.Description = description;
+
+
+                await dm.SendMessageAsync("", false, embedBuilder.Build());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("");
+            }
         }
 
 
@@ -81,10 +91,10 @@ namespace DiscordBeatSaberBot.Handlers.RankTrackerHandler
         public async Task<bool> IsBeingTracked(long discordID)
         {
             var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(discordID.ToString());
-            if(scoresaberID == "") return false;
+            if (scoresaberID == "") return false;
             var players = OpenRankTrackerListFromJson();
             if (players == null) return false;
-            if(players.FirstOrDefault(x => x.Id.ToString() == scoresaberID) != null) return true;
+            if (players.FirstOrDefault(x => x.Id.ToString() == scoresaberID) != null) return true;
             return false;
         }
         public async Task<bool> AddPlayerToRankTracker(long discordID)
@@ -94,12 +104,12 @@ namespace DiscordBeatSaberBot.Handlers.RankTrackerHandler
             var scoresaberClient = new ScoreSaberClient();
             var players = OpenRankTrackerListFromJson();
             var player = await scoresaberClient.Api.Players.GetPlayer(Convert.ToInt64(scoresaberID));
-            if (players == null) players = new List<PlayerInfoModel.PlayerInfo>();
+            if (players == null) players = new List<PlayerInfoModel.Player>();
             players.Add(player);
             return SaveRankTrackerListToJson(players);
         }
 
-        private bool SaveRankTrackerListToJson(List<PlayerInfoModel.PlayerInfo> rankTrackerPlayers)
+        private bool SaveRankTrackerListToJson(List<PlayerInfoModel.Player> rankTrackerPlayers)
         {
             try
             {
@@ -115,12 +125,12 @@ namespace DiscordBeatSaberBot.Handlers.RankTrackerHandler
             }
         }
 
-        private List<PlayerInfoModel.PlayerInfo> OpenRankTrackerListFromJson()
+        private List<PlayerInfoModel.Player> OpenRankTrackerListFromJson()
         {
             try
             {
                 var json = File.ReadAllText(_savePath);
-                return JsonConvert.DeserializeObject<List<PlayerInfoModel.PlayerInfo>>(json);
+                return JsonConvert.DeserializeObject<List<PlayerInfoModel.Player>>(json);
             }
             catch
             {

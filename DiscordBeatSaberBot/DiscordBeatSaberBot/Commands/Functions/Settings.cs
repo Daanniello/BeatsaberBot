@@ -96,6 +96,13 @@ namespace DiscordBeatSaberBot.Commands.Functions
         public async Task Get(string parameter)
         {
             var playerFull = await new ScoresaberAPI(parameter).GetPlayerFull();
+
+            if (playerFull == null)
+            {
+                await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No parameter given", "No parameter has been given or the scoresaber api returned no results").Build());
+                return;
+            }
+
             var results = await DatabaseContext.ExecuteSelectQuery($"select * from UserBeatSaberSettings where ScoreSaberID={playerFull.playerInfo.PlayerId}");
 
             if (results.Count <= 0)

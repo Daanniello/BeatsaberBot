@@ -36,6 +36,7 @@ namespace DiscordBeatSaberBot.Api.Spotify
         public async Task<string> SearchItem(string searchname, string searchAuthorName)
         {            
             var results = _spotify.SearchItems(searchname, SearchType.Track);
+            if (results.Tracks == null) return null;
             if (results.Tracks.Items.Count == 0) return null;
 
             var endResult = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";

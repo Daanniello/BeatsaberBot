@@ -14,49 +14,39 @@ namespace DiscordBeatSaberBot.Handlers
         public async Task<bool> HandleMessage(DiscordSocketClient discordSocketClient, SocketMessage message, Program program)
         {
             _program = program;
-            if (message.Author.Username == "BeatSaber Bot") return false;
+            if (message.Author.IsBot) return false;
 
             MessageDelete.DeleteMessageCheck(message, discordSocketClient);
 
             if (message.Content.Length <= 3) return false;
 
+            if (message.Content.Contains("<@!504633036902498314>") && message.Content.ToLower().Contains("help")) await message.Channel.SendMessageAsync("For help with commands, type `!bs help`");
+
             if (message.Content.Substring(0, 3).Contains("!bs"))
             {                
                 var messageCommand = message.Content.ToLower();
-
-                //command debug channel
-                var commandDebugEmbed = EmbedBuilderExtension.NullEmbed("Successfull command", $"**User:** <@!{message.Author.Id}> \n\n**Used:** {messageCommand}");
-                commandDebugEmbed.Color = Color.Green;
-                var commandDebugMessage = await discordSocketClient.GetGuild(731936395223892028).GetTextChannel(853921035669340201).SendMessageAsync("", false, commandDebugEmbed.Build());
-
-                var typingState = message.Channel.EnterTypingState(new RequestOptions
-                {
-                    Timeout = 2000,                  
-                });
-                typingState.Dispose();
-
 
                 Console.WriteLine(message.Content);
                 try
                 {
                     if (messageCommand.Contains(" helplistraw"))
                     {
-                        HandleTaskException(GenericCommands.HelpListRaw(discordSocketClient, message));
+                        HandleTaskException(GenericCommands.HelpListRaw(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" help"))
                     {
-                        HandleTaskException(GenericCommands.Help(discordSocketClient, message));
+                        HandleTaskException(GenericCommands.Help(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" randomcringe"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.RandomCringe(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.RandomCringe(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" randomgif"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.RandomGif(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.RandomGif(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" joe"))
@@ -64,114 +54,119 @@ namespace DiscordBeatSaberBot.Handlers
                         message.Channel.SendMessageAsync("mama");
                         return true;
                     }
-                    else if (messageCommand.Contains(" test"))
-                    {
-                        HandleTaskException(GlobalScoresaberCommands.Test(discordSocketClient, message));
-                        return true;
-                    }
                     else if (messageCommand.Contains(" topsongs"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.TopSongs(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.TopSongs(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" search"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.SearchUserCommand(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.SearchUserCommand(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" topsong"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.NewTopSong(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.NewTopSong(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" improve"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.Improve(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.Improve(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" updateroles"))
                     {
-                        HandleTaskException(DutchServerCommands.UpdateRoles(discordSocketClient, message));
+                        HandleTaskException(DutchServerCommands.UpdateRoles(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" recentsongs"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.Recentsongs(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.Recentsongs(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" recentsong"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.NewRecentSong(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.NewRecentSong(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" ranktracker"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.RankTracker(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.RankTracker(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" removebg"))
                     {
-                        HandleTaskException(GenericCommands.RemoveBG(discordSocketClient, message));
+                        HandleTaskException(GenericCommands.RemoveBG(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" poll"))
                     {
-                        HandleTaskException(GenericCommands.Poll(discordSocketClient, message));
+                        HandleTaskException(GenericCommands.Poll(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" playing"))
                     {
-                        HandleTaskException(GenericCommands.Playing(discordSocketClient, message));
+                        HandleTaskException(GenericCommands.Playing(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" draw"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.Draw(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.Draw(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" invite"))
                     {
-                        HandleTaskException(GenericCommands.Invite(discordSocketClient, message));
+                        HandleTaskException(GenericCommands.Invite(discordSocketClient, message), message);
+                        return true;
+                    }
+                    else if (messageCommand.Contains(" tools"))
+                    {
+                        HandleTaskException(GenericCommands.Tools(discordSocketClient, message), message);
+                        return true;
+                    }
+                    else if (messageCommand.Contains(" leaderboard"))
+                    {
+                        HandleTaskException(GenericCommands.Leaderboard(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" statistics"))
                     {
-                        HandleTaskException(GenericCommands.Statistics(discordSocketClient, message));
+                        HandleTaskException(GenericCommands.Statistics(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" playlist"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.Playlist(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.Playlist(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" compare"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.Compare(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.Compare(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" qualifiedmaps"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.QualifiedMaps(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.QualifiedMaps(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" map") || message.Content.StartsWith("!bsr "))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.Map(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.Map(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" settings"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.Settings(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.Settings(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" unlink"))
                     {
-                        HandleTaskException(DutchServerCommands.UnLinkScoresaberFromDiscord(discordSocketClient, message));
+                        HandleTaskException(DutchServerCommands.UnLinkScoresaberFromDiscord(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" link"))
                     {
-                        HandleTaskException(DutchServerCommands.LinkScoresaberWithDiscord(discordSocketClient, message));
+                        HandleTaskException(DutchServerCommands.LinkScoresaberWithDiscord(discordSocketClient, message), message);
                         return true;
                     }
                     else if (messageCommand.Contains(" adminlink"))
@@ -202,46 +197,22 @@ namespace DiscordBeatSaberBot.Handlers
                     }
                     else if (messageCommand.Contains(" profile"))
                     {
-                        HandleTaskException(GlobalScoresaberCommands.Profile(discordSocketClient, message));
+                        HandleTaskException(GlobalScoresaberCommands.Profile(discordSocketClient, message), message);
                         return true;
                     }
-                    else if (messageCommand.Contains(" number"))
-                    {
-                        HandleTaskException(GenericCommands.Number(discordSocketClient, message));
-                        return true;
-                    }
-                    else if (messageCommand.Contains(" songs"))
-                    {
-                        await message.Channel.SendMessageAsync(null, false, EmbedBuilderExtension.NullEmbed("Ewh..", "This command is outdated. Blame silverhaze to remake it").Build());
-                        //GlobalScoresaberCommands.Songs(discordSocketClient, message);
-                        return true;
-                    }
-                    //else if (messageCommand.Contains(" irlevent create"))
-                    //{
-                    //    HandleTaskException(DutchServerCommands.IRLevent(discordSocketClient, message));
-                    //    return true;
-                    //}
                     else if (messageCommand.Contains(" eventmanager"))
                     {
-                        HandleTaskException(DutchServerCommands.RandomEvent(discordSocketClient, message));
+                        HandleTaskException(DutchServerCommands.RandomEvent(discordSocketClient, message), message);
                         return true;
                     }
                     else
                     {
-                        if (!messageCommand.Contains("!bsr") && messageCommand.Contains("!bs "))
-                        {
-                            var embedBuilder = EmbedBuilderExtension.NullEmbed("Oops", "There is no command like that, try something else", null, null);
-                            await message.Channel.SendMessageAsync(null, false, embedBuilder.Build());
-                            return false;
-                        }
+
                     }
                 }
                 catch (Exception ex)
                 {
-                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"Error... {ex.Message}", "Command crashed QQ \nI am not feeling well... \nAm I dying? pls help").Build());
-                    commandDebugEmbed.Title = "Failed command";
-                    commandDebugEmbed.Color = Color.Red;
-                    commandDebugMessage.ModifyAsync(x => x.Embed = commandDebugEmbed.Build());
+                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"{ex.Message}", "Command crashed.\nThis could be caused by wrong input statements.\nTry `!bs help [CommandName]` to get more info about using a command").Build());                   
                     await new Logger(discordSocketClient).Log(Logger.LogCode.error, ex.ToString(), message, "CommandException");
                     return false;
                 }
@@ -250,15 +221,22 @@ namespace DiscordBeatSaberBot.Handlers
             return false;
         }       
 
-        public Task HandleTaskException(Task task)
+        public Task HandleTaskException(Task task, SocketMessage message)
         {
-            try
+            var typingState = message.Channel.EnterTypingState(new RequestOptions
             {
+                Timeout = 2000,
+            });
+
+            try
+            {                             
                 task.Wait();
+                typingState.Dispose();
                 return Task.CompletedTask;
             }
             catch (Exception ex)
-            {                
+            {
+                typingState.Dispose();
                 throw new ArgumentException("Error", "failed");
             }
         }

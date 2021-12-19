@@ -51,7 +51,7 @@ namespace DiscordBeatSaberBot
                 var pageCountIn = Math.Ceiling(Convert.ToDecimal(embedFields.Count / 5));
                 var pageCount = pageCountIn;
 
-                if (pageCountLeft == 0) pageCount -= 1;
+                //if (pageCountLeft == 0) pageCount -= 1;
 
                 for (var i = 0; i <= pageCount; i++)
                 {
@@ -110,12 +110,14 @@ namespace DiscordBeatSaberBot
         static public Embed GetHelpListRaw()
         {
             var embed = new EmbedBuilder();
+            var commands = ReflectionExtension.GetAllCustomHelpAttributes();
+            
 
-            foreach (var helpItem in ReflectionExtension.GetAllCustomHelpAttributes())
+            foreach (var helpItem in commands)
             {
                 embed.Title = $"Help List Raw";
                 embed.Color = Color.Gold;
-                embed.AddField(new EmbedFieldBuilder() { Name = helpItem.Value.CommandName, Value = $"info: {helpItem.Value.CommandInfo} \n Category: {helpItem.Value.CommandCatergory}" });
+                embed.AddField(new EmbedFieldBuilder() { Name = helpItem.Value.CommandName, Value = $"info: {helpItem.Value.CommandInfo} \n Category: {helpItem.Value.CommandCatergory}", IsInline = true });
             }
 
             return embed.Build();
