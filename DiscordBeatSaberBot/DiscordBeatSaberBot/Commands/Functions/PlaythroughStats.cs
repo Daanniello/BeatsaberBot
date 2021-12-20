@@ -27,6 +27,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
         private string _mapID;
         private bool _leaderboardToggle;
         private int _leaderboardPage = 0;
+        private bool _leaderboardCountryToggle = false;
         private string _countryCode;
 
 
@@ -379,7 +380,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                         if (_leaderboardPage > 0)
                         {
                             _leaderboardPage--;
-                            var embedBuilder = await new Leaderboard(_discord).GetPlayersAndCreateEmbed(_mapID, "", _leaderboardPage);
+                            var embedBuilder = await new Leaderboard(_discord).GetPlayersAndCreateEmbed(_mapID, _leaderboardCountryToggle ? _countryCode : "", _leaderboardPage);
                             await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
                             await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                         }
@@ -400,7 +401,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                     if (_leaderboardToggle)
                     {
                         _leaderboardPage++;
-                        var embedBuilder = await new Leaderboard(_discord).GetPlayersAndCreateEmbed(_mapID, "", _leaderboardPage);
+                        var embedBuilder = await new Leaderboard(_discord).GetPlayersAndCreateEmbed(_mapID, _leaderboardCountryToggle ? _countryCode : "", _leaderboardPage);
                         await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
                         await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                     }
@@ -421,6 +422,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                         await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                         _leaderboardToggle = false;
                         _leaderboardPage = 0;
+                        _leaderboardCountryToggle = false;
                     }
                     else
                     {
@@ -428,6 +430,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                         await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
                         await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                         _leaderboardToggle = true;
+                        _leaderboardCountryToggle = false;
                     }
                 }
                 if (arg3.Emote.ToString() == "📍")
@@ -439,6 +442,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                         await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                         _leaderboardToggle = false;
                         _leaderboardPage = 0;
+                        _leaderboardCountryToggle = false;
                     }
                     else
                     {
@@ -446,6 +450,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                         await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
                         await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                         _leaderboardToggle = true;
+                        _leaderboardCountryToggle = true;
                     }
                 }
             }
