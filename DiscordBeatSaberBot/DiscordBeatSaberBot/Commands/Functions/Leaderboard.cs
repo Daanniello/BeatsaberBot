@@ -25,15 +25,31 @@ namespace DiscordBeatSaberBot.Commands.Functions
         {
             _discord = discord;
             _scoresaberClient = new ScoreSaberClient();
+            _scores = new List<ScoreSaberLib.Models.LeaderboardScoresModel.Score>();
+            _players = new List<ScoreSaberLib.Models.PlayerInfoModel.Player>();
         }
 
         public async Task GetLeaderboardAndPost(SocketMessage message, string countryCode = "", string mapID = null)
         {
             _mapID = mapID;
-            _countryCode = countryCode;
-            //Get 1000 players from leaderboard of choice
+            _countryCode = countryCode;           
+
+            //Get Leaderboard and embed 
+            var embedBuilder = await GetPlayersAndCreateEmbed(_mapID, _countryCode);
+
+            //Send message
+            _msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
+
+            //Add reactions
+            await _msg.AddReactionAsync(Emote.Parse("<:left:681842980134584355>"));
+            await _msg.AddReactionAsync(Emote.Parse("<:right:681843066104971287>"));
+
+            _discord.ReactionAdded += _discord_ReactionAdded;
+        }
+
+        public async Task<EmbedBuilder> GetPlayersAndCreateEmbed(string mapID, string countryCode, int page = 0)
+        {
             var players = new List<ScoreSaberLib.Models.PlayerInfoModel.Player>();
-            _scores = new List<ScoreSaberLib.Models.LeaderboardScoresModel.Score>();
 
             var taskList = new List<Task>();
             for (var i = 0; i < 10; i++)
@@ -45,39 +61,60 @@ namespace DiscordBeatSaberBot.Commands.Functions
             {
                 taskList.Add(Task.Run(async () =>
                 {
-                    if (mapID != null)
+                    try
                     {
-                        if (countryCode != "")
+                        if (mapID != null)
                         {
-                            try
+                            if (countryCode != "")
                             {
-                                var result = await _scoresaberClient.Api.Leaderboards.GetLeaderboardScoresByID(Convert.ToInt32(mapID), countryCode, page: i + 1);
-                                if (result != null) _scores.AddRange(result);
+                                try
+                                {
+                                    var result = await _scoresaberClient.Api.Leaderboards.GetLeaderboardScoresByID(Convert.ToInt32(mapID), countryCode, page: i + 1);
+                                    lock (_scores)
+                                        _scores.AddRange(result);
+                                }
+                                catch
+                                {
+                                    return;
+                                }
                             }
-                            catch
+                            else
                             {
-                                return;
-                            }                           
+                                var result = await _scoresaberClient.Api.Leaderboards.GetLeaderboardScoresByID(Convert.ToInt32(mapID), page: i + 1);
+                                if (result != null)
+                                {
+                                    lock (_scores)
+                                        _scores.AddRange(result);
+                                }
+                            }
                         }
                         else
                         {
-                            var result = await _scoresaberClient.Api.Leaderboards.GetLeaderboardScoresByID(Convert.ToInt32(mapID), page: i + 1);
-                            if (result != null) _scores.AddRange(result);
-                        }                       
+                            if (countryCode != "")
+                            {
+                                var result = await _scoresaberClient.Api.Players.GetPlayers(countryCodes: countryCode, page: i + 1);
+                                if (result != null)
+                                {
+                                    lock (players)
+                                        players.AddRange(result.Players);
+                                }
+                            }
+                            else
+                            {
+                                var result = await _scoresaberClient.Api.Players.GetPlayers(page: i + 1);
+                                if (result != null)
+                                {
+                                    lock (players)
+                                        players.AddRange(result.Players);
+                                }
+                            }
+                        }
                     }
-                    else
+                    catch(Exception ex)
                     {
-                        if (countryCode != "")
-                        {
-                            var result = await _scoresaberClient.Api.Players.GetPlayers(countryCodes: countryCode, page: i + 1);
-                            if (result != null) players.AddRange(result.Players);
-                        }
-                        else
-                        {
-                            var result = await _scoresaberClient.Api.Players.GetPlayers(page: i + 1);
-                            if (result != null) players.AddRange(result.Players);
-                        }
+                        Console.WriteLine(ex);
                     }
+                    
 
                 }));
             }
@@ -85,16 +122,8 @@ namespace DiscordBeatSaberBot.Commands.Functions
             Task.WaitAll(taskList.ToArray());
             _players = players;
             //Create Embed 
-            var embedBuilder = await CreateEmbed(players, countryCode, 0, _mapID);
-
-            //Send message
-            _msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
-
-            //Add reactions
-            await _msg.AddReactionAsync(Emote.Parse("<:left:681842980134584355>"));
-            await _msg.AddReactionAsync(Emote.Parse("<:right:681843066104971287>"));
-
-            _discord.ReactionAdded += _discord_ReactionAdded;
+            var embedBuilder = await CreateEmbed(players, countryCode, page, mapID);
+            return embedBuilder;
         }
 
         private async Task<EmbedBuilder> CreateEmbed(List<ScoreSaberLib.Models.PlayerInfoModel.Player> players, string countryCode, int page, string mapID = null)

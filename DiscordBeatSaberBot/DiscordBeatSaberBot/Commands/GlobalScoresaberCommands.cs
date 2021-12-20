@@ -117,7 +117,7 @@ namespace DiscordBeatSaberBot.Commands
                 {
                     await Task.Delay(1000);
                     var messages = await msg.Channel.GetMessagesAsync(10).FlattenAsync();
-                    if(messages.FirstOrDefault(x => x.Content == "yes") != null && messages.FirstOrDefault(x => x.Content.ToLower() == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author == message.Author)
+                    if(messages.FirstOrDefault(x => x.Content.ToLower() == "yes") != null && messages.FirstOrDefault(x => x.Content.ToLower() == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author == message.Author)
                     {
                         var result = await rankTracker.AddPlayerToRankTracker(Convert.ToInt64(message.Author.Id));
                         if (result) msg.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("RankTracker", "You have been succesfully added. You will now be notified about rank changes in DM").Build());
@@ -135,7 +135,7 @@ namespace DiscordBeatSaberBot.Commands
                 {
                     await Task.Delay(1000);
                     var messages = await msg.Channel.GetMessagesAsync(10).FlattenAsync();
-                    if (messages.FirstOrDefault(x => x.Content == "yes") != null && messages.FirstOrDefault(x => x.Content.ToLower() == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author == message.Author)
+                    if (messages.FirstOrDefault(x => x.Content.ToLower() == "yes") != null && messages.FirstOrDefault(x => x.Content.ToLower() == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author == message.Author)
                     {
                         var result = await rankTracker.DeletePlayerFromRankTracker(Convert.ToInt64(message.Author.Id));
                         if (result) msg.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("RankTracker", "You have been succesfully deleted from the rank tracker. You won't be notified anymore about rank changes in DM").Build());
@@ -171,6 +171,7 @@ namespace DiscordBeatSaberBot.Commands
             var parameters = message.Content.Substring(isTopSong ? 11 : 14).Trim();
             var parameterAmount = parameters.Split(" ").Count();
             var identity = await ValidationExtension.GetIdentityFromData(parameters.Split(" ")[0]);
+            var playthroughStats = new PlaythroughStats(discordSocketClient);
             
             //Self function
             if(parameters.Length <= 4)
@@ -178,7 +179,7 @@ namespace DiscordBeatSaberBot.Commands
                 var number = 1;
                 if (parameters != "") number = Convert.ToInt32(parameters.Trim());
                 var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, message, number, isTopSong);
+                await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, message, number, isTopSong);
                 return;
             }
             if(identity.Key == ValidationExtension.IdentityType.None)
@@ -192,12 +193,12 @@ namespace DiscordBeatSaberBot.Commands
                 if(identity.Key == ValidationExtension.IdentityType.DiscordID)
                 {
                     var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(identity.Value);
-                    await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, message,isTopSong: isTopSong);
+                    await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, message,isTopSong: isTopSong);
                     return;
                 }
                 else if(identity.Key == ValidationExtension.IdentityType.ScoresaberID)
                 {
-                    await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(identity.Value, message, isTopSong: isTopSong);
+                    await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(identity.Value, message, isTopSong: isTopSong);
                     return;
                 }
                 else if (identity.Key == ValidationExtension.IdentityType.Username)
@@ -209,7 +210,7 @@ namespace DiscordBeatSaberBot.Commands
                         return;
                     }
                     var scoresaberID = player.Players[0].PlayerId;
-                    await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberID, message, isTopSong: isTopSong);
+                    await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberID, message, isTopSong: isTopSong);
                     return;
                 }
             }
@@ -221,12 +222,12 @@ namespace DiscordBeatSaberBot.Commands
                 if (identity.Key == ValidationExtension.IdentityType.DiscordID)
                 {
                     var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(identity.Value);
-                    await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, message, number, isTopSong);
+                    await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, message, number, isTopSong);
                     return;
                 }
                 else if (identity.Key == ValidationExtension.IdentityType.ScoresaberID)
                 {
-                    await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(identity.Value, message, number, isTopSong);
+                    await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(identity.Value, message, number, isTopSong);
                     return;
                 }
                 else if (identity.Key == ValidationExtension.IdentityType.Username)
@@ -238,7 +239,7 @@ namespace DiscordBeatSaberBot.Commands
                         return;
                     }
                     var scoresaberID = player.Players[0].PlayerId;
-                    await BeatSaberInfoExtension.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberID, message, number, isTopSong);
+                    await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberID, message, number, isTopSong);
                     return;
                 }
             }
