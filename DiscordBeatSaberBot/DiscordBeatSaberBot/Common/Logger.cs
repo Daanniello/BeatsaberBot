@@ -72,7 +72,7 @@ namespace DiscordBeatSaberBot
             try
             {
                 File.AppendAllText($"../../../Logs/{DateTime.Now.Year}{DateTime.Now.Month}{DateTime.Now.Day}.txt", embedbuilder.Description + "\n\n");
-                await _discord.GetGuild(731936395223892028).GetTextChannel(770821971679248394).SendMessageAsync("", false, embedbuilder.Build());
+                //await _discord.GetGuild(731936395223892028).GetTextChannel(770821971679248394).SendMessageAsync("", false, embedbuilder.Build());
                 //await _discord.GetGuild(677437721081413633).GetTextChannel(682874265594363916).SendMessageAsync("", false, embedbuilder.Build());
             }
             catch

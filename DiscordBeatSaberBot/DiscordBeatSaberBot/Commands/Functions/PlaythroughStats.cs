@@ -29,6 +29,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
         private int _leaderboardPage = 0;
         private bool _leaderboardCountryToggle = false;
         private string _countryCode;
+        private ulong _msgCreator;
 
 
         public PlaythroughStats(DiscordSocketClient discord)
@@ -38,6 +39,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
 
         public async Task GetAndPostPlaythroughStatsWithScoresaberId(string playerId, SocketMessage message, int recentsongNr = 1, bool isTopSong = false)
         {
+            _msgCreator = message.Author.Id;
             _playerID = playerId;
             _recentsongNr = recentsongNr;
             _isTopSong = isTopSong;
@@ -51,7 +53,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             await PostEmbed(message, playerId, embedBuilder);
         }
 
-        private async Task<EmbedBuilder> CreateCardAndGetPlaythroughStatsEmbed(string playerId, int recentsongNr = 1, bool isTopSong = false)
+        public async Task<EmbedBuilder> CreateCardAndGetPlaythroughStatsEmbed(string playerId, int recentsongNr = 1, bool isTopSong = false)
         {
             //Getting Data from api's
             var scoresaberApi = new ScoresaberAPI(playerId);
@@ -375,44 +377,48 @@ namespace DiscordBeatSaberBot.Commands.Functions
             {
                 if (arg3.Emote.ToString() == "<:left:681842980134584355>")
                 {
-                    if (_leaderboardToggle)
+                    if (arg3.UserId == _msgCreator)
                     {
-                        if (_leaderboardPage > 0)
+                        if (_leaderboardToggle)
                         {
-                            _leaderboardPage--;
-                            var embedBuilder = await new Leaderboard(_discord).GetPlayersAndCreateEmbed(_mapID, _leaderboardCountryToggle ? _countryCode : "", _leaderboardPage);
-                            await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
-                            await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
+                            if (_leaderboardPage > 0)
+                            {
+                                _leaderboardPage--;
+                                var embedBuilder = await new Leaderboard(_discord).GetPlayersAndCreateEmbed(_mapID, _leaderboardCountryToggle ? _countryCode : "", _leaderboardPage);
+                                await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
+                            }
                         }
-                    }
-                    else
-                    {
-                        if (_recentsongNr > 1)
+                        else
                         {
-                            _recentsongNr--;
-                            var embedBuilder = await CreateCardAndGetPlaythroughStatsEmbed(_playerID, _recentsongNr, _isTopSong);
-                            await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
+                            if (_recentsongNr > 1)
+                            {
+                                _recentsongNr--;
+                                var embedBuilder = await CreateCardAndGetPlaythroughStatsEmbed(_playerID, _recentsongNr, _isTopSong);
+                                await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
+                            }
                         }
                     }
                     await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                 }
                 if (arg3.Emote.ToString() == "<:right:681843066104971287>")
                 {
-                    if (_leaderboardToggle)
+                    if (arg3.UserId == _msgCreator)
                     {
-                        _leaderboardPage++;
-                        var embedBuilder = await new Leaderboard(_discord).GetPlayersAndCreateEmbed(_mapID, _leaderboardCountryToggle ? _countryCode : "", _leaderboardPage);
-                        await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
-                        await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
+                        if (_leaderboardToggle)
+                        {
+                            _leaderboardPage++;
+                            var embedBuilder = await new Leaderboard(_discord).GetPlayersAndCreateEmbed(_mapID, _leaderboardCountryToggle ? _countryCode : "", _leaderboardPage);
+                            await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
+                        }
+                        else
+                        {
+                            _recentsongNr++;
+                            var embedBuilder = await CreateCardAndGetPlaythroughStatsEmbed(_playerID, _recentsongNr, _isTopSong);
+                            await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
+                        }
                     }
-                    else
-                    {
-                        _recentsongNr++;
-                        var embedBuilder = await CreateCardAndGetPlaythroughStatsEmbed(_playerID, _recentsongNr, _isTopSong);
-                        await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
-                        await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
-                    }
-                }                
+                    await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
+                }
                 if (arg3.Emote.ToString() == "🌎")
                 {
                     if (_leaderboardToggle)
