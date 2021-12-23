@@ -8,7 +8,7 @@ interesting Beat Saber related content inside the servers.\
 The bot allows you to share achievements, settings and statistics easily.\
 
 
-[Add Beat Saber Bot to your server](https://discordapp.com/oauth2/authorize?&client_id=504633036902498314&scope=bot&permissions=1110517869648)
+[Add Beat Saber Bot to your server](https://discord.com/api/oauth2/authorize?client_id=504633036902498314&permissions=1385395498064&redirect_uri=http%3A%2F%2Fbeatsaberbot.com%2F&response_type=code&scope=bot%20applications.commands%20applications.commands.permissions.update%20messages.read)
 
 Join the discord server for more info [BeatSaber bot discord server](https://discord.gg/S3D3Yyu)
 
