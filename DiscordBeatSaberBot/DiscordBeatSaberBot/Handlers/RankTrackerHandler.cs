@@ -52,7 +52,7 @@ namespace DiscordBeatSaberBot.Handlers.RankTrackerHandler
             try
             {
                 var user = await _discord.Rest.GetUserAsync(discordID);
-                var dm = await user.GetOrCreateDMChannelAsync();
+                var dm = await user.CreateDMChannelAsync();
 
                 var embedBuilder = EmbedBuilderExtension.EmbedBuilder();
                 embedBuilder.Title = "Rank Tracker";

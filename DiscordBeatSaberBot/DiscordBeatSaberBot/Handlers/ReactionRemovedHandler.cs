@@ -71,7 +71,7 @@ namespace DiscordBeatSaberBot.Handlers
                 }
 
                 if (reaction.Emote.ToString() == "<:red_check:671413258468720650>")
-                {                   
+                {
                     var deelnemersMsgData = JsonExtension.ToDictionary<string[]>(data[reaction.MessageId.ToString()]);
                     var d = deelnemersMsgData[reaction.MessageId + "0"];
                     var generalChannel = discordSocketClient.GetGuild(505485680344956928).GetChannel(ulong.Parse(d.First()));
@@ -98,10 +98,10 @@ namespace DiscordBeatSaberBot.Handlers
                     guild = discordSocketClient.GetGuild(505485680344956928);
                 else if (channel.Id == 627292184143724544)
                     guild = discordSocketClient.GetGuild(627156958880858113);
-                
+
                 //var user = guild.GetUser(reaction.UserId);
 
-                var user = await discordSocketClient.Rest.GetGuildUserAsync(guild.Id, reaction.UserId); 
+                var user = await discordSocketClient.Rest.GetGuildUserAsync(guild.Id, reaction.UserId);
 
                 var t = reaction.Emote.ToString();
 
@@ -110,52 +110,10 @@ namespace DiscordBeatSaberBot.Handlers
                     {
                         var role = guild.Roles.FirstOrDefault(x => x.Name == reactionDic.Value);
                         if (role == null) role = guild.Roles.FirstOrDefault(x => x.Id.ToString() == reactionDic.Value);
-                        
+
                         await user.RemoveRoleAsync(role);
                     }
             }
-
-            //Turn page from help command
-
-            //right (681843066104971287)
-            //left (681842980134584355)
-            if (reaction.UserId != 504633036902498314)
-            {
-                if (reaction.Emote.ToString() == "<:right:681843066104971287>")
-                {
-                    var t = reaction.Message.ToString();
-                    var message = await channel.GetMessageAsync(reaction.MessageId);
-                    var casted = (IUserMessage)message;
-                    var usedEmbed = casted.Embeds.First();
-                    var pagenr = usedEmbed.Title.Split("[")[1].Split("]")[0];
-
-                    var currentNr = int.Parse(pagenr.Split("/")[0]);
-                    var maxNr = int.Parse(pagenr.Split("/")[1]);
-
-                    if (currentNr >= maxNr) return;
-
-                    casted.ModifyAsync(msg =>
-                            msg.Embed = Help.GetHelpList(discordSocketClient, int.Parse(pagenr.Split("/").First())));
-                }
-
-                if (reaction.Emote.ToString() == "<:left:681842980134584355>")
-                {
-                    var t = reaction.Message.ToString();
-                    var message = await channel.GetMessageAsync(reaction.MessageId);
-                    var casted = (IUserMessage)message;
-                    var usedEmbed = casted.Embeds.First();
-                    var pagenr = usedEmbed.Title.Split("[")[1].Split("]")[0];
-
-                    var currentNr = int.Parse(pagenr.Split("/")[0]);
-
-                    if (currentNr <= 0) return;
-
-                    casted.ModifyAsync(msg =>
-                            msg.Embed = Help.GetHelpList(discordSocketClient,
-                                int.Parse(pagenr.Split("/").First()) - 2));
-                }
-            }
-
         }
     }
 }

@@ -37,9 +37,9 @@ namespace DiscordBeatSaberBot.Commands.Functions
             _discord = discord;
         }
 
-        public async Task GetAndPostPlaythroughStatsWithScoresaberId(string playerId, SocketMessage message, int recentsongNr = 1, bool isTopSong = false)
+        public async Task GetAndPostPlaythroughStatsWithScoresaberId(string playerId, SocketSlashCommand command, int recentsongNr = 1, bool isTopSong = false)
         {
-            _msgCreator = message.Author.Id;
+            _msgCreator = command.User.Id;
             _playerID = playerId;
             _recentsongNr = recentsongNr;
             _isTopSong = isTopSong;
@@ -47,10 +47,10 @@ namespace DiscordBeatSaberBot.Commands.Functions
             var embedBuilder = await CreateCardAndGetPlaythroughStatsEmbed(playerId, recentsongNr, isTopSong);
             if (embedBuilder == null)
             {
-                await message.Channel.SendMessageAsync($"This user could not be found id: {playerId}");
+                await command.Channel.SendMessageAsync($"This user could not be found id: {playerId}");
                 return;
             }
-            await PostEmbed(message, playerId, embedBuilder);
+            await PostEmbed(command, playerId, embedBuilder);
         }
 
         public async Task<EmbedBuilder> CreateCardAndGetPlaythroughStatsEmbed(string playerId, int recentsongNr = 1, bool isTopSong = false)
@@ -360,24 +360,40 @@ namespace DiscordBeatSaberBot.Commands.Functions
             return embedBuilder;
         }
 
-        private async Task PostEmbed(SocketMessage message, string playerID, EmbedBuilder embedBuilder)
+        private async Task PostEmbed(SocketSlashCommand command, string playerID, EmbedBuilder embedBuilder)
         {
-            _msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
-            await _msg.AddReactionAsync(Emote.Parse("<:left:681842980134584355>"));
-            await _msg.AddReactionAsync(Emote.Parse("<:right:681843066104971287>"));
-            await _msg.AddReactionAsync(new Emoji("🌎"));
-            await _msg.AddReactionAsync(new Emoji("📍"));
-            _discord.ReactionAdded += _discord_ReactionAdded;
+            var componentBuilder = new ComponentBuilder();
+            componentBuilder.WithButton(emote: Emote.Parse("<:leftarrow:923182957798244402>"), customId: "leftPlaythroughButton", style: ButtonStyle.Primary);
+            componentBuilder.WithButton(emote: new Emoji("🌎"), customId: "globalLeaderboardPlaythroughButton", style: ButtonStyle.Secondary);
+            componentBuilder.WithButton(emote: new Emoji("📍"), customId: "localLeaderboardPlaythroughButton", style: ButtonStyle.Secondary);
+            //componentBuilder.WithButton("Website", style: ButtonStyle.Link, url: "http://beatsaberbot.com/");
+            //componentBuilder.WithButton("Github", style: ButtonStyle.Link, url: "https://github.com/Daanniello/BeatsaberBot");
+            //componentBuilder.WithButton("Discord Server", style: ButtonStyle.Link, url: "https://discord.gg/S3D3Yyu");
+            componentBuilder.WithButton(emote: Emote.Parse("<:rightArrow:923182974638358528>"), customId: "rightPlaythroughButton", style: ButtonStyle.Primary);
 
+            ////XMAS--------
+            //var originalImg = embedBuilder.ImageUrl;
+            //embedBuilder.ImageUrl = $"{GlobalConfiguration.BotImageStorageLink}xmas.gif";
+            ////------------
+
+            _msg = await command.Channel.SendMessageAsync("", false, embedBuilder.Build(), component: componentBuilder.Build());
+
+            ////XMAS--------
+            //embedBuilder.ImageUrl = originalImg;
+            //await Task.Delay(4000);
+            //await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
+            ////------------
+
+            _discord.ButtonExecuted += _discord_ButtonExecuted;
         }
 
-        private async Task _discord_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        private async Task _discord_ButtonExecuted(SocketMessageComponent button)
         {
-            if (arg3.UserId != 504633036902498314 && arg3.MessageId == _msg.Id)
+            if(button.Message.Id == _msg.Id)
             {
-                if (arg3.Emote.ToString() == "<:left:681842980134584355>")
+                if (button.Data.CustomId == "leftPlaythroughButton")
                 {
-                    if (arg3.UserId == _msgCreator)
+                    if (button.User.Id == _msgCreator)
                     {
                         if (_leaderboardToggle)
                         {
@@ -398,11 +414,10 @@ namespace DiscordBeatSaberBot.Commands.Functions
                             }
                         }
                     }
-                    await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                 }
-                if (arg3.Emote.ToString() == "<:right:681843066104971287>")
+                if (button.Data.CustomId == "rightPlaythroughButton")
                 {
-                    if (arg3.UserId == _msgCreator)
+                    if (button.User.Id == _msgCreator)
                     {
                         if (_leaderboardToggle)
                         {
@@ -417,15 +432,13 @@ namespace DiscordBeatSaberBot.Commands.Functions
                             await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
                         }
                     }
-                    await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                 }
-                if (arg3.Emote.ToString() == "🌎")
+                if (button.Data.CustomId == "globalLeaderboardPlaythroughButton")
                 {
                     if (_leaderboardToggle)
                     {
                         var embedBuilder = await CreateCardAndGetPlaythroughStatsEmbed(_playerID, _recentsongNr, _isTopSong);
                         await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
-                        await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                         _leaderboardToggle = false;
                         _leaderboardPage = 0;
                         _leaderboardCountryToggle = false;
@@ -434,18 +447,16 @@ namespace DiscordBeatSaberBot.Commands.Functions
                     {
                         var embedBuilder = await new Leaderboard(_discord).GetPlayersAndCreateEmbed(_mapID, "", 0);
                         await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
-                        await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                         _leaderboardToggle = true;
                         _leaderboardCountryToggle = false;
                     }
                 }
-                if (arg3.Emote.ToString() == "📍")
+                if (button.Data.CustomId == "localLeaderboardPlaythroughButton")
                 {
                     if (_leaderboardToggle)
                     {
                         var embedBuilder = await CreateCardAndGetPlaythroughStatsEmbed(_playerID, _recentsongNr, _isTopSong);
                         await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
-                        await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                         _leaderboardToggle = false;
                         _leaderboardPage = 0;
                         _leaderboardCountryToggle = false;
@@ -454,13 +465,12 @@ namespace DiscordBeatSaberBot.Commands.Functions
                     {
                         var embedBuilder = await new Leaderboard(_discord).GetPlayersAndCreateEmbed(_mapID, _countryCode, 0);
                         await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
-                        await _msg.RemoveReactionAsync(arg3.Emote, arg3.User.Value);
                         _leaderboardToggle = true;
                         _leaderboardCountryToggle = true;
                     }
                 }
-            }
-            return;
+                return;
+            }            
         }
     }
 }

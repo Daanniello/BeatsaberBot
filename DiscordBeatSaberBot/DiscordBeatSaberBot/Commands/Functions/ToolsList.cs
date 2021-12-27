@@ -13,7 +13,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
 {
     public class ToolsList
     {
-        private List<ToolModel> _tools = new List<ToolModel>();
+        public List<ToolModel> _tools = new List<ToolModel>();
         private DiscordSocketClient _discord;
         private RestUserMessage _msg;
         private int _shownCategoryInt = 0;
@@ -184,23 +184,23 @@ namespace DiscordBeatSaberBot.Commands.Functions
             }).Wait();
         }
 
-        public async Task SendMessage(SocketMessage message)
+        public async Task SendMessage(SocketSlashCommand command)
         {
             _discord.ReactionAdded += _discord_ReactionAdded;
 
             var embed = await CreateToolsEmbed(ToolCategory.MustHaves);
-            _msg = await message.Channel.SendMessageAsync("", false, embed.Build());
+            _msg = await command.Channel.SendMessageAsync("", false, embed.Build());
             _msg.AddReactionAsync(Emote.Parse("<:left:681842980134584355>"));
             _msg.AddReactionAsync(Emote.Parse("<:right:681843066104971287>"));
         }
 
-        public async Task SendMessageWithToolName(SocketMessage message, string toolName)
+        public async Task SendMessageWithToolName(SocketSlashCommand command, string toolName)
         {
             toolName = toolName.Trim();
             var tool = _tools.FirstOrDefault(x => x.Name.ToLower() == toolName.ToLower());
             if (tool == null)
             {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No results", "There is no tool with that name").Build());
+                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No results", "There is no tool with that name").Build());
                 return;
             }
 
@@ -235,7 +235,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             };
             embedBuilder.WithFooter(new EmbedFooterBuilder() { Text = $"Do you want to share how you feel about this tool? Give it a star with '!bs tools {toolName} vote 1-5'" });
 
-            await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
+            await command.Channel.SendMessageAsync("", false, embedBuilder.Build());
         }
 
         private async Task<EmbedBuilder> CreateToolsEmbed(ToolCategory category)
@@ -278,17 +278,17 @@ namespace DiscordBeatSaberBot.Commands.Functions
             return embedBuilder;
         }
 
-        public async Task VoteOnTool(string toolName, int stars, SocketMessage message)
+        public async Task VoteOnTool(string toolName, int stars, SocketSlashCommand command)
         {
             var tool = _tools.FirstOrDefault(x => x.Name.ToLower() == toolName.ToLower());
             if (tool == null)
             {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No results", "There is no tool with that name").Build());
+                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No results", "There is no tool with that name").Build());
                 return;
             }
             if(stars < 1 || stars > 5)
             {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Wrong input", "You are only allowed to give a range between 1 and 5 stars").Build());
+                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Wrong input", "You are only allowed to give a range between 1 and 5 stars").Build());
                 return;
             }
 
@@ -297,7 +297,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             {
                 var tempList = new List<ToolStarRatingModel>();
                 var rating = new Dictionary<string, int>();
-                rating.Add(message.Author.Id.ToString(), stars);
+                rating.Add(command.User.Id.ToString(), stars);
                 tempList.Add(new ToolStarRatingModel() { toolName = toolName.ToLower(), StarRatings = rating });
                 SaveStarRatingList(tempList);
                 return;
@@ -306,26 +306,26 @@ namespace DiscordBeatSaberBot.Commands.Functions
             if(toolRatingList == null)
             {
                 var rating = new Dictionary<string, int>();
-                rating.Add(message.Author.Id.ToString(), stars);
+                rating.Add(command.User.Id.ToString(), stars);
                 starRatingList.Add(new ToolStarRatingModel() { toolName = toolName.ToLower(), StarRatings = rating});
                 SaveStarRatingList(starRatingList);
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added your rating!", "Wow, you are the first one to give this tool a rating! now you are officially cool").Build());
+                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added your rating!", "Wow, you are the first one to give this tool a rating! now you are officially cool").Build());
                 return;
             }
             bool hasAlreadyRated = false;
-            if (toolRatingList.StarRatings.FirstOrDefault(x => x.Key == message.Author.Id.ToString()).Key != null) hasAlreadyRated = true;
+            if (toolRatingList.StarRatings.FirstOrDefault(x => x.Key == command.User.Id.ToString()).Key != null) hasAlreadyRated = true;
             if (hasAlreadyRated)
             {
-                toolRatingList.StarRatings.Remove(message.Author.Id.ToString());
-                toolRatingList.StarRatings.Add(message.Author.Id.ToString(), stars);
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added your rating!", "You already voted on this before, but its fine! I have edited your vote!").Build());
+                toolRatingList.StarRatings.Remove(command.User.Id.ToString());
+                toolRatingList.StarRatings.Add(command.User.Id.ToString(), stars);
+                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added your rating!", "You already voted on this before, but its fine! I have edited your vote!").Build());
                 await SaveStarRatingList(starRatingList);
                 return;
             }
             else
             {
-                toolRatingList.StarRatings.Add(message.Author.Id.ToString(), stars);
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added your rating!", "Thanks for rating this tool! I think the creators will appreciate it! maybe").Build());
+                toolRatingList.StarRatings.Add(command.User.Id.ToString(), stars);
+                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Added your rating!", "Thanks for rating this tool! I think the creators will appreciate it! maybe").Build());
                 await SaveStarRatingList(starRatingList);
                 return;
             }            
@@ -360,7 +360,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             }
         }
 
-        private async System.Threading.Tasks.Task _discord_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        private async System.Threading.Tasks.Task _discord_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, Cacheable<IMessageChannel, ulong> arg2, SocketReaction arg3)
         {
             if (arg3.UserId != 504633036902498314 && arg3.MessageId == _msg.Id)
             {

@@ -15,7 +15,7 @@ namespace DiscordBeatSaberBot.Handlers
 {
     public class RandomEventHandler
     {
-        private SocketMessage message;
+        private SocketSlashCommand _command;
         private RestUserMessage msg;
         private DiscordSocketClient discord;
         private IRLeventModel randomEventModel = new IRLeventModel();
@@ -25,7 +25,7 @@ namespace DiscordBeatSaberBot.Handlers
 
         private RestUserMessage validationMessage;
 
-        public RandomEventHandler(SocketMessage message, DiscordSocketClient discord, RestUserMessage msg)
+        public RandomEventHandler(SocketSlashCommand command, DiscordSocketClient discord, RestUserMessage msg)
         {
             string tekst = File.ReadAllText("../../../Resources/irleventdata.txt");
 
@@ -33,7 +33,7 @@ namespace DiscordBeatSaberBot.Handlers
             try
             {
                 this.discord = discord;
-                this.message = message;
+                _command = command;
                 this.msg = msg;
                 QuestionRound().Wait();
                 ModifyEmbed(msg, "Creating the event...");
@@ -60,7 +60,7 @@ namespace DiscordBeatSaberBot.Handlers
 
             var previewEmbed = EmbedBuilderExtension.NullEmbed("Preview", $"");
             previewEmbed.Footer = new EmbedFooterBuilder { Text = "Green check = I will be there \nBlue check = I am interested \nRed cross = I will not be there, Delete this channel" };
-            var previewMessage = await message.Channel.SendMessageAsync("", false, previewEmbed.Build());
+            var previewMessage = await _command.Channel.SendMessageAsync("", false, previewEmbed.Build());
 
             ModifyEmbed(msg, "What will be the title of the event? (Use a short title. Should be compact but recognizable)");
             randomEventModel.title = await WaitForReaction();
@@ -153,11 +153,11 @@ namespace DiscordBeatSaberBot.Handlers
             string newMessage = "";
             do
             {
-                var iMessage = await message.Channel.GetMessagesAsync(1).Flatten().FirstAsync();
+                var iMessage = await _command.Channel.GetMessagesAsync(1).Flatten().FirstAsync();
 
                 ulong id = iMessage.Author.Id;
 
-                if (id == message.Author.Id)
+                if (id == _command.User.Id)
                 {
                     //If the answer is a image
                     if (iMessage.Attachments.Count > 0)
@@ -251,13 +251,13 @@ namespace DiscordBeatSaberBot.Handlers
 
         public async void ValidateEvent()
         {
-            validationMessage = await discord.GetGuild(505485680344956928).GetTextChannel(505732796245868564).SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("A new event has been created!", $"Created by: {message.Author.Username} - {message.Author.Id}\n\nIs this event ready to be published? \n\n **approving this event will make it public for everyone. Denying it will delete the channels**").Build());
+            validationMessage = await discord.GetGuild(505485680344956928).GetTextChannel(505732796245868564).SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("A new event has been created!", $"Created by: {_command.User.Username} - {_command.User.Id}\n\nIs this event ready to be published? \n\n **approving this event will make it public for everyone. Denying it will delete the channels**").Build());
             await validationMessage.AddReactionAsync(Emote.Parse("<:green_check:671412276594475018>"));
             await validationMessage.AddReactionAsync(Emote.Parse("<:red_check:671413258468720650>"));
             discord.ReactionAdded += Discord_ReactionAdded;
         }
 
-        private async Task Discord_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction reaction)
+        private async Task Discord_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, Cacheable<IMessageChannel, ulong> arg2, SocketReaction reaction)
         {
             if (reaction.Emote.Name == "green_check" && reaction.UserId != 504633036902498314)
             {

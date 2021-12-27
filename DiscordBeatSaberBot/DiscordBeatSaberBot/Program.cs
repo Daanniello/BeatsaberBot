@@ -30,6 +30,7 @@ namespace DiscordBeatSaberBot
         private bool _hasBeenInitializedBefore = false;
         public int commandsEachHour = 0;
         public RateLimit rateLimit = new RateLimit(5);
+        private SlashCommandHandler _slashCommandHandler;
 
         public static void Main(string[] args)
         {
@@ -56,7 +57,10 @@ namespace DiscordBeatSaberBot
         {
             try
             {
-                discordSocketClient = new DiscordSocketClient();
+                discordSocketClient = new DiscordSocketClient(new DiscordSocketConfig()
+                {
+                   GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers
+                });
 
                 var loginCode = await DatabaseContext.ExecuteSelectQuery("Select * from Settings");
                 await discordSocketClient.LoginAsync(TokenType.Bot, loginCode[0][0].ToString());
@@ -64,7 +68,7 @@ namespace DiscordBeatSaberBot
 
                 //Events
                 AppDomain.CurrentDomain.UnhandledException += Unhandled_Exception;
-                TaskScheduler.UnobservedTaskException += Unhandled_TaskException;                
+                TaskScheduler.UnobservedTaskException += Unhandled_TaskException;
                 discordSocketClient.Ready += DiscordSocketClient_Ready; ;
                 discordSocketClient.Log += DiscordSocketClient_Log;
 
@@ -86,6 +90,11 @@ namespace DiscordBeatSaberBot
             discordSocketClient.ReactionAdded += DiscordSocketClient_ReactionAdded;
             discordSocketClient.ReactionRemoved += DiscordSocketClient_ReactionRemoved;
             discordSocketClient.UserJoined += DiscordSocketClient_UserJoined;
+            discordSocketClient.ButtonExecuted += DiscordSocketClient_ButtonExecuted;
+
+            //Adding CommandHandler
+            _slashCommandHandler = new SlashCommandHandler(discordSocketClient);
+            _slashCommandHandler.CreateSlashCommands();
 
             //Adding the messageHandler
             _messageReceivedHandler = new MessageReceivedHandler();
@@ -102,7 +111,7 @@ namespace DiscordBeatSaberBot
             //Inserting playing info on the bot
             _startTime = DateTime.Now;
             var playingGame = await DatabaseContext.ExecuteSelectQuery("Select * from Settings");
-            await discordSocketClient.SetGameAsync(playingGame[0][1].ToString());
+            await discordSocketClient.SetGameAsync("!bs help");
 
             //Automatic updates                                            
             StartAllUpdateTimers();
@@ -133,8 +142,8 @@ namespace DiscordBeatSaberBot
                 foreach (var g in discordSocketClient.Guilds) userCount += g.MemberCount;
                 guild.GetTextChannel(770821486914437120).ModifyAsync(x => x.Name = $"user-count: {userCount}");
 
-                guild.GetTextChannel(821918821076959232).ModifyAsync(x => x.Name = $"Call-each-hour: {commandsEachHour}");
-                commandsEachHour = 0;
+                guild.GetTextChannel(821918821076959232).ModifyAsync(x => x.Name = $"Calls-each-hour: {_slashCommandHandler.TotalCommandsUsed}");
+                _slashCommandHandler.TotalCommandsUsed = 0;
                 return Task.CompletedTask;
             }
         }
@@ -153,11 +162,26 @@ namespace DiscordBeatSaberBot
             await server.UserJoinedMessage(guildUser);
         }
 
-        private async Task DiscordSocketClient_ReactionAdded(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
+        private Task DiscordSocketClient_ButtonExecuted(SocketMessageComponent arg)
         {
             try
             {
-                new ReactionAddedHandler().HandleReaction(discordSocketClient, reaction, channel, _reactionWatcher, this);
+                new ButtonHandler().HandleButton(discordSocketClient, arg);
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(Logger.LogCode.error, ex.ToString(), null, "ButtonClickedException");
+                return Task.CompletedTask;
+            }
+        }
+
+        private async Task DiscordSocketClient_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
+        {
+            try
+            {
+                var socketChannel = (ISocketMessageChannel)await channel.DownloadAsync();
+                new ReactionAddedHandler().HandleReaction(discordSocketClient, reaction, socketChannel, _reactionWatcher, this);
             }
             catch (Exception ex)
             {
@@ -165,11 +189,12 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        private async Task DiscordSocketClient_ReactionRemoved(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
+        private async Task DiscordSocketClient_ReactionRemoved(Cacheable<IUserMessage, ulong> arg1, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             try
             {
-                new ReactionRemovedHandler().HandleReaction(discordSocketClient, reaction, channel, _reactionWatcher, this);
+                var socketChannel = (ISocketMessageChannel)await channel.DownloadAsync();
+                new ReactionRemovedHandler().HandleReaction(discordSocketClient, reaction, socketChannel, _reactionWatcher, this);
             }
             catch (Exception ex)
             {

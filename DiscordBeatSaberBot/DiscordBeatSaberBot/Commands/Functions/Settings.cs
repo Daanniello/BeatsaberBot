@@ -20,62 +20,62 @@ namespace DiscordBeatSaberBot.Commands.Functions
             DiscordID
         }
 
-        public Settings(DiscordSocketClient discord, SocketMessage message)
+        public Settings(DiscordSocketClient discord, SocketSlashCommand command)
         {
             _discord = discord;
             //Check parameter type
-            var messageParameters = message.Content.Substring(12);
-            parameterType type = parameterType.None;
-            if (messageParameters.Contains("@")) type = parameterType.DiscordTag;
-            if (messageParameters.Trim().All(x => char.IsDigit(x)) && messageParameters != "") type = parameterType.ScoresaberID;
-
-            //Clean up the parameter
-            var parameter = messageParameters.Replace("@", "").Replace("<", "").Replace(">", "").Replace("!", "").Trim().ToLower();
-
-            CheckWhatToDo(message, parameter, type);
+            SocketSlashCommandDataOption type = null;
+            if (command.Data.Options.Count > 0) type = command.Data.Options.First();
+            CheckWhatToDo(command, type);
         }
 
-        public async void CheckWhatToDo(SocketMessage message, string parameter, parameterType type)
+        public async void CheckWhatToDo(SocketSlashCommand command, SocketSlashCommandDataOption type)
         {
+            if (type == null)
+            {
+                var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
+                new SettingsQuestionList(_discord, command).Get(scoresaberID);
+                return;
+            }
+
             //Change a certain value
             //IF parameter == add 
-            if (parameter == "edit")
+            if (type.Name == "action")
             {
-                new SettingsQuestionList(_discord, message).Edit();
-                return;
-            }
+                if (type.Value.ToString() == "Edit")
+                {
+                    new SettingsQuestionList(_discord, command).Edit();
+                    return;
+                }
 
-            //Start the questions list 
-            //IF parameter == create
-            if (parameter == "create")
-            {
-                new SettingsQuestionList(_discord, message).Create();
-                return;
-            }
+                //Start the questions list 
+                //IF parameter == create
+                if (type.Value.ToString() == "Create")
+                {
+                    new SettingsQuestionList(_discord, command).Create();
+                    return;
+                }
 
-            //Remove Data
-            if (parameter == "remove")
-            {
-                new SettingsQuestionList(_discord, message).Remove(message.Author.Id);
-                return;
+                //Remove Data
+                if (type.Value.ToString() == "Remove")
+                {
+                    new SettingsQuestionList(_discord, command).Remove(command.User.Id);
+                    return;
+                }
             }
 
             //Check if the user has data
             //IF not, show message to create one with '!bs settings create'
             //var results = await DatabaseContext.ExecuteSelectQuery($"SELECT * FROM UserBeatSaberSettings WHERE {parameter}");
-            if (type == parameterType.ScoresaberID)
+            if (type.Name == "scoresaber_id")
             {
-                new SettingsQuestionList(_discord, message).Get(parameter);
+                new SettingsQuestionList(_discord, command).Get(type.Value.ToString());
             }
-            if (type == parameterType.DiscordTag)
+            if (type.Name == "mention")
             {
-                var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(parameter);
-                new SettingsQuestionList(_discord, message).Get(scoresaberID);
-            }
-            if (type == parameterType.None)
-            {
-                var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                new SettingsQuestionList(_discord, message).Get(scoresaberID);
+                var value = (dynamic)type.Value;
+                var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(value.Id.ToString());
+                new SettingsQuestionList(_discord, command).Get(scoresaberID);
             }
         }
     }
@@ -83,12 +83,12 @@ namespace DiscordBeatSaberBot.Commands.Functions
     public class SettingsQuestionList
     {
         private bool isEnded = false;
-        private SocketMessage _message;
+        private SocketSlashCommand _command;
         private DiscordSocketClient _discord;
-        public SettingsQuestionList(DiscordSocketClient discord, SocketMessage message)
+        public SettingsQuestionList(DiscordSocketClient discord, SocketSlashCommand command)
         {
             _discord = discord;
-            _message = message;
+            _command = command;
 
 
         }
@@ -99,7 +99,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
 
             if (playerFull == null)
             {
-                await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No parameter given", "No parameter has been given or the scoresaber api returned no results").Build());
+                await _command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No parameter given", "No parameter has been given or the scoresaber api returned no results").Build());
                 return;
             }
 
@@ -107,7 +107,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
 
             if (results.Count <= 0)
             {
-                await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Can't find this user", "This user does not have a settings page or does not exist.\n\n If you want your own page, type `!bs settings create`").Build());
+                await _command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Can't find this user", "This user does not have a settings page or does not exist.\n\n If you want your own page, type `!bs settings create`").Build());
                 return;
             }
 
@@ -149,7 +149,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
 
             embed.AddField("Description", $"{results[0][18]}");
 
-            await _message.Channel.SendMessageAsync("", false, embed.Build());
+            await _command.Channel.SendMessageAsync("", false, embed.Build());
         }
 
         public static async Task<bool> HasSettingsPage(string scoresaberID)
@@ -206,16 +206,23 @@ namespace DiscordBeatSaberBot.Commands.Functions
             return embed.Build();
         }
 
+        public async Task<string> GetSettingInfo(string scoresaberID, int settingRowNumber)
+        {
+            var playerFull = await new ScoresaberAPI(scoresaberID).GetPlayerFull();
+            var results = await DatabaseContext.ExecuteSelectQuery($"select * from UserBeatSaberSettings where ScoreSaberID={playerFull.playerInfo.PlayerId}");
+            return results[0][settingRowNumber].ToString();
+        }
+
         public async Task Edit()
         {
-            var scoreSaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(_message.Author.Id.ToString());
+            var scoreSaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(_command.User.Id.ToString());
             if (scoreSaberID == "")
             {
-                await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Can't use this function if you are not linked!", "Type `!bs link (ScoreSaberID) to link`").Build());
+                await _command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Can't use this function if you are not linked!", "Use the `/link` command to link").Build());
                 return;
             }
 
-            var messageEmbed = await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Edit", "What do you want to change? \n\nType the exact word!").Build());
+            var messageEmbed = await _command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Edit", "What do you want to change? \n\nType the exact word!").Build());
 
             var answer = await WaitForAnswer(30);
             var tableName = "";
@@ -284,7 +291,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             await messageEmbed.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("Edit", "Now you can change the description of the setting. \nType what you want to change the setting to. \nDiscord markdown is enabled").Build());
 
             var description = await WaitForAnswer(30);
-            await DatabaseContext.ExecuteInsertQuery($"UPDATE UserBeatSaberSettings SET {DatabaseContext.QueryCheck(tableName)} = '{DatabaseContext.QueryCheck(description)}' WHERE DiscordID={_message.Author.Id} AND ScoreSaberID={scoreSaberID}");
+            await DatabaseContext.ExecuteInsertQuery($"UPDATE UserBeatSaberSettings SET {DatabaseContext.QueryCheck(tableName)} = '{DatabaseContext.QueryCheck(description)}' WHERE DiscordID={_command.User.Id} AND ScoreSaberID={scoreSaberID}");
             await messageEmbed.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("Edit", "Done!").Build());
         }
 
@@ -293,42 +300,42 @@ namespace DiscordBeatSaberBot.Commands.Functions
             var scoreSaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(discordID.ToString());
             if (scoreSaberID == null)
             {
-                await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("You are not linked to scoresaber", "Type `!bs link ScoresaberID` to link it.").Build());
+                await _command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("You are not linked to scoresaber", "Type `!bs link ScoresaberID` to link it.").Build());
                 return;
             }
             var hasASettingsPage = await DatabaseContext.ExecuteSelectQuery($"SELECT * from UserBeatSaberSettings WHERE DiscordID={discordID.ToString()} AND ScoreSaberID={scoreSaberID}");
             if (hasASettingsPage.Count <= 0)
             {
-                await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("You do not have a settings profile", "Type `!bs settings create` to create one.").Build());
+                await _command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("You do not have a settings profile", "Type `!bs settings create` to create one.").Build());
                 return;
             }
             else
             {
                 await DatabaseContext.ExecuteSelectQuery($"DELETE FROM UserBeatSaberSettings WHERE DiscordID={discordID} AND ScoreSaberID={await RoleAssignment.GetScoresaberIdWithDiscordId(discordID.ToString())}");
-                await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Your settings profile has been removed", "Type `!bs settings create` if you would like to create one again.").Build());
+                await _command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Your settings profile has been removed", "Type `!bs settings create` if you would like to create one again.").Build());
                 return;
             }
         }
 
         public async Task Create()
         {
-            var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(_message.Author.Id.ToString());
+            var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(_command.User.Id.ToString());
             if (scoresaberID == "")
             {
-                await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Can't use this function if you are not linked!", "Type `!bs link (ScoreSaberID) to link`").Build());
+                await _command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Can't use this function if you are not linked!", "Type `!bs link (ScoreSaberID) to link`").Build());
                 return;
             }
 
-            var hasASettingsPage = await DatabaseContext.ExecuteSelectQuery($"SELECT * from UserBeatSaberSettings WHERE DiscordID={_message.Author.Id} AND ScoreSaberID={scoresaberID}");
+            var hasASettingsPage = await DatabaseContext.ExecuteSelectQuery($"SELECT * from UserBeatSaberSettings WHERE DiscordID={_command.User.Id} AND ScoreSaberID={scoresaberID}");
             if (hasASettingsPage.Count > 0)
             {
-                await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("You already have a settings page", "Use `!bs settings` to see your own settings page. \nAnd use `!bs settings edit` to edit certain values").Build());
+                await _command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("You already have a settings page", "Use `!bs settings` to see your own settings page. \nAnd use `!bs settings edit` to edit certain values").Build());
                 return;
             }
 
 
             var embed = EmbedBuilderExtension.NullEmbed("Creating your settings page", "You are about to start answering questions that will be added to your settings page. \nThis is public and everyone can see these settings. \nAll questions are optional. \nDiscord Markdown is enabled. \n\nDo you want to start the questions? \nTYPE 'YES' OR 'NO'");
-            var messageEmbed = await _message.Channel.SendMessageAsync("", false, embed.Build());
+            var messageEmbed = await _command.Channel.SendMessageAsync("", false, embed.Build());
 
 
             var answer = await WaitForAnswer(30);
@@ -459,7 +466,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                 return;
             }
 
-            await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("That was it!", "Use \n`!bs settings` to see your own settings. \n`!bs settings (scoresaberID / discordTag)` to see someone else his settings. \n`!bs settings remove` to remove your data. \n`!bs settings edit` to change a specific question.").Build());
+            await _command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("That was it!", "Use \n`!bs settings` to see your own settings. \n`!bs settings (scoresaberID / discordTag)` to see someone else his settings. \n`!bs settings remove` to remove your data. \n`!bs settings edit` to change a specific question.").Build());
             var toInsert = $"Insert into UserBeatSaberSettings (Sabers, Avatar, FavMods, Headset, Controllers, ControllerSettingsLeft, ControllerSettingsRight, NoteColorLeft, NoteColorRight, Platform, Notes, InGameHeight, Age, Height, Weight, Gender, DiscordID, ScoreSaberID, Extra) values (" +
                 $"'{DatabaseContext.QueryCheck(q1)}', " +
                 $"'{DatabaseContext.QueryCheck(q2)}', " +
@@ -477,13 +484,13 @@ namespace DiscordBeatSaberBot.Commands.Functions
                 $"'{DatabaseContext.QueryCheck(q14)}', " +
                 $"'{DatabaseContext.QueryCheck(q15)}', " +
                 $"'{DatabaseContext.QueryCheck(q16)}', " +
-                $"'{_message.Author.Id}', " +
+                $"'{_command.User.Id}', " +
                 $"'{scoresaberID}', " +
                 $"'{DatabaseContext.QueryCheck(q17)}')";
 
 
             var succes = await DatabaseContext.ExecuteInsertQuery(toInsert);
-            if (!succes) await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Oh... oops something went wrong", "This function might bug out sometimes. You could DM Silverhaze#0001 for your answers to be uploaded. And to check out what the bug was.").Build());
+            if (!succes) await _command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Oh... oops something went wrong", "This function might bug out sometimes. You could DM Silverhaze#0001 for your answers to be uploaded. And to check out what the bug was.").Build());
             _discord.GetGuild(731936395223892028).GetTextChannel(775514268501934101).SendMessageAsync(toInsert + "-----------" + succes.ToString());
         }
 
@@ -498,7 +505,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             }
             else
             {
-                await _message.Channel.SendMessageAsync("", false, embed.Build());
+                await _command.Channel.SendMessageAsync("", false, embed.Build());
             }
 
 
@@ -515,8 +522,8 @@ namespace DiscordBeatSaberBot.Commands.Functions
             do
             {
                 await Task.Delay(1000);
-                var possibleReaction = await _message.Channel.GetMessagesAsync(1).Flatten().FirstAsync();
-                if (possibleReaction.Author == _message.Author && possibleReaction.CreatedAt > startTime)
+                var possibleReaction = await _command.Channel.GetMessagesAsync(1).Flatten().FirstAsync();
+                if (possibleReaction.Author.Id == _command.User.Id && possibleReaction.CreatedAt > startTime)
                 {
                     var content = possibleReaction.Content;
                     possibleReaction.DeleteAsync();
@@ -531,7 +538,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
 
         public async void Ended()
         {
-            await _message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Questions were canceled", "You waited too long to answer.").Build());
+            await _command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Questions were canceled", "You waited too long to answer.").Build());
         }
     }
 }

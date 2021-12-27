@@ -22,49 +22,55 @@ namespace DiscordBeatSaberBot.Commands
     {
         public static System.IDisposable triggerState = null;
 
-        [Help("Search", "Get info about a scoresaber user", "!bs search [DiscordTag]/[ScoresaberID]/[Username]", HelpAttribute.Catergories.General)]
-        public static async Task SearchUserCommand(DiscordSocketClient discordSocketClient, SocketMessage message)
+        [Help("Search", "Get info about a scoresaber user", "/search [DiscordTag]/[ScoresaberID]/[Username]", HelpAttribute.Catergories.General)]
+        public static async Task SearchUserCommand(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
-            var parameter = message.Content.Substring(10).Trim();
-            parameter = parameter.Replace("<@!", "").Replace(">", "");
-            if (parameter == "") parameter = message.Author.Id.ToString();
-
-            //Check if the parameter is a name or ID 
-            var isUsername = false;
-            if (!parameter.All(c => char.IsDigit(c))) isUsername = true;
-            else isUsername = false;
+            if (command.Data.Options.Count == 0)
+            {
+                await new Search(discordSocketClient).CreateUserSearchEmbedWithScoresaberIDAndSend(await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString()), command, discordSocketClient);
+            }
+            var parameter = command.Data.Options.First();
 
             Embed embed = null;
-            if (isUsername)
+
+            if (parameter.Name == "username")
             {
-                var player = await ScoresaberAPI.GetPlayerByName(parameter);
+                var player = await ScoresaberAPI.GetPlayerByName(parameter.Value.ToString());
                 if (player == null)
                 {
-                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Username not found.", "Could not find a user with this name on scoresaber.").Build());
+                    await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Username not found.", "Could not find a user with this name on scoresaber.").Build());
                     return;
                 }
-                await BeatSaberInfoExtension.CreateUserSearchEmbedWithScoresaberIDAndSend(player.Players[0].PlayerId, message, discordSocketClient);
+                await new Search(discordSocketClient).CreateUserSearchEmbedWithScoresaberIDAndSend(player.Players[0].PlayerId, command, discordSocketClient);
             }
-            else
+            else if (parameter.Name == "scoresaber_id")
             {
-                var scoreSaberID = parameter;
-                if (await new RoleAssignment(discordSocketClient).CheckIfDiscordIdIsLinked(parameter)) scoreSaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(parameter);
-                await BeatSaberInfoExtension.CreateUserSearchEmbedWithScoresaberIDAndSend(scoreSaberID, message, discordSocketClient);
+                var scoreSaberID = parameter.Value.ToString();
+
+                await new Search(discordSocketClient).CreateUserSearchEmbedWithScoresaberIDAndSend(scoreSaberID, command, discordSocketClient);
+            }
+            else if (parameter.Name == "discord_tag" || parameter.Name == "discord_id")
+            {
+                var discordid = "";
+                var f = (dynamic)parameter.Value;
+                if (parameter.Name == "discord_tag") discordid = f.Id.ToString();
+                else discordid = parameter.Value.ToString();
+                await new Search(discordSocketClient).CreateUserSearchEmbedWithScoresaberIDAndSend(await RoleAssignment.GetScoresaberIdWithDiscordId(discordid), command, discordSocketClient);
             }
 
 
         }
 
         [Help("Draw", "Draws a random card of someone in the top 50", "!bs draw", HelpAttribute.Catergories.General)]
-        public static async Task Draw(DiscordSocketClient discordSocketClient, SocketMessage message)
+        public static async Task Draw(SocketSlashCommand command)
         {
-            BeatSaberCardCollection.DrawAndSendRandomCard(message);
+            BeatSaberCardCollection.DrawAndSendRandomCard(command);
         }
 
-        [Help("Settings", "Show your own or someone else his Beat Saber settings and more", "\n`!bs settings` shows your own settings page \n`!bs settings @Silverhaze` shows the settings page from silverhaze \n`!bs settings 76561198033166451` shows the page from silverhaze. \n`!bs settings edit` edits a certain setting. \n`!bs settings create` creates your own settings page. \n`!bs settings remove` removes your page", HelpAttribute.Catergories.General)]
-        public static async Task Settings(DiscordSocketClient discordSocketClient, SocketMessage message)
+        [Help("Settings", "Show your own or someone else his Beat Saber settings and more", "\n`/settings` shows your own settings page \n`/settings @Silverhaze` shows the settings page from silverhaze \n`/settings 76561198033166451` shows the page from silverhaze. \n`/settings edit` edits a certain setting. \n`/settings create` creates your own settings page. \n`/settings remove` removes your page", HelpAttribute.Catergories.General)]
+        public static async Task Settings(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
-            new Settings(discordSocketClient, message);
+            new Settings(discordSocketClient, command);
         }
 
         [Help("Playlist", "Creates a playlist based of key codes as input", "`!bs playlist create`", HelpAttribute.Catergories.General)]
@@ -81,45 +87,30 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("QualifiedMaps", "Shows all the current qualified maps", "`!bs qualifiedmaps`", HelpAttribute.Catergories.General)]
-        public static async Task QualifiedMaps(DiscordSocketClient discordSocketClient, SocketMessage message)
+        [Help("Compare", "Compares two player's stats with each other.", "/compare (DiscordTag or ID player1) (DiscordTag or ID player2)", HelpAttribute.Catergories.General)]
+        public static async Task Compare(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
-            var maps = await ScoresaberAPI.GetQualifiedMaps();
-            var description = "";
-            var qualifiedmaps = maps.Songs.Where(x => x.Ranked == 0);
-            foreach (var map in qualifiedmaps)
-            {
-                if (description.Length > 2000) continue;
-                description += $"[link](https://scoresaber.com/leaderboard/{map.Uid}) | {map.SongAuthorName} - {map.Name} by {map.LevelAuthorName} \n";
-            }
-
-            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Qualified Maps", $"{description}").Build());
+            var embedBuilder = await BeatSaberInfoExtension.GetComparedEmbedBuilderNew(command, discordSocketClient);
+            if (embedBuilder != null) await command.Channel.SendMessageAsync("", false, embedBuilder.Build());
         }
 
-        [Help("Compare", "Compares two player's stats with each other.", "!bs compare (DiscordTag or ID player1) (DiscordTag or ID player2)", HelpAttribute.Catergories.General)]
-        public static async Task Compare(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            var embedBuilder = await BeatSaberInfoExtension.GetComparedEmbedBuilderNew(message.Content.Substring(11).Trim(), message, discordSocketClient);
-            if (embedBuilder != null) await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
-        }
-
-        [Help("RankTracker", "Gives notifications about changes in ranked stats", "!bs ranktracker", HelpAttribute.Catergories.General)]
-        public static async Task RankTracker(DiscordSocketClient discordSocketClient, SocketMessage message)
+        [Help("RankTracker", "Gives notifications about changes in ranked stats", "/ranktracker", HelpAttribute.Catergories.General)]
+        public static async Task RankTracker(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
             var rankTracker = new RankTrackerHandler(discordSocketClient);
-            var isBeingTracker = await rankTracker.IsBeingTracked(Convert.ToInt64(message.Author.Id));
+            var isBeingTracker = await rankTracker.IsBeingTracked(Convert.ToInt64(command.User.Id));
             if (!isBeingTracker)
             {
-                var msg = await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("RankTracker", "Do you want to turn on the rank tracker? This will notify you in DM about any of the following stat changes \n ```- Global Rank ```\n\n Type `yes` to activate the rank tracker.").Build());
+                var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("RankTracker", "Do you want to turn on the rank tracker? This will notify you in DM about any of the following stat changes \n ```- Global Rank ```\n\n Type `yes` to activate the rank tracker.").Build());
                 var timeNow = DateTime.Now;
                 var timeToEnd = timeNow.AddSeconds(20);
                 do
                 {
                     await Task.Delay(1000);
                     var messages = await msg.Channel.GetMessagesAsync(10).FlattenAsync();
-                    if(messages.FirstOrDefault(x => x.Content.ToLower() == "yes") != null && messages.FirstOrDefault(x => x.Content.ToLower() == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author == message.Author)
+                    if (messages.FirstOrDefault(x => x.Content.ToLower() == "yes") != null && messages.FirstOrDefault(x => x.Content.ToLower() == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author.Id == command.User.Id)
                     {
-                        var result = await rankTracker.AddPlayerToRankTracker(Convert.ToInt64(message.Author.Id));
+                        var result = await rankTracker.AddPlayerToRankTracker(Convert.ToInt64(command.User.Id));
                         if (result) msg.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("RankTracker", "You have been succesfully added. You will now be notified about rank changes in DM").Build());
                         else msg.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("RankTracker", "You could not be added to the ranktracker. Make sure you are linked with the bot by typing `!bs link [scoresaberID]`").Build());
                         break;
@@ -128,16 +119,16 @@ namespace DiscordBeatSaberBot.Commands
             }
             else
             {
-                var msg = await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("RankTracker", "You are curently being tracked already. Do you wish to disable the notifications? Type `yes` to deactivate the rank tracker.").Build());
+                var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("RankTracker", "You are curently being tracked already. Do you wish to disable the notifications? Type `yes` to deactivate the rank tracker.").Build());
                 var timeNow = DateTime.Now;
                 var timeToEnd = timeNow.AddSeconds(20);
                 do
                 {
                     await Task.Delay(1000);
                     var messages = await msg.Channel.GetMessagesAsync(10).FlattenAsync();
-                    if (messages.FirstOrDefault(x => x.Content.ToLower() == "yes") != null && messages.FirstOrDefault(x => x.Content.ToLower() == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author == message.Author)
+                    if (messages.FirstOrDefault(x => x.Content.ToLower() == "yes") != null && messages.FirstOrDefault(x => x.Content.ToLower() == "yes").CreatedAt > timeNow && messages.FirstOrDefault(x => x.Content == "yes").Author.Id == command.User.Id)
                     {
-                        var result = await rankTracker.DeletePlayerFromRankTracker(Convert.ToInt64(message.Author.Id));
+                        var result = await rankTracker.DeletePlayerFromRankTracker(Convert.ToInt64(command.User.Id));
                         if (result) msg.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("RankTracker", "You have been succesfully deleted from the rank tracker. You won't be notified anymore about rank changes in DM").Build());
                         else msg.ModifyAsync(x => x.Embed = EmbedBuilderExtension.NullEmbed("RankTracker", "You could not be deleted from the ranktracker. Make sure you are linked with the bot by typing `!bs link [scoresaberID]`").Build());
                         break;
@@ -147,201 +138,137 @@ namespace DiscordBeatSaberBot.Commands
         }
 
         [Help("Map", "Displays a maps info by searching it with the key code", "!bs map (Key)", HelpAttribute.Catergories.General)]
-        public static async Task Map(DiscordSocketClient discordSocketClient, SocketMessage message)
+        public static async Task Map(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
-            var search = message.Content.Substring(8);
-            if(message.Content.StartsWith("!bsr ")) search = message.Content.Substring(5);
-            if (!message.Content.Substring(0, 4).Contains("!bsr"))
+            var search = command.Data.Options.First().Value.ToString().Trim();
+            if (!search.All(x => char.IsDigit(x)))
             {
                 var maps = await BeatSaverApi.GetMapsBySearch(search);
-                if(maps == null || maps.Docs.Count() == 0)
+                if (maps == null || maps.Docs.Count() == 0)
                 {
-                    await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", $"**Could not find a map with the search value {search}**\n\n**The following type of searches are available:** \n*Scoresaber Hashcode*\n*BeatSaver KeyCode (Use `!bsr [ID]`)*\n*Map Name (could add mappers name for better results, or other elements)*").Build());
+                    await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", $"**Could not find a map with the search value {search}**\n\n**The following type of searches are available:** \n*Scoresaber Hashcode*\n*BeatSaver KeyCode (Use `!bsr [ID]`)*\n*Map Name (could add mappers name for better results, or other elements)*").Build());
                     return;
                 }
                 search = maps.Docs.First().Id;
             }
-            
-            await BeatSaberInfoExtension.GetAndPostMapInfoWithKey(message, search);
+
+            await BeatSaberInfoExtension.GetAndPostMapInfoWithKey(command, search);
         }
 
         [Help("RecentSong", "Get info from the latest song played", "!bs recentsong [DiscordTag or username]", HelpAttribute.Catergories.General)]
-        public static async Task NewRecentSong(DiscordSocketClient discordSocketClient, SocketMessage message, bool isTopSong = false)
+        public static async Task NewRecentSong(DiscordSocketClient discordSocketClient, SocketSlashCommand command, bool isTopSong = false)
         {
-            var parameters = message.Content.Substring(isTopSong ? 11 : 14).Trim();
-            var parameterAmount = parameters.Split(" ").Count();
-            var identity = await ValidationExtension.GetIdentityFromData(parameters.Split(" ")[0]);
             var playthroughStats = new PlaythroughStats(discordSocketClient);
-            
-            //Self function
-            if(parameters.Length <= 4)
-            {
-                var number = 1;
-                if (parameters != "") number = Convert.ToInt32(parameters.Trim());
-                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, message, number, isTopSong);
-                return;
-            }
-            if(identity.Key == ValidationExtension.IdentityType.None)
-            {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", $"Could not find {parameters}").Build());
-                return;
-            }
-            //third person function 
-            else if(parameterAmount == 1)
-            {
-                if(identity.Key == ValidationExtension.IdentityType.DiscordID)
-                {
-                    var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(identity.Value);
-                    await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, message,isTopSong: isTopSong);
-                    return;
-                }
-                else if(identity.Key == ValidationExtension.IdentityType.ScoresaberID)
-                {
-                    await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(identity.Value, message, isTopSong: isTopSong);
-                    return;
-                }
-                else if (identity.Key == ValidationExtension.IdentityType.Username)
-                {
-                    var player = await ScoresaberAPI.GetPlayerByName(identity.Value);
-                    if(player == null)
-                    {
-                        await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", $"Could not find {identity.Value}").Build());
-                        return;
-                    }
-                    var scoresaberID = player.Players[0].PlayerId;
-                    await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberID, message, isTopSong: isTopSong);
-                    return;
-                }
-            }
-            //third person function with parameter
-            else if (parameterAmount == 2)
-            {
-                var number = Convert.ToInt32(parameters.Split(" ")[1]);
 
-                if (identity.Key == ValidationExtension.IdentityType.DiscordID)
-                {
-                    var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(identity.Value);
-                    await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, message, number, isTopSong);
-                    return;
-                }
-                else if (identity.Key == ValidationExtension.IdentityType.ScoresaberID)
-                {
-                    await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(identity.Value, message, number, isTopSong);
-                    return;
-                }
-                else if (identity.Key == ValidationExtension.IdentityType.Username)
-                {
-                    var player = await ScoresaberAPI.GetPlayerByName(identity.Value);
-                    if (player == null)
-                    {
-                        await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Error", $"Could not find {identity.Value}").Build());
-                        return;
-                    }
-                    var scoresaberID = player.Players[0].PlayerId;
-                    await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberID, message, number, isTopSong);
-                    return;
-                }
+            var pageNr = command.Data.Options.Count > 0 ? (command.Data.Options.Where(x => x.Name == "page").Count() > 0 ? Convert.ToInt32(command.Data.Options.First(x => x.Name == "page").Value) : 1) : 1;
+
+            //Self
+            if (!(command.Data.Options.Where(x => x.Name != "page").Count() > 0))
+            {
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
+                await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, command, pageNr, isTopSong);
+                return;
             }
-        }       
+
+            //ScoresaberID
+            if (command.Data.Options.FirstOrDefault(x => x.Name == "scoresaber_id") != null)
+            {
+                await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(command.Data.Options.FirstOrDefault(x => x.Name == "scoresaber_id").Value.ToString(), command, pageNr, isTopSong: isTopSong);
+                return;
+            }
+
+            //DiscordID
+            if (command.Data.Options.FirstOrDefault(x => x.Name == "discord_id") != null)
+            {
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(command.Data.Options.FirstOrDefault(x => x.Name == "discord_id").Value.ToString());
+                await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, command, pageNr, isTopSong: isTopSong);
+                return;
+            }
+
+            //DiscordTag
+            if (command.Data.Options.FirstOrDefault(x => x.Name == "mention") != null)
+            {
+                var discordID = (dynamic) command.Data.Options.FirstOrDefault(x => x.Name == "mention").Value;
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(discordID.Id.ToString());
+                await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, command, pageNr, isTopSong: isTopSong);
+                return;
+            }
+        }
 
         [Help("TopSong", "Get info from the latest song played", "!bs topsong [DiscordTag]", HelpAttribute.Catergories.General)]
-        public static async Task NewTopSong(DiscordSocketClient discordSocketClient, SocketMessage message)
+        public static async Task NewTopSong(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
-            NewRecentSong(discordSocketClient, message, true);            
+            NewRecentSong(discordSocketClient, command, true);
         }
 
-        [Help("Improve", "Gives you a list of scoresaber maps to improve on", "!bs improve", HelpAttribute.Catergories.General)]
-        public static async Task Improve(DiscordSocketClient discordSocketClient, SocketMessage message)
+        [Help("Improve", "Gives you a list of scoresaber maps to improve on", "`/improve [WishedAcc]`", HelpAttribute.Catergories.General)]
+        public static async Task Improve(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
             var r = new RoleAssignment(discordSocketClient);
-            if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
+            if (await r.CheckIfDiscordIdIsLinked(command.User.Id.ToString()))
             {
-                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                var acc = message.Content.Substring(11).Trim();
-                double doubleAcc = 0;
-                if (acc != "") doubleAcc = Convert.ToDouble(acc);
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
+                var doubleAcc = (double)command.Data.Options.First().Value;
                 var embedBuilder = await BeatSaberInfoExtension.GetImprovableMapsByAccFromToplist(scoresaberId, doubleAcc);
-                message.Channel.SendMessageAsync("", false, embedBuilder.Build());
-            }
-
-
-
-        }
-
-        [Help("Profile", "Creates a profile from your linked scoresaber as png", "!bs profile", HelpAttribute.Catergories.General)]
-        public static async Task Profile(DiscordSocketClient discordSocketClient, SocketMessage message)
-        {
-            var r = new RoleAssignment(discordSocketClient);
-            if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
-            {
-                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                await BeatSaberInfoExtension.GetAndCreateProfileImage(scoresaberId);
-                await message.Channel.SendFileAsync($"../../../Resources/img/RankingCard_{scoresaberId}.png");
-                File.Delete($"../../../Resources/img/RankingCard_{scoresaberId}.png");
+                await command.Channel.SendMessageAsync("", false, embedBuilder.Build());
             }
             else
             {
-                message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Scoresaber linked", "You have not linked your scoresaber with discord. Use '!bs link [ScoresaberId]' to link your account.").Build());
+                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Discord not linked", "For this command you have to link your discord account with scoresaber. You can do this by using the `/link` command").Build());
+            }
+        }
+
+        [Help("Profile", "Creates a profile from your linked scoresaber as png", "/profile", HelpAttribute.Catergories.General)]
+        public static async Task Profile(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
+        {
+            var r = new RoleAssignment(discordSocketClient);
+            if (await r.CheckIfDiscordIdIsLinked(command.User.Id.ToString()))
+            {
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
+                var cardID = await BeatSaberInfoExtension.GetAndCreateProfileImage(scoresaberId);
+                await command.Channel.SendMessageAsync($"{GlobalConfiguration.BotImageStorageLink}RankingCard_{scoresaberId}_{cardID}.png");
+            }
+            else
+            {
+                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Scoresaber linked", "You have not linked your scoresaber with discord. Use the '/link' command to link your account.").Build());
             }
         }
 
         [Help("Recentsongs", "Creates a profile from your linked scoresaber with your 5 recentsongs as png", "!bs recentsongs", HelpAttribute.Catergories.General)]
-        public static async Task Recentsongs(DiscordSocketClient discordSocketClient, SocketMessage message, bool isTopsongs = false)
+        public static async Task Recentsongs(DiscordSocketClient discordSocketClient, SocketSlashCommand command, bool isTopsongs = false)
         {
             var r = new RoleAssignment(discordSocketClient);
-            if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
+            if (await r.CheckIfDiscordIdIsLinked(command.User.Id.ToString()))
             {
-                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-                var pageParameter = message.Content.Split(" ").Last().Trim();
-                var pageNumber = 1;
-                var hasPage = pageParameter.All(x => char.IsDigit(x)) ? pageNumber = Convert.ToInt32(pageParameter) : pageNumber = 1;
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
+                var pageNumber = (command.Data.Options.Count > 0) ? Convert.ToInt32(command.Data.Options.First().Value) : 1;
+
                 //Create UserCard
                 await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, isTopsongs ? "Topsongs" : "Recentsongs" + $" {(pageNumber == 1 ? "" : $"p.{ pageNumber}")}");
-                await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberId, pageNumber, isTopsongs);
-                if(File.Exists($"../../../Resources/img/UserCard_{scoresaberId}.png") && File.Exists($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png"))
+                var guid = await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberId, pageNumber, isTopsongs);
+                if (File.Exists($"../../../Resources/img/UserCard_{scoresaberId}.png") && guid != Guid.Empty)
                 {
-                    await message.Channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberId}.png");
-                    await message.Channel.SendFileAsync($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
-                    File.Delete($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
+                    var embedBuilder = new EmbedBuilder();
+                    embedBuilder.ImageUrl = $"{GlobalConfiguration.BotImageStorageLink}{(isTopsongs ? "TopsongsCard" : "RecentsongsCard")}_{scoresaberId}_{guid}.png";
+                    await command.Channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberId}.png", embed: embedBuilder.Build());
                     File.Delete($"../../../Resources/img/UserCard_{scoresaberId}.png");
                 }
                 else
                 {
-                    await message.Channel.SendMessageAsync("Couldn't create recentsongs");
+                    await command.Channel.SendMessageAsync("Couldn't create recentsongs");
                 }
-                
+
             }
             else
             {
-                message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Scoresaber linked", "You have not linked your scoresaber with discord. Use '!bs link [ScoresaberId]' to link your account.").Build());
+                command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Scoresaber linked", "You have not linked your scoresaber with discord. Use '!bs link [ScoresaberId]' to link your account.").Build());
             }
         }
 
         [Help("Topsongs", "Creates a profile from your linked scoresaber with your 5 topsongs as png", "!bs topsongs", HelpAttribute.Catergories.General)]
-        public static async Task TopSongs(DiscordSocketClient discordSocketClient, SocketMessage message)
+        public static async Task TopSongs(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
-            await Recentsongs(discordSocketClient, message, true);
-            //var r = new RoleAssignment(discordSocketClient);
-            //if (await r.CheckIfDiscordIdIsLinked(message.Author.Id.ToString()))
-            //{
-            //    var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(message.Author.Id.ToString());
-            //    var pageParameter = message.Content.Split(" ").Last().Trim();
-            //    var pageNumber = 1;
-            //    var hasPage = pageParameter.All(x => char.IsDigit(x)) ? pageNumber = Convert.ToInt32(pageParameter) : pageNumber = 1;
-
-            //    //Create UserCard
-            //    await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberId, $"Topsongs {(pageNumber == 1 ? "" : $"p.{pageNumber}")}");
-            //    await BeatSaberInfoExtension.GetAndCreateTopsongsCardImage(scoresaberId, pageNumber);
-            //    await message.Channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberId}.png");
-            //    await message.Channel.SendFileAsync($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
-            //    File.Delete($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
-            //    File.Delete($"../../../Resources/img/UserCard_{scoresaberId}.png");
-            //}
-            //else
-            //{
-            //    message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Scoresaber linked", "You have not linked your scoresaber with discord. Use '!bs link [ScoresaberId]' to link your account.").Build());
-            //}
+            await Recentsongs(discordSocketClient, command, true);
         }
 
         [Help("randomcringe", "Gives a random gif from giphy.", "`!bs randomcringe [parameter]` \nShows nsfw if its in a nsfw channel.", HelpAttribute.Catergories.General)]
@@ -362,26 +289,26 @@ namespace DiscordBeatSaberBot.Commands
             await message.Channel.SendMessageAsync(link);
         }
 
-        [Help("randomgif", "Gives a random gif from tenor.", "`!bs randomgif [parameter]` \nShows nsfw if its in a nsfw channel.", HelpAttribute.Catergories.General)]
-        public static async Task RandomGif(DiscordSocketClient discordSocketClient, SocketMessage message)
+        [Help("randomgif", "Gives a random gif from tenor.", "`/randomgif [parameter]` \nShows nsfw if its in a nsfw channel.", HelpAttribute.Catergories.General)]
+        public static async Task RandomGif(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
-            var ch = message.Channel as SocketTextChannel;
 
-            var parameter = message.Content.Substring(13).Trim();
+            var channel = command.Channel as SocketTextChannel;
 
-            if (parameter == "") parameter = null;
+            string parameter = null;
+            if (command.Data.Options.Count > 0) parameter = command.Data.Options.First().Value.ToString();
 
             var filter = Tenor.Schema.ContentFilter.Medium;
-            if (ch.IsNsfw) filter = Tenor.Schema.ContentFilter.Off;
+            if (channel.IsNsfw) filter = Tenor.Schema.ContentFilter.Off;
 
             var link = await TenorApi.GetGif(filter, parameter);
             if (link == null)
             {
-                await message.Channel.SendMessageAsync("https://media1.tenor.com/images/6a22b36d7658ceb0d6984bf28c759100/tenor.gif?itemid=10902527");
+                await channel.SendMessageAsync("https://media1.tenor.com/images/6a22b36d7658ceb0d6984bf28c759100/tenor.gif?itemid=10902527");
             }
             else
             {
-                await message.Channel.SendMessageAsync(link);
+                await channel.SendMessageAsync(link);
             }
         }
     }

@@ -58,6 +58,7 @@ namespace DiscordBeatSaberBot.Handlers
         //Updates all ranks from every country, only the players who ranked down or up
         public async Task UpdateRanks()
         {
+
             var scoresaberClient = new ScoreSaberClient();
 
             //Update ranks from each country
@@ -80,66 +81,73 @@ namespace DiscordBeatSaberBot.Handlers
                 //decide who to rank up/down
                 if (allPlayersFromJson != null)
                 {
-                    foreach (var playerFromScoresaber in allPlayersFromScoresaber)
+                    try
                     {
-                        var playerFromJson = allPlayersFromJson.FirstOrDefault(x => x.Id == playerFromScoresaber.Id);
-                        if (playerFromJson == null) continue;
-                        if (playerFromScoresaber.CountryRank != playerFromJson.CountryRank)
+                        foreach (var playerFromScoresaber in allPlayersFromScoresaber)
                         {
-                            var rankRoleFromJson = 0;
-                            var rankRoleFromScoresaber = 0;
-                            //Get the rankRoles from discord
-                            foreach (var discordRankRole in country.rankRolesByRoleID.Keys)
+                            var playerFromJson = allPlayersFromJson.FirstOrDefault(x => x.Id == playerFromScoresaber.Id);
+                            if (playerFromJson == null) continue;
+                            if (playerFromScoresaber.CountryRank != playerFromJson.CountryRank)
                             {
-                                if (playerFromJson.CountryRank <= discordRankRole)
+                                var rankRoleFromJson = 0;
+                                var rankRoleFromScoresaber = 0;
+                                //Get the rankRoles from discord
+                                foreach (var discordRankRole in country.rankRolesByRoleID.Keys)
                                 {
-                                    rankRoleFromJson = discordRankRole;
-                                    break;
-                                }
-                            }
-                            foreach (var discordRankRole in country.rankRolesByRoleID.Keys)
-                            {
-                                if (playerFromScoresaber.CountryRank <= discordRankRole)
-                                {
-                                    rankRoleFromScoresaber = discordRankRole;
-                                    break;
-                                }
-                            }
-
-                            //If these are not equal then this user must be updates.
-                            if (rankRoleFromJson != rankRoleFromScoresaber && rankRoleFromScoresaber != 0)
-                            {
-                                var rankRoleIDtoUpdateTo = country.rankRolesByRoleID[rankRoleFromScoresaber];
-                                var scoresaberID = playerFromScoresaber.Id;
-                                var discordID = await new RoleAssignment(_discord).GetDiscordIdWithScoresaberId(scoresaberID);
-                                if (discordID != 0)
-                                {
-                                    IGuild guild = _discord.GetGuild((ulong)country.discordServerID);
-                                    IGuildUser user = await guild.GetUserAsync((ulong)discordID);
-                                    if (user == null) await guild.DownloadUsersAsync();
-                                    user = await guild.GetUserAsync((ulong)discordID);
-                                    if (user == null) continue;
-
-                                    //remove other rank roles 
-                                    foreach (var roleID in user.RoleIds)
+                                    if (playerFromJson.CountryRank <= discordRankRole)
                                     {
-                                        foreach (var roleid in country.rankRolesByRoleID.Values)
-                                        {
-                                            if (roleID == (ulong)roleid) await user.RemoveRoleAsync(guild.GetRole(roleID));
-                                        }
+                                        rankRoleFromJson = discordRankRole;
+                                        break;
                                     }
+                                }
+                                foreach (var discordRankRole in country.rankRolesByRoleID.Keys)
+                                {
+                                    if (playerFromScoresaber.CountryRank <= discordRankRole)
+                                    {
+                                        rankRoleFromScoresaber = discordRankRole;
+                                        break;
+                                    }
+                                }
 
-                                    //add new rank role
-                                    var roleToAdd = guild.Roles.First(x => x.Id == (ulong)rankRoleIDtoUpdateTo);
-                                    await user.AddRoleAsync(roleToAdd);
+                                //If these are not equal then this user must be updates.
+                                if (rankRoleFromJson != rankRoleFromScoresaber && rankRoleFromScoresaber != 0)
+                                {
+                                    var rankRoleIDtoUpdateTo = country.rankRolesByRoleID[rankRoleFromScoresaber];
+                                    var scoresaberID = playerFromScoresaber.Id;
+                                    var discordID = await new RoleAssignment(_discord).GetDiscordIdWithScoresaberId(scoresaberID);
+                                    if (discordID != 0)
+                                    {
+                                        IGuild guild = _discord.GetGuild((ulong)country.discordServerID);
+                                        IGuildUser user = await guild.GetUserAsync((ulong)discordID);
+                                        if (user == null) await guild.DownloadUsersAsync();
+                                        user = await guild.GetUserAsync((ulong)discordID);
+                                        if (user == null) continue;
+
+                                        //remove other rank roles 
+                                        foreach (var roleID in user.RoleIds)
+                                        {
+                                            foreach (var roleid in country.rankRolesByRoleID.Values)
+                                            {
+                                                if (roleID == (ulong)roleid) await user.RemoveRoleAsync(guild.GetRole(roleID));
+                                            }
+                                        }
+
+                                        //add new rank role
+                                        var roleToAdd = guild.Roles.First(x => x.Id == (ulong)rankRoleIDtoUpdateTo);
+                                        await user.AddRoleAsync(roleToAdd);
+                                    }
                                 }
                             }
                         }
                     }
-
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
                     SaveTop500asJson(allPlayersFromScoresaber, country.country);
                 }
             }
+
         }
 
         //Checks for players in each country that passed other players and notifies them. 
@@ -152,9 +160,14 @@ namespace DiscordBeatSaberBot.Handlers
                 var playersNewOrderedByCountryRank = playersNew.OrderBy(x => x.CountryRank);
 
                 foreach (var player in playersNewOrderedByCountryRank)
-                {              
+                {
+                    //Check if player exists in the old player list
+                    if (playersOldOrderedByCountryRank.FirstOrDefault(x => x.Id == player.Id) == null) continue;
+
                     if (player.CountryRank < playersOldOrderedByCountryRank.First(x => x.Id == player.Id).CountryRank)
                     {
+                        
+
                         var channel = _discord.GetGuild((ulong)country.discordServerID).GetTextChannel((ulong)country.rankupChannelID);
 
                         var embedBuilder = new EmbedBuilder();
@@ -174,8 +187,8 @@ namespace DiscordBeatSaberBot.Handlers
                             embedBuilder.Description = $"{overtakingsDescription}\nBy Playing: \n{embedBuilder.Title}.\n\n **{player.Name}** gained **{Math.Round(player.Pp - playersOldOrderedByCountryRank.First(x => x.Id == player.Id).Pp, 2)}PP** with this play";
                         }
                         else
-                        {                            
-                            embedBuilder.Description = overtakingsDescription;                            
+                        {
+                            embedBuilder.Description = overtakingsDescription;
                         }
                         embedBuilder.Color = Color.Blue;
                         embedBuilder.Title = $"{player.Name} just ranked up to #{player.CountryRank} of {country.country.ToString()}!";
@@ -185,10 +198,10 @@ namespace DiscordBeatSaberBot.Handlers
                         {
                             await channel.SendMessageAsync($"", false, embedBuilder.Build());
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             Console.WriteLine(ex);
-                        }                       
+                        }
                     }
                 }
             }
@@ -227,9 +240,9 @@ namespace DiscordBeatSaberBot.Handlers
         }
 
         //Updates everyones rank in all country discords, even if they didnt rank up or down
-        public async Task ForceUpdateRanks(CountryDiscordInfo country, SocketMessage message)
+        public async Task ForceUpdateRanks(CountryDiscordInfo country, SocketSlashCommand command)
         {
-            var msg = await message.Channel.SendMessageAsync("Starting the rank role update. This might take a while...");
+            var msg = await command.Channel.SendMessageAsync("Starting the rank role update. This might take a while...");
 
             var scoresaberClient = new ScoreSaberClient();
             //Once a week or something 

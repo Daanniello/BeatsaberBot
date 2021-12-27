@@ -14,7 +14,7 @@ namespace DiscordBeatSaberBot
 
         }
 
-        public static async void DrawAndSendRandomCard(SocketMessage message)
+        public static async void DrawAndSendRandomCard(SocketSlashCommand command)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace DiscordBeatSaberBot
                 await cardCreator.Create($"../../../Resources/img/CardCollection-{player.PlayerId}.png");
 
 
-                await message.Channel.SendFileAsync($"../../../Resources/img/CardCollection-{player.PlayerId}.png");
+                await command.Channel.SendFileAsync($"../../../Resources/img/CardCollection-{player.PlayerId}.png");
                 File.Delete($"../../../Resources/img/CardCollection-{player.PlayerId}.png");
             }
             catch

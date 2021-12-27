@@ -12,7 +12,7 @@ namespace DiscordBeatSaberBot
             {
 
                 var user = discord.GetUser(userID);
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                var dmChannel = await user.CreateDMChannelAsync();
                 Console.WriteLine("Sending Message to " + user.Username + " in " + timeTillSending + " Sec");
                 await Task.Delay(timeTillSending);
                 await dmChannel.SendMessageAsync(message);
@@ -29,7 +29,7 @@ namespace DiscordBeatSaberBot
             try
             {
                 var userd = discord.GetUser(user.Id);
-                var DMChannel = await userd.GetOrCreateDMChannelAsync();
+                var DMChannel = await userd.CreateDMChannelAsync();
                 await DMChannel.SendMessageAsync(message);
             }
             catch (Exception ex)

@@ -35,14 +35,14 @@ namespace DiscordBeatSaberBot.Commands.Functions
             //TotalPlayCount
         }
 
-        private SocketMessage _message;
+        private SocketSlashCommand _command;
 
-        public Statistics(SocketMessage message)
+        public Statistics(SocketSlashCommand command)
         {
-            _message = message;
+            _command = command;
         }
 
-        public async Task<type> Start(SocketMessage message)
+        public async Task<type> Start(SocketSlashCommand command)
         {
             var types = Enum.GetValues(typeof(type));
             var typesString = "";
@@ -50,15 +50,15 @@ namespace DiscordBeatSaberBot.Commands.Functions
             {
                 if (type != type.Error) typesString += $"*{type.ToString()}* \n";
             }
-            var endMessage = await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("What kind of statistics do you want to see?", $"Type one of the following categories: \n\n {typesString}").Build());
+            var endMessage = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("What kind of statistics do you want to see?", $"Type one of the following categories: \n\n {typesString}").Build());
 
             var endTime = DateTime.Now.AddSeconds(30);
             var startTime = DateTime.Now;
             do
             {
                 Task.Delay(1000).Wait();
-                var possibleReaction = await message.Channel.GetMessagesAsync(1).Flatten().FirstAsync();
-                if (possibleReaction.Author == message.Author && possibleReaction.CreatedAt > startTime)
+                var possibleReaction = await command.Channel.GetMessagesAsync(1).Flatten().FirstAsync();
+                if (possibleReaction.Author.Id == command.User.Id && possibleReaction.CreatedAt > startTime)
                 {
                     var content = possibleReaction.Content;
                     await possibleReaction.DeleteAsync();

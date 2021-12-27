@@ -234,7 +234,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             return embedBuilder;
         }
 
-        private async Task _discord_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
+        private async Task _discord_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, Cacheable<IMessageChannel, ulong> arg2, SocketReaction arg3)
         {
             if (arg3.UserId != 504633036902498314 && arg3.MessageId == _msg.Id)
             {

@@ -31,313 +31,11 @@ namespace DiscordBeatSaberBot.Extensions
 {
     internal static class BeatSaberInfoExtension
     {
-        public static async Task<List<List<string>>> GetPlayers()
-        {
-            var url = "https://scoresaber.com/global";
-            using (var client = new HttpClient())
-            {
-                var html = await client.GetStringAsync(url);
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
-
-                var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking global']");
-                return table.Descendants("tr").Skip(1).Select(tr =>
-                    tr.Descendants("td").Select(td => WebUtility.HtmlDecode(td.InnerText)).ToList()).ToList();
-            }
-        }
-
-        public static async Task<EmbedBuilder> GetTop10Players()
-        {
-            var topInfo = "";
-            var counter = 0;
-            var top10 = await GetPlayers();
-            foreach (var player in top10)
-            {
-                var infoToTell = "";
-                foreach (var result in player)
-                {
-                    var item = result.Replace(@"\r\n", " ").Trim();
-                    if (!string.IsNullOrEmpty(item))
-                        infoToTell += item + " ";
-                }
-
-                topInfo += infoToTell + "\n";
-                counter++;
-                if (counter >= 10)
-                    break;
-            }
-
-            var builder = new EmbedBuilder();
-            builder.WithTitle("Top 10 Beatsaber Players");
-            builder.WithDescription("Top 10 best beatsaber players");
-            builder.AddField("Players", topInfo);
-
-            builder.WithColor(Color.Red);
-            return builder;
-        }
-
-        public static async Task<Player> GetPlayerInfoWithScoresaberId(string scoresaberId)
-        {
-            var url = "https://scoresaber.com/u/" + scoresaberId;
-
-            var player = new Player("");
-            using (var client = new HttpClient())
-            {
-                var html = await client.GetStringAsync(url);
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
-
-                var playerName = doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']").InnerText
-                    .Replace("\n", "").Replace("\r", "").Trim();
-                var playerList = await GetPlayerInfo(playerName);
-                player = playerList.First();
-            }
-
-            return player;
-        }
-
-        public static async Task<EmbedBuilder> SearchLinkedPlayer(string ScoresaberId)
-        {
-            var url = "https://scoresaber.com/u/" + ScoresaberId;
-
-            var player = new Player("");
-            using (var client = new HttpClient())
-            {
-                var html = await client.GetStringAsync(url);
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
-
-                var playerName = doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']").InnerText
-                    .Replace("\n", "").Replace("\r", "").Trim();
-                var playerList = await GetPlayerInfo(playerName);
-                player = playerList.First();
-            }
-
-            var countryNameSmall = player.countryName;
-
-            var ppNext = "-";
-            var ppBefore = "-";
-            var playerNextName = "Not Found o.o";
-
-            var nextAndBefore = await RankedNeighbours(player.name, player.rank, 1);
-            var playerNext = new Player(nextAndBefore.Item1)
-            {
-                pp = await GetPlayerPP(nextAndBefore.Item1)
-            };
-            var playerBefore = new Player(nextAndBefore.Item2)
-            {
-                pp = await GetPlayerPP(nextAndBefore.Item2)
-            };
-
-            try
-            {
-                player.Next = playerNext;
-                player.Before = playerBefore;
-            }
-            catch
-            {
-                Console.WriteLine(nextAndBefore.Item1 + " or " + nextAndBefore.Item2 + " is not found");
-            }
-
-            var ppNextDouble = Math.Round(double.Parse(player.Next.pp) - double.Parse(player.pp), 0);
-            var ppBeforeDouble = Math.Round(double.Parse(player.pp) - double.Parse(player.Before.pp), 0);
-            if (player.Before.pp == "0")
-                ppBefore = "No Search results";
-            else
-                ppBefore = ppBeforeDouble.ToString();
-            if (player.Next.pp == "0")
-                ppNext = "No Search results";
-            else
-                ppNext = ppNextDouble.ToString();
 
 
-            playerNextName = player.Next.name;
-
-            var builder = new EmbedBuilder();
-
-            if (player.steamLink != "#")
-
-            {
-                builder.ThumbnailUrl = player.imgLink;
-                builder.Title = "**" + player.name.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
-                builder.Url = "https://scoresaber.com/u/" + ScoresaberId;
-                builder.AddField("`ID: " + ScoresaberId.Replace("/u/", "") + "`",
-                    "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" +
-                    "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" +
-                    "Performance Points: " + player.pp + "\n\n" + "Replays Watched: " + player.ReplaysWatched +
-                    "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" +
-                    "PP till DeRank: " + ppBefore + "``` \n [Click here for steam link](" + player.steamLink + ")\n\n");
-            }
-            else
-            {
-                builder.ThumbnailUrl = "https://scoresaber.com/imports/images/oculus.png";
-                builder.Title = "**" + player.name.ToUpper() + " :flag_" + countryNameSmall.ToLower() + ":" + "**";
-                builder.Url = "https://scoresaber.com/u/" + ScoresaberId;
-                builder.AddField("`ID: " + ScoresaberId.Replace("/u/", "") + "`",
-                    "```Global Ranking: #" + player.rank + "\n\n" + "Country Ranking: #" + player.countryRank + "\n\n" +
-                    "Play Count: " + player.playCount + "\n\n" + "Total Score: " + player.totalScore + "\n\n" +
-                    "Performance Points: " + player.pp + "\n\n" + "Replays Watched: " + player.ReplaysWatched +
-                    "``` \n\n" + "```Player above: " + playerNextName + "\n\n" + "PP till UpRank: " + ppNext + "\n\n" +
-                    "PP till DeRank: " + ppBefore + "```");
-            }
 
 
-            var rankColor = Rank.GetRankColor(player.rank);
-            builder.WithColor(await rankColor);
-            return builder;
-        }
 
-        static public async Task<List<EmbedBuilder>> GetPlayerSearchInfoEmbed(string scoresaberId, SocketMessage message)
-        {
-            var embedBuilderList = new List<EmbedBuilder>();
-
-            var searchedPlayerInfo = await new ScoresaberAPI(scoresaberId, message).GetPlayerFull();
-            var embedBuilder = new EmbedBuilder
-            {
-                Title = $"**{searchedPlayerInfo.playerInfo.Name} :flag_{searchedPlayerInfo.playerInfo.Country.ToLower()}:**",
-                ThumbnailUrl =
-                $"https://new.scoresaber.com{searchedPlayerInfo.playerInfo.Avatar}",
-                Url = $"https://new.scoresaber.com/u/{searchedPlayerInfo.playerInfo.PlayerId}",
-            };
-            embedBuilder.AddField(
-                $"`ID: {searchedPlayerInfo.playerInfo.PlayerId}`",
-                $"```cs\n" +
-                $"Global Rank:              #{searchedPlayerInfo.playerInfo.rank} \n\n" +
-                $"Country Rank:             #{searchedPlayerInfo.playerInfo.CountryRank} \n\n" +
-                $"Average Ranked Acc:       '{searchedPlayerInfo.scoreStats.AvarageRankedAccuracy} %' \n\n" +
-                $"PP:                       '{searchedPlayerInfo.playerInfo.Pp} PP' \n\n" +
-                $"```" +
-                "\n\n" +
-                $"```cs\n" +
-                $"Total Plays:              {searchedPlayerInfo.scoreStats.TotalPlayCount} \n\n" +
-                $"Total Score:              {searchedPlayerInfo.scoreStats.TotalScore} \n\n" +
-                $"Total Ranked Plays:       {searchedPlayerInfo.scoreStats.RankedPlayerCount} \n\n" +
-                $"Total Ranked Score:       {searchedPlayerInfo.scoreStats.TotalRankedScore} \n\n" +
-                $"" +
-                $"" +
-                $"```" +
-                "\n\n" +
-                $"```cs\n" +
-                $"Role:                     '{searchedPlayerInfo.playerInfo.Role}' \n\n" +
-                $"Inactive:                 '{searchedPlayerInfo.playerInfo.Inactive}' \n\n" +
-                $"Banned:                   '{searchedPlayerInfo.playerInfo.Banned}' \n\n" +
-                //$"Rank History:             {searchedPlayerInfo.playerInfo.History} \n\n" +
-                $"" +
-                $"```"
-            );
-
-            //embedBuilder.ImageUrl = $"https://new.scoresaber.com/api/static/badges/{searchedPlayerInfo.playerInfo.Badges.First().Image}";
-
-            embedBuilderList.Add(embedBuilder);
-            foreach (var badge in searchedPlayerInfo.playerInfo.Badges)
-            {
-                embedBuilderList.Add(new EmbedBuilder() { ImageUrl = $"https://new.scoresaber.com/api/static/badges/{badge.Image}", Title = badge.Description });
-            }
-
-            return embedBuilderList;
-        }
-
-        public static async Task<List<EmbedBuilder>> GetSongs(string search)
-        {
-            var titles = new List<string>();
-            var songs = new List<string>();
-
-
-            var pics = new List<string>();
-
-
-            var url = "https://beatsaver.com/search/all/0?key=" + search.Replace(" ", "+");
-
-            using (var client = new HttpClient())
-            {
-                var html = await client.GetStringAsync(url);
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
-
-                titles = doc.DocumentNode.SelectNodes("//a[@class='has-text-weight-semibold is-size-3']")
-                    .Select(x => x.InnerText).ToList();
-                songs = doc.DocumentNode.SelectNodes("//table[@class='table is-fullwidth']")
-                    .Select(x => WebUtility.HtmlDecode(x.InnerText)).ToList();
-                songs = songs.Select(x => x.Replace("\n", "")).ToList();
-                var regex = new Regex("[ ]{3,}");
-                songs = songs.Select(x => regex.Replace(x, "~").Trim()).ToList();
-
-                pics = doc.DocumentNode.SelectNodes("//img").Skip(1).Select(x => x.GetAttributeValue("src", ""))
-                    .ToList();
-            }
-
-            var builderList = new List<EmbedBuilder>();
-
-            for (var x = 0; x < songs.Count; x++)
-            {
-                var attributes = songs[x].Split("~");
-                builderList.Add(new EmbedBuilder
-                {
-                    Title = attributes[2],
-                    Fields = new List<EmbedFieldBuilder>
-                    {
-                        new EmbedFieldBuilder {Name = attributes[4].Split(":")[0], Value = attributes[4].Split(":")[1]},
-                        new EmbedFieldBuilder {Name = attributes[3].Split(":")[0], Value = attributes[3].Split(":")[1]},
-                        new EmbedFieldBuilder
-                        {
-                            Name = attributes[1].Split(":")[0],
-                            Value = attributes[1].Split(":")[1] + ":" + attributes[1].Split(":")[2] + ":" +
-                                    attributes[1].Split(":")[3]
-                        },
-                        new EmbedFieldBuilder {Name = attributes[5].Split(":")[0], Value = attributes[5].Split(":")[1]},
-                        new EmbedFieldBuilder {Name = "Stats", Value = attributes[6].Replace("||", "|")},
-                        new EmbedFieldBuilder {Name = attributes[7].Split(":")[0], Value = attributes[7].Split(":")[1]}
-                    },
-                    Color = Color.Blue,
-                    ThumbnailUrl = pics[x]
-                });
-            }
-
-
-            return builderList;
-        }
-
-        public static async Task<List<EmbedBuilder>> GetRanks()
-        {
-            var builderList = new List<EmbedBuilder>();
-
-            var builder = new EmbedBuilder();
-            builder.WithTitle("Top " + Rank.rankMaster);
-            builder.WithColor(await Rank.GetRankColor(Rank.rankMaster));
-            builderList.Add(builder);
-
-            builder = new EmbedBuilder();
-            builder.WithTitle("<" + Rank.rankChallenger);
-            builder.WithColor(await Rank.GetRankColor(Rank.rankChallenger));
-            builderList.Add(builder);
-
-            builder = new EmbedBuilder();
-            builder.WithTitle("<" + Rank.rankDiamond);
-            builder.WithColor(await Rank.GetRankColor(Rank.rankDiamond));
-            builderList.Add(builder);
-
-            builder = new EmbedBuilder();
-            builder.WithTitle("<" + Rank.rankPlatinum);
-            builder.WithColor(await Rank.GetRankColor(Rank.rankPlatinum));
-            builderList.Add(builder);
-
-            builder = new EmbedBuilder();
-            builder.WithTitle("<" + Rank.rankGold);
-            builder.WithColor(await Rank.GetRankColor(Rank.rankGold));
-            builderList.Add(builder);
-
-            builder = new EmbedBuilder();
-            builder.WithTitle("<" + Rank.rankSilver);
-            builder.WithColor(await Rank.GetRankColor(Rank.rankSilver));
-            builderList.Add(builder);
-
-            builder = new EmbedBuilder();
-            builder.WithTitle("+" + Rank.rankSilver);
-            builder.WithColor(await Rank.GetRankColor(9999999));
-            builderList.Add(builder);
-
-            return builderList;
-        }
 
         public static async Task<EmbedBuilder> GetInviteLink()
         {
@@ -370,88 +68,7 @@ namespace DiscordBeatSaberBot.Extensions
             return await player.GetPlayerId();
         }
 
-        public static async Task<string> GetPlayerIdsWithUsername(string search)
-        {
-            using (var client = new HttpClient())
-            {
-                var playerInfoJsonData = await client.GetStringAsync($"https://new.scoresaber.com/api/players/by-name/{search}");
-                var playerInfo = JsonConvert.DeserializeObject<ScoresaberSearchPlayerModel>(playerInfoJsonData);
-                return playerInfo.Playerid;
-            }
-        }
-
-        public static async Task<EmbedBuilder> GetBestSongWithId(string playerId)
-        {
-            var playerTopSongImg = "";
-            var playerTopSongLink = "";
-            var playerTopSongName = "";
-            var playerTopSongPP = "";
-            var playerTopSongAcc = "";
-            var songName = "";
-            var songDifficulty = "";
-            var songAuthor = "";
-            var playerSongRank = "";
-            var playerName = "";
-
-            var url = "https://scoresaber.com/u/" + playerId.Replace("/u/", "");
-            using (var client = new HttpClient())
-            {
-                var html = await client.GetStringAsync(url);
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
-
-                var table = doc.DocumentNode.SelectSingleNode("//table[@class='ranking songs']");
-                playerTopSongImg = "https://scoresaber.com" + table.Descendants("tbody")
-                                       .Select(tr =>
-                                           tr.Descendants("img").Select(a =>
-                                               WebUtility.HtmlDecode(a.GetAttributeValue("src", ""))).ToList()).ToList()
-                                       .First().First();
-                playerTopSongLink = table.Descendants("tbody").Select(tr =>
-                        tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.GetAttributeValue("href", "")))
-                            .ToList())
-                    .ToList().First().First();
-                playerTopSongName = table.Descendants("tbody")
-                    .Select(tr => tr.Descendants("a").Select(a => WebUtility.HtmlDecode(a.InnerText)).ToList()).ToList()
-                    .First().First();
-                playerTopSongPP =
-                    StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='scoreTop ppValue']").InnerText);
-                playerTopSongAcc =
-                    StringCleanup(doc.DocumentNode.SelectSingleNode("//span[@class='scoreBottom']").InnerText);
-                songName = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").InnerText;
-                songDifficulty = doc.DocumentNode.SelectSingleNode("//span[@class='songTop pp']").Descendants("span")
-                    .First().InnerText;
-                songAuthor = doc.DocumentNode.SelectSingleNode("//span[@class='songTop mapper']").InnerText;
-                playerSongRank = StringCleanup(doc.DocumentNode.SelectNodes("//th[@class='rank']")[1].InnerText);
-                playerName = StringCleanup(doc.DocumentNode.SelectSingleNode("//h5[@class='title is-5']").InnerText);
-            }
-
-            string StringCleanup(string RawContent)
-            {
-                var cleanContent = RawContent.Replace("\n", "").Trim();
-                return cleanContent;
-            }
-
-            var builder = new EmbedBuilder();
-            builder.WithTitle("**Top song from: " + playerName + "**");
-            builder.WithDescription("**Song name:** " + songName + "\n" + "**Difficulty:** " + songDifficulty + "\n" +
-                                    "**Author:** " + songAuthor + "\n\n" + "**Rank:** " + playerSongRank + "\n**" +
-                                    playerTopSongAcc.Split(' ')[0] + "** " + playerTopSongAcc.Split(' ')[1] +
-                                    "\n**PP**: " + playerTopSongPP + "\n\n" + "https://scoresaber.com" +
-                                    playerTopSongLink + "\n");
-            builder.WithImageUrl(playerTopSongImg);
-            builder.WithUrl(url);
-            try
-            {
-                builder.WithThumbnailUrl(await GetImageUrlFromId(playerId));
-            }
-            catch
-            {
-            }
-
-            return builder;
-        }
-
-        public static async Task GetAndPostMapInfoWithKey(SocketMessage message, string key)
+        public static async Task GetAndPostMapInfoWithKey(SocketSlashCommand command, string key)
         {
             var embedBuilder = new EmbedBuilder();
 
@@ -462,7 +79,7 @@ namespace DiscordBeatSaberBot.Extensions
                 var mapInfoBeatSaver = await BeatSaverApi.GetMapByKey(key);
                 if (mapInfoBeatSaver == null)
                 {
-                    await message.Channel.SendMessageAsync("oh oh, beat saver died or the input is not correct. try again.");
+                    await command.Channel.SendMessageAsync("oh oh, beat saver died or the input is not correct. try again.");
                     return;
                 }
 
@@ -540,102 +157,10 @@ namespace DiscordBeatSaberBot.Extensions
 
 
 
-                await message.Channel.SendFileAsync($"../../../Resources/img/EmbedBackground-{key}.png", embed: embedBuilder.Build());
+                await command.Channel.SendFileAsync($"../../../Resources/img/EmbedBackground-{key}.png", embed: embedBuilder.Build());
                 File.Delete($"../../../Resources/img/EmbedBackground-{key}.png");
             }
-        }
-
-      
-
-        public static async Task CreateUserSearchEmbedWithScoresaberIDAndSend(string scoresaberID, SocketMessage message, DiscordSocketClient discord)
-        {
-            var isInDatabase = await new RoleAssignment(discord).GetDiscordIdWithScoresaberId(scoresaberID) != 0;
-            var hasSettingsPage = await SettingsQuestionList.HasSettingsPage(scoresaberID);
-            var playerModel = await new ScoresaberAPI(scoresaberID).GetPlayerFull();
-            if(playerModel == null)
-            {
-                await message.Channel.SendMessageAsync("oh oh... Scoresaber/Discord ID is incorrect or the Scoresaber api crashed. Try again.");
-                return;
-            }
-
-            var embedBuilder = new EmbedBuilder();
-            embedBuilder.Title = playerModel.playerInfo.Name;
-            embedBuilder.Url = $"https://scoresaber.com/u/{playerModel.playerInfo.PlayerId}";
-            embedBuilder.ThumbnailUrl = $"https://new.scoresaber.com{playerModel.playerInfo.Avatar}";
-            embedBuilder.AddField("👤 Get their profile", "-------------------------------------");
-            embedBuilder.AddField($"🔧 {(hasSettingsPage ? "Get their settings" : "~~Get their settings~~")}", "-------------------------------------");
-            embedBuilder.AddField("🔁 Compare yourself to this user", "-------------------------------------");
-            embedBuilder.AddField("🆕 Get their recentsongs", "-------------------------------------");
-            embedBuilder.AddField("📰 Get their recentsong", "-------------------------------------");
-            embedBuilder.AddField("👑 Get their topsongs", "-------------------------------------");
-
-            var msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
-
-            await msg.AddReactionAsync(new Emoji("👤"));
-            if(hasSettingsPage) await msg.AddReactionAsync(new Emoji("🔧"));
-            await msg.AddReactionAsync(new Emoji("🔁"));
-            await msg.AddReactionAsync(new Emoji("🆕"));
-            await msg.AddReactionAsync(new Emoji("📰"));
-            await msg.AddReactionAsync(new Emoji("👑"));
-
-            //Get reactions           
-            var socketReacitonsList = new List<SocketReaction>();
-            discord.ReactionAdded += DiscordSocketClient_ReactionAdded;            
-            async Task DiscordSocketClient_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
-            {
-                if (arg1.Id == msg.Id && arg3.UserId != 504633036902498314)
-                {
-                    if (socketReacitonsList.Contains(arg3)) return;
-                    socketReacitonsList.Add(arg3);
-
-                    if (arg3.Emote.Name == "👤")
-                    {
-                        await GetAndCreateProfileImage(scoresaberID);
-                        await message.Channel.SendFileAsync($"../../../Resources/img/RankingCard_{scoresaberID}.png", $"<@!{arg3.UserId}> here you go. What an amazing profile!");
-                        File.Delete($"../../../Resources/img/RankingCard_{scoresaberID}.png");
-                    }
-                    if (arg3.Emote.Name == "🔧")
-                    {
-                        await message.Channel.SendMessageAsync($"<@!{arg3.UserId}> here you go. Did you know you can use `!bs statistics` to see community stats?", false, await SettingsQuestionList.GetSettingsPageWithScoresaberID(scoresaberID));
-                    }
-                    if (arg3.Emote.Name == "🔁")
-                    {
-                        var discordID = arg3.UserId.ToString();
-                        if (!await new RoleAssignment(discord).CheckIfDiscordIdIsLinked(discordID))
-                        {
-                            await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"You are not linked {arg3.User}", "Link your scoresaber by using the command `!bs link [scoresaberID]`").Build());
-                            return;
-                        }
-                        var scoresaberID2 = await RoleAssignment.GetScoresaberIdWithDiscordId(discordID);
-                        var scoresaberID2FullModel = await new ScoresaberAPI(scoresaberID2).GetPlayerFull();
-                        await GetAndCreateUserCompareImage(scoresaberID2, scoresaberID);
-                        await GetAndCreateCompareImage(scoresaberID2FullModel, playerModel);
-                        await message.Channel.SendFileAsync($"../../../Resources/img/UserCompareCard_{scoresaberID2}_{scoresaberID}.png", $"<@!{arg3.UserId}> here you go. I wonder who is better");
-                        await message.Channel.SendFileAsync($"../../../Resources/img/CompareCard_{scoresaberID2}_{scoresaberID}.png");
-                        
-                        File.Delete($"../../../Resources/img/CompareCard_{scoresaberID2}_{scoresaberID}.png");
-                        File.Delete($"../../../Resources/img/UserCompareCard_{scoresaberID2}_{scoresaberID}.png");
-                    }
-                    if (arg3.Emote.Name == "🆕")
-                    {
-                        await GetAndCreateRecentsongsCardImage(scoresaberID);
-                        await message.Channel.SendFileAsync($"../../../Resources/img/RecentsongsCard_{scoresaberID}.png", $"<@!{arg3.UserId}> here you go.");
-                        File.Delete($"../../../Resources/img/RecentsongsCard_{scoresaberID}.png");                  
-                    }
-                    if (arg3.Emote.Name == "📰")
-                    {
-                        await message.Channel.SendMessageAsync($"<@!{arg3.UserId}> here you go. This data is actually really helpfull!");
-                        await new PlaythroughStats(discord).GetAndPostPlaythroughStatsWithScoresaberId(scoresaberID, message);
-                    }
-                        if (arg3.Emote.Name == "👑")
-                    {
-                        await GetAndCreateTopsongsCardImage(scoresaberID);
-                        await message.Channel.SendFileAsync($"../../../Resources/img/TopsongsCard_{scoresaberID}.png", $"<@!{arg3.UserId}> here you go. ");
-                        File.Delete($"../../../Resources/img/TopsongsCard_{scoresaberID}.png");  
-                    }       
-                }                
-            }
-        }     
+        }    
 
         public static async Task<(string, string)> RankedNeighbours(string playerName, int playerRank,
             int recursionLoop = 0)
@@ -878,19 +403,17 @@ namespace DiscordBeatSaberBot.Extensions
             }
         }
 
-        public static async Task<EmbedBuilder> GetComparedEmbedBuilderNew(string message, SocketMessage socketMessage, DiscordSocketClient discordSocketClient)
+        public static async Task<EmbedBuilder> GetComparedEmbedBuilderNew(SocketSlashCommand command, DiscordSocketClient discordSocketClient)
         {
-            //Check if the message is set up correctly
-            if (message.Length == 0 || message == null) return EmbedBuilderExtension.NullEmbed("Format is not set up correctly", "Use the following format: `!bs compare player1 player2`");
 
             //Prepare player data             
-            var players = message.Split(' ');
+            var players = command.Data.Options;
 
-            if (players.Count() > 2) return EmbedBuilderExtension.NullEmbed("oh oh...", $"Format incorrect");
-            if (players.Count() < 2) return EmbedBuilderExtension.NullEmbed("oh oh...", $"Use the command like this `!bs compare @player1 @player2` \ndont forget a space");
+            if (players.Count() > 2) return EmbedBuilderExtension.NullEmbed("Format error", $"Format incorrect");
+            if (players.Count() < 2) return EmbedBuilderExtension.NullEmbed("Format error", $"Use the command like this `!bs compare @player1 @player2` \ndont forget a space");
 
-            var player1 = players[0];
-            var player2 = players[1];
+            var player1 = players.ElementAt(0).Value.ToString();
+            var player2 = players.ElementAt(1).Value.ToString();
 
             var player1containsmention = false;
             var player2containsmention = false;
@@ -1001,13 +524,12 @@ namespace DiscordBeatSaberBot.Extensions
             }
 
             await BeatSaberInfoExtension.GetAndCreateUserCompareImage(player1ScoresaberID, player2ScoresaberID);
-            await socketMessage.Channel.SendFileAsync($"../../../Resources/img/UserCompareCard_{player1}_{player2ScoresaberID}.png");
+            await command.Channel.SendFileAsync($"../../../Resources/img/UserCompareCard_{player1}_{player2ScoresaberID}.png");
             File.Delete($"../../../Resources/img/UserCompareCard_{player1}_{player2}.png");
 
-            await BeatSaberInfoExtension.GetAndCreateCompareImage(player1Info, player2Info);
-            await socketMessage.Channel.SendFileAsync($"../../../Resources/img/CompareCard_{player1}_{player2ScoresaberID}.png");
-            File.Delete($"../../../Resources/img/CompareCard_{player1}_{player2}.png");
-
+            var cardId = await BeatSaberInfoExtension.GetAndCreateCompareImage(player1Info, player2Info);
+            await command.Channel.SendMessageAsync($"{GlobalConfiguration.BotImageStorageLink}CompareCard_{player1}_{player2ScoresaberID}_{cardId}.png");
+            
             return null;
         }
         public static async Task<EmbedBuilder> GetComparedEmbedBuilder(string message, SocketMessage socketMessage, DiscordSocketClient discordSocketClient)
@@ -1196,7 +718,7 @@ namespace DiscordBeatSaberBot.Extensions
             return embedBuilder;
         }
 
-        public static async Task GetAndCreateCompareImage(ScoresaberPlayerFullModel scoresaberId1, ScoresaberPlayerFullModel scoresaberId2)
+        public static async Task<Guid> GetAndCreateCompareImage(ScoresaberPlayerFullModel scoresaberId1, ScoresaberPlayerFullModel scoresaberId2)
         {
             var rankingCardCreator = new ImageCreator("../../../Resources/img/CompareCard-Template.png");
             var topDataPlayerOne = await new ScoresaberAPI(scoresaberId1.playerInfo.PlayerId.ToString()).GetTopScores();
@@ -1269,7 +791,10 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddText("Ranked Score", System.Drawing.Color.White, 4, 195, 185 + offset);
             rankingCardCreator.AddText("Badge Count", System.Drawing.Color.White, 4, 200, 210 + offset);
             rankingCardCreator.AddText("Top PP Play", System.Drawing.Color.White, 4, 203, 235 + offset);
-            rankingCardCreator.Create($"../../../Resources/img/CompareCard_{scoresaberId1.playerInfo.PlayerId}_{scoresaberId2.playerInfo.PlayerId}.png");
+
+            var cardID = Guid.NewGuid();
+            await rankingCardCreator.Create($"{GlobalConfiguration.BotImageStoragePath}CompareCard_{scoresaberId1.playerInfo.PlayerId}_{scoresaberId2.playerInfo.PlayerId}_{cardID}.png");
+            return cardID;
         }
         public static async Task GetAndCreateUserCompareImage(string scoresaberId1, string scoresaberId2)
         {
@@ -1303,7 +828,7 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddImage($"../../../Resources/img/Street_Fighter_VS_logo.png", 225, 28, 70, 70, isLocalFile: true);
 
             //Finish Card
-            rankingCardCreator.Create($"../../../Resources/img/UserCompareCard_{scoresaberId1}_{scoresaberId2}.png");
+            await rankingCardCreator.Create($"../../../Resources/img/UserCompareCard_{scoresaberId1}_{scoresaberId2}.png");
         }
         public static async Task GetAndCreateUserCardImage(string scoresaberId, string topic)
         {
@@ -1332,14 +857,14 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.Create($"../../../Resources/img/UserCard_{scoresaberId}.png");
         }
 
-        public static async Task GetAndCreateRecentsongsCardImage(string scoresaberId, int page = 1, bool isTopsong = false)
+        public static async Task<Guid> GetAndCreateRecentsongsCardImage(string scoresaberId, int page = 1, bool isTopsong = false)
         {
             var playerRaw = new ScoresaberAPI(scoresaberId);
             var playerRecentScores = isTopsong ? await playerRaw.GetTopScores(page) : await playerRaw.GetScoresRecent(page);
 
             if(playerRecentScores == null)
             {
-                return;
+                return Guid.Empty;
             }
 
             var rankingCardCreator = new ImageCreator("../../../Resources/img/RecentsongsCard-Template-new2.png");
@@ -1392,7 +917,10 @@ namespace DiscordBeatSaberBot.Extensions
             }
 
             //Finish Card
-            rankingCardCreator.Create($"../../../Resources/img/RecentsongsCard_{scoresaberId}.png");
+            var cardID = Guid.NewGuid();
+            if(!isTopsong) await rankingCardCreator.Create($"{GlobalConfiguration.BotImageStoragePath}RecentsongsCard_{scoresaberId}_{cardID}.png");
+            else await rankingCardCreator.Create($"{GlobalConfiguration.BotImageStoragePath}TopsongsCard_{scoresaberId}_{cardID}.png");
+            return cardID;
         }
 
         public static async Task GetAndCreateTopsongsCardImage(string scoresaberId, int page = 1)
@@ -1439,10 +967,10 @@ namespace DiscordBeatSaberBot.Extensions
             }
 
             //Finish Card
-            rankingCardCreator.Create($"../../../Resources/img/TopsongsCard_{scoresaberId}.png");
+            await rankingCardCreator.Create($"{GlobalConfiguration.BotImageStoragePath}TopsongsCard_{scoresaberId}.png");
         }
 
-        public static async Task GetAndCreateProfileImage(string scoresaberId)
+        public static async Task<Guid> GetAndCreateProfileImage(string scoresaberId)
         {
             var playerRaw = new ScoresaberAPI(scoresaberId);
             var playerData = await playerRaw.GetPlayerFull();
@@ -1541,7 +1069,9 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddTextFloatRight($"{Math.Round(Convert.ToDouble(playerTopStats.UScore) / Convert.ToDouble(playerTopStats.MaxScoreEx) * 100, 3).ToString("0.00")}%", System.Drawing.Color.FromArgb(176, 176, 176), 110, 950, 2500);
             rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerTopStats.Id}.png", 3950, 2020, 800, 800);
 
-            rankingCardCreator.Create($"../../../Resources/img/RankingCard_{scoresaberId}.png");
+            var cardID = Guid.NewGuid();
+            await rankingCardCreator.Create($"{GlobalConfiguration.BotImageStoragePath}RankingCard_{scoresaberId}_{cardID}.png");
+            return cardID;
         }
 
         public static async Task<EmbedBuilder> GetImprovableMapsByAccFromToplist(string scoresaberId, double wishedAcc)

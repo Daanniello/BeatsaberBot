@@ -46,7 +46,7 @@ namespace DiscordBeatSaberBot
             {
                 var user = _discord.GetUser(guildUser.Id);
                 var welkomChannel = guild.Channels.FirstOrDefault(x => x.Name == "welkom") as ISocketMessageChannel;
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                var dmChannel = await user.CreateDMChannelAsync();
                 var r = new Random();
 
                 var embedBuilder = new EmbedBuilder

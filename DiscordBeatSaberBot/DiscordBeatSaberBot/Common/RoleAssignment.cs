@@ -29,15 +29,15 @@ namespace DiscordBeatSaberBot
         /// <param name="countryGuildId"></param>
         /// <param name="countryChannelToPostId"></param>
         /// <returns></returns>
-        public async Task MakeRequest(SocketMessage message, ulong countryGuildId, ulong countryChannelToPostId)
+        public async Task MakeRequest(SocketSlashCommand command, ulong countryGuildId, ulong countryChannelToPostId)
         {
-            ulong DiscordId = message.Author.Id;
-            string ScoresaberId = message.Content.Substring(9);
+            ulong DiscordId = command.User.Id;
+            string ScoresaberId = command.Data.Options.First().Value.ToString().Trim();
             ScoresaberId = Regex.Replace(ScoresaberId, "[^0-9]", "");
 
             if (!ValidationExtension.IsDigitsOnly(ScoresaberId))
             {
-                await message.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Wrong scoresaber ID", "Get you link from the url from your scoresaber page.", null, null).Build());
+                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Wrong scoresaber ID", "Get you link from the url from your scoresaber page.", null, null).Build());
 
                 return;
             }
@@ -51,8 +51,8 @@ namespace DiscordBeatSaberBot
 
             var embedBuilder = new EmbedBuilder
             {
-                Title = message.Author.Username,
-                ThumbnailUrl = message.Author.GetAvatarUrl(),
+                Title = command.User.Username,
+                ThumbnailUrl = command.User.GetAvatarUrl(),
                 Description = "" +
                               "**Scoresaber ID:** " + ScoresaberId + "\n" +
                               "**Discord ID:** " + DiscordId + "\n" +
