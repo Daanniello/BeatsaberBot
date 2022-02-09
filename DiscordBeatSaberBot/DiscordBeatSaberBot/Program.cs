@@ -31,6 +31,7 @@ namespace DiscordBeatSaberBot
         public int commandsEachHour = 0;
         public RateLimit rateLimit = new RateLimit(5);
         private SlashCommandHandler _slashCommandHandler;
+        private AutomaticCountryRankUpdateHandler _countryUpdateHandler; 
 
         public static void Main(string[] args)
         {
@@ -96,6 +97,10 @@ namespace DiscordBeatSaberBot
             _slashCommandHandler = new SlashCommandHandler(discordSocketClient);
             _slashCommandHandler.CreateSlashCommands();
 
+            //Adding country update handler
+            _countryUpdateHandler = new AutomaticCountryRankUpdateHandler(discordSocketClient);
+            new FeedbackHandler(discordSocketClient, _countryUpdateHandler.CountriesToUpdate);
+
             //Adding the messageHandler
             _messageReceivedHandler = new MessageReceivedHandler();
 
@@ -111,7 +116,7 @@ namespace DiscordBeatSaberBot
             //Inserting playing info on the bot
             _startTime = DateTime.Now;
             var playingGame = await DatabaseContext.ExecuteSelectQuery("Select * from Settings");
-            await discordSocketClient.SetGameAsync("!bs help");
+            await discordSocketClient.SetGameAsync("/Help");
 
             //Automatic updates                                            
             StartAllUpdateTimers();
@@ -124,7 +129,7 @@ namespace DiscordBeatSaberBot
             updater.Start(() => updater.UpdateSilverhazeStatsInDiscordServer(), "UpdateSilverInfoInSilverhazeServer", 5, 0, 0);
             updater.Start(() => UpdateSilverhazeDiscordRank(), "SilverhazeDiscordRankUpdate", 0, 30, 0);
             updater.Start(() => new RankTrackerHandler(discordSocketClient).CheckForAllRankChanges(), "RankTrackerUpdate", 0, 15, 0); ;
-            updater.Start(() => new AutomaticCountryRankUpdateHandler(discordSocketClient).UpdateRanks(), "UpdateRolesInCountryDiscords", 0, 5, 0);
+            updater.Start(() => _countryUpdateHandler.UpdateRanks(), "UpdateRolesInCountryDiscords", 0, 5, 0);
             updater.Start(() => updateServersAndUsersCount(), "Discord server and user count", 1, 0, 0);
 
             async Task UpdateSilverhazeDiscordRank()

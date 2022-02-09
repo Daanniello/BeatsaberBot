@@ -39,7 +39,7 @@ namespace DiscordBeatSaberBot.Api.Spotify
             if (results.Tracks == null) return null;
             if (results.Tracks.Items.Count == 0) return null;
 
-            var endResult = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+            string endResult = null;
             foreach(var song in results.Tracks.Items)
             {
                 foreach (var artist in song.Artists)

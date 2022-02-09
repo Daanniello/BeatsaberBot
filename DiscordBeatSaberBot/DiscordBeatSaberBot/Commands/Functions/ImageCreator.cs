@@ -29,6 +29,11 @@ namespace DiscordBeatSaberBot
             return Task.CompletedTask;
         }
 
+        public Bitmap GetBitmap()
+        {
+            return _bitmap;
+        }
+
         public string CreateZoomEffect(string savePath, string path)
         {
             using (var gif = new AnimatedGifCreator($"{savePath}", delay: 1000, repeat: 1))
@@ -109,7 +114,7 @@ namespace DiscordBeatSaberBot
                 var precisionPointXJump = (dataPointyMax * 100) / 5; // times 100 for the acc graph...
                 for (var t = 0; t <= 5; t++)
                 {
-                    AddTextFloatRight(Math.Round(100 - ((dataPointyMax * 100) /* times 100 for the acc graph... */ - (precisionPointXJump * t)), 2).ToString() + "%", Color.White, 12, x - 400, (y + height - precisionLineJump * t) - 11);
+                    AddTextFloatRight(Math.Round(100 - ((dataPointyMax * 100) /* times 100 for the acc graph... */ - (precisionPointXJump * t)), 2).ToString() + "%", Color.White, 12, x - 350, (y + height - precisionLineJump * t) - 11);
                     //graphics.DrawString(Math.Round(100 - ((dataPointyMax * 100) /* times 100 for the acc graph... */ - (precisionPointXJump * t)), 2).ToString() + "%", new Font("Tourmaline", 12), new SolidBrush(color), new PointF(x - 60, (y + height - precisionLineJump * t) - 15));
                     graphics.DrawLine(new Pen(Color.Gray, 3), x, y + height - precisionLineJump * t, x + width, y + height - precisionLineJump * t);
                 }
@@ -218,7 +223,7 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public void DrawRectangle(int x, int y, int with, int height, Color? fillColor = null, Color? outerColor = null, int opacity = 255)
+        public void DrawRectangle(int x, int y, int with, int height, Color? fillColor = null, Color? outerColor = null, int opacity = 255, float cornerRadius = 0)
         {
             // Create pen.
             SolidBrush brush = new SolidBrush(Color.White);
@@ -237,11 +242,16 @@ namespace DiscordBeatSaberBot
             // Create rectangle.
             Rectangle rect = new Rectangle(x, y, with, height);
 
+            if(cornerRadius != 0)
+            {
+               
+            }
+
             // Draw rectangle to screen.
             using (Graphics graphics = Graphics.FromImage(_bitmap))
-            {
-                graphics.FillRectangle(brush, rect);
-                graphics.DrawRectangle(pen, rect);
+            {                
+                graphics.FillRectangle(brush, rect);               
+                if(outerColor != null) graphics.DrawRectangle(pen, rect);
             }
         }
 

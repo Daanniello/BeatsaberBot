@@ -20,7 +20,7 @@ namespace DiscordBeatSaberBot.Handlers
         {
             _discord = discord;
             _discord.SlashCommandExecuted += _discord_SlashCommandExecuted;
-        }       
+        }
 
         private async Task _discord_SlashCommandExecuted(SocketSlashCommand command)
         {
@@ -92,7 +92,13 @@ namespace DiscordBeatSaberBot.Handlers
                     break;
                 case "updateroles":
                     HandleTaskException(DutchServerCommands.UpdateRoles(_discord, command), command);
-                    break;                
+                    break;
+                case "playerbase":
+                    HandleTaskException(DutchServerCommands.Playerbase(_discord, command), command);
+                    break;
+                case "patterncatalog":
+                    HandleTaskException(GlobalScoresaberCommands.PatternCatalog(_discord, command), command);
+                    break;
                 default:
                     break;
             }
@@ -100,23 +106,26 @@ namespace DiscordBeatSaberBot.Handlers
             return;
         }
 
-        public async Task HandleTaskException(Task task, SocketSlashCommand command, bool keepAuthor = true)
+        public async Task HandleTaskException(Task task, SocketSlashCommand command, bool keepAuthor = false)
         {
             try
             {
-                Console.WriteLine(command.ToString());
-                command.DeferAsync();
-                task.Wait();
-                var msg = await command.FollowupAsync("Results:");
+                Console.WriteLine($"Command {command.CommandName} executed in {command.Channel.Name} by {command.User.Username}");
+                //await command.DeferAsync();
+                await command.RespondAsync("Results:");
+                //task.Wait();
+                //var msg = await command.FollowupAsync("Results:");
+             
                 if (!keepAuthor)
                 {
                     await Task.Delay(500);
-                    msg.DeleteAsync();
+                    //msg.DeleteAsync();
                 }
                 TotalCommandsUsed++;
             }
             catch (Exception ex)
             {
+                var exception = ex;
                 throw new ArgumentException("Error", "failed");
             }
         }
@@ -131,8 +140,8 @@ namespace DiscordBeatSaberBot.Handlers
             try
             {
                 //Delete Global Command if needed
-                //var commands = await _discord.GetGlobalApplicationCommandsAsync();
-                //await commands.First(x => x.Name == "searchtest").DeleteAsync();
+                //var commands = await dutchGuild.GetApplicationCommandsAsync();
+                //await commands.First(x => x.Name == "patterncatalog").DeleteAsync();
 
                 //eventmanager
                 await dutchGuild.CreateApplicationCommandAsync(new SlashCommandBuilder()
@@ -154,7 +163,7 @@ namespace DiscordBeatSaberBot.Handlers
                     .WithDescription("Force updates all roles in the whole server")
                     .AddOption("country", ApplicationCommandOptionType.String, "Example: NL, IE", true, choices: countryDiscords.ToArray())
                     .Build());
-                }
+                }                
             }
             catch (Exception ex)
             {
@@ -207,7 +216,7 @@ namespace DiscordBeatSaberBot.Handlers
                     .WithName("map")
                     .WithDescription("Shows details from a beat saber map")
                     .AddOption("search", ApplicationCommandOptionType.String, "Example: shrek")
-                    .AddOption("bsr_key", ApplicationCommandOptionType.Integer, "Example: 666")
+                    .AddOption("bsr_key", ApplicationCommandOptionType.String, "Example: 666")
                     .Build());
                 //settings
                 var settingChoices = new List<ApplicationCommandOptionChoiceProperties>();
@@ -306,7 +315,50 @@ namespace DiscordBeatSaberBot.Handlers
                     .AddOption("discord_id", ApplicationCommandOptionType.String, "Example: 76561198187936410", false)
                     .AddOption("mention", ApplicationCommandOptionType.Mentionable, "Example: @silverhaze", false)
                     .Build());
-                
+                //playerbase
+                await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
+                    .WithName("playerbase")
+                    .WithDescription("Shows the total amount of players")
+                    .AddOption("country", ApplicationCommandOptionType.String, "Example: NL, US, UK, FR", false)
+                    .Build());
+                //Pattern Catalog (Global)
+                var slashCommandBuilder = new SlashCommandBuilder()
+                    .WithName("patterncatalog")
+                    .WithDescription("A catalog for all kind of patterns used in Beat Saber");
+
+                var patternCatalogActionChoices = new List<ApplicationCommandOptionChoiceProperties>();
+                patternCatalogActionChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Add New Pattern to the catalog", Value = "Add New Pattern to the catalog" });
+
+                var patternCatalogPatternChoicesList = new List<List<ApplicationCommandOptionChoiceProperties>>();
+                var patternCatalogPatternChoices = new List<ApplicationCommandOptionChoiceProperties>();
+                foreach (var pattern in await new PatternCatalog().OpenPatternList())
+                {
+                    if (patternCatalogPatternChoices.Count < 25)
+                    {
+                        patternCatalogPatternChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = $"{pattern.Name}", Value = $"{pattern.Name}" });
+                    }
+                    else
+                    {
+                        var copyList = new List<ApplicationCommandOptionChoiceProperties>();
+                        copyList.AddRange(patternCatalogPatternChoices.ToArray());
+                        patternCatalogPatternChoicesList.Add(copyList);
+                        patternCatalogPatternChoices.Clear();
+                        patternCatalogPatternChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = $"{pattern.Name}", Value = $"{pattern.Name}" });
+                    }
+                }
+                patternCatalogPatternChoicesList.Add(patternCatalogPatternChoices);
+
+                slashCommandBuilder.AddOption("action", ApplicationCommandOptionType.String, "Add a pattern to the pattern catalog", false, choices: patternCatalogActionChoices.ToArray());
+
+                var count = 0;
+                foreach (var patternList in patternCatalogPatternChoicesList)
+                {
+                    count++;
+                    slashCommandBuilder.AddOption($"patterns_{count}", ApplicationCommandOptionType.String, "Choose a pattern to display", false, choices: patternList.ToArray());
+                }
+
+                await _discord.CreateGlobalApplicationCommandAsync(slashCommandBuilder.Build());
+
 
             }
             catch (Exception ex)

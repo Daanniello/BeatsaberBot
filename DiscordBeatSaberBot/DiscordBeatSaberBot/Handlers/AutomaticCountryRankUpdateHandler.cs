@@ -40,7 +40,7 @@ namespace DiscordBeatSaberBot.Handlers
             discordDutchRankRolesList.Add(100, 505700269552697344);
             discordDutchRankRolesList.Add(250, 505700349177495563);
             discordDutchRankRolesList.Add(500, 505700397676101632);
-            CountriesToUpdate.Add(new CountryDiscordInfo() { country = country.NL, discordServerID = 505485680344956928, rankRolesByRoleID = discordDutchRankRolesList, unrankedRoleID = 740567773918396467, lastTopRoleID = 505700472972115968, unverifiedRoleID = 549351808506658857, verifiedRoleID = 573459086293598209, serverOwnerID = 138439306774577152, foreignerRoleID = 729279152712056902, rankupChannelID = 922592138141794365, discordInviteLink = "https://discord.gg/sDa7xrE" });
+            CountriesToUpdate.Add(new CountryDiscordInfo() { country = country.NL, discordServerID = 505485680344956928, rankRolesByRoleID = discordDutchRankRolesList, unrankedRoleID = 740567773918396467, lastTopRoleID = 505700472972115968, unverifiedRoleID = 549351808506658857, verifiedRoleID = 573459086293598209, serverOwnerID = 138439306774577152, foreignerRoleID = 729279152712056902, rankupChannelID = 922592138141794365, discordInviteLink = "https://discord.gg/sDa7xrE", feedbackChannelID = 930065251829968907, feedbackStaffChannelID = 930386691271827456 });
             //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
             //Add Ireland----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -51,8 +51,7 @@ namespace DiscordBeatSaberBot.Handlers
             discordIrelandRankRolesList.Add(50, 703592942849491086);
             discordIrelandRankRolesList.Add(100, 922818182127943681);
             CountriesToUpdate.Add(new CountryDiscordInfo() { country = country.IE, discordServerID = 676524581271371814, rankRolesByRoleID = discordIrelandRankRolesList, unrankedRoleID = 922812907371237417, lastTopRoleID = 922818182127943681, unverifiedRoleID = 922814574720327691, verifiedRoleID = 922814498706952202, serverOwnerID = 146287428875976704, foreignerRoleID = 922818743623643186, rankupChannelID = 922814267328167966, discordInviteLink = "https://discord.gg/uKQzjRQ" });
-            //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+            //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------            
         }
 
         //Updates all ranks from every country, only the players who ranked down or up
@@ -159,14 +158,32 @@ namespace DiscordBeatSaberBot.Handlers
                 var playersOldOrderedByCountryRank = OpenTop500fromJson(country.country).OrderBy(x => x.CountryRank);
                 var playersNewOrderedByCountryRank = playersNew.OrderBy(x => x.CountryRank);
 
+                var incactiveCountryRanks = new List<long>();
+                //Look for inactives 
+                foreach (var oldPlayer in playersOldOrderedByCountryRank)
+                {
+                    var sharedPlayer = playersNewOrderedByCountryRank.FirstOrDefault(x => x.Id == oldPlayer.Id);
+                    if (sharedPlayer == null)
+                    {
+                        incactiveCountryRanks.Add(oldPlayer.CountryRank);
+                    }
+                }
+
                 foreach (var player in playersNewOrderedByCountryRank)
                 {
                     //Check if player exists in the old player list
                     if (playersOldOrderedByCountryRank.FirstOrDefault(x => x.Id == player.Id) == null) continue;
 
-                    if (player.CountryRank < playersOldOrderedByCountryRank.First(x => x.Id == player.Id).CountryRank)
+                    //Check if there was an inactive to no post a million rank ups
+                    var oldRank = playersOldOrderedByCountryRank.First(x => x.Id == player.Id).CountryRank;
+                    foreach (var incactiveCountryRank in incactiveCountryRanks)
                     {
-                        
+                        if (player.CountryRank > incactiveCountryRank) oldRank -= 1;
+                    }
+
+                    if (player.CountryRank < oldRank)
+                    {
+
 
                         var channel = _discord.GetGuild((ulong)country.discordServerID).GetTextChannel((ulong)country.rankupChannelID);
 
@@ -177,19 +194,34 @@ namespace DiscordBeatSaberBot.Handlers
                         var overtakingsDescription = "...Overtaking: \n";
                         for (var i = 0; i < playersOldOrderedByCountryRank.First(x => x.Id == player.Id).CountryRank - player.CountryRank; i++)
                         {
-                            var overtakenPlayer = playersNewOrderedByCountryRank.ElementAt((int)player.CountryRank + i);
-                            overtakingsDescription += $"#{overtakenPlayer.CountryRank} - **[{overtakenPlayer.Name}](https://scoresaber.com/u/{overtakenPlayer.Id})**, \n";
+                            try
+                            {
+                                var overtakenPlayer = playersNewOrderedByCountryRank.ElementAt((int)player.CountryRank + i);
+                                overtakingsDescription += $"#{overtakenPlayer.CountryRank} - **[{overtakenPlayer.Name}](https://scoresaber.com/u/{overtakenPlayer.Id})**, \n";
+                            }
+                            catch
+                            {
+
+                            }
                         }
+
+                        if (overtakingsDescription.Length > 4000 || overtakingsDescription == "...Overtaking: \n") continue;
+
+                        embedBuilder = await new PlaythroughStats(_discord).CreateCardAndGetPlaythroughStatsEmbed(player.Id);
+                        embedBuilder.Description = $"{overtakingsDescription}\nBy Playing: \n{embedBuilder.Title}.\n\n **{player.Name}** gained **{Math.Round(player.Pp - playersOldOrderedByCountryRank.First(x => x.Id == player.Id).Pp, 2)}PP** with this play";
+
 
                         if (discordID != 0)
                         {
-                            embedBuilder = await new PlaythroughStats(_discord).CreateCardAndGetPlaythroughStatsEmbed(player.Id);
-                            embedBuilder.Description = $"{overtakingsDescription}\nBy Playing: \n{embedBuilder.Title}.\n\n **{player.Name}** gained **{Math.Round(player.Pp - playersOldOrderedByCountryRank.First(x => x.Id == player.Id).Pp, 2)}PP** with this play";
+                            
+                            if (_discord.GetGuild((ulong)country.discordServerID).GetUser(discordID) != null) embedBuilder.Footer.Text += " | Member of this server";
+                            else
+                            {
+                                embedBuilder.Footer.Text += " | Not a member of this server";
+                            }
+
                         }
-                        else
-                        {
-                            embedBuilder.Description = overtakingsDescription;
-                        }
+
                         embedBuilder.Color = Color.Blue;
                         embedBuilder.Title = $"{player.Name} just ranked up to #{player.CountryRank} of {country.country.ToString()}!";
                         embedBuilder.Url = $"https://scoresaber.com/u/{player.Id}";
@@ -368,6 +400,8 @@ namespace DiscordBeatSaberBot.Handlers
             public long foreignerRoleID;
             public long rankupChannelID;
             public string discordInviteLink;
+            public long feedbackStaffChannelID;
+            public long feedbackChannelID;
         }
     }
 }

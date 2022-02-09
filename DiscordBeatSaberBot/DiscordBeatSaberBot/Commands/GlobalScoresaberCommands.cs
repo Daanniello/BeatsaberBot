@@ -67,6 +67,12 @@ namespace DiscordBeatSaberBot.Commands
             BeatSaberCardCollection.DrawAndSendRandomCard(command);
         }
 
+        [Help("PatternCatalog", "Show the list of all pattern names and shows you a preview of how they look and more details about how to use them for mapping.", "/patterncatalog", HelpAttribute.Catergories.General)]
+        public static async Task PatternCatalog(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
+        {
+            new PatternCatalog().Function(discordSocketClient, command);
+        }
+
         [Help("Settings", "Show your own or someone else his Beat Saber settings and more", "\n`/settings` shows your own settings page \n`/settings @Silverhaze` shows the settings page from silverhaze \n`/settings 76561198033166451` shows the page from silverhaze. \n`/settings edit` edits a certain setting. \n`/settings create` creates your own settings page. \n`/settings remove` removes your page", HelpAttribute.Catergories.General)]
         public static async Task Settings(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {

@@ -17,7 +17,7 @@ namespace DiscordBeatSaberBot.Commands
     class DutchServerCommands : ICommand
     {
 
-        [Help("UpdateRoles", "Update roles from everyone in the dutch beat saber discord", "!bs updateroles", HelpAttribute.Catergories.AdminCommands)]
+        [Help("UpdateRoles", "Update roles from everyone in the dutch beat saber discord", "/bs updateroles", HelpAttribute.Catergories.AdminCommands)]
         static public async Task UpdateRoles(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
             var rankUpdateHandler = new AutomaticCountryRankUpdateHandler(discordSocketClient);
@@ -34,17 +34,23 @@ namespace DiscordBeatSaberBot.Commands
             }
         }
 
-        [Help("IRLevent", "Creates and IRL Event for the dutch discord.", "!bs irlevent", HelpAttribute.Catergories.AdminCommands)]
-        static public async Task IRLevent(DiscordSocketClient discordSocketClient, SocketMessage message)
+        [Help("Playerbase", "Shows the total amount of beat saber players", "/bs playerbase", HelpAttribute.Catergories.AdminCommands)]
+        static public async Task Playerbase(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
-            if (await message.HasCertainRoleInNBSG(discordSocketClient, 711342955776049194))
+            long totalAmount = 0;
+            if (command.Data.Options.FirstOrDefault() != null)
             {
-                var embedBuilder = EmbedBuilderExtension.NullEmbed("IRL Event handler", "Starting IRL Event handler...", null, null);
-                var msg = await message.Channel.SendMessageAsync("", false, embedBuilder.Build());
-
-
-                var irlEventHandler = new IRLeventHandler(message, discordSocketClient, msg);
+                var players = await new ScoreSaberLib.ScoreSaberClient().Api.Players.GetPlayers(countryCodes: command.Data.Options.First().Value.ToString());
+                totalAmount = players.Metadata.Total;
             }
+            else
+            {
+                var players = await new ScoreSaberLib.ScoreSaberClient().Api.Players.GetPlayers();
+                totalAmount = players.Metadata.Total;
+            }
+
+            var embed = EmbedBuilderExtension.NullEmbed($"Playerbase ({((command.Data.Options.FirstOrDefault() != null) ? command.Data.Options.First().Value.ToString().ToUpper() : "Globaly")})", $"Total amount of players: {totalAmount}");
+            await command.Channel.SendMessageAsync($"", false, embed.Build());
         }
 
         [Help("Eventmanager", "A tool to create all type of events for the community", "!bs eventmanager", HelpAttribute.Catergories.AdminCommands)]
