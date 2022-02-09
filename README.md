@@ -3,6 +3,8 @@ Currently being **used in over 400 servers** with **a total of 40.000 users** \
 \
 <img src="https://i.imgur.com/Veoor6q.png" width="200" height="200">
 
+## Since the switch towards slash(/) commands, the bot doesn't use !bs anymore! if your server can't see the slash command pop up. Kick the bot and reinvite it again with the invite link below.
+
 The Beat Saber Discord bot that helps Discord communities to have more\
 interesting Beat Saber related content inside the servers.\
 The bot allows you to share achievements, settings and statistics easily.\
