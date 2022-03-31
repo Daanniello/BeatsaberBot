@@ -79,9 +79,9 @@ namespace DiscordBeatSaberBot.Commands.Functions
 
             //Download BeatSaviour livedata 
             var playerMostRecentLiveData = await beatSaviourApi.GetMostRecentLiveData(recentSong.Id, recentSong.GetDifficulty());
-
-
             await CreateCard(recentSong, beatSaverMapInfo, playerMostRecentLiveData, playerInfo);
+            
+            
             var embedBuilder = await CreateEmbedBuilder(recentSong, playerInfo, beatSaverMapInfo);
             return embedBuilder;
         }

@@ -27,15 +27,20 @@ namespace DiscordBeatSaberBot.Handlers
 
         public RandomEventHandler(SocketSlashCommand command, DiscordSocketClient discord, RestUserMessage msg)
         {
+            this.discord = discord;
+            _command = command;
+            this.msg = msg;
+            Start();
+        }
+
+        public async void Start()
+        {
             string tekst = File.ReadAllText("../../../Resources/irleventdata.txt");
 
-
             try
-            {
-                this.discord = discord;
-                _command = command;
-                this.msg = msg;
-                QuestionRound().Wait();
+            {                
+                var questionsCompleted = await QuestionRound();
+                if (questionsCompleted == false) return;
                 ModifyEmbed(msg, "Creating the event...");
                 CreateChannels().Wait();
                 ModifyEmbed(msg, "Event has been created! waiting for staff to make it official");
@@ -49,13 +54,13 @@ namespace DiscordBeatSaberBot.Handlers
             }
         }
 
-        private async Task QuestionRound()
+        private async Task<bool> QuestionRound()
         {
             ModifyEmbed(msg, "**You are about to start the progress of making a new event** \nThink well about how you expect the event to go from begin till end, plan it carefully.\nIf this will be an IRL event, than please provide as much info as possible.\nYou have 10 minutes for each answer before the manager will quit itself. \n\nAnswer with `yes` to continue");
-            if (await WaitForReaction() != "yes")
+            if ((await WaitForReaction()).ToLower() != "yes")
             {
                 msg.DeleteAsync();
-                return;
+                return false;
             }
 
             var previewEmbed = EmbedBuilderExtension.NullEmbed("Preview", $"");
@@ -105,7 +110,7 @@ namespace DiscordBeatSaberBot.Handlers
             await previewMessage.ModifyAsync(x => x.Embed = previewEmbed.Build());
 
             ModifyEmbed(msg, "Does the event have a website? **answer with yes or no**");
-            if (await WaitForReaction() == "yes")
+            if ((await WaitForReaction()).ToLower() == "yes")
             {
                 ModifyEmbed(msg, "Input the website url");
                 randomEventModel.websiteUrl = await WaitForReaction();
@@ -114,7 +119,7 @@ namespace DiscordBeatSaberBot.Handlers
             }
 
             ModifyEmbed(msg, "Does the event have a minimum or/and maximum amount of participants? **answer with yes or no**");
-            if (await WaitForReaction() == "yes")
+            if ((await WaitForReaction()).ToLower() == "yes")
             {
                 ModifyEmbed(msg, "Input the amount in the format you like. *Example: 2-10*");
                 randomEventModel.minmaxParticipants = await WaitForReaction();
@@ -123,7 +128,7 @@ namespace DiscordBeatSaberBot.Handlers
             }
 
             ModifyEmbed(msg, "Does the event require a payment to participate? **answer with yes or no**");
-            if (await WaitForReaction() == "yes")
+            if ((await WaitForReaction()).ToLower() == "yes")
             {
                 ModifyEmbed(msg, "Input the amount");
                 randomEventModel.payment = await WaitForReaction();
@@ -132,7 +137,7 @@ namespace DiscordBeatSaberBot.Handlers
             }
 
             ModifyEmbed(msg, "Is there an age requirement? **answer with yes or no**");
-            if (await WaitForReaction() == "yes")
+            if ((await WaitForReaction()).ToLower() == "yes")
             {
                 ModifyEmbed(msg, "Input the requirement. format example: 13 - 99");
                 randomEventModel.ageRequirement = await WaitForReaction();
@@ -145,6 +150,8 @@ namespace DiscordBeatSaberBot.Handlers
 
             previewEmbed.WithImageUrl(randomEventModel.imageUrl);
             await previewMessage.ModifyAsync(x => x.Embed = previewEmbed.Build());
+
+            return true;
         }
 
         private async Task<string> WaitForReaction()
@@ -209,10 +216,10 @@ namespace DiscordBeatSaberBot.Handlers
             generalChannel = await discord.GetGuild(505485680344956928).CreateTextChannelAsync(randomEventModel.title + "-event-general", null, new RequestOptions());
             await generalChannel.AddPermissionOverwriteAsync(discord.GetGuild(505485680344956928).Roles.FirstOrDefault(x => x.Id == 505485680344956928), new OverwritePermissions().Modify(readMessageHistory: Discord.PermValue.Deny, viewChannel: Discord.PermValue.Deny));
 
-            var eventleiders = randomEventModel.eventLeider.Split(" ");
+            var eventleiders = randomEventModel.eventLeider.Replace(" ", "").Split("><");
             foreach (var eventleider in eventleiders)
             {
-                var id = eventleider.Replace("<@!", "").Replace(">", "");
+                var id = eventleider.Replace("<@!", "").Replace("@!", "").Replace("!", "").Replace(">", "");
                 var user = discord.GetUser(ulong.Parse(id));
                 await infoChannel.AddPermissionOverwriteAsync(user, new OverwritePermissions().Modify(sendMessages: Discord.PermValue.Allow));
             }

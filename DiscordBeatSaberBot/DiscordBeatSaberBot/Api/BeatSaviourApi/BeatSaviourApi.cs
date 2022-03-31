@@ -13,7 +13,7 @@ namespace DiscordBeatSaberBot.Api.BeatSaviourApi
     class BeatSaviourApi
     {
 
-        private string _baseUrl = "https://www.beatsavior.io/api/livescores/player/";
+        private string _baseUrl = "https://beat-savior.herokuapp.com/api/livescores/player/";
         private string _scoresaberID;
         public BeatSaviourApi(string scoresaberId)
         {

@@ -162,7 +162,7 @@ namespace DiscordBeatSaberBot.Handlers
                 return;
             }
 
-            await dm.SendMessageAsync("Form has been sent, You should get reaction soon.");
+            await dm.SendMessageAsync("Form has been sent, You should get a reaction soon.");
 
             var country = _countries.FirstOrDefault(x => (ulong)x.feedbackChannelID == arg.Channel.Id);
             if(country != null)
