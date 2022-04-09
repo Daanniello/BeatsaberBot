@@ -16,6 +16,7 @@ using DiscordBeatSaberBot.Api.BeatSaviourApi;
 using DiscordBeatSaberBot.Commands.Functions;
 using DiscordBeatSaberBot.Security;
 using DiscordBeatSaberBot.Handlers.RankTrackerHandler;
+using DiscordBeatSaberBot.Services;
 
 namespace DiscordBeatSaberBot
 {
@@ -120,6 +121,7 @@ namespace DiscordBeatSaberBot
 
             //Automatic updates                                            
             StartAllUpdateTimers();
+         
         }
 
         private void StartAllUpdateTimers()
@@ -131,6 +133,7 @@ namespace DiscordBeatSaberBot
             updater.Start(() => new RankTrackerHandler(discordSocketClient).CheckForAllRankChanges(), "RankTrackerUpdate", 0, 15, 0); ;
             updater.Start(() => _countryUpdateHandler.UpdateRanks(), "UpdateRolesInCountryDiscords", 0, 5, 0);
             updater.Start(() => updateServersAndUsersCount(), "Discord server and user count", 1, 0, 0);
+            updater.Start(() => DataCollectionService.UpdateData(), "Data Collection Update", 24, 0, 0);
 
             async Task UpdateSilverhazeDiscordRank()
             {

@@ -162,7 +162,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                 }
 
                 
-                
+                //April fools
                 cardCreator.AddTextCenter($"#{recentSong.Rank}", System.Drawing.Color.White, 25, 320, 90);
                 cardCreator.AddTextCenter($"{plays.Plays}", System.Drawing.Color.White, 15, 320, 140);
 
