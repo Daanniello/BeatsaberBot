@@ -40,14 +40,14 @@ namespace DiscordBeatSaberBot.Services
             File.WriteAllText(JsonSavePath, json);
         }
 
-        private static List<DataModel> GetData()
+        public static List<DataModel> GetData()
         {
             var json = File.ReadAllText(JsonSavePath);
             var data = JsonConvert.DeserializeObject<List<DataModel>>(json);
             return data;
         }
 
-        private class DataModel
+        public class DataModel
         {
             public Dictionary<DateTime, object> DataPoints { get; set; }
             public string Name { get; set; }            

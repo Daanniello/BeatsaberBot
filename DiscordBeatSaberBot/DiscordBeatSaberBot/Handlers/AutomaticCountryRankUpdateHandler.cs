@@ -10,14 +10,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using DiscordBeatSaberBot.Commands.Functions;
+using WebSocketSharp;
 
 namespace DiscordBeatSaberBot.Handlers
 {
     public class AutomaticCountryRankUpdateHandler
     {
         private string _savePath = "../../../Resources/CountriesTop500Players/";
-        public List<CountryDiscordInfo> CountriesToUpdate = new List<CountryDiscordInfo>();
+        public List<CountryDiscordInfo> CountryList = new List<CountryDiscordInfo>();
         private DiscordSocketClient _discord;
+        private ScoreSaberClient _scoresaberClient;
 
         //To add a new country, Add it here as an enum and give info in the contructor
         public enum country
@@ -40,7 +42,7 @@ namespace DiscordBeatSaberBot.Handlers
             discordDutchRankRolesList.Add(100, 505700269552697344);
             discordDutchRankRolesList.Add(250, 505700349177495563);
             discordDutchRankRolesList.Add(500, 505700397676101632);
-            CountriesToUpdate.Add(new CountryDiscordInfo() { country = country.NL, discordServerID = 505485680344956928, rankRolesByRoleID = discordDutchRankRolesList, unrankedRoleID = 740567773918396467, lastTopRoleID = 505700472972115968, unverifiedRoleID = 549351808506658857, verifiedRoleID = 573459086293598209, serverOwnerID = 138439306774577152, foreignerRoleID = 729279152712056902, rankupChannelID = 922592138141794365, discordInviteLink = "https://discord.gg/sDa7xrE", feedbackChannelID = 930065251829968907, feedbackStaffChannelID = 930386691271827456 });
+            CountryList.Add(new CountryDiscordInfo() { country = country.NL, discordServerID = 505485680344956928, rankRolesByRoleID = discordDutchRankRolesList, unrankedRoleID = 740567773918396467, lastTopRoleID = 505700472972115968, unverifiedRoleID = 549351808506658857, verifiedRoleID = 573459086293598209, serverOwnerID = 138439306774577152, foreignerRoleID = 729279152712056902, rankupChannelID = 922592138141794365, discordInviteLink = "https://discord.gg/sDa7xrE", feedbackChannelID = 930065251829968907, feedbackStaffChannelID = 930386691271827456 });
             //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
             //Add Ireland----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -50,24 +52,25 @@ namespace DiscordBeatSaberBot.Handlers
             discordIrelandRankRolesList.Add(25, 703366439519911976);
             discordIrelandRankRolesList.Add(50, 703592942849491086);
             discordIrelandRankRolesList.Add(100, 922818182127943681);
-            CountriesToUpdate.Add(new CountryDiscordInfo() { country = country.IE, discordServerID = 676524581271371814, rankRolesByRoleID = discordIrelandRankRolesList, unrankedRoleID = 922812907371237417, lastTopRoleID = 922818182127943681, unverifiedRoleID = 922814574720327691, verifiedRoleID = 922814498706952202, serverOwnerID = 146287428875976704, foreignerRoleID = 922818743623643186, rankupChannelID = 922814267328167966, discordInviteLink = "https://discord.gg/uKQzjRQ" });
+            CountryList.Add(new CountryDiscordInfo() { country = country.IE, discordServerID = 676524581271371814, rankRolesByRoleID = discordIrelandRankRolesList, unrankedRoleID = 922812907371237417, lastTopRoleID = 922818182127943681, unverifiedRoleID = 922814574720327691, verifiedRoleID = 922814498706952202, serverOwnerID = 146287428875976704, foreignerRoleID = 922818743623643186, rankupChannelID = 922814267328167966, discordInviteLink = "https://discord.gg/uKQzjRQ" });
             //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------            
+            
+            _scoresaberClient = new ScoreSaberClient();
+            SubscribeToScoreLiveFeed();
         }
 
         //Updates all ranks from every country, only the players who ranked down or up
         public async Task UpdateRanks()
         {
 
-            var scoresaberClient = new ScoreSaberClient();
-
             //Update ranks from each country
-            foreach (var country in CountriesToUpdate)
+            foreach (var country in CountryList)
             {
                 var allPlayersFromScoresaber = new List<PlayerInfoModel.Player>();
                 //Get top 500 players == 10 pages of 50 from scoresaber (new data)
                 for (var x = 0; x < 10; x++)
                 {
-                    var playersPage = await scoresaberClient.Api.Players.GetPlayers(countryCodes: country.country.ToString().ToUpper(), page: x + 1);
+                    var playersPage = await _scoresaberClient.Api.Players.GetPlayers(countryCodes: country.country.ToString().ToUpper(), page: x + 1);
                     allPlayersFromScoresaber.AddRange(playersPage.Players);
                 }
 
@@ -149,6 +152,72 @@ namespace DiscordBeatSaberBot.Handlers
 
         }
 
+        public void SubscribeToScoreLiveFeed()
+        {
+            _scoresaberClient.Api.ScoreFeed.Connect();
+            _scoresaberClient.Api.ScoreFeed.OnPlayReceived += ScoreFeed_OnPlayReceived;
+        }
+
+        private async void ScoreFeed_OnPlayReceived(object sender, ScoreFeedModel e)
+        {
+            try
+            {
+                //Check for country 
+                var country = CountryList.FirstOrDefault(x => x.country.ToString().ToLower() == e.CommandData.Score.LeaderboardPlayerInfo.Country.ToLower());
+                if (country != null)
+                {
+                    if (e.CommandData.Leaderboard.Ranked)
+                    {
+                        //Check for new top play
+                        var player = await _scoresaberClient.Api.Players.GetPlayerScores(Convert.ToInt64(e.CommandData.Score.LeaderboardPlayerInfo.Id), sort: Players.sort.top);                        
+                        if (player.First().Leaderboard.Id == e.CommandData.Leaderboard.Id)
+                        {
+                            PostAchievementMessage(country, e.CommandData.Score.LeaderboardPlayerInfo.Id, Color.LighterGrey, "Achieved its new top play!", $"By playing: **{e.CommandData.Leaderboard.SongName}**");
+                        }
+                        //Check for top 25 global ranked 
+                        if (e.CommandData.Score.Rank <= 20)
+                        {
+                            PostAchievementMessage(country, e.CommandData.Score.LeaderboardPlayerInfo.Id, Color.Gold, $"Achieved #{e.CommandData.Score.Rank} on a ranked map!", $"By playing: **{e.CommandData.Leaderboard.SongName}**");
+                        }
+                        //#1 country play on ranked 
+                        var countryBoard = await _scoresaberClient.Api.Leaderboards.GetLeaderboardScoresByID((int)e.CommandData.Leaderboard.Id, countryCodes: e.CommandData.Score.LeaderboardPlayerInfo.Country);
+                        if (countryBoard.First().LeaderboardPlayerInfo.Id == e.CommandData.Score.LeaderboardPlayerInfo.Id)
+                        {
+                            PostAchievementMessage(country, e.CommandData.Score.LeaderboardPlayerInfo.Id, Color.Green, "Achieved the highest country score!", $"By playing: **{e.CommandData.Leaderboard.SongName}**");
+                        }
+                    }
+                    else
+                    {
+                        //Top 1 on unranked
+                        if (e.CommandData.Score.Rank == 1 && e.CommandData.Leaderboard.Plays > 10)
+                        {
+                            PostAchievementMessage(country, e.CommandData.Score.LeaderboardPlayerInfo.Id, Color.Magenta, "Achieved #1 on an unranked map!", $"By playing: **{e.CommandData.Leaderboard.SongName}**");
+                        }
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                var t = ex;
+            }           
+        }
+
+        private async Task PostAchievementMessage(CountryDiscordInfo country, string playerID, Color color, string message, string description)
+        {
+            var channel = _discord.GetGuild((ulong)country.discordServerID).GetTextChannel((ulong)country.rankupChannelID);
+            var player = await _scoresaberClient.Api.Players.GetPlayer(Convert.ToInt64(playerID));
+
+            var embedBuilder = new EmbedBuilder();
+            embedBuilder = await new PlaythroughStats(_discord).CreateCardAndGetPlaythroughStatsEmbed(player.Id);
+            embedBuilder.Color = color;
+            embedBuilder.Title = message;
+            embedBuilder.Description = description;
+            embedBuilder.Url = $"https://scoresaber.com/u/{player.Id}";
+            embedBuilder.ThumbnailUrl = player.ProfilePicture.ToString();
+
+            await channel.SendMessageAsync($"", false, embedBuilder.Build());
+        }
+
         //Checks for players in each country that passed other players and notifies them. 
         private async void CheckAndPostRankupMessages(List<PlayerInfoModel.Player> playersNew, CountryDiscordInfo country)
         {
@@ -181,7 +250,7 @@ namespace DiscordBeatSaberBot.Handlers
                         if (player.CountryRank > incactiveCountryRank) oldRank -= 1;
                     }
 
-                    if (player.CountryRank < oldRank)
+                    if (player.CountryRank < oldRank && player.CountryRank <= 50)
                     {
 
 
@@ -213,7 +282,7 @@ namespace DiscordBeatSaberBot.Handlers
 
                         if (discordID != 0)
                         {
-                            
+
                             if (_discord.GetGuild((ulong)country.discordServerID).GetUser(discordID) != null) embedBuilder.Footer.Text += " | Member of this server";
                             else
                             {

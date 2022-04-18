@@ -150,7 +150,7 @@ namespace DiscordBeatSaberBot.Handlers
                     .Build());
                 //updateroles
                 var countryDiscords = new List<ApplicationCommandOptionChoiceProperties>();
-                var countries = new AutomaticCountryRankUpdateHandler(_discord).CountriesToUpdate;
+                var countries = new AutomaticCountryRankUpdateHandler(_discord).CountryList;
                 foreach (var country in countries)
                 {
                     countryDiscords.Add(new ApplicationCommandOptionChoiceProperties() { Name = country.country.ToString(), Value = country.discordServerID.ToString() });

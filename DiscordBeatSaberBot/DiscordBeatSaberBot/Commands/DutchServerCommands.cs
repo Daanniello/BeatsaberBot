@@ -23,7 +23,7 @@ namespace DiscordBeatSaberBot.Commands
             var rankUpdateHandler = new AutomaticCountryRankUpdateHandler(discordSocketClient);
 
             var author = command.User.Id;
-            var countryToUpdate = rankUpdateHandler.CountriesToUpdate.FirstOrDefault(x => x.discordServerID.ToString() == command.Data.Options.First().Value.ToString());
+            var countryToUpdate = rankUpdateHandler.CountryList.FirstOrDefault(x => x.discordServerID.ToString() == command.Data.Options.First().Value.ToString());
             if (countryToUpdate.serverOwnerID.ToString() == author.ToString() || command.User.Id == 138439306774577152)
             {
                 rankUpdateHandler.ForceUpdateRanks(countryToUpdate, command);

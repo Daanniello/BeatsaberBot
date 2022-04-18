@@ -30,25 +30,37 @@ namespace DiscordBeatSaberBot.Handlers
                 {
                     var feedbackChannel = _discord.GetGuild((ulong)country.discordServerID).GetTextChannel((ulong)country.feedbackChannelID);
                     var messages = await feedbackChannel.GetMessagesAsync(10).FlattenAsync();
-                    foreach (var msg in messages)
+                    bool shouldRepost = false;
+                    if (messages.Count() == 1)
                     {
-                        await msg.DeleteAsync();
-                    };
 
-                    var embedBuilder = EmbedBuilderExtension.NullEmbed("Feedback & Application Form", "Click on one of the two buttons bellow to start a 'Feedback form' or an 'Application form' \n" +
-                        "Once a button has been pressed, You will get a notification from the bot in DM. There, the bot will lead you through a question process to fulfill your needs.\n\n" +
-                        "- The Feedback form is meant for any type of feedback for this server and is **anonymous**!\n" +
-                        "- The Application form is meant to apply for a 'job' within this server.\n\n" +
-                        "Once your form in DM has been filled in, It will be directly send towards the Staff Channel.\n" +
-                        "Staff members will need to react on the form and that reaction will directly be forwarded towards the user.");
+                    }
+                    if (messages.Count() > 1)
+                    {
+                        foreach (var msg in messages)
+                        {
+                            await msg.DeleteAsync();
+                        };
+                        shouldRepost = true;
+                    }
+                    if (messages.Count() == 0 || shouldRepost)
+                    {
 
-                    var componentBuilder = new ComponentBuilder();
-                    componentBuilder.WithButton("Start Feedback Form", customId: "feedbackFormButton", style: ButtonStyle.Primary);
-                    componentBuilder.WithButton("Start Application Form", customId: "applicationFormButton", style: ButtonStyle.Primary);
+                        var embedBuilder = EmbedBuilderExtension.NullEmbed("Feedback & Application Form", "Click on one of the two buttons bellow to start a 'Feedback form' or an 'Application form' \n" +
+                            "Once a button has been pressed, You will get a notification from the bot in DM. There, the bot will lead you through a question process to fulfill your needs.\n\n" +
+                            "- The Feedback form is meant for any type of feedback for this server and is **anonymous**!\n" +
+                            "- The Application form is meant to apply for a 'job' within this server.\n\n" +
+                            "Once your form in DM has been filled in, It will be directly send towards the Staff Channel.\n" +
+                            "Staff members will need to react on the form and that reaction will directly be forwarded towards the user.");
+
+                        var componentBuilder = new ComponentBuilder();
+                        componentBuilder.WithButton("Start Feedback Form", customId: "feedbackFormButton", style: ButtonStyle.Primary);
+                        componentBuilder.WithButton("Start Application Form", customId: "applicationFormButton", style: ButtonStyle.Primary);
+
+                        await feedbackChannel.SendMessageAsync("", false, embedBuilder.Build(), component: componentBuilder.Build());
+                    }
 
                     _discord.ButtonExecuted += Discord_ButtonExecuted;
-
-                    await feedbackChannel.SendMessageAsync("", false, embedBuilder.Build(), component: componentBuilder.Build());
                 }
             }
         }
