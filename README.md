@@ -1,5 +1,5 @@
 # [BeatsaberBot](http://beatsaberbot.com/)
-Currently being **used in over 400 servers** with **a total of 40.000 users** \
+Currently being **used in over 650 servers** with **a total of 70.000 users** \
 \
 <img src="https://i.imgur.com/Veoor6q.png" width="200" height="200">
 
