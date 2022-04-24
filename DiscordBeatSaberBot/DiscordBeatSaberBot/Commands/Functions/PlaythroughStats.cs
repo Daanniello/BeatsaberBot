@@ -99,14 +99,14 @@ namespace DiscordBeatSaberBot.Commands.Functions
             dynamic noteCount = 0;
             if (beatSaverMapInfo != null)
             {
+                //Calculate max score
+                noteCount = beatSaverMapInfo.Versions.First().Diffs.First(x => x.Difficulty == diff).Notes;
+                maxScore = (Convert.ToInt32(noteCount) - 13) * 920 + 4715;
+                //maxScore = Convert.ToInt32(noteCount) * 920;
+                if (maxScore < 0) maxScore = 0;
+
                 if (hasBeatSaviour)
                 {                  
-
-                    noteCount = beatSaverMapInfo.Versions.First().Diffs.First(x => x.Difficulty == diff).Notes;
-                    maxScore = (Convert.ToInt32(noteCount) - 13) * 920 + 4715;
-                    //maxScore = Convert.ToInt32(noteCount) * 920;
-                    if (maxScore < 0) maxScore = 0;
-
 
                     cardCreator.AddImage("../../../Resources/img/base-stat-map-template.png", 20, 230, 600, 160, isLocalFile: true);
 
@@ -189,7 +189,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                 cardCreator.AddTextCenter($"#{recentSong.Rank}", System.Drawing.Color.White, 30, 540, 150);
                 cardCreator.AddTextCenter($"{plays.Plays}", System.Drawing.Color.White, 20, 540, 220);
 
-                cardCreator.AddTextCenter($"{Math.Round(Convert.ToDouble(recentSong.UScore) / Convert.ToDouble(recentSong.MaxScoreEx) * 100, 2)}%", System.Drawing.Color.White, 40, 305, 170);
+                cardCreator.AddTextCenter($"{Math.Round(Convert.ToDouble(recentSong.UScore) / Convert.ToDouble(recentSong.MaxScoreEx == 0 ? maxScore : recentSong.MaxScoreEx) * 100, 2)}%", System.Drawing.Color.White, 40, 305, 170);
                 cardCreator.AddTextCenter($"{recentSong.Pp}", System.Drawing.Color.White, 40, 790, 170);
 
                 cardCreator.AddTextCenter($"Obtain the BeatSavior mod to get more stats", System.Drawing.Color.Gray, 15, 540, 665);

@@ -100,6 +100,9 @@ namespace DiscordBeatSaberBot
 
             //Adding country update handler
             _countryUpdateHandler = new AutomaticCountryRankUpdateHandler(discordSocketClient);
+            _countryUpdateHandler.SubscribeToScoreLiveFeed();
+
+            //Adding Feedback handler
             new FeedbackHandler(discordSocketClient, _countryUpdateHandler.CountryList);
 
             //Adding the messageHandler

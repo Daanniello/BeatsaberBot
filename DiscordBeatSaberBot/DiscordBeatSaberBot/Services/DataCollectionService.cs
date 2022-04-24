@@ -37,7 +37,22 @@ namespace DiscordBeatSaberBot.Services
         private static void StoreData(List<DataModel> data)
         {
             var json = JsonConvert.SerializeObject(data);
+            MoveDataForWebsiteAccess();
             File.WriteAllText(JsonSavePath, json);
+        }
+
+        private static void MoveDataForWebsiteAccess()
+        {
+            try
+            {
+                var websitePath = @"C:\Users\DaanS\source\repos\BeatSaberBotWeb\BeatSaberBotWeb\wwwroot\DataCollection\DataCollection.json";
+                if(File.Exists(websitePath)) File.Delete(websitePath);
+                File.Copy(JsonSavePath, websitePath);
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         public static List<DataModel> GetData()
