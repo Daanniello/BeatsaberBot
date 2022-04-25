@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using DiscordBeatSaberBot.Api.BeatSaverApi;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,15 +22,28 @@ namespace DiscordBeatSaberBot.Services
         {
             //Get Playerbase 
             var players = await new ScoreSaberLib.ScoreSaberClient().Api.Players.GetPlayers();
+            var rankedMaps = await new ScoreSaberLib.ScoreSaberClient().Api.Leaderboards.GetLeaderboardsByFilter(ranked: true);
+            var currentTopPlayer = await new ScoreSaberLib.ScoreSaberClient().Api.Players.GetPlayers(page: 0);
 
             //Get Old data 
             var oldData = GetData();
             if (oldData == null) oldData = new List<DataModel>();
 
             //Set Playerbase
-            var oldDataCat = oldData.FirstOrDefault(x => x.Name == "PlayerBase");
-            if (oldDataCat != null) oldDataCat.DataPoints.Add(DateTime.Now, players.Metadata.Total);
+            var oldDataCatPlayerbase = oldData.FirstOrDefault(x => x.Name == "PlayerBase");
+            if (oldDataCatPlayerbase != null) oldDataCatPlayerbase.DataPoints.Add(DateTime.Now, players.Metadata.Total);
             else oldData.Add(new DataModel() { Name = "PlayerBase", DataPoints = new Dictionary<DateTime, object>() });
+
+            //Set RankedMaps            
+            var oldDataCatRankedmaps = oldData.FirstOrDefault(x => x.Name == "RankedMaps");
+            if (oldDataCatRankedmaps != null) oldDataCatRankedmaps.DataPoints.Add(DateTime.Now, rankedMaps.Metadata.Total);
+            else oldData.Add(new DataModel() { Name = "RankedMaps", DataPoints = new Dictionary<DateTime, object>() });
+
+            //Set #1 players
+            var oldDataCatPlayerOne = oldData.FirstOrDefault(x => x.Name == "PlayerOne");
+            if (oldDataCatPlayerOne != null) oldDataCatPlayerOne.DataPoints.Add(DateTime.Now, Convert.ToInt64(currentTopPlayer.Players.First().Id));
+            else oldData.Add(new DataModel() { Name = "PlayerOne", DataPoints = new Dictionary<DateTime, object>() });
+
 
             return oldData;
         }
@@ -46,7 +60,7 @@ namespace DiscordBeatSaberBot.Services
             try
             {
                 var websitePath = @"C:\Users\DaanS\source\repos\BeatSaberBotWeb\BeatSaberBotWeb\wwwroot\DataCollection\DataCollection.json";
-                if(File.Exists(websitePath)) File.Delete(websitePath);
+                if (File.Exists(websitePath)) File.Delete(websitePath);
                 File.Copy(JsonSavePath, websitePath);
             }
             catch (Exception ex)
@@ -65,7 +79,7 @@ namespace DiscordBeatSaberBot.Services
         public class DataModel
         {
             public Dictionary<DateTime, object> DataPoints { get; set; }
-            public string Name { get; set; }            
+            public string Name { get; set; }
         }
     }
 }

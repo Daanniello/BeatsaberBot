@@ -154,6 +154,16 @@ namespace DiscordBeatSaberBot.Handlers
         {
             _scoresaberClient.Api.ScoreFeed.Connect();
             _scoresaberClient.Api.ScoreFeed.OnPlayReceived += ScoreFeed_OnPlayReceived;
+            _scoresaberClient.Api.ScoreFeed.OnDisconnect += ScoreFeed_OnDisconnect; ;
+        }
+
+        private void ScoreFeed_OnDisconnect(object sender, EventArgs e)
+        {
+            _scoresaberClient.Api.ScoreFeed.OnPlayReceived -= ScoreFeed_OnPlayReceived;
+            _scoresaberClient.Api.ScoreFeed.OnDisconnect -= ScoreFeed_OnDisconnect;
+            _scoresaberClient.Api.ScoreFeed.Connect();
+            _scoresaberClient.Api.ScoreFeed.OnPlayReceived += ScoreFeed_OnPlayReceived;
+            _scoresaberClient.Api.ScoreFeed.OnDisconnect += ScoreFeed_OnDisconnect;
         }
 
         private async void ScoreFeed_OnPlayReceived(object sender, ScoreFeedModel e)
@@ -199,6 +209,8 @@ namespace DiscordBeatSaberBot.Handlers
                 var t = ex;
             }           
         }
+
+
 
         private async Task PostAchievementMessage(CountryDiscordInfo country, ScoreFeedModel scoreFeed, string playerID, Color color, string message, string description)
         {
