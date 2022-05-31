@@ -14,5 +14,7 @@ namespace DiscordBeatSaberBot
 
         public static int TypingTimeOut = 10;
 
+        public static string WebsiteRoot = @"C:/Users/DaanS/source/repos/BeatSaberBotWeb/BeatSaberBotWeb/wwwroot/";
+
     }
 }

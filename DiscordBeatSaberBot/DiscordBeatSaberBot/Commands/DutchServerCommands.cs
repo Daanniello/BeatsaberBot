@@ -49,7 +49,7 @@ namespace DiscordBeatSaberBot.Commands
                 totalAmount = players.Metadata.Total;
             }
 
-            var embed = EmbedBuilderExtension.NullEmbed($"Playerbase ({((command.Data.Options.FirstOrDefault() != null) ? command.Data.Options.First().Value.ToString().ToUpper() : "Globaly")})", $"Total amount of players: {totalAmount}");
+            var embed = EmbedBuilderExtension.NullEmbed($"Playerbase ({((command.Data.Options.FirstOrDefault() != null) ? command.Data.Options.First().Value.ToString().ToUpper() : "Globally")})", $"Total amount of players: {totalAmount}");
             await command.Channel.SendMessageAsync($"", false, embed.Build());
         }
 

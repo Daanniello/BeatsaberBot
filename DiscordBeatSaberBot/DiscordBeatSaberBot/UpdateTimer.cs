@@ -40,7 +40,26 @@ namespace DiscordBeatSaberBot
                 Console.WriteLine("UpdateTimer Exception");
                 Console.WriteLine(ex);
             }
-            
+
+        }
+
+        public async Task UpdateAtTimeOfDay(Func<Task> method, string methodName, int hours, int minutes = 0, int seconds = 0)
+        {
+            var timespan = DateTime.Today.AddHours(hours).AddMinutes(minutes).AddSeconds(seconds) - DateTime.Now;
+            try
+            {
+                await Task.Delay(timespan);
+                do
+                {
+                    method.Invoke();
+                    await Task.Delay(TimeSpan.FromDays(1));
+                } while (true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"UpdateAtTimeOfDay Exception {methodName}");
+                Console.WriteLine(ex);
+            }
         }
 
         public async Task Update(TimeSpan timespan, Func<Task> method, string methodName)
@@ -84,7 +103,7 @@ namespace DiscordBeatSaberBot
             await msg.ModifyAsync(text => text.Embed = embedbuilder.Build());
         }
 
-            public async Task EventNotification()
+        public async Task EventNotification()
         {
             var eventDetailChannel = (ISocketMessageChannel)discord.GetChannel(572721078359556097);
             var embededMessage = (IUserMessage)await eventDetailChannel.GetMessageAsync(586248421715738629);
@@ -142,32 +161,6 @@ namespace DiscordBeatSaberBot
             };
 
             await embededMessage.ModifyAsync(msg => msg.Embed = embedBuilder.Build());
-        }
-
-        public async Task UpdateSilverhazeStatsInDiscordServer()
-        {
-            var scoresaberid = "76561198033166451";
-            var channel = discord.GetGuild(627156958880858113).GetTextChannel(782565201206575125);
-            var messages = await channel.GetMessagesAsync(20).FlattenAsync();
-            foreach(var message in messages)
-            {
-                await message.DeleteAsync();
-            }
-            await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberid, "Topsongs");
-            await BeatSaberInfoExtension.GetAndCreateTopsongsCardImage(scoresaberid);
-            await channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberid}.png", "");
-            await channel.SendFileAsync($"../../../Resources/img/TopsongsCard_{scoresaberid}.png", "");
-            await BeatSaberInfoExtension.GetAndCreateUserCardImage(scoresaberid, "Recentsongs");
-            await BeatSaberInfoExtension.GetAndCreateRecentsongsCardImage(scoresaberid);
-            await channel.SendFileAsync($"../../../Resources/img/UserCard_{scoresaberid}.png", "");
-            await channel.SendFileAsync($"../../../Resources/img/RecentsongsCard_{scoresaberid}.png", "");
-            await BeatSaberInfoExtension.GetAndCreateProfileImage(scoresaberid);
-            await channel.SendFileAsync($"../../../Resources/img/RankingCard_{scoresaberid}.png", "");
-    
-            File.Delete($"../../../Resources/img/UserCard_{scoresaberid}.png");
-            File.Delete($"../../../Resources/img/TopsongsCard_{scoresaberid}.png");
-            File.Delete($"../../../Resources/img/RecentsongsCard_{scoresaberid}.png");
-            File.Delete($"../../../Resources/img/RankingCard_{scoresaberid}.png");        
         }
     }
 }

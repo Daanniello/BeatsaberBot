@@ -17,6 +17,7 @@ using DiscordBeatSaberBot.Commands.Functions;
 using DiscordBeatSaberBot.Security;
 using DiscordBeatSaberBot.Handlers.RankTrackerHandler;
 using DiscordBeatSaberBot.Services;
+using System.IO;
 
 namespace DiscordBeatSaberBot
 {
@@ -32,7 +33,7 @@ namespace DiscordBeatSaberBot
         public int commandsEachHour = 0;
         public RateLimit rateLimit = new RateLimit(5);
         private SlashCommandHandler _slashCommandHandler;
-        private AutomaticCountryRankUpdateHandler _countryUpdateHandler; 
+        private AutomaticCountryRankUpdateHandler _countryUpdateHandler;
 
         public static void Main(string[] args)
         {
@@ -61,7 +62,7 @@ namespace DiscordBeatSaberBot
             {
                 discordSocketClient = new DiscordSocketClient(new DiscordSocketConfig()
                 {
-                   GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers
+                    GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers
                 });
 
                 var loginCode = await DatabaseContext.ExecuteSelectQuery("Select * from Settings");
@@ -73,6 +74,10 @@ namespace DiscordBeatSaberBot
                 TaskScheduler.UnobservedTaskException += Unhandled_TaskException;
                 discordSocketClient.Ready += DiscordSocketClient_Ready; ;
                 discordSocketClient.Log += DiscordSocketClient_Log;
+
+                //Adding country update handler
+                _countryUpdateHandler = new AutomaticCountryRankUpdateHandler(discordSocketClient);
+                _countryUpdateHandler.SubscribeToScoreLiveFeed();
 
                 await Task.Delay(-1);
             }
@@ -98,10 +103,6 @@ namespace DiscordBeatSaberBot
             _slashCommandHandler = new SlashCommandHandler(discordSocketClient);
             _slashCommandHandler.CreateSlashCommands();
 
-            //Adding country update handler
-            _countryUpdateHandler = new AutomaticCountryRankUpdateHandler(discordSocketClient);
-            _countryUpdateHandler.SubscribeToScoreLiveFeed();
-
             //Adding Feedback handler
             new FeedbackHandler(discordSocketClient, _countryUpdateHandler.CountryList);
 
@@ -122,21 +123,39 @@ namespace DiscordBeatSaberBot
             var playingGame = await DatabaseContext.ExecuteSelectQuery("Select * from Settings");
             await discordSocketClient.SetGameAsync("/Help");
 
+            //Show top 10 servers 
+            for(var i = 0; i < 10; i++)
+            {
+                var guild = discordSocketClient.Guilds.ToList().OrderByDescending(x => x.MemberCount).ToList()[i];
+                Console.WriteLine($"{guild.Name} - {guild.MemberCount}");
+            }
+
             //Automatic updates                                            
             StartAllUpdateTimers();
-         
+
         }
 
         private void StartAllUpdateTimers()
         {
             var updater = new UpdateTimer(discordSocketClient);
-
-            updater.Start(() => updater.UpdateSilverhazeStatsInDiscordServer(), "UpdateSilverInfoInSilverhazeServer", 5, 0, 0);
+            var cupOfTheDayHandler = new CupOfTheDayHandler();
+            updater.UpdateAtTimeOfDay(() => cupOfTheDayHandler.ResetDailyMap(), "Reset Daily Map Map of the day", 24, 0, 0);
+            updater.UpdateAtTimeOfDay(() => DataCollectionService.UpdateData(), "Data Collection Update", 24, 0, 0);
             updater.Start(() => UpdateSilverhazeDiscordRank(), "SilverhazeDiscordRankUpdate", 0, 30, 0);
             updater.Start(() => new RankTrackerHandler(discordSocketClient).CheckForAllRankChanges(), "RankTrackerUpdate", 0, 15, 0); ;
             updater.Start(() => _countryUpdateHandler.UpdateRanks(), "UpdateRolesInCountryDiscords", 0, 5, 0);
             updater.Start(() => updateServersAndUsersCount(), "Discord server and user count", 1, 0, 0);
-            updater.Start(() => DataCollectionService.UpdateData(), "Data Collection Update", 24, 0, 0);
+            updater.Start(async () =>
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    HttpResponseMessage response = await httpClient.GetAsync("https://cdn.wes.cloud/beatstar/bssb/v2-all.json");
+                    response.EnsureSuccessStatusCode();
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    var websitePath = GlobalConfiguration.WebsiteRoot + @"DataCollection\AllMapData.json";
+                    File.WriteAllText(websitePath, responseBody);                    
+                }
+            }, "All Map Data Collection Update", 24, 0, 0);
 
             async Task UpdateSilverhazeDiscordRank()
             {

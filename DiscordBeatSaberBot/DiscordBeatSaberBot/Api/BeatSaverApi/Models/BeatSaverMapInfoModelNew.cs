@@ -186,6 +186,9 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi.Models.New
 
         [JsonProperty("paritySummary")]
         public ParitySummary ParitySummary { get; set; }
+        [JsonProperty("maxScore")]
+        public long MaxScore { get; set; }
+
     }
 
     public partial class ParitySummary

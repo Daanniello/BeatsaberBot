@@ -69,7 +69,7 @@ namespace DiscordBeatSaberBot.Handlers
                 for (var x = 0; x < 10; x++)
                 {
                     var playersPage = await _scoresaberClient.Api.Players.GetPlayers(countryCodes: country.country.ToString().ToUpper(), page: x + 1);
-                    allPlayersFromScoresaber.AddRange(playersPage.Players);
+                    if(playersPage != null) allPlayersFromScoresaber.AddRange(playersPage.Players);
                 }
 
                 CheckAndPostRankupMessages(allPlayersFromScoresaber, country);
@@ -154,16 +154,12 @@ namespace DiscordBeatSaberBot.Handlers
         {
             _scoresaberClient.Api.ScoreFeed.Connect();
             _scoresaberClient.Api.ScoreFeed.OnPlayReceived += ScoreFeed_OnPlayReceived;
-            _scoresaberClient.Api.ScoreFeed.OnDisconnect += ScoreFeed_OnDisconnect; ;
+            _scoresaberClient.Api.ScoreFeed.WebSocket.OnError += WebSocket_OnError;
         }
 
-        private void ScoreFeed_OnDisconnect(object sender, EventArgs e)
+        private void WebSocket_OnError(object sender, WebSocketSharp.ErrorEventArgs e)
         {
-            _scoresaberClient.Api.ScoreFeed.OnPlayReceived -= ScoreFeed_OnPlayReceived;
-            _scoresaberClient.Api.ScoreFeed.OnDisconnect -= ScoreFeed_OnDisconnect;
-            _scoresaberClient.Api.ScoreFeed.Connect();
-            _scoresaberClient.Api.ScoreFeed.OnPlayReceived += ScoreFeed_OnPlayReceived;
-            _scoresaberClient.Api.ScoreFeed.OnDisconnect += ScoreFeed_OnDisconnect;
+            throw new NotImplementedException();
         }
 
         private async void ScoreFeed_OnPlayReceived(object sender, ScoreFeedModel e)
@@ -182,16 +178,21 @@ namespace DiscordBeatSaberBot.Handlers
                         {
                             PostAchievementMessage(country, e, e.CommandData.Score.LeaderboardPlayerInfo.Id, Color.Green, "Achieved the highest country score!", $"On: **{e.CommandData.Leaderboard.SongName}**\nAnd removed {countryBoard[1].LeaderboardPlayerInfo.Name} from its #1 {country.country} spot");
                         }
-                        //Check for top 25 global ranked 
-                        if (e.CommandData.Score.Rank <= 20)
+                        //Check for top 10 global ranked 
+                        if (e.CommandData.Score.Rank <= 10)
                         {
                             PostAchievementMessage(country, e, e.CommandData.Score.LeaderboardPlayerInfo.Id, Color.LighterGrey, $"Achieved #{e.CommandData.Score.Rank} on a ranked map!", $"By playing: **{e.CommandData.Leaderboard.SongName}**");
+                        }
+                        //Check for if its a 500+ pp play
+                        if (e.CommandData.Score.Pp > 500)
+                        {
+                            PostAchievementMessage(country, e, e.CommandData.Score.LeaderboardPlayerInfo.Id, Color.Red, $"Achieved a {e.CommandData.Score.Pp}PP play on a map!", $"By playing: **{e.CommandData.Leaderboard.SongName}**");
                         }
                         //Check for new top play
                         var player = await _scoresaberClient.Api.Players.GetPlayerScores(Convert.ToInt64(e.CommandData.Score.LeaderboardPlayerInfo.Id), sort: Players.sort.top);
                         if (player.First().Leaderboard.Id == e.CommandData.Leaderboard.Id)
                         {
-                            PostAchievementMessage(country, e, e.CommandData.Score.LeaderboardPlayerInfo.Id, Color.Gold, "Achieved its new top play!", $"By playing: **{e.CommandData.Leaderboard.SongName}**");
+                            PostAchievementMessage(country, e, e.CommandData.Score.LeaderboardPlayerInfo.Id, Color.Gold, "Achieved their new top play!", $"By playing: **{e.CommandData.Leaderboard.SongName}**");
                         }
                     }
                     else
@@ -216,7 +217,7 @@ namespace DiscordBeatSaberBot.Handlers
         {
             var channel = _discord.GetGuild((ulong)country.discordServerID).GetTextChannel((ulong)country.rankupChannelID);
             var player = await _scoresaberClient.Api.Players.GetPlayer(Convert.ToInt64(playerID));
-            if (message == "Achieved its new top play!" && player.CountryRank > 100) return;
+            if (message == "Achieved their new top play!" && player.CountryRank > 100) return;
 
             var embedBuilder = new EmbedBuilder();
             embedBuilder = await new PlaythroughStats(_discord).CreateCardAndGetPlaythroughStatsEmbed(player.Id);
@@ -261,7 +262,7 @@ namespace DiscordBeatSaberBot.Handlers
                         if (player.CountryRank > incactiveCountryRank) oldRank -= 1;
                     }
 
-                    if (player.CountryRank < oldRank && player.CountryRank <= 50)
+                    if (player.CountryRank < oldRank && player.CountryRank <= 100)
                     {
 
 
