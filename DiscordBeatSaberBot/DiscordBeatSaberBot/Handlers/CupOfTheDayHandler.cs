@@ -15,16 +15,26 @@ namespace DiscordBeatSaberBot.Handlers
     public class CupOfTheDayHandler
     {
         private LeaderboardInfoModel.Leaderboard currentLeaderboard = null;
+        private ScoreSaberClient scoresaberClient;
 
         public CupOfTheDayHandler()
         {
-            var feed = new ScoreSaberClient().Api.ScoreFeed;
-            feed.Connect();
-            feed.OnPlayReceived += Feed_OnPlayReceived;
+            scoresaberClient = new ScoreSaberClient();
+            scoresaberClient.Api.ScoreFeed.Connect();
+            scoresaberClient.Api.ScoreFeed.OnPlayReceived += Feed_OnPlayReceived;
+            scoresaberClient.Api.ScoreFeed.OnDisconnect += Feed_OnDisconnect;
 
             var json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/CupOfTheDayMapInfo.json");
             var map = JsonConvert.DeserializeObject<ScoreSaberLib.Models.LeaderboardInfoModel.Leaderboard>(json);
             if (map != null) currentLeaderboard = map;
+        }
+
+        private void Feed_OnDisconnect(object sender, EventArgs e)
+        {
+            scoresaberClient.Api.ScoreFeed.WebSocket.Close();
+            scoresaberClient.Api.ScoreFeed.Connect();
+            scoresaberClient.Api.ScoreFeed.OnPlayReceived += Feed_OnPlayReceived;
+            scoresaberClient.Api.ScoreFeed.OnDisconnect += Feed_OnDisconnect;
         }
 
         private void Feed_OnPlayReceived(object sender, ScoreSaberLib.Models.ScoreFeedModel e)

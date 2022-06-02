@@ -155,11 +155,18 @@ namespace DiscordBeatSaberBot.Handlers
             _scoresaberClient.Api.ScoreFeed.Connect();
             _scoresaberClient.Api.ScoreFeed.OnPlayReceived += ScoreFeed_OnPlayReceived;
             _scoresaberClient.Api.ScoreFeed.WebSocket.OnError += WebSocket_OnError;
+            _scoresaberClient.Api.ScoreFeed.OnDisconnect += ScoreFeed_OnDisconnect;
+        }
+
+        private void ScoreFeed_OnDisconnect(object sender, EventArgs e)
+        {
+            _scoresaberClient.Api.ScoreFeed.WebSocket.Close();
+            SubscribeToScoreLiveFeed();
         }
 
         private void WebSocket_OnError(object sender, WebSocketSharp.ErrorEventArgs e)
         {
-            throw new NotImplementedException();
+            Console.WriteLine(e.Message);
         }
 
         private async void ScoreFeed_OnPlayReceived(object sender, ScoreFeedModel e)

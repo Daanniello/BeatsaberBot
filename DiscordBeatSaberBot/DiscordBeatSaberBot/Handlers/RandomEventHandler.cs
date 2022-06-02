@@ -46,7 +46,7 @@ namespace DiscordBeatSaberBot.Handlers
                 ModifyEmbed(msg, "Event has been created! waiting for staff to make it official");
                 ValidateEvent();
             }
-            catch
+            catch(Exception ex)
             {
                 ModifyEmbed(msg, "Something went wrong :c");
                 if (infoChannel != null) infoChannel.DeleteAsync();
@@ -220,6 +220,7 @@ namespace DiscordBeatSaberBot.Handlers
             foreach (var eventleider in eventleiders)
             {
                 var id = eventleider.Replace("<@!", "").Replace("@!", "").Replace("!", "").Replace(">", "");
+                if (!id.All(char.IsDigit)) continue;
                 var user = discord.GetUser(ulong.Parse(id));
                 await infoChannel.AddPermissionOverwriteAsync(user, new OverwritePermissions().Modify(sendMessages: Discord.PermValue.Allow));
             }
