@@ -57,7 +57,7 @@ namespace DiscordBeatSaberBot.Handlers
                         componentBuilder.WithButton("Start Feedback Form", customId: "feedbackFormButton", style: ButtonStyle.Primary);
                         componentBuilder.WithButton("Start Application Form", customId: "applicationFormButton", style: ButtonStyle.Primary);
 
-                        await feedbackChannel.SendMessageAsync("", false, embedBuilder.Build(), component: componentBuilder.Build());
+                        await feedbackChannel.SendMessageAsync("", false, embedBuilder.Build(), components: componentBuilder.Build());
                     }
 
                     _discord.ButtonExecuted += Discord_ButtonExecuted;
@@ -188,7 +188,7 @@ namespace DiscordBeatSaberBot.Handlers
                 componentBuilder.WithButton("Accept and start reply process", customId: $"acceptFormButton_{arg.User.Id}", style: ButtonStyle.Success);
                 componentBuilder.WithButton("Reject and start reply process", customId: $"rejectFormButton_{arg.User.Id}", style: ButtonStyle.Danger);
 
-                await channel.SendMessageAsync("", false, embedBuilderStaff.Build(), component: componentBuilder.Build());
+                await channel.SendMessageAsync("", false, embedBuilderStaff.Build(), components: componentBuilder.Build());
             }   
         }
     }

@@ -78,7 +78,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                 gridString += "\n";
             }
 
-            _msg = await command.Channel.SendMessageAsync($"{gridString}", false, EmbedBuilderExtension.NullEmbed("Add pattern to the catalog", $"- Choose a grid position by pressing a button and then press the button with the note type you want to place there.\n- Selecting a grid position twice resets the note type on that position.\n").Build(), component: componentBuilder.Build());
+            _msg = await command.Channel.SendMessageAsync($"{gridString}", false, EmbedBuilderExtension.NullEmbed("Add pattern to the catalog", $"- Choose a grid position by pressing a button and then press the button with the note type you want to place there.\n- Selecting a grid position twice resets the note type on that position.\n").Build(), components: componentBuilder.Build());
 
             discord.ButtonExecuted += Discord_ButtonExecuted;
         }

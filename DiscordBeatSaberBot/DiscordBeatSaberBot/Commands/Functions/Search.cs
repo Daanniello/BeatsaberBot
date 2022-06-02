@@ -63,7 +63,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             _originalComponentBuilder = componentBuilder;
 
             discord.ButtonExecuted += Discord_ButtonExecuted;
-            _msg = await command.Channel.SendMessageAsync("", false, embedBuilder.Build(), component: componentBuilder.Build());
+            _msg = await command.Channel.SendMessageAsync("", false, embedBuilder.Build(), components: componentBuilder.Build());
         }
 
         private async Task Discord_ButtonExecuted(SocketMessageComponent button)

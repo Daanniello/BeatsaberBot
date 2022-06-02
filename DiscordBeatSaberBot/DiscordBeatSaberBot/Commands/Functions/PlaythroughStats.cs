@@ -424,7 +424,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             //embedBuilder.ImageUrl = $"{GlobalConfiguration.BotImageStorageLink}newyear.gif";
             ////------------
 
-            _msg = await command.Channel.SendMessageAsync("", false, embedBuilder.Build(), component: componentBuilder.Build());
+            _msg = await command.Channel.SendMessageAsync("", false, embedBuilder.Build(), components: componentBuilder.Build());
 
             ////XMAS--------
             //embedBuilder.ImageUrl = originalImg;
