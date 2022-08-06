@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,9 +21,10 @@ namespace DiscordBeatSaberBot.Handlers
         public CupOfTheDayHandler()
         {
             scoresaberClient = new ScoreSaberClient();
+            scoresaberClient.Api.ScoreFeed.WebSocket.SslConfiguration.EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12;
             scoresaberClient.Api.ScoreFeed.Connect();
+            WebsocketTimer();
             scoresaberClient.Api.ScoreFeed.OnPlayReceived += Feed_OnPlayReceived;
-            scoresaberClient.Api.ScoreFeed.OnDisconnect += Feed_OnDisconnect;
 
             var json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/CupOfTheDayMapInfo.json");
             var map = JsonConvert.DeserializeObject<ScoreSaberLib.Models.LeaderboardInfoModel.Leaderboard>(json);
@@ -35,6 +37,18 @@ namespace DiscordBeatSaberBot.Handlers
             scoresaberClient.Api.ScoreFeed.Connect();
             scoresaberClient.Api.ScoreFeed.OnPlayReceived += Feed_OnPlayReceived;
             scoresaberClient.Api.ScoreFeed.OnDisconnect += Feed_OnDisconnect;
+        }
+
+        private async void WebsocketTimer()
+        {
+            while (true)
+            {
+                await Task.Delay(10000);
+                if (!scoresaberClient.Api.ScoreFeed.WebSocket.IsAlive)
+                {
+                    scoresaberClient.Api.ScoreFeed.WebSocket.Connect();
+                }
+            }
         }
 
         private void Feed_OnPlayReceived(object sender, ScoreSaberLib.Models.ScoreFeedModel e)
@@ -124,6 +138,56 @@ namespace DiscordBeatSaberBot.Handlers
             File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/TodaysCupOfTheDayPlayers.json", "");
         }
 
+        public static void StorePlayer(Player player, string serverName)
+        {
+            //Add player to todays list if he is not already
+            var json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\TodaysCupOfTheDayPlayers.json");
+            var playersDaily = JsonConvert.DeserializeObject<List<Player>>(json);
+            if (playersDaily == null) playersDaily = new List<Player>();
+
+
+            //Add player to global list if it is his first appearance
+            json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\AllCupOfTheDayPlayers.json");
+            var playersGlobal = JsonConvert.DeserializeObject<List<Player>>(json);
+            if (playersGlobal == null) playersGlobal = new List<Player>();
+            if (playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID) == null)
+            {
+                player.TotalWins = 0;
+                player.MMR = 600;
+                player.Servers = new string[] { serverName };
+                playersGlobal.Add(player);
+            }
+            else
+            {
+                player = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID);
+                if (player.Servers != null)
+                {
+                    var list = player.Servers.ToList();
+                    list.Add(serverName);
+                    player.Servers = list.ToArray();
+                }
+                else
+                {
+                    player.Servers = new string[] { serverName };
+
+                }
+                playersGlobal.Remove(playersGlobal.First(x => x.ScoreSaberID == player.ScoreSaberID));
+                playersGlobal.Add(player);
+            }
+            var globalJson = JsonConvert.SerializeObject(playersGlobal);
+            System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\AllCupOfTheDayPlayers.json", globalJson);
+
+
+            if (playersDaily.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID) == null)
+            {
+                if (playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID) != null) player.MMR = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).MMR;
+                playersDaily.Add(player);
+            };
+            var dailyJson = JsonConvert.SerializeObject(playersDaily);
+            System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\TodaysCupOfTheDayPlayers.json", dailyJson);
+
+        }
+
         public class Player
         {
             public string Name { get; set; }
@@ -134,6 +198,8 @@ namespace DiscordBeatSaberBot.Handlers
             public long TodaysScore { get; set; }
 
             public int TotalWins { get; set; }
+
+            public string[] Servers { get; set; }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AnimatedGif;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -6,9 +7,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-using AnimatedGif;
 
 namespace DiscordBeatSaberBot
 {
@@ -55,7 +54,7 @@ namespace DiscordBeatSaberBot
                 graphics.DrawString(text, arialFont, new SolidBrush(color), firstLocation);
                 return graphics.MeasureString(text, arialFont);
             }
-        }        
+        }
 
         public SizeF AddTextWithBackGround(string text, Color color, int fontsize, Color backgroundColor, float x, float y)
         {

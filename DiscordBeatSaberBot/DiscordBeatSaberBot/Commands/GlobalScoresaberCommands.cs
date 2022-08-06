@@ -13,8 +13,11 @@ using DiscordBeatSaberBot.Api.Spotify;
 using DiscordBeatSaberBot.Api.TenorApi;
 using DiscordBeatSaberBot.Commands.Functions;
 using DiscordBeatSaberBot.Extensions;
+using DiscordBeatSaberBot.Handlers;
 using DiscordBeatSaberBot.Handlers.RankTrackerHandler;
 using GiphyDotNet.Model.Parameters;
+using Newtonsoft.Json;
+using ScoreSaberLib;
 
 namespace DiscordBeatSaberBot.Commands
 {
@@ -77,6 +80,67 @@ namespace DiscordBeatSaberBot.Commands
         public static async Task Settings(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
             new Settings(discordSocketClient, command);
+        }
+
+        [Help("CupOfTheDay", "join the cup of the day", "join", HelpAttribute.Catergories.General)]
+        public static async Task CupOfTheDay(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
+        {
+            if (command.Data.Options.FirstOrDefault(x => x.Value.ToString() == "MakePublicPrivate") != null)
+            {
+                if(discordSocketClient.GetGuild((ulong) command.GuildId).OwnerId == command.User.Id || command.User.Id == 138439306774577152)
+                {
+                    //Make server private / public 
+                    var json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDPublicServers.json");
+                    var publicServers = JsonConvert.DeserializeObject<Dictionary<ulong, string>>(json);
+                    if (publicServers == null || publicServers.Count == 0)
+                    {
+                        publicServers = new Dictionary<ulong, string>();
+                        var guild = discordSocketClient.GetGuild((ulong)command.GuildId);
+                        publicServers.Add((ulong)command.GuildId, guild.Name);
+                        var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Done", "This server has been added to the list and is now public on http://beatsaberbot.com/CupOfTheDay").Build());
+                    }
+                    else
+                    {
+                        if (publicServers.Keys.Contains((ulong)command.GuildId))
+                        {
+                            publicServers.Remove((ulong)command.GuildId);
+                            var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Done", "This server is now private").Build());
+                        }
+                        else
+                        {
+                            var guild = discordSocketClient.GetGuild((ulong)command.GuildId);
+                            publicServers.Add((ulong)command.GuildId, guild.Name);
+                            var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Done", "This server is now public on http://beatsaberbot.com/CupOfTheDay").Build());
+                        }
+                    }
+
+                    var serversJson = JsonConvert.SerializeObject(publicServers);
+                    System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDPublicServers.json", serversJson);
+
+                    return;
+                }
+                else
+                {
+                    var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Permissions", "Only the server owner has access to this command").Build());
+                    return;
+                }
+            }
+
+            var r = new RoleAssignment(discordSocketClient);
+            if(await r.CheckIfDiscordIdIsLinked(command.User.Id.ToString()))
+            {
+                var guild = discordSocketClient.GetGuild((ulong)command.GuildId);
+                var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
+                var scoresaberplayer = await new ScoreSaberClient().Api.Players.GetPlayer(Convert.ToInt64(scoresaberID));
+                var player = new CupOfTheDayHandler.Player() { ScoreSaberID = scoresaberplayer.Id, Name = scoresaberplayer.Name };
+                CupOfTheDayHandler.StorePlayer(player, guild.Id.ToString());
+
+                var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Done!", "You have joined the cup of the day. for the leaderboard, check out http://beatsaberbot.com/CupOfTheDay").Build());
+            }
+            else
+            {
+                var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Not Linked", "To join the cupoftheday, you need to be linked with your scoresaber account. please use the command /link").Build());
+            }
         }
 
         [Help("Playlist", "Creates a playlist based of key codes as input", "`!bs playlist create`", HelpAttribute.Catergories.General)]
@@ -275,6 +339,22 @@ namespace DiscordBeatSaberBot.Commands
         public static async Task TopSongs(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
             await Recentsongs(discordSocketClient, command, true);
+        }
+
+        [Help("DiceRoll", "Rolls a dice with an x amount of sides.", "/diceroll", HelpAttribute.Catergories.General)]
+        public static async Task DiceRoll(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
+        {
+            var randomMaxNumber = 6;
+            SocketSlashCommandDataOption type = null;
+            if (command.Data.Options.Count > 0) type = command.Data.Options.First();
+            if (type == null) randomMaxNumber = 6;
+            else
+            {
+                randomMaxNumber = Convert.ToInt32(type.Value);
+            }
+
+            var randomNumber = new Random().Next(0, randomMaxNumber);
+            await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"{randomNumber}", $"You rolled a {randomNumber} with a {randomMaxNumber} sided dice").Build());
         }
 
         [Help("randomcringe", "Gives a random gif from giphy.", "`!bs randomcringe [parameter]` \nShows nsfw if its in a nsfw channel.", HelpAttribute.Catergories.General)]

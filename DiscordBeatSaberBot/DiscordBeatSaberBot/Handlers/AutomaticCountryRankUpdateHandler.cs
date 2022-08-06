@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Discord;
 using DiscordBeatSaberBot.Commands.Functions;
 using WebSocketSharp;
+using System.Net.WebSockets;
 
 namespace DiscordBeatSaberBot.Handlers
 {
@@ -25,7 +26,8 @@ namespace DiscordBeatSaberBot.Handlers
         public enum country
         {
             NL,
-            IE
+            IE,
+            CH
         }
 
         public AutomaticCountryRankUpdateHandler(DiscordSocketClient discord)
@@ -55,6 +57,16 @@ namespace DiscordBeatSaberBot.Handlers
             discordIrelandRankRolesList.Add(100, 922818182127943681);
             CountryList.Add(new CountryDiscordInfo() { country = country.IE, discordServerID = 676524581271371814, rankRolesByRoleID = discordIrelandRankRolesList, unrankedRoleID = 922812907371237417, lastTopRoleID = 922818182127943681, unverifiedRoleID = 922814574720327691, verifiedRoleID = 922814498706952202, serverOwnerID = 146287428875976704, foreignerRoleID = 922818743623643186, rankupChannelID = 922814267328167966, discordInviteLink = "https://discord.gg/uKQzjRQ" });
             //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------            
+            
+            //Add switzerland----------------------------------------------------------------------------------------------------------------------------------------------------------
+            var discordswitzerlandRankRolesList = new Dictionary<int, long>();
+            discordswitzerlandRankRolesList.Add(1, 541617563797422101);
+            discordswitzerlandRankRolesList.Add(2, 556867693676855326);
+            discordswitzerlandRankRolesList.Add(3, 556867811360636940);
+            discordswitzerlandRankRolesList.Add(10, 986352444625809448);
+            CountryList.Add(new CountryDiscordInfo() { country = country.CH, discordServerID = 511257547424923687, rankRolesByRoleID = discordswitzerlandRankRolesList, unrankedRoleID = 986384374587088998, lastTopRoleID = 986383720443437138, unverifiedRoleID = 986384938330906665, verifiedRoleID = 986364618236645406, serverOwnerID = 223853045132296192, foreignerRoleID = 656233797972393985, rankupChannelID = 656555611068301322, discordInviteLink = "https://discord.com/invite/SwissSaber" });
+            //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------            
+
         }
 
         //Updates all ranks from every country, only the players who ranked down or up
@@ -152,10 +164,10 @@ namespace DiscordBeatSaberBot.Handlers
 
         public void SubscribeToScoreLiveFeed()
         {
+            _scoresaberClient.Api.ScoreFeed.WebSocket.SslConfiguration.EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12;
             _scoresaberClient.Api.ScoreFeed.Connect();
             _scoresaberClient.Api.ScoreFeed.OnPlayReceived += ScoreFeed_OnPlayReceived;
-            _scoresaberClient.Api.ScoreFeed.WebSocket.OnError += WebSocket_OnError;
-            _scoresaberClient.Api.ScoreFeed.OnDisconnect += ScoreFeed_OnDisconnect;
+            WebsocketTimer();
         }
 
         private void ScoreFeed_OnDisconnect(object sender, EventArgs e)
@@ -164,9 +176,16 @@ namespace DiscordBeatSaberBot.Handlers
             SubscribeToScoreLiveFeed();
         }
 
-        private void WebSocket_OnError(object sender, WebSocketSharp.ErrorEventArgs e)
+        private async void WebsocketTimer()
         {
-            Console.WriteLine(e.Message);
+            while (true)
+            {
+                await Task.Delay(10000);
+                if (!_scoresaberClient.Api.ScoreFeed.WebSocket.IsAlive)
+                {
+                    _scoresaberClient.Api.ScoreFeed.WebSocket.Connect();
+                }
+            }
         }
 
         private async void ScoreFeed_OnPlayReceived(object sender, ScoreFeedModel e)
@@ -428,7 +447,9 @@ namespace DiscordBeatSaberBot.Handlers
                             }
                         }
 
-                        await user.AddRoleAsync(guild.Roles.First(x => x.Id == (ulong)country.rankRolesByRoleID[rankRoleFromScoresaber]));
+                        if (rankRoleFromScoresaber == 0) await user.AddRoleAsync(lastTopRole);
+                        else await user.AddRoleAsync(guild.Roles.First(x => x.Id == (ulong)country.rankRolesByRoleID[rankRoleFromScoresaber]));
+
                     }
                     else
                     {

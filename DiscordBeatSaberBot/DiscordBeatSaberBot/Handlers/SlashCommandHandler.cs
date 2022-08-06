@@ -51,6 +51,9 @@ namespace DiscordBeatSaberBot.Handlers
                 case "settings":
                     HandleTaskException(GlobalScoresaberCommands.Settings(_discord, command), command);
                     break;
+                case "cupoftheday":
+                    HandleTaskException(GlobalScoresaberCommands.CupOfTheDay(_discord, command), command);
+                    break;
                 case "help":
                     HandleTaskException(GenericCommands.Help(_discord, command), command);
                     break;
@@ -80,6 +83,9 @@ namespace DiscordBeatSaberBot.Handlers
                     break;
                 case "topsongs":
                     HandleTaskException(GlobalScoresaberCommands.TopSongs(_discord, command), command);
+                    break;
+                case "diceroll":
+                    HandleTaskException(GlobalScoresaberCommands.DiceRoll(_discord, command), command);
                     break;
                 case "recentsongs":
                     HandleTaskException(GlobalScoresaberCommands.Recentsongs(_discord, command), command);
@@ -115,7 +121,7 @@ namespace DiscordBeatSaberBot.Handlers
                 await command.RespondAsync("Results:");
                 //task.Wait();
                 //var msg = await command.FollowupAsync("Results:");
-             
+
                 if (!keepAuthor)
                 {
                     await Task.Delay(500);
@@ -140,8 +146,8 @@ namespace DiscordBeatSaberBot.Handlers
             try
             {
                 //Delete Global Command if needed
-                //var commands = await dutchGuild.GetApplicationCommandsAsync();
-                //await commands.First(x => x.Name == "patterncatalog").DeleteAsync();
+                //var commands = await _discord.GetGlobalApplicationCommandsAsync();
+                //await commands.First(x => x.Name == "tourneymanager").DeleteAsync();
 
                 //eventmanager
                 await dutchGuild.CreateApplicationCommandAsync(new SlashCommandBuilder()
@@ -163,7 +169,7 @@ namespace DiscordBeatSaberBot.Handlers
                     .WithDescription("Force updates all roles in the whole server")
                     .AddOption("country", ApplicationCommandOptionType.String, "Example: NL, IE", true, choices: countryDiscords.ToArray())
                     .Build());
-                }                
+                }
             }
             catch (Exception ex)
             {
@@ -199,6 +205,22 @@ namespace DiscordBeatSaberBot.Handlers
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
                     .WithName("profile")
                     .WithDescription("Shows a card with a summary of interesting statistics from scoresaber")
+                    .Build());
+                //diceroll
+                await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
+                    .WithName("diceroll")
+                    .WithDescription("rolls a dice with a x number of sides")
+                    .AddOption("sides", ApplicationCommandOptionType.Integer, "how many sides? 6 is standard", false)
+                    .Build());
+                //join cup of the day
+                var cotdChoices = new List<ApplicationCommandOptionChoiceProperties>();
+                cotdChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Join", Value = "Join" });
+                cotdChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Make Server Public/Private On Website", Value = "MakePublicPrivate" });
+                cotdChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Create Discord Channel For Stats", Value = "CreateChannel" });
+                await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
+                    .WithName("cupoftheday")
+                    .WithDescription("cup of the day is a daily tourney based around the concept of playing one map each day")
+                    .AddOption("actions", ApplicationCommandOptionType.String, "Let you join the current cup of the day. this will influence your MMR if you set a score.", true, choices: cotdChoices.ToArray())
                     .Build());
                 //link
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
@@ -301,7 +323,7 @@ namespace DiscordBeatSaberBot.Handlers
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
                     .WithName("recentsong")
                     .WithDescription("Shows the most recent played map with lots of details")
-                    .AddOption("Number", ApplicationCommandOptionType.Integer, "Example: 2,5,7", false)
+                    .AddOption("number", ApplicationCommandOptionType.Integer, "Example: 2,5,7", false)
                     .AddOption("scoresaber_id", ApplicationCommandOptionType.String, "Example: 76561198187936410", false)
                     .AddOption("discord_id", ApplicationCommandOptionType.String, "Example: 76561198187936410", false)
                     .AddOption("mention", ApplicationCommandOptionType.Mentionable, "Example: @silverhaze", false)
@@ -310,7 +332,7 @@ namespace DiscordBeatSaberBot.Handlers
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
                     .WithName("topsong")
                     .WithDescription("Shows the top played map with lots of details")
-                    .AddOption("Number", ApplicationCommandOptionType.Integer, "Example: 2,5,7", false)
+                    .AddOption("number", ApplicationCommandOptionType.Integer, "Example: 2,5,7", false)
                     .AddOption("scoresaber_id", ApplicationCommandOptionType.String, "Example: 76561198187936410", false)
                     .AddOption("discord_id", ApplicationCommandOptionType.String, "Example: 76561198187936410", false)
                     .AddOption("mention", ApplicationCommandOptionType.Mentionable, "Example: @silverhaze", false)
