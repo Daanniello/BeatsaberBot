@@ -51,7 +51,7 @@ Usage: !bs topsongs\
 Usage: !bs topsongs [pageNr]\
 ![Topsongs](https://i.imgur.com/lSH4Whb.png)
 
-**Community Tools**
+**Community Tools**\
 Usage: !bs tools\
 Usage: !bs tools [toolname]\
 Usage: !bs tools [toolname] vote [1-5]\
