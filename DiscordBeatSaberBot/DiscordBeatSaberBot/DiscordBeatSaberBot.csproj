@@ -33,6 +33,7 @@
     <Folder Include="Logs\" />
     <Folder Include="Resources\Files\" />
     <Folder Include="Resources\CountriesTop500Players\" />
+    <Folder Include="Resources\Playlists\" />
     <Folder Include="Resources\Tools\" />
   </ItemGroup>
 

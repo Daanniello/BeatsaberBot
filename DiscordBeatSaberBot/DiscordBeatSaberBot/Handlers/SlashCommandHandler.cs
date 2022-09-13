@@ -39,6 +39,9 @@ namespace DiscordBeatSaberBot.Handlers
                 case "profile":
                     HandleTaskException(GlobalScoresaberCommands.Profile(_discord, command), command);
                     break;
+                case "playlists":
+                    HandleTaskException(GlobalScoresaberCommands.Playlists(_discord, command), command);
+                    break;
                 case "link":
                     HandleTaskException(DutchServerCommands.LinkScoresaberWithDiscord(_discord, command), command);
                     break;
@@ -136,7 +139,7 @@ namespace DiscordBeatSaberBot.Handlers
             }
         }
 
-        public async void CreateSlashCommands(bool pushGlobalCommands = false)
+        public async void CreateSlashCommands(bool pushGlobalCommands = true)
         {
             if (pushGlobalCommands) CreateGlobalSlashCommands();
 
@@ -191,11 +194,11 @@ namespace DiscordBeatSaberBot.Handlers
                 .AddOption("type", ApplicationCommandOptionType.String, "Example: Funny, Horror, Dogs", false)
                 .Build());
                 //Improve
-                await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
-                    .WithName("improve")
-                    .WithDescription("Gives a list of ranked maps that relatively gives a lot of PP")
-                    .AddOption("target_acc", ApplicationCommandOptionType.Number, "Example: 94, 95.5, 92.2", true)
-                    .Build());
+                //await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
+                //    .WithName("improve")
+                //    .WithDescription("Gives a list of ranked maps that relatively gives a lot of PP")
+                //    .AddOption("target_acc", ApplicationCommandOptionType.Number, "Example: 94, 95.5, 92.2", true)
+                //    .Build());
                 //RankTracker
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
                     .WithName("ranktracker")
@@ -205,6 +208,13 @@ namespace DiscordBeatSaberBot.Handlers
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
                     .WithName("profile")
                     .WithDescription("Shows a card with a summary of interesting statistics from scoresaber")
+                    .Build());
+                //playlists
+                await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
+                    .WithName("playlists")
+                    .WithDescription("download populair playlists and share your own")
+                    .AddOption("add", ApplicationCommandOptionType.Attachment, "Upload your playlist", false)
+                    .AddOption("delete", ApplicationCommandOptionType.String, "Delete your own playlist by name", false)
                     .Build());
                 //diceroll
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
@@ -216,7 +226,7 @@ namespace DiscordBeatSaberBot.Handlers
                 var cotdChoices = new List<ApplicationCommandOptionChoiceProperties>();
                 cotdChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Join", Value = "Join" });
                 cotdChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Make Server Public/Private On Website", Value = "MakePublicPrivate" });
-                cotdChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Create Discord Channel For Stats", Value = "CreateChannel" });
+                cotdChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Make THIS channel a leaderboard feed", Value = "CreateChannel" });
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
                     .WithName("cupoftheday")
                     .WithDescription("cup of the day is a daily tourney based around the concept of playing one map each day")
@@ -245,12 +255,16 @@ namespace DiscordBeatSaberBot.Handlers
                 settingChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Create", Value = "Create" });
                 settingChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Edit", Value = "Edit" });
                 settingChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Remove", Value = "Remove" });
+                var leaderboardChoices = new List<ApplicationCommandOptionChoiceProperties>();
+                leaderboardChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Scoresaber", Value = "scoresaber" });
+                leaderboardChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Beatleader", Value = "beatleader" });
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
                     .WithName("settings")
                     .WithDescription("Shows details from a beat saber player")
-                    .AddOption("scoresaber_id", ApplicationCommandOptionType.String, "Example: 76561198333869741", false)
-                    .AddOption("mention", ApplicationCommandOptionType.Mentionable, "Example: @Silverhaze", false)
-                    .AddOption("action", ApplicationCommandOptionType.String, "Example: Edit, Create,  Remove", false, choices: settingChoices.ToArray())
+                    .AddOption("search_with_scoresaber_id", ApplicationCommandOptionType.String, "Example: 76561198333869741", false)
+                    .AddOption("search_with_mention", ApplicationCommandOptionType.Mentionable, "Example: @Silverhaze", false)
+                    .AddOption("manage_settings_profile", ApplicationCommandOptionType.String, "Example: Edit, Create,  Remove", false, choices: settingChoices.ToArray())
+                    .AddOption("switch_leaderboard", ApplicationCommandOptionType.String, "switch your account to a different leaderboard so you can share those achievements easier", false, choices: leaderboardChoices.ToArray())
                     .Build());
                 //help
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
@@ -288,9 +302,13 @@ namespace DiscordBeatSaberBot.Handlers
                     .WithDescription("Gives an Invite link to use to share this bot")
                     .Build());
                 //draw
+                var drawChoices = new List<ApplicationCommandOptionChoiceProperties>();
+                drawChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Pokemon", Value = "Pokemon" });
+                drawChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Fifa", Value = "Fifa" });
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
                     .WithName("draw")
-                    .WithDescription("Gives a pokemon card of a random top 50 player")
+                    .WithDescription("Draws a random themed beat saber collectors card")
+                    .AddOption("type", ApplicationCommandOptionType.String, "type of collector cards", false, choices: drawChoices.ToArray())
                     .Build());
                 //removebg
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()

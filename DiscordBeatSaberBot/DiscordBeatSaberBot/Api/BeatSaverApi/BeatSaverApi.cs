@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DiscordBeatSaberBot.Api.BeatSaverApi
@@ -54,8 +55,8 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
                 catch
                 {
                     return null;
-                }                
-            }            
+                }
+            }
         }
 
         public static async Task<Api.BeatSaverApi.Models.New.BeatSaverMapModelNew> GetMapByKey(string key)
@@ -71,6 +72,26 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
             var mapJsonDataBeatSaver = await Get($"maps/hash/{hash}");
             if (mapJsonDataBeatSaver == null) return null;
             var mapInfoBeatSaver = JsonConvert.DeserializeObject<Api.BeatSaverApi.Models.New.BeatSaverMapModelNew>(mapJsonDataBeatSaver);
+            return mapInfoBeatSaver;
+        }
+
+        public async Task<dynamic> GetMapsByHash(List<string> hashes)
+        {
+            var hashesString = "";
+            foreach (var hash in hashes)
+            {
+                hashesString += hash + ",";
+            }
+
+            var mapJsonDataBeatSaver = await Get($"maps/hash/{hashesString}");
+
+            foreach (var hash in hashes)
+            {
+                mapJsonDataBeatSaver = mapJsonDataBeatSaver.Replace(hash.ToLower(),"map");
+            }
+
+            if (mapJsonDataBeatSaver == null) return null;
+            var mapInfoBeatSaver = JsonConvert.DeserializeObject<dynamic>(mapJsonDataBeatSaver);
             return mapInfoBeatSaver;
         }
 
@@ -92,7 +113,7 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
             return null;
         }
 
-        private static async Task<string> Get(string endpoint)
+        public static async Task<string> Get(string endpoint)
         {
             using (var client = new HttpClient())
             {
@@ -113,7 +134,7 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
 
                 if (httpResponseMessage.StatusCode != HttpStatusCode.OK) return null;
 
-                var data = await httpResponseMessage.Content.ReadAsStringAsync();             
+                var data = await httpResponseMessage.Content.ReadAsStringAsync();
                 return data;
             }
         }

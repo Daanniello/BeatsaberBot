@@ -12,6 +12,10 @@ namespace DiscordBeatSaberBot
 
         public static string BotImageStorageLink = "http://beatsaberbot.com/img/BeatSaberBot/";
 
+        public static string BotPatternCatalogStorageLink = "http://beatsaberbot.com/PatternCatalog/";
+
+        public static string BotPatternCatalogStoragePath = $"C:/Users/DaanS/source/repos/BeatSaberBotWeb/BeatSaberBotWeb/wwwroot/PatternCatalog/";
+
         public static int TypingTimeOut = 10;
 
         public static string WebsiteRoot = @"C:/Users/DaanS/source/repos/BeatSaberBotWeb/BeatSaberBotWeb/wwwroot/";

@@ -95,8 +95,8 @@ namespace DiscordBeatSaberBot.Handlers
                 if (diff == null) continue;
                 board.MaxScore = diff.MaxScore;
                 count++;
-            } while (result.Stats.Upvotes < 20 || (result.Stats.Upvotes * 100 / result.Stats.Upvotes + result.Stats.Downvotes) < 80 || result.Metadata.Duration < 30 || currentLeaderboard.SongHash == board.SongHash && count < leaderboards.Leaderboards.Count);       
-            
+            } while (result.Stats.Upvotes < 20 || (result.Stats.Upvotes * 100 / result.Stats.Upvotes + result.Stats.Downvotes) < 80 || result.Metadata.Duration < 30 || currentLeaderboard.SongHash == board.SongHash && count < leaderboards.Leaderboards.Count);
+
             var json = JsonConvert.SerializeObject(board);
             File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/CupOfTheDayMapInfo.json", json);
 
@@ -113,21 +113,41 @@ namespace DiscordBeatSaberBot.Handlers
             if (playersDaily != null && playersDaily.Count > 0)
             {
                 //Give top player a win
-                if (playersGlobal != null && playersGlobal.Count > 0) playersGlobal.FirstOrDefault(x => x.ScoreSaberID == playersDaily.OrderByDescending(x => x.TodaysScore).First().ScoreSaberID).TotalWins += 1;
+                if (playersGlobal != null && playersGlobal.Count > 0) playersGlobal.FirstOrDefault(x => x.ScoreSaberID == playersDaily.OrderByDescending(x => x.TodaysScore).First().ScoreSaberID).TotalWinsGlobal += 1;
 
                 //Give Everyone their MMR
-                foreach(var player in playersDaily)
+                foreach (var player in playersDaily)
                 {
                     //TODO: give MMR
                     if (player.TodaysScore == 0) continue;
-                    var playerCurrentMMR = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).MMR;
-                    var avgMMRFromAll = playersGlobal.Average(x => x.MMR);
-                    var avgMMRFromBelowPlayer = playersDaily.OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore <= player.TodaysScore).Average(x => x.MMR);
-                    var avgMMRFromAbovePlayer = playersDaily.OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore >= player.TodaysScore).Average(x => x.MMR);
+
+
+                    var playerCurrentMMR = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).MMRGlobal;
+                    var avgMMRFromAll = playersGlobal.Average(x => x.MMRGlobal);
+                    var avgMMRFromBelowPlayer = playersDaily.OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore <= player.TodaysScore).Average(x => x.MMRGlobal);
+                    var avgMMRFromAbovePlayer = playersDaily.OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore >= player.TodaysScore).Average(x => x.MMRGlobal);
                     double mmrWin = 20;
                     var mmrDiff = (200 * avgMMRFromAbovePlayer / playerCurrentMMR) - 100;
                     mmrWin += mmrDiff;
-                    playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).MMR += (int) Math.Round(mmrWin);
+                    playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).MMRGlobal += (int)Math.Round(mmrWin);
+
+                    foreach (var server in player.Servers)
+                    {
+                        if (server.id == null) continue;
+                        var serverPlayers = playersDaily.Where(x => x.Servers.FirstOrDefault(x => x.id == server.id) != null).ToList();
+                        if (serverPlayers.Count() > 1)
+                        {
+                            var serverPlayersGlobal = playersGlobal.Where(x => x.Servers.FirstOrDefault(x => x.id == server.id) != null).ToList();
+                            var playerCurrentServerMMR = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).Servers.First(x => x.id == server.id).MMR;
+                            var avgMMRServerFromAll = serverPlayersGlobal.Average(x => x.Servers.First(x => x.id == server.id).MMR);
+                            var avgMMRServerFromBelowPlayer = playersDaily.Where(x => x.Servers.FirstOrDefault(x => x.id == server.id) != null).OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore <= player.TodaysScore).Average(x => x.Servers.First(x => x.id == server.id).MMR);
+                            var avgMMRServerFromAbovePlayer = playersDaily.Where(x => x.Servers.FirstOrDefault(x => x.id == server.id) != null).OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore >= player.TodaysScore).Average(x => x.Servers.First(x => x.id == server.id).MMR);
+                            double mmrServerWin = 20;
+                            var mmrServerDiff = (200 * avgMMRServerFromAbovePlayer / playerCurrentServerMMR) - 100;
+                            mmrServerWin += mmrServerDiff;
+                            playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).Servers.FirstOrDefault(x => x.id == server.id).MMR += (int)Math.Round(mmrServerWin);
+                        }
+                    }
                 }
                 var newJson = JsonConvert.SerializeObject(playersGlobal);
                 File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/AllCupOfTheDayPlayers.json", newJson);
@@ -152,9 +172,11 @@ namespace DiscordBeatSaberBot.Handlers
             if (playersGlobal == null) playersGlobal = new List<Player>();
             if (playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID) == null)
             {
-                player.TotalWins = 0;
-                player.MMR = 600;
-                player.Servers = new string[] { serverName };
+                player.TotalWinsGlobal = 0;
+                player.MMRGlobal = 600;
+                var l = new List<Player.ServerStats>();
+                l.Add(new Player.ServerStats() { id = serverName, MMR = 600, TotalWins = 0 });
+                player.Servers = l;
                 playersGlobal.Add(player);
             }
             else
@@ -162,14 +184,15 @@ namespace DiscordBeatSaberBot.Handlers
                 player = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID);
                 if (player.Servers != null)
                 {
-                    var list = player.Servers.ToList();
-                    list.Add(serverName);
-                    player.Servers = list.ToArray();
+                    var list = player.Servers;
+                    list.Add(new Player.ServerStats() { id = serverName, MMR = 600, TotalWins = 0 });
+                    player.Servers = list;
                 }
                 else
                 {
-                    player.Servers = new string[] { serverName };
-
+                    var l = new List<Player.ServerStats>();
+                    l.Add(new Player.ServerStats() { id = serverName });
+                    player.Servers = l;
                 }
                 playersGlobal.Remove(playersGlobal.First(x => x.ScoreSaberID == player.ScoreSaberID));
                 playersGlobal.Add(player);
@@ -180,7 +203,7 @@ namespace DiscordBeatSaberBot.Handlers
 
             if (playersDaily.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID) == null)
             {
-                if (playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID) != null) player.MMR = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).MMR;
+                if (playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID) != null) player.MMRGlobal = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).MMRGlobal;
                 playersDaily.Add(player);
             };
             var dailyJson = JsonConvert.SerializeObject(playersDaily);
@@ -193,13 +216,22 @@ namespace DiscordBeatSaberBot.Handlers
             public string Name { get; set; }
             public string ScoreSaberID { get; set; }
 
-            public int MMR { get; set; }
-
+            public int MMRGlobal { get; set; }
             public long TodaysScore { get; set; }
 
-            public int TotalWins { get; set; }
+            public int TotalWinsGlobal { get; set; }
 
-            public string[] Servers { get; set; }
+            public List<ServerStats> Servers { get; set; }
+
+            public class ServerStats
+            {
+                public string id { get; set; }
+                public string Name { get; set; }
+
+                public int MMR { get; set; }
+
+                public int TotalWins { get; set; }
+            }
         }
     }
 }

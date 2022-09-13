@@ -64,10 +64,20 @@ namespace DiscordBeatSaberBot.Commands
 
         }
 
-        [Help("Draw", "Draws a random card of someone in the top 50", "!bs draw", HelpAttribute.Catergories.General)]
+        [Help("Draw", "Draws a random collectors card", "/draw", HelpAttribute.Catergories.General)]
         public static async Task Draw(SocketSlashCommand command)
         {
-            BeatSaberCardCollection.DrawAndSendRandomCard(command);
+            if (command.Data.Options.FirstOrDefault(x => x.Name == "type") != null)
+            {
+                if(command.Data.Options.FirstOrDefault().Value.ToString() == "Pokemon")
+                {
+                    BeatSaberCardCollection.DrawAndSendRandomCard(command);
+                }
+                if (command.Data.Options.FirstOrDefault().Value.ToString() == "Fifa")
+                {
+                    BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
+                }
+            }
         }
 
         [Help("PatternCatalog", "Show the list of all pattern names and shows you a preview of how they look and more details about how to use them for mapping.", "/patterncatalog", HelpAttribute.Catergories.General)]
@@ -87,7 +97,7 @@ namespace DiscordBeatSaberBot.Commands
         {
             if (command.Data.Options.FirstOrDefault(x => x.Value.ToString() == "MakePublicPrivate") != null)
             {
-                if(discordSocketClient.GetGuild((ulong) command.GuildId).OwnerId == command.User.Id || command.User.Id == 138439306774577152)
+                if (discordSocketClient.GetGuild((ulong)command.GuildId).OwnerId == command.User.Id || command.User.Id == 138439306774577152)
                 {
                     //Make server private / public 
                     var json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDPublicServers.json");
@@ -126,8 +136,14 @@ namespace DiscordBeatSaberBot.Commands
                 }
             }
 
+            if (command.Data.Options.FirstOrDefault(x => x.Value.ToString() == "CreateChannel") != null)
+            {
+                //Create leaderboard embed that updates 
+                //Create pop up messages for the last event that happened                 
+            }
+
             var r = new RoleAssignment(discordSocketClient);
-            if(await r.CheckIfDiscordIdIsLinked(command.User.Id.ToString()))
+            if (await r.CheckIfDiscordIdIsLinked(command.User.Id.ToString()))
             {
                 var guild = discordSocketClient.GetGuild((ulong)command.GuildId);
                 var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
@@ -230,10 +246,10 @@ namespace DiscordBeatSaberBot.Commands
         {
             var playthroughStats = new PlaythroughStats(discordSocketClient);
 
-            var pageNr = command.Data.Options.Count > 0 ? (command.Data.Options.Where(x => x.Name == "page").Count() > 0 ? Convert.ToInt32(command.Data.Options.First(x => x.Name == "page").Value) : 1) : 1;
+            var pageNr = command.Data.Options.Count > 0 ? (command.Data.Options.Where(x => x.Name == "number").Count() > 0 ? Convert.ToInt32(command.Data.Options.First(x => x.Name == "number").Value) : 1) : 1;
 
             //Self
-            if (!(command.Data.Options.Where(x => x.Name != "page").Count() > 0))
+            if (!(command.Data.Options.Where(x => x.Name != "number").Count() > 0))
             {
                 var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
                 await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, command, pageNr, isTopSong);
@@ -258,7 +274,7 @@ namespace DiscordBeatSaberBot.Commands
             //DiscordTag
             if (command.Data.Options.FirstOrDefault(x => x.Name == "mention") != null)
             {
-                var discordID = (dynamic) command.Data.Options.FirstOrDefault(x => x.Name == "mention").Value;
+                var discordID = (dynamic)command.Data.Options.FirstOrDefault(x => x.Name == "mention").Value;
                 var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(discordID.Id.ToString());
                 await playthroughStats.GetAndPostPlaythroughStatsWithScoresaberId(scoresaberId, command, pageNr, isTopSong: isTopSong);
                 return;
@@ -339,6 +355,18 @@ namespace DiscordBeatSaberBot.Commands
         public static async Task TopSongs(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
             await Recentsongs(discordSocketClient, command, true);
+        }
+
+        [Help("Playlists", "Download, upload and vote on your favorite playlists", "/playlists", HelpAttribute.Catergories.General)]
+        public static async Task Playlists(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
+        {
+            if (command.Data.Options.Count > 0)
+            {
+                if(command.Data.Options.FirstOrDefault(x => x.Name == "add") != null)
+                {
+                    new Playlists().CreateNewPlaylist(discordSocketClient, command);
+                }
+            }                
         }
 
         [Help("DiceRoll", "Rolls a dice with an x amount of sides.", "/diceroll", HelpAttribute.Catergories.General)]

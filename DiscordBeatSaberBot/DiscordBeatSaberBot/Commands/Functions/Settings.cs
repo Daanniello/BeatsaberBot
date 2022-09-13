@@ -40,7 +40,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
 
             //Change a certain value
             //IF parameter == add 
-            if (type.Name == "action")
+            if (type.Name == "manage_settings_profile")
             {
                 if (type.Value.ToString() == "Edit")
                 {
@@ -67,15 +67,23 @@ namespace DiscordBeatSaberBot.Commands.Functions
             //Check if the user has data
             //IF not, show message to create one with '!bs settings create'
             //var results = await DatabaseContext.ExecuteSelectQuery($"SELECT * FROM UserBeatSaberSettings WHERE {parameter}");
-            if (type.Name == "scoresaber_id")
+            if (type.Name == "search_with_scoresaber_id")
             {
                 new SettingsQuestionList(_discord, command).Get(type.Value.ToString());
             }
-            if (type.Name == "mention")
+            if (type.Name == "search_with_mention")
             {
                 var value = (dynamic)type.Value;
                 var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(value.Id.ToString());
                 new SettingsQuestionList(_discord, command).Get(scoresaberID);
+            }
+
+            //switches main leaderboard for people to share from that leaderboard
+            if (type.Name == "switch_leaderboard")
+            {
+                var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
+                await DatabaseContext.ExecuteInsertQuery($"UPDATE UserBeatSaberSettings SET {DatabaseContext.QueryCheck("Leaderboard")} = '{DatabaseContext.QueryCheck(type.Value.ToString())}' WHERE DiscordID={command.User.Id} AND ScoreSaberID={scoresaberID}");
+                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Done!", $"Your main leaderboard is now **{type.Value}**. From now on commands will display stats from {type.Value}.").Build());
             }
         }
     }

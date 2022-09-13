@@ -319,7 +319,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                     var embedBuilder = EmbedBuilderExtension.NullEmbed("Are you happy with the results?", $"Press save to save the pattern in the catalog or exit to delete it\nPlease make sure its decent quality since this is public to everyone");
                     var guid = Guid.NewGuid();
                     CreateGifFromPatternList(_patternsSelection, $"{guid}.gif");
-                    embedBuilder.WithImageUrl($"{GlobalConfiguration.BotImageStorageLink}{guid}.gif");
+                    embedBuilder.WithImageUrl($"{GlobalConfiguration.BotPatternCatalogStorageLink}{guid}.gif");
 
                     await _msg.ModifyAsync(x => x.Components = componentBuilder.Build());
                     await _msg.ModifyAsync(x => x.Embed = embedBuilder.Build());
@@ -400,7 +400,11 @@ namespace DiscordBeatSaberBot.Commands.Functions
                 if (patternList == null) patternList = new List<Pattern>();
                 patternList.Add(pattern);
                 var json = JsonConvert.SerializeObject(patternList);
-                if (File.Exists(_patternSavePath)) File.WriteAllText(_patternSavePath, json);
+                if (File.Exists(_patternSavePath))
+                {
+                    File.WriteAllText(_patternSavePath, json);
+                    File.WriteAllText(GlobalConfiguration.BotPatternCatalogStoragePath + "PatternCatalog.json", json);
+                }
                 else File.AppendAllText(_patternSavePath, json);
 
                 return true;
@@ -450,7 +454,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                 CreateGifFromPatternList(pattern.PatternFrames, $"patterncatalog_{pattern.Name.Replace(" ", "_").Replace("/", "-").Trim()}.gif");
 
                 var embedBuilder = EmbedBuilderExtension.NullEmbed($"{pattern.Name}", $"{pattern.Description}");
-                embedBuilder.WithImageUrl($"{GlobalConfiguration.BotImageStorageLink}patterncatalog_{pattern.Name.Replace(" ", "_").Replace("/","-").Trim()}.gif");
+                embedBuilder.WithImageUrl($"{GlobalConfiguration.BotPatternCatalogStorageLink}patterncatalog_{pattern.Name.Replace(" ", "_").Replace("/","-").Trim()}.gif");
                 var msg = await command.Channel.SendMessageAsync("", false, embedBuilder.Build());
             }
         }
@@ -502,7 +506,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
 
 
             // 33ms delay (~30fps)
-            using (var gif = AnimatedGif.AnimatedGif.Create($"{GlobalConfiguration.BotImageStoragePath}{gifPath}", 33))
+            using (var gif = AnimatedGif.AnimatedGif.Create($"{GlobalConfiguration.BotPatternCatalogStoragePath}{gifPath}", 33))
             {
                 foreach (var patternFrame in patternsToDisplay)
                 {
@@ -538,7 +542,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             }
 
             //using (var image = bitmapList.First())
-            //using (var gif = File.OpenWrite($"{GlobalConfiguration.BotImageStoragePath}{gifPath}"))
+            //using (var gif = File.OpenWrite($"{GlobalConfiguration.BotPatternCatalogStoragePath}{gifPath}"))
             //using (var encoder = new GifEncoder(gif))                
             //    foreach (var bitmap in bitmapList)
             //    {                    

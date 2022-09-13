@@ -139,6 +139,7 @@ namespace DiscordBeatSaberBot
         {
             var updater = new UpdateTimer(discordSocketClient);
             var cupOfTheDayHandler = new CupOfTheDayHandler();
+            cupOfTheDayHandler.ResetDailyMap();
             updater.UpdateAtTimeOfDay(() => cupOfTheDayHandler.ResetDailyMap(), "Reset Daily Map Map of the day", 24, 0, 0);
             updater.UpdateAtTimeOfDay(() => DataCollectionService.UpdateData(), "Data Collection Update", 24, 0, 0);
             updater.Start(() => UpdateSilverhazeDiscordRank(), "SilverhazeDiscordRankUpdate", 0, 30, 0);

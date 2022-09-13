@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.IO;
+using ScoreSaberLib;
+using System.Drawing;
+using DiscordBeatSaberBot.Api.BeatSaverApi;
 
 namespace DiscordBeatSaberBot
 {
@@ -12,6 +15,59 @@ namespace DiscordBeatSaberBot
         public BeatSaberCardCollection()
         {
 
+        }
+
+        public static async void DrawAndSendRandomFifaCard(SocketSlashCommand command)
+        {
+            try
+            {
+                //Get player info
+                var playersDataOne = await new ScoreSaberClient().Api.Players.GetPlayers(page: 1);
+                var playersDataTwo = await new ScoreSaberClient().Api.Players.GetPlayers(page: 2);
+                var players = playersDataOne.Players;
+                players.AddRange(playersDataTwo.Players);
+                var player = players[new Random().Next(0, 99)];
+
+                var hashList = new List<string>();
+                var scores100 = await new ScoreSaberClient().Api.Players.GetPlayerScores(Convert.ToInt64(player.Id), 100, sort: Players.sort.top, page: 1);
+                var scores200 = await new ScoreSaberClient().Api.Players.GetPlayerScores(Convert.ToInt64(player.Id), 100, sort: Players.sort.top, page: 2);
+                foreach (var score in scores100) hashList.Add(score.Leaderboard.SongHash);
+                foreach (var score in scores200) hashList.Add(score.Leaderboard.SongHash);
+
+                //dynamic beatSaverMaps;
+                
+                var f = await new BeatSaverApi("").GetMapsByHash(hashList.GetRange(0, 49));
+                
+                //beatSaverMaps.AddRange(await BeatSaverApi.GetMapsByHash(hashList.GetRange(0, 49).ToList()));
+                //beatSaverMaps.AddRange(await BeatSaverApi.GetMapsByHash(hashList.GetRange(50, 99).ToList()));
+                //beatSaverMaps.AddRange(await BeatSaverApi.GetMapsByHash(hashList.GetRange(100, 149).ToList()));
+                //beatSaverMaps.AddRange(await BeatSaverApi.GetMapsByHash(hashList.GetRange(150, 199).ToList()));
+
+                //Create card 
+                var cardCreator = new ImageCreator("../../../Resources/img/FIFA_Card_Template.png");
+                cardCreator.AddImageRounded(player.ProfilePicture.ToString(), 0, 0, 735 * 2, 1211, 0.85f, 8);
+                cardCreator.AddImageRounded(player.ProfilePicture.ToString(), 278, 250, 400, 400);
+                cardCreator.AddImage("../../../Resources/img/FIFA_Card_Template.png", 0, 0, 735, 1211, isLocalFile: true);
+
+                cardCreator.AddText("99", Color.Black, 72, 115 + 5, 175 + 5);
+                cardCreator.AddText("99", Color.FromArgb(103, 90, 55), 72, 115, 175);
+
+                cardCreator.AddText(player.Country, Color.FromArgb(103, 90, 55), 48, 125, 285);
+
+                cardCreator.AddImageRounded($"https://www.worldometers.info/img/flags/{player.Country.ToLower()}-flag.gif", 140, 415, 80, 60);
+
+                cardCreator.AddTextCenter(player.Name, Color.Black, 58, 380 + 5, 650 + 5);
+                cardCreator.AddTextCenter(player.Name, Color.FromArgb(103, 90, 55), 58, 380, 650);
+                await cardCreator.Create($"../../../Resources/img/FIFA_Card-{player.Id}.png");
+
+                //send image in discord and delete it
+                await command.Channel.SendFileAsync($"../../../Resources/img/FIFA_Card-{player.Id}.png");
+                File.Delete($"../../../Resources/img/FIFA_Card-{player.Id}.png");
+            }
+            catch(Exception ex)
+            {
+                var ohoh = ex;
+            }
         }
 
         public static async void DrawAndSendRandomCard(SocketSlashCommand command)
