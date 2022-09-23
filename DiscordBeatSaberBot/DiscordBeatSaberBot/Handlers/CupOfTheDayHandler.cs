@@ -131,23 +131,34 @@ namespace DiscordBeatSaberBot.Handlers
                     mmrWin += mmrDiff;
                     playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).MMRGlobal += (int)Math.Round(mmrWin);
 
-                    foreach (var server in player.Servers)
+                    if(player.Servers != null)
                     {
-                        if (server.id == null) continue;
-                        var serverPlayers = playersDaily.Where(x => x.Servers.FirstOrDefault(x => x.id == server.id) != null).ToList();
-                        if (serverPlayers.Count() > 1)
+                        foreach (var server in player.Servers)
                         {
-                            var serverPlayersGlobal = playersGlobal.Where(x => x.Servers.FirstOrDefault(x => x.id == server.id) != null).ToList();
-                            var playerCurrentServerMMR = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).Servers.First(x => x.id == server.id).MMR;
-                            var avgMMRServerFromAll = serverPlayersGlobal.Average(x => x.Servers.First(x => x.id == server.id).MMR);
-                            var avgMMRServerFromBelowPlayer = playersDaily.Where(x => x.Servers.FirstOrDefault(x => x.id == server.id) != null).OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore <= player.TodaysScore).Average(x => x.Servers.First(x => x.id == server.id).MMR);
-                            var avgMMRServerFromAbovePlayer = playersDaily.Where(x => x.Servers.FirstOrDefault(x => x.id == server.id) != null).OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore >= player.TodaysScore).Average(x => x.Servers.First(x => x.id == server.id).MMR);
-                            double mmrServerWin = 20;
-                            var mmrServerDiff = (200 * avgMMRServerFromAbovePlayer / playerCurrentServerMMR) - 100;
-                            mmrServerWin += mmrServerDiff;
-                            playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).Servers.FirstOrDefault(x => x.id == server.id).MMR += (int)Math.Round(mmrServerWin);
+                            if (server.id == null) continue;
+                            try
+                            {
+                                var serverPlayers = playersDaily.Where(x => x.Servers != null && x.Servers.FirstOrDefault(x => x.id == server.id) != null).ToList();
+
+                                if (serverPlayers.Count() >= 1)
+                                {
+                                    var serverPlayersGlobal = playersGlobal.Where(x => x.Servers.FirstOrDefault(x => x.id == server.id) != null).ToList();
+                                    var playerCurrentServerMMR = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).Servers.First(x => x.id == server.id).MMR;
+                                    var avgMMRServerFromAll = serverPlayersGlobal.Average(x => x.Servers.First(x => x.id == server.id).MMR);
+                                    var avgMMRServerFromBelowPlayer = playersDaily.Where(x => x.Servers != null && x.Servers.FirstOrDefault(x => x.id == server.id) != null).OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore <= player.TodaysScore).Average(x => x.Servers.First(x => x.id == server.id).MMR);
+                                    var avgMMRServerFromAbovePlayer = playersDaily.Where(x => x.Servers != null && x.Servers.FirstOrDefault(x => x.id == server.id) != null).OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore >= player.TodaysScore).Average(x => x.Servers.First(x => x.id == server.id).MMR);
+                                    double mmrServerWin = 20;
+                                    var mmrServerDiff = (200 * avgMMRServerFromAbovePlayer / playerCurrentServerMMR) - 100;
+                                    mmrServerWin += mmrServerDiff;
+                                    playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).Servers.FirstOrDefault(x => x.id == server.id).MMR += (int)Math.Round(mmrServerWin);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                var f = 2;
+                            }
                         }
-                    }
+                    }                   
                 }
                 var newJson = JsonConvert.SerializeObject(playersGlobal);
                 File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/AllCupOfTheDayPlayers.json", newJson);

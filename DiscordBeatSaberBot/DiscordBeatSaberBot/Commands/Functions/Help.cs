@@ -71,7 +71,7 @@ namespace DiscordBeatSaberBot
                         Color = Color.Gold,
                         Footer = new EmbedFooterBuilder
                         {
-                            Text = "Created by: @Silverhaze#0001. \nFor more info, join the discord server (https://discord.gg/S3D3Yyu)",
+                            Text = "Created by: @Silverhaze#0001. \n For our privacy policy check out the BeatSaberBot Website",
                             IconUrl =
                                 "https://cdn.discordapp.com/avatars/138439306774577152/1084ee232303df04772bf68f1d41ef83.png"
                         }

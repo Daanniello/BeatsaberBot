@@ -65,15 +65,43 @@ namespace DiscordBeatSaberBot.Commands
         }
 
         [Help("Draw", "Draws a random collectors card", "/draw", HelpAttribute.Catergories.General)]
-        public static async Task Draw(SocketSlashCommand command)
+        public static async Task Draw(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
-            if (command.Data.Options.FirstOrDefault(x => x.Name == "type") != null)
+            //if (command.User.Id == 138439306774577152)
+            //{
+            //    BeatSaberCardCollection.start(command);
+            //    return;
+            //}
+            //else
+            //{
+            //    command.Channel.SendMessageAsync("sorry, this command is under maintenance. A card history is being added. Try again soon.");
+            //    return;
+            //}
+
+            if (command.Data.Options.FirstOrDefault(x => x.Name == "inventory") != null)
             {
-                if(command.Data.Options.FirstOrDefault().Value.ToString() == "Pokemon")
+                new BeatSaberCardCollection(discordSocketClient).ShowInventory(command);
+            }
+            else if (command.Data.Options.FirstOrDefault(x => x.Name == "trade") != null)
+            {
+
+                new BeatSaberCardCollection(discordSocketClient).StartTradeProcess(command, (SocketUser)command.Data.Options.FirstOrDefault(x => x.Name == "trade").Value);
+
+            }
+            else if(command.Data.Options.FirstOrDefault(x => x.Name == "settings") != null)
+            {
+                if(command.Data.Options.FirstOrDefault(x => x.Name == "settings").Value.ToString() == "PackNotifictionsToggle")
                 {
-                    BeatSaberCardCollection.DrawAndSendRandomCard(command);
+                    BeatSaberCardCollection.ToggleCardDrawDMNotification(command);
                 }
-                if (command.Data.Options.FirstOrDefault().Value.ToString() == "Fifa")
+            }
+            else
+            {
+                if (BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command))
+                {
+
+                }
+                else
                 {
                     BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
                 }
@@ -362,11 +390,11 @@ namespace DiscordBeatSaberBot.Commands
         {
             if (command.Data.Options.Count > 0)
             {
-                if(command.Data.Options.FirstOrDefault(x => x.Name == "add") != null)
+                if (command.Data.Options.FirstOrDefault(x => x.Name == "add") != null)
                 {
                     new Playlists().CreateNewPlaylist(discordSocketClient, command);
                 }
-            }                
+            }
         }
 
         [Help("DiceRoll", "Rolls a dice with an x amount of sides.", "/diceroll", HelpAttribute.Catergories.General)]

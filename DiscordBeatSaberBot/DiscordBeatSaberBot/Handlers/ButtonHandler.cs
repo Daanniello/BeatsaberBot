@@ -40,7 +40,7 @@ namespace DiscordBeatSaberBot.Handlers
 
                 await message.ModifyAsync(msg => msg.Embed = Help.GetHelpList(discord, int.Parse(pagenr.Split("/").First()) - 2));
             }
-            await component.RespondAsync();
+            await component.DeferAsync();
         }
     }
 }

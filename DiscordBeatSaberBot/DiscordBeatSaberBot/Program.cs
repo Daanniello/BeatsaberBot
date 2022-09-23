@@ -139,7 +139,7 @@ namespace DiscordBeatSaberBot
         {
             var updater = new UpdateTimer(discordSocketClient);
             var cupOfTheDayHandler = new CupOfTheDayHandler();
-            cupOfTheDayHandler.ResetDailyMap();
+            new BeatSaberCardCollection(discordSocketClient).NotifyUsersOnNewCardPacks();
             updater.UpdateAtTimeOfDay(() => cupOfTheDayHandler.ResetDailyMap(), "Reset Daily Map Map of the day", 24, 0, 0);
             updater.UpdateAtTimeOfDay(() => DataCollectionService.UpdateData(), "Data Collection Update", 24, 0, 0);
             updater.Start(() => UpdateSilverhazeDiscordRank(), "SilverhazeDiscordRankUpdate", 0, 30, 0);
@@ -182,8 +182,11 @@ namespace DiscordBeatSaberBot
         private async Task DiscordSocketClient_UserJoined(SocketGuildUser guildUser)
         {
             var guild = discordSocketClient.Guilds.FirstOrDefault(x => x.Id == (ulong)505485680344956928);
-            var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Nieuwkomer");
-            await guildUser.AddRoleAsync(addRole);
+            if(guildUser.Guild.Id == guild.Id)
+            {
+                var addRole = guild.Roles.FirstOrDefault(x => x.Name == "Nieuwkomer");
+                await guildUser.AddRoleAsync(addRole);
+            }  
         }
 
         public async Task UserJoinedMessage(IUser user)

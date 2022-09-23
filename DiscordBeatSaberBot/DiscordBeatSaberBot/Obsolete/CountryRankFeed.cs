@@ -179,8 +179,8 @@ namespace DiscordBeatSaberBot
                         if (!oldCache.Contains(newRankList.Item4[counter]))
                         {
                             string imgUrl = newRankList.Item1[counter].Replace("\"", "");
-                            if (imgUrl == "/imports/images/oculus.png")
-                                imgUrl = "https://scoresaber.com/imports/images/oculus.png";
+                            if (imgUrl.Contains("oculus"))
+                                imgUrl = "https://cdn.scoresaber.com/avatars/oculus.png";
                             else
                                 imgUrl = "https://scoresaber.com" + imgUrl;
 

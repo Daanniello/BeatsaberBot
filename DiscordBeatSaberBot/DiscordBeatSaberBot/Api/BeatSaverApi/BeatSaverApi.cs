@@ -1,4 +1,5 @@
 ﻿using DiscordBeatSaberBot.Api.BeatSaverApi.Models;
+using DiscordBeatSaberBot.Api.BeatSaverApi.Models.NewMaps;
 using DiscordBeatSaberBot.Models;
 using Newtonsoft.Json;
 using System;
@@ -85,10 +86,10 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
 
             var mapJsonDataBeatSaver = await Get($"maps/hash/{hashesString}");
 
-            foreach (var hash in hashes)
-            {
-                mapJsonDataBeatSaver = mapJsonDataBeatSaver.Replace(hash.ToLower(),"map");
-            }
+            //foreach (var hash in hashes)
+            //{
+            //    mapJsonDataBeatSaver = mapJsonDataBeatSaver.Replace($"\"{hash.ToLower()}\":","\"map\":");
+            //}
 
             if (mapJsonDataBeatSaver == null) return null;
             var mapInfoBeatSaver = JsonConvert.DeserializeObject<dynamic>(mapJsonDataBeatSaver);

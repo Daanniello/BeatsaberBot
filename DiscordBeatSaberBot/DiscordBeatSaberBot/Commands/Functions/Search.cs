@@ -42,7 +42,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             var embedBuilder = new EmbedBuilder();
             embedBuilder.Title = playerModel.playerInfo.Name;
             embedBuilder.Url = $"https://scoresaber.com/u/{playerModel.playerInfo.PlayerId}";
-            embedBuilder.ThumbnailUrl = $"https://new.scoresaber.com{playerModel.playerInfo.Avatar}";
+            embedBuilder.ThumbnailUrl = playerModel.playerInfo.Avatar.Contains("oculus") ? $"https://cdn.scoresaber.com/avatars/oculus.png" : $"https://new.scoresaber.com{playerModel.playerInfo.Avatar}";
             embedBuilder.Description = (hasSettingsPage ? $"**📰 About {playerModel.playerInfo.Name}**" +
                 $"\n{await new SettingsQuestionList(_discord, command).GetSettingInfo(_scoresaberID, 18)}\n\n" +
                 $"Uses a **{await new SettingsQuestionList(_discord, command).GetSettingInfo(_scoresaberID, 11)}\n\n**" +

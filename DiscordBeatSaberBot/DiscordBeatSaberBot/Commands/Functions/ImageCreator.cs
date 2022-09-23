@@ -172,6 +172,55 @@ namespace DiscordBeatSaberBot
             g.DrawImage(SetImageOpacity(overlayImage, opacity), x, y, width, height);
         }
 
+        public void AddMask(string path, bool isLocalFile = false)
+        {
+            //Get image
+            Image overlayImage = null;
+            if (isLocalFile)
+            {
+                overlayImage = Image.FromFile(path);
+            }
+            else
+            {
+                WebRequest request;
+                try
+                {
+                    request = WebRequest.Create(path);
+                    using (var response = request.GetResponse())
+                    using (var stream = response.GetResponseStream())
+                    {
+                        overlayImage = Bitmap.FromStream(stream);
+                    }
+                }
+                catch
+                {
+                    request = WebRequest.Create("https://www.thermaxglobal.com/wp-content/uploads/2020/05/image-not-found.jpg");
+                    using (var response = request.GetResponse())
+                    using (var stream = response.GetResponseStream())
+                    {
+                        overlayImage = Bitmap.FromStream(stream);
+                    }
+                }
+            }
+
+
+            //Remove pixels in image from mask
+            Bitmap OrgImg = (Bitmap) overlayImage;
+            Bitmap NewImg = _bitmap;
+            for (int yy = 0; yy <= OrgImg.Height - 1; yy++)
+            {
+                for (int xx = 0; xx <= OrgImg.Width - 1; xx++)
+                {
+                    if (OrgImg.GetPixel(xx, yy).A == 255)
+                    {
+                        NewImg.SetPixel(xx, yy, Color.FromArgb(255 - OrgImg.GetPixel(xx, yy).A, 255, 0, 0));
+                    }
+                }
+            }
+
+            _bitmap = NewImg;
+        }
+
         private Image SetImageOpacity(Image image, float opacity)
         {
             try

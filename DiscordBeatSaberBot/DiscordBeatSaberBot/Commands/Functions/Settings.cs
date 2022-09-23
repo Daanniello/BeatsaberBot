@@ -122,7 +122,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             var embed = new EmbedBuilder()
             {
                 Title = $"Beat Saber Settings from {playerFull.playerInfo.Name} :flag_{playerFull.playerInfo.Country.ToLower()}:",
-                ThumbnailUrl = "https://new.scoresaber.com" + playerFull.playerInfo.Avatar,
+                ThumbnailUrl = playerFull.playerInfo.Avatar.Contains("oculus") ? $"https://cdn.scoresaber.com/avatars/oculus.png" : $"https://new.scoresaber.com{playerFull.playerInfo.Avatar}",
                 Url = "https://scoresaber.com/u/" + playerFull.playerInfo.PlayerId,
                 Footer = new EmbedFooterBuilder() { Text = "use (!bs settings create) to create your own settings page" }
             };
@@ -176,7 +176,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             var embed = new EmbedBuilder()
             {
                 Title = $"Beat Saber Settings from {playerFull.playerInfo.Name} :flag_{playerFull.playerInfo.Country.ToLower()}:",
-                ThumbnailUrl = "https://new.scoresaber.com" + playerFull.playerInfo.Avatar,
+                ThumbnailUrl = playerFull.playerInfo.Avatar.Contains("oculus") ? $"https://cdn.scoresaber.com/avatars/oculus.png" : $"https://new.scoresaber.com{playerFull.playerInfo.Avatar}",
                 Url = "https://scoresaber.com/u/" + playerFull.playerInfo.PlayerId,
                 Footer = new EmbedFooterBuilder() { Text = "use (!bs settings create) to create your own settings page" }
             };

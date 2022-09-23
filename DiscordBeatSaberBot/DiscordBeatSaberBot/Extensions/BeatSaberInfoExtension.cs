@@ -814,15 +814,15 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddText(playerOne.Name.ToUpper(), System.Drawing.Color.White, 15, 13, 10);
             rankingCardCreator.AddText(playerOne.Country.ToUpper(), System.Drawing.Color.White, 12, 100, 45);
 
-            rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{playerOne.Country.ToLower()}.png", 130, 50, 20, 15);
-            rankingCardCreator.AddImageRounded($"https://new.scoresaber.com{playerOne.Avatar}", 15, 43, 70, 70);
+            rankingCardCreator.AddImage($"https://flagpedia.net/data/flags/w580/{playerOne.Country.ToLower()}.png", 130, 50, 20, 15);
+            rankingCardCreator.AddImageRounded(playerOne.Avatar.Contains("oculus") ? $"https://cdn.scoresaber.com/avatars/oculus.png" : $"https://new.scoresaber.com{playerOne.Avatar}", 15, 43, 70, 70);
 
             //Add player Two main info
             rankingCardCreator.AddTextFloatRight(playerTwo.Name.ToUpper(), System.Drawing.Color.White, 15, 13, 10);
             rankingCardCreator.AddTextFloatRight(playerTwo.Country.ToUpper(), System.Drawing.Color.White, 12, 100, 45);
 
-            rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{playerTwo.Country.ToLower()}.png", 350, 50, 20, 15);
-            rankingCardCreator.AddImageRounded($"https://new.scoresaber.com{playerTwo.Avatar}", 415, 43, 70, 70);
+            rankingCardCreator.AddImage($"https://flagpedia.net/data/flags/w580/{playerTwo.Country.ToLower()}.png", 350, 50, 20, 15);
+            rankingCardCreator.AddImageRounded(playerTwo.Avatar.Contains("oculus") ? $"https://cdn.scoresaber.com/avatars/oculus.png" : $"https://new.scoresaber.com{playerTwo.Avatar}", 415, 43, 70, 70);
 
 
             rankingCardCreator.AddImage($"../../../Resources/img/Street_Fighter_VS_logo.png", 225, 28, 70, 70, isLocalFile: true);
@@ -850,7 +850,7 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddText($"{player.Pp}PP", System.Drawing.Color.White, 15, 120, 88);
             rankingCardCreator.AddTextFloatRight(topic, System.Drawing.Color.White, 15, 10, 88);
 
-            rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{player.Country.ToLower()}.png", 150, 50, 20, 15);
+            rankingCardCreator.AddImage($"https://flagpedia.net/data/flags/w580/{player.Country.ToLower()}.png", 150, 50, 20, 15);
             rankingCardCreator.AddImage($"https://new.scoresaber.com{player.Avatar}", 15, 13, 100, 100);
 
             //Finish Card
@@ -989,8 +989,8 @@ namespace DiscordBeatSaberBot.Extensions
             rankingCardCreator.AddText($"#{player.CountryRank}", System.Drawing.Color.FromArgb(176, 176, 176), 60, 1080 + rankWidth, 1250);
             rankingCardCreator.AddText($"{player.Pp}PP", System.Drawing.Color.White, 100, 1100, 1350);
 
-            rankingCardCreator.AddImage($"https://scoresaber.com/imports/images/flags/{player.Country.ToLower()}.png", 1120, 1000, 120, 100);
-            rankingCardCreator.AddNoteSlashEffect($"https://new.scoresaber.com{player.Avatar}", 200, 800, 800, 800);
+            rankingCardCreator.AddImage($"https://flagpedia.net/data/flags/w580/{player.Country.ToLower()}.png", 1120, 1000, 120, 100);
+            rankingCardCreator.AddNoteSlashEffect(player.Avatar.Contains("oculus") ? $"https://cdn.scoresaber.com/avatars/oculus.png" : $"https://new.scoresaber.com{player.Avatar}", 200, 800, 800, 800);
 
             var rowCount = Math.Round((double)player.Badges.Count() / 7, 0);
             for (var i = 0; i < player.Badges.Count(); i++)

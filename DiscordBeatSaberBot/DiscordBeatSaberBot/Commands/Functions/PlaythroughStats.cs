@@ -388,7 +388,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                 Footer = new EmbedFooterBuilder() { Text = $"Time Set: {recentSong.Score.TimeSet.Value.DateTime.ToShortDateString() + " | " + recentSong.Score.TimeSet.Value.DateTime.ToShortTimeString()} UTC" }
             };
 
-            embedBuilder.Author = new EmbedAuthorBuilder() { IconUrl = $"https://new.scoresaber.com{playerInfo.Avatar}", Name = $"{ playerInfo.Name}", Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}" };
+            embedBuilder.Author = new EmbedAuthorBuilder() { IconUrl = playerInfo.Avatar.Contains("oculus") ? $"https://cdn.scoresaber.com/avatars/oculus.png" : $"https://new.scoresaber.com{playerInfo.Avatar}", Name = $"{ playerInfo.Name}", Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}" };
             try
             {
                 var spotify = await new Spotify().SearchItem(recentSong.Leaderboard.SongName, recentSong.Leaderboard.SongAuthorName);

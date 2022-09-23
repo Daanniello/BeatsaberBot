@@ -76,7 +76,7 @@ namespace DiscordBeatSaberBot.Handlers
                     HandleTaskException(GenericCommands.Invite(_discord, command), command);
                     break;
                 case "draw":
-                    HandleTaskException(GlobalScoresaberCommands.Draw(command), command);
+                    HandleTaskException(GlobalScoresaberCommands.Draw(_discord, command), command);
                     break;
                 case "removebg":
                     HandleTaskException(GenericCommands.RemoveBG(_discord, command), command);
@@ -303,12 +303,14 @@ namespace DiscordBeatSaberBot.Handlers
                     .Build());
                 //draw
                 var drawChoices = new List<ApplicationCommandOptionChoiceProperties>();
-                drawChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Pokemon", Value = "Pokemon" });
-                drawChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Fifa", Value = "Fifa" });
+                drawChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Toggle New Pack Notifications", Value = "PackNotifictionsToggle" });
+
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
                     .WithName("draw")
-                    .WithDescription("Draws a random themed beat saber collectors card")
-                    .AddOption("type", ApplicationCommandOptionType.String, "type of collector cards", false, choices: drawChoices.ToArray())
+                    .WithDescription("Draws a random beat saber collectors card of the top 1000 players")
+                    .AddOption(new SlashCommandOptionBuilder().WithName("inventory").WithDescription("Shows your own card inventory").WithRequired(false).AddChoice("inventory", 1).WithType(ApplicationCommandOptionType.Integer))
+                    .AddOption("trade", ApplicationCommandOptionType.Mentionable, "start a trading process to offer the mentioned user a trade", false)
+                    .AddOption("settings", ApplicationCommandOptionType.String, "create a better experience", false, choices: drawChoices.ToArray())                             
                     .Build());
                 //removebg
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()

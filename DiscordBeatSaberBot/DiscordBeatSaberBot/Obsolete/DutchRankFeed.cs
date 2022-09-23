@@ -123,7 +123,7 @@ namespace DiscordBeatSaberBot
                     if (songInfo.Rank == 3) color = Color.DarkRed;
 
 
-                    var img = "https://scoresaber.com/imports/images/oculus.png";
+                    var img = "https://cdn.scoresaber.com/avatars/oculus.png";
                     if (playerInfo.Image != null)
                     {
                         if (!playerInfo.Image.OriginalString.Contains("oculus")) img = playerInfo.Image.OriginalString.Replace(".jpg", "_full.jpg");
