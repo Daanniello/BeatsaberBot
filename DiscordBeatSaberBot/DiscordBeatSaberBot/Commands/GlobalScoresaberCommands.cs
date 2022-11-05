@@ -64,49 +64,129 @@ namespace DiscordBeatSaberBot.Commands
 
         }
 
-        [Help("Draw", "Draws a random collectors card", "/draw", HelpAttribute.Catergories.General)]
-        public static async Task Draw(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
+        [Help("Trading cards", "Open up card packs and gain beat saber trading cards", "/tradingcards", HelpAttribute.Catergories.General)]
+        public static async Task TradingCards(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
-            //if (command.User.Id == 138439306774577152)
+            //Draw TEST ZONE
+            //if (command.Data.Options.FirstOrDefault(x => x.Name == "draw") != null && command.User.Id == 138439306774577152)
             //{
-            //    BeatSaberCardCollection.start(command);
+            //    BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
             //    return;
             //}
             //else
             //{
-            //    command.Channel.SendMessageAsync("sorry, this command is under maintenance. A card history is being added. Try again soon.");
+            //    command.Channel.SendMessageAsync("This command is under maintenance for a little while, try again soon.");
             //    return;
             //}
 
+            if (command.Data.Options.FirstOrDefault(x => x.Name == "draw") != null)
+            {
+                if (command.Data.Options.FirstOrDefault().Options.FirstOrDefault().Name == "all")
+                {
+                    if (BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command) == false) BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
+                    await Task.Delay(1000);
+                    for (var x = BeatSaberCardCollection.CheckPlayerPackAmount(command.User.Id.ToString()); x > 0; x--)
+                    {
+                        if (!BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command)) BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
+                        await Task.Delay(1000);
+                    }
+
+
+                    //    for (var x = BeatSaberCardCollection.CheckPlayerPackAmount(command.User.Id.ToString()); x >= 0; x--)
+                    //{
+                    //    if (!BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command))
+                    //    {
+                    //        var succes = await BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
+                    //        if (succes == false) break;
+                    //        var playerPackAmount = BeatSaberCardCollection.CheckPlayerPackAmount(command.User.Id.ToString());
+                    //        x = playerPackAmount;
+                    //    }
+
+                    //    await Task.Delay(1000);
+                    //}
+                }
+                if (command.Data.Options.FirstOrDefault().Options.FirstOrDefault().Name == "one")
+                {
+                    if (!BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command)) BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
+                }
+
+
+                return;
+            }
+
+            //Inventory
             if (command.Data.Options.FirstOrDefault(x => x.Name == "inventory") != null)
             {
                 new BeatSaberCardCollection(discordSocketClient).ShowInventory(command);
+                return;
             }
-            else if (command.Data.Options.FirstOrDefault(x => x.Name == "trade") != null)
+
+            //Trade
+            if (command.Data.Options.FirstOrDefault(x => x.Name == "trade") != null)
             {
-
-                new BeatSaberCardCollection(discordSocketClient).StartTradeProcess(command, (SocketUser)command.Data.Options.FirstOrDefault(x => x.Name == "trade").Value);
-
+                new BeatSaberCardCollection(discordSocketClient).StartTradeProcess(command, (SocketUser)command.Data.Options.FirstOrDefault(x => x.Name == "trade").Options.FirstOrDefault(x => x.Name == "mention").Value, command.User);
+                return;
             }
-            else if(command.Data.Options.FirstOrDefault(x => x.Name == "settings") != null)
+
+            //Stake
+            if (command.Data.Options.FirstOrDefault(x => x.Name == "stake") != null)
             {
-                if(command.Data.Options.FirstOrDefault(x => x.Name == "settings").Value.ToString() == "PackNotifictionsToggle")
+                new BeatSaberCardCollection(discordSocketClient).StartStakeProcess(command, (SocketUser)command.Data.Options.FirstOrDefault(x => x.Name == "stake").Options.FirstOrDefault(x => x.Name == "mention").Value, command.User);
+                return;
+            }
+
+            //Settings
+            if (command.Data.Options.FirstOrDefault(x => x.Name == "settings") != null)
+            {
+                if (command.Data.Options.FirstOrDefault(x => x.Name == "settings").Options.FirstOrDefault().Value.ToString() == "PackNotifictionsToggle")
                 {
                     BeatSaberCardCollection.ToggleCardDrawDMNotification(command);
                 }
+                return;
             }
-            else
-            {
-                if (BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command))
-                {
 
-                }
-                else
+            //Sign Card
+            if (command.CommandName == "signcard")
+            {
+                if (command.User.Id == 138439306774577152)
                 {
-                    BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
+                    new BeatSaberCardCollection(discordSocketClient).SignCard(command,
+                        command.Data.Options.FirstOrDefault(x => x.Name == "cardfile").Value,
+                        (string)command.Data.Options.FirstOrDefault(x => x.Name == "discordid").Value,
+                        (string)command.Data.Options.FirstOrDefault(x => x.Name == "scoresaberid").Value,
+                        (string)command.Data.Options.FirstOrDefault(x => x.Name == "score").Value,
+                        (string)command.Data.Options.FirstOrDefault(x => x.Name == "rank").Value
+                        );
                 }
+                return;
+            }
+
+            //Sign Card
+            if (command.CommandName == "givepacks")
+            {
+                if (command.User.Id == 138439306774577152)
+                {
+                    try
+                    {
+
+                    var discordid = Convert.ToInt64(command.Data.Options.FirstOrDefault(x => x.Name == "discordid").Value.ToString());
+                    var packs = Convert.ToInt32(command.Data.Options.FirstOrDefault(x => x.Name == "amount").Value.ToString());
+                    string message = null;
+                    if (command.Data.Options.FirstOrDefault(x => x.Name == "message") != null) message = (string) command.Data.Options.FirstOrDefault(x => x.Name == "message").Value + $"\nYou gained **{packs}** extra card packs";
+
+
+                    var result = await new BeatSaberCardCollection(discordSocketClient).GivePacks(discordid, packs, message);
+                    await command.Channel.SendMessageAsync($"message send: {result}");
+                    }
+                    catch (Exception ex)
+                    {
+                        var f = ex;
+                    }
+                }
+                return;
             }
         }
+
 
         [Help("PatternCatalog", "Show the list of all pattern names and shows you a preview of how they look and more details about how to use them for mapping.", "/patterncatalog", HelpAttribute.Catergories.General)]
         public static async Task PatternCatalog(DiscordSocketClient discordSocketClient, SocketSlashCommand command)

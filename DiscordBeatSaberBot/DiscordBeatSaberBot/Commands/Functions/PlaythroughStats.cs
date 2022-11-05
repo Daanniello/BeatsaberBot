@@ -52,7 +52,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
             var embedBuilder = await CreateCardAndGetPlaythroughStatsEmbed(playerId, recentsongNr, isTopSong);
             if (embedBuilder == null)
             {
-                await command.Channel.SendMessageAsync($"This user could not be found id: {playerId}");
+                await command.Channel.SendMessageAsync($"This user could not be found id: {playerId} or the data from scoresaber couldn't be received at this moment.");
                 return;
             }
             await PostEmbed(command, playerId, embedBuilder);
@@ -74,6 +74,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
 
             //Download scoresaber full player data
             var playerFullData = await scoresaberApi.GetPlayerFull();
+            if (playerFullData == null) return null;
             var playerInfo = playerFullData.playerInfo;
             _countryCode = playerInfo.Country;
 

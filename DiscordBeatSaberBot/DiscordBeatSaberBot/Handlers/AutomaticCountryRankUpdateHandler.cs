@@ -315,6 +315,7 @@ namespace DiscordBeatSaberBot.Handlers
                         if (overtakingsDescription.Length > 4000 || overtakingsDescription == "...Overtaking: \n") continue;
 
                         embedBuilder = await new PlaythroughStats(_discord).CreateCardAndGetPlaythroughStatsEmbed(player.Id);
+                        if (embedBuilder == null) return;
                         embedBuilder.Description = $"{overtakingsDescription}\nBy Playing: \n{embedBuilder.Title}.\n\n **{player.Name}** gained **{Math.Round(player.Pp - playersOldOrderedByCountryRank.First(x => x.Id == player.Id).Pp, 2)}PP** with this play";
 
 

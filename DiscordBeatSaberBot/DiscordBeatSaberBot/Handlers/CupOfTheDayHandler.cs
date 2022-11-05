@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
+using static DiscordBeatSaberBot.BeatSaberCardCollection;
 
 namespace DiscordBeatSaberBot.Handlers
 {
@@ -73,6 +74,48 @@ namespace DiscordBeatSaberBot.Handlers
                     }
                 }
             }
+
+            var currentStakeMatches = JsonConvert.DeserializeObject<List<StakeMatch>>(System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/StakeMatches.json"));
+
+            if (currentStakeMatches != null)
+            {
+                var playerOneList = currentStakeMatches.Where(x => x.PlayerOneScoresaberID == e.CommandData.Score.LeaderboardPlayerInfo.Id.ToString());
+                var playerTwoList = currentStakeMatches.Where(x => x.PlayerTwoScoresaberID == e.CommandData.Score.LeaderboardPlayerInfo.Id.ToString());
+                if (playerOneList.Count() > 0 || playerTwoList.Count() > 0)
+                {
+                    var diff = e.CommandData.Leaderboard.Difficulty.DifficultyRaw.Replace("_", " ").Trim().Split(' ')[0].ToLower();
+                    var maphash = e.CommandData.Leaderboard.SongHash.ToLower();
+                    var playerOne = playerOneList.FirstOrDefault(x => x.mapDiff.ToLower() == diff && x.mapHash.ToLower() == maphash && x.EndDate > DateTime.UtcNow);
+                    var playerTwo = playerTwoList.FirstOrDefault(x => x.mapDiff.ToLower() == diff && x.mapHash.ToLower() == maphash && x.EndDate > DateTime.UtcNow);
+                        
+                    if (playerOne != null)
+                    {                        
+                        double percentage = Convert.ToDouble(e.CommandData.Score.BaseScore) / playerOne.mapMaxScore * 100;
+                        if (percentage > playerOne.PlayerOneCurrentScore)
+                        {
+                            //overwrite score
+                            playerOne.PlayerOneCurrentScore = percentage;
+                            var newJson = JsonConvert.SerializeObject(currentStakeMatches);
+                            File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/StakeMatches.json", newJson);
+                        }
+
+                    }
+
+                    if (playerTwo != null)
+                    {
+
+                        double percentage = Convert.ToDouble(e.CommandData.Score.BaseScore) / playerTwo.mapMaxScore * 100;
+                        if (percentage > playerTwo.PlayerTwoCurrentScore)
+                        {
+                            //overwrite score
+                            playerTwo.PlayerTwoCurrentScore = percentage;
+                            var newJson = JsonConvert.SerializeObject(currentStakeMatches);
+                            File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/StakeMatches.json", newJson);
+                        }
+
+                    }
+                }
+            }
         }
 
         public async Task ResetDailyMap()
@@ -113,7 +156,11 @@ namespace DiscordBeatSaberBot.Handlers
             if (playersDaily != null && playersDaily.Count > 0)
             {
                 //Give top player a win
-                if (playersGlobal != null && playersGlobal.Count > 0) playersGlobal.FirstOrDefault(x => x.ScoreSaberID == playersDaily.OrderByDescending(x => x.TodaysScore).First().ScoreSaberID).TotalWinsGlobal += 1;
+                if (playersGlobal != null && playersGlobal.Count > 0)
+                {
+                    var globalWinner = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == playersDaily.OrderByDescending(x => x.TodaysScore).First().ScoreSaberID);
+                    globalWinner.TotalWinsGlobal += 1;
+                }
 
                 //Give Everyone their MMR
                 foreach (var player in playersDaily)
@@ -131,7 +178,7 @@ namespace DiscordBeatSaberBot.Handlers
                     mmrWin += mmrDiff;
                     playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).MMRGlobal += (int)Math.Round(mmrWin);
 
-                    if(player.Servers != null)
+                    if (player.Servers != null)
                     {
                         foreach (var server in player.Servers)
                         {
@@ -158,7 +205,7 @@ namespace DiscordBeatSaberBot.Handlers
                                 var f = 2;
                             }
                         }
-                    }                   
+                    }
                 }
                 var newJson = JsonConvert.SerializeObject(playersGlobal);
                 File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/AllCupOfTheDayPlayers.json", newJson);

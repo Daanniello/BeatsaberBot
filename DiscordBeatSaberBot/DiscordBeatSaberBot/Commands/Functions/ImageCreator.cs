@@ -469,6 +469,31 @@ namespace DiscordBeatSaberBot
             }
         }
 
+        public void ResizeImage(int width, int height)
+        {
+            var destRect = new Rectangle(0, 0, width, height);
+            var destImage = new Bitmap(width, height);
+
+            destImage.SetResolution(_bitmap.HorizontalResolution, _bitmap.VerticalResolution);
+
+            using (var graphics = Graphics.FromImage(destImage))
+            {
+                graphics.CompositingMode = CompositingMode.SourceCopy;
+                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                using (var wrapMode = new ImageAttributes())
+                {
+                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                    graphics.DrawImage(_bitmap, destRect, 0, 0, _bitmap.Width, _bitmap.Height, GraphicsUnit.Pixel, wrapMode);
+                }
+            }
+
+            _bitmap = destImage;
+        }
+
         public static Bitmap ResizeImage(Image image, int width, int height)
         {
             var destRect = new Rectangle(0, 0, width, height);
@@ -492,6 +517,8 @@ namespace DiscordBeatSaberBot
             }
 
             return destImage;
-        }       
+        }    
+        
+
     }
 }

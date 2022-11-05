@@ -75,8 +75,14 @@ namespace DiscordBeatSaberBot.Handlers
                 case "invite":
                     HandleTaskException(GenericCommands.Invite(_discord, command), command);
                     break;
-                case "draw":
-                    HandleTaskException(GlobalScoresaberCommands.Draw(_discord, command), command);
+                case "tradingcards":
+                    HandleTaskException(GlobalScoresaberCommands.TradingCards(_discord, command), command);
+                    break;
+                case "signcard":
+                    HandleTaskException(GlobalScoresaberCommands.TradingCards(_discord, command), command);
+                    break;
+                case "givepacks":
+                    HandleTaskException(GlobalScoresaberCommands.TradingCards(_discord, command), command);
                     break;
                 case "removebg":
                     HandleTaskException(GenericCommands.RemoveBG(_discord, command), command);
@@ -146,16 +152,35 @@ namespace DiscordBeatSaberBot.Handlers
             var guild = _discord.GetGuild(731936395223892028);
             var dutchGuild = _discord.GetGuild(505485680344956928);
             var irelandGuild = _discord.GetGuild(676524581271371814);
+            var beatsaberbotGuild = _discord.GetGuild(731936395223892028);
             try
             {
                 //Delete Global Command if needed
                 //var commands = await _discord.GetGlobalApplicationCommandsAsync();
-                //await commands.First(x => x.Name == "tourneymanager").DeleteAsync();
+                //await commands.First(x => x.Name == "draw").DeleteAsync();
 
                 //eventmanager
                 await dutchGuild.CreateApplicationCommandAsync(new SlashCommandBuilder()
                     .WithName("eventmanager")
                     .WithDescription("Starts a process to create an event for the Dutch Discord")
+                    .Build());
+                //SignCard
+                await beatsaberbotGuild.CreateApplicationCommandAsync(new SlashCommandBuilder()
+                    .WithName("signcard")
+                    .WithDescription("signs a beat saber trading card (admin only)")
+                    .AddOption("cardfile", ApplicationCommandOptionType.Attachment, "Discord ID", true)
+                    .AddOption("discordid", ApplicationCommandOptionType.String, "Discord ID", true)
+                    .AddOption("scoresaberid", ApplicationCommandOptionType.String, "Scoresaber ID", true)
+                    .AddOption("score", ApplicationCommandOptionType.String, "Score", true)
+                    .AddOption("rank", ApplicationCommandOptionType.String, "Rank", true)
+                    .Build());
+                //SignCard
+                await beatsaberbotGuild.CreateApplicationCommandAsync(new SlashCommandBuilder()
+                    .WithName("givepacks")
+                    .WithDescription("gives packs towards players. Mostly tourney purposes (admin only)")
+                    .AddOption("discordid", ApplicationCommandOptionType.String, "Discord ID", true)
+                    .AddOption("amount", ApplicationCommandOptionType.Integer, "Amount of packs", true)
+                    .AddOption("message", ApplicationCommandOptionType.String, "Message to dm", false)
                     .Build());
                 //updateroles
                 var countryDiscords = new List<ApplicationCommandOptionChoiceProperties>();
@@ -302,16 +327,44 @@ namespace DiscordBeatSaberBot.Handlers
                     .WithDescription("Gives an Invite link to use to share this bot")
                     .Build());
                 //draw
-                var drawChoices = new List<ApplicationCommandOptionChoiceProperties>();
-                drawChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Toggle New Pack Notifications", Value = "PackNotifictionsToggle" });
+                //var drawChoices = new List<ApplicationCommandOptionChoiceProperties>();
+                //drawChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Toggle New Pack Notifications", Value = "PackNotifictionsToggle" });
 
-                await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
-                    .WithName("draw")
-                    .WithDescription("Draws a random beat saber collectors card of the top 1000 players")
-                    .AddOption(new SlashCommandOptionBuilder().WithName("inventory").WithDescription("Shows your own card inventory").WithRequired(false).AddChoice("inventory", 1).WithType(ApplicationCommandOptionType.Integer))
-                    .AddOption("trade", ApplicationCommandOptionType.Mentionable, "start a trading process to offer the mentioned user a trade", false)
-                    .AddOption("settings", ApplicationCommandOptionType.String, "create a better experience", false, choices: drawChoices.ToArray())                             
-                    .Build());
+                //await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
+                //    .WithName("draw")
+                //    .WithDescription("Draws a random beat saber collectors card of the top 1000 players")
+                //    .AddOption(new SlashCommandOptionBuilder().WithName("inventory").WithDescription("Shows your own card inventory").WithRequired(false).AddChoice("inventory", 1).WithType(ApplicationCommandOptionType.Integer))
+                //    .AddOption("trade", ApplicationCommandOptionType.Mentionable, "start a trading process to offer the mentioned user a trade", false)
+                //    .AddOption("settings", ApplicationCommandOptionType.String, "create a better experience", false, choices: drawChoices.ToArray())                             
+                //    .Build());
+
+                //draw v2
+                var tradingCardsSettingsChoices = new List<ApplicationCommandOptionChoiceProperties>();
+                tradingCardsSettingsChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Toggle new pack notifications in DM", Value = "PackNotifictionsToggle" });
+
+                var tradingCardsSlashBuilder = new SlashCommandBuilder().WithName("tradingcards").WithDescription("Beat Saber collectors card game based on the top 1000 Scoresaber players");
+
+                var tradinCardsOptionBuilderDraw = new SlashCommandOptionBuilder().WithName("draw").WithDescription("Open up card packs").WithType(ApplicationCommandOptionType.SubCommandGroup);
+                tradinCardsOptionBuilderDraw.AddOption("one", ApplicationCommandOptionType.SubCommand, "Open up one card pack", false);
+                tradinCardsOptionBuilderDraw.AddOption("all", ApplicationCommandOptionType.SubCommand, "Open up all card packs at once with a small delay", false);
+                tradingCardsSlashBuilder.AddOption(tradinCardsOptionBuilderDraw);
+
+                tradingCardsSlashBuilder.AddOption("inventory", ApplicationCommandOptionType.SubCommand, "Open up your card inventory", false);
+
+                var tradinCardsOptionBuilderTrade = new SlashCommandOptionBuilder().WithName("trade").WithDescription("start a trading process to offer the mentioned user a trade").WithType(ApplicationCommandOptionType.SubCommand);
+                tradinCardsOptionBuilderTrade.AddOption("mention", ApplicationCommandOptionType.Mentionable, "start a trading process to offer the mentioned user a trade", false);
+                tradingCardsSlashBuilder.AddOption(tradinCardsOptionBuilderTrade);
+
+                var tradinCardsOptionBuilderStake = new SlashCommandOptionBuilder().WithName("stake").WithDescription("start a staking process to offer the mentioned user a stake").WithType(ApplicationCommandOptionType.SubCommand);
+                tradinCardsOptionBuilderStake.AddOption("mention", ApplicationCommandOptionType.Mentionable, "start a staking process to offer the mentioned user a stake", false);
+                tradingCardsSlashBuilder.AddOption(tradinCardsOptionBuilderStake);
+
+                var tradinCardsOptionBuilderSettings = new SlashCommandOptionBuilder().WithName("settings").WithDescription("Configure trading card settings").WithType(ApplicationCommandOptionType.SubCommand);
+                tradinCardsOptionBuilderSettings.AddOption("options", ApplicationCommandOptionType.String, "create a better experience", false, choices: tradingCardsSettingsChoices.ToArray());
+                tradingCardsSlashBuilder.AddOption(tradinCardsOptionBuilderSettings);
+
+                await _discord.CreateGlobalApplicationCommandAsync(tradingCardsSlashBuilder.Build());
+
                 //removebg
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
                     .WithName("removebg")

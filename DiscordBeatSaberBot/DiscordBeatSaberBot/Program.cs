@@ -79,6 +79,9 @@ namespace DiscordBeatSaberBot
                 _countryUpdateHandler = new AutomaticCountryRankUpdateHandler(discordSocketClient);
                 _countryUpdateHandler.SubscribeToScoreLiveFeed();
 
+                //activate update handlers 
+                var beatSaberCardCollection = new BeatSaberCardCollection(discordSocketClient).CheckFinishedMatches();
+
                 await Task.Delay(-1);
             }
             catch (Exception ex)
@@ -137,10 +140,12 @@ namespace DiscordBeatSaberBot
 
         private void StartAllUpdateTimers()
         {
+
             var updater = new UpdateTimer(discordSocketClient);
-            var cupOfTheDayHandler = new CupOfTheDayHandler();
+            var cupOfTheDayHandler = new CupOfTheDayHandler();            
             new BeatSaberCardCollection(discordSocketClient).NotifyUsersOnNewCardPacks();
             updater.UpdateAtTimeOfDay(() => cupOfTheDayHandler.ResetDailyMap(), "Reset Daily Map Map of the day", 24, 0, 0);
+            updater.UpdateAtTimeOfDay(() => BeatSaberCardCollection.GiveAllUsersDailyTrades(), "Give all users Daily trade", 24, 0, 0);
             updater.UpdateAtTimeOfDay(() => DataCollectionService.UpdateData(), "Data Collection Update", 24, 0, 0);
             updater.Start(() => UpdateSilverhazeDiscordRank(), "SilverhazeDiscordRankUpdate", 0, 30, 0);
             updater.Start(() => new RankTrackerHandler(discordSocketClient).CheckForAllRankChanges(), "RankTrackerUpdate", 0, 15, 0); ;
