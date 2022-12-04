@@ -18,6 +18,7 @@ using DiscordBeatSaberBot.Handlers.RankTrackerHandler;
 using GiphyDotNet.Model.Parameters;
 using Newtonsoft.Json;
 using ScoreSaberLib;
+using static DiscordBeatSaberBot.Handlers.CupOfTheDayHandler;
 
 namespace DiscordBeatSaberBot.Commands
 {
@@ -67,7 +68,7 @@ namespace DiscordBeatSaberBot.Commands
         [Help("Trading cards", "Open up card packs and gain beat saber trading cards", "/tradingcards", HelpAttribute.Catergories.General)]
         public static async Task TradingCards(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
-            //Draw TEST ZONE
+            ////Draw TEST ZONE
             //if (command.Data.Options.FirstOrDefault(x => x.Name == "draw") != null && command.User.Id == 138439306774577152)
             //{
             //    BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
@@ -78,6 +79,7 @@ namespace DiscordBeatSaberBot.Commands
             //    command.Channel.SendMessageAsync("This command is under maintenance for a little while, try again soon.");
             //    return;
             //}
+            //return;
 
             if (command.Data.Options.FirstOrDefault(x => x.Name == "draw") != null)
             {
@@ -169,14 +171,14 @@ namespace DiscordBeatSaberBot.Commands
                     try
                     {
 
-                    var discordid = Convert.ToInt64(command.Data.Options.FirstOrDefault(x => x.Name == "discordid").Value.ToString());
-                    var packs = Convert.ToInt32(command.Data.Options.FirstOrDefault(x => x.Name == "amount").Value.ToString());
-                    string message = null;
-                    if (command.Data.Options.FirstOrDefault(x => x.Name == "message") != null) message = (string) command.Data.Options.FirstOrDefault(x => x.Name == "message").Value + $"\nYou gained **{packs}** extra card packs";
+                        var discordid = Convert.ToInt64(command.Data.Options.FirstOrDefault(x => x.Name == "discordid").Value.ToString());
+                        var packs = Convert.ToInt32(command.Data.Options.FirstOrDefault(x => x.Name == "amount").Value.ToString());
+                        string message = null;
+                        if (command.Data.Options.FirstOrDefault(x => x.Name == "message") != null) message = (string)command.Data.Options.FirstOrDefault(x => x.Name == "message").Value;
 
 
-                    var result = await new BeatSaberCardCollection(discordSocketClient).GivePacks(discordid, packs, message);
-                    await command.Channel.SendMessageAsync($"message send: {result}");
+                        var result = await new BeatSaberCardCollection(discordSocketClient).GivePacks(discordid, packs, message);
+                        await command.Channel.SendMessageAsync($"message send: {result}");
                     }
                     catch (Exception ex)
                     {
@@ -203,67 +205,142 @@ namespace DiscordBeatSaberBot.Commands
         [Help("CupOfTheDay", "join the cup of the day", "join", HelpAttribute.Catergories.General)]
         public static async Task CupOfTheDay(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
-            if (command.Data.Options.FirstOrDefault(x => x.Value.ToString() == "MakePublicPrivate") != null)
+            if (command.Data.Options.FirstOrDefault(x => x.Name.ToString() == "join") != null)
             {
-                if (discordSocketClient.GetGuild((ulong)command.GuildId).OwnerId == command.User.Id || command.User.Id == 138439306774577152)
+                var option = command.Data.Options.FirstOrDefault(x => x.Name.ToString() == "join").Options.First().Name;
+                if (option == "global")
                 {
-                    //Make server private / public 
-                    var json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDPublicServers.json");
-                    var publicServers = JsonConvert.DeserializeObject<Dictionary<ulong, string>>(json);
-                    if (publicServers == null || publicServers.Count == 0)
+                    var r = new RoleAssignment(discordSocketClient);
+                    if (await r.CheckIfDiscordIdIsLinked(command.User.Id.ToString()))
                     {
-                        publicServers = new Dictionary<ulong, string>();
                         var guild = discordSocketClient.GetGuild((ulong)command.GuildId);
-                        publicServers.Add((ulong)command.GuildId, guild.Name);
-                        var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Done", "This server has been added to the list and is now public on http://beatsaberbot.com/CupOfTheDay").Build());
+                        var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
+                        var scoresaberplayer = await new ScoreSaberClient().Api.Players.GetPlayer(Convert.ToInt64(scoresaberID));
+                        var player = new CupOfTheDayHandler.Player() { ScoreSaberID = scoresaberplayer.Id, Name = scoresaberplayer.Name };
+                        CupOfTheDayHandler.ServerPlayerJoin(player, command.User.Id.ToString(), "0");
+
+                        var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+                        var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+                        var globalServer = cotdServers.FirstOrDefault(x => x.ServerID == "0");
+                        var map = await BeatSaverApi.GetMapByHash(globalServer.TodaysMap.SongHash);
+                        var existingPlayer = globalServer.AllTimePlayers.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == command.User.Id.ToString());
+                        double mmr = 600;
+                        var wins = 0;
+                        if (existingPlayer != null)
+                        {
+                            mmr = existingPlayer.MMR;
+                            wins = existingPlayer.TotalWins;
+                        }
+
+                        var beatsavermap = await BeatSaverApi.GetMapByHash(globalServer.TodaysMap.SongHash);
+                        var embed = EmbedBuilderExtension.NullEmbed("You joined the Global Cup of the day", $"**{globalServer.TodaysMap.SongName} by {globalServer.TodaysMap.SongAuthorName}**\nmapped by {globalServer.TodaysMap.LevelAuthorName}\n\n**What to do?**\n- Download the map [here](https://beatsaberbot.com/CupOfTheDay) with one-click\n Or search the map in-game with [bsr](https://beatsaver.com/maps/{beatsavermap.Id}) code: {beatsavermap.Id}\n- Make sure to set a score. You have **{(DateTime.Now.AddDays(1).Date - DateTime.Now).Hours}H** left. \n- Set a score on the **{globalServer.TodaysMap.Difficulty.DifficultyRaw.Replace("_", " ")}** difficulty\n\n**Current Stats**\nUsername: ***{player.Name}***\nGlobal MMR: ***{mmr}***\nGlobal Wins: ***{wins}***");
+                        embed.ThumbnailUrl = $"https://eu.cdn.beatsaver.com/{globalServer.TodaysMap.SongHash.ToLower()}.jpg";
+                        embed.Author = new EmbedAuthorBuilder() { Name = globalServer.ServerName, IconUrl = "https://beatsaberbot.com/img/Logo.png" };
+                        var msg = await command.Channel.SendMessageAsync("", false, embed.Build());
                     }
                     else
                     {
-                        if (publicServers.Keys.Contains((ulong)command.GuildId))
+                        var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Not Linked", "To join the cupoftheday, you need to be linked with your scoresaber account. please use the command /link").Build());
+                    }
+                }
+
+                if (option == "local")
+                {
+                    var r = new RoleAssignment(discordSocketClient);
+                    if (await r.CheckIfDiscordIdIsLinked(command.User.Id.ToString()))
+                    {
+                        var guild = discordSocketClient.GetGuild((ulong)command.GuildId);
+                        var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
+                        var scoresaberplayer = await new ScoreSaberClient().Api.Players.GetPlayer(Convert.ToInt64(scoresaberID));
+                        var player = new CupOfTheDayHandler.Player() { ScoreSaberID = scoresaberplayer.Id, Name = scoresaberplayer.Name };
+                        var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+                        var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+                        var server = cotdServers.FirstOrDefault(x => x.ServerID == guild.Id.ToString());
+
+                        if (server != null)
                         {
-                            publicServers.Remove((ulong)command.GuildId);
-                            var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Done", "This server is now private").Build());
+                            CupOfTheDayHandler.ServerPlayerJoin(player, command.User.Id.ToString(), guild.Id.ToString());
+
+                            var existingPlayer = server.AllTimePlayers.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == command.User.Id.ToString());
+                            double mmr = 600;
+                            var wins = 0;
+                            if (existingPlayer != null)
+                            {
+                                mmr = existingPlayer.MMR;
+                                wins = existingPlayer.TotalWins;
+                            }
+
+                            var embed = EmbedBuilderExtension.NullEmbed("You joined the Local Cup of the day", $"**{server.TodaysMap.SongName} by {server.TodaysMap.SongAuthorName}**\nmapped by {server.TodaysMap.LevelAuthorName}\n\n**What to do?**\n- Download the map [here](https://beatsaberbot.com/CupOfTheDay) with one-click\n- Make sure to set a score. You have **{(DateTime.Now.AddDays(1).Date - DateTime.Now).Hours}H** left. \n- Set a score on the **{server.TodaysMap.Difficulty.DifficultyRaw.Replace("_", " ")}** difficulty\n\n**Current Stats**\nUsername: ***{player.Name}***\nGlobal MMR: ***{mmr}***\nGlobal Wins: ***{wins}***");
+                            embed.ThumbnailUrl = server.TodaysMap.CoverImage.AbsoluteUri;
+                            embed.Author = new EmbedAuthorBuilder() { Name = server.ServerName, IconUrl = guild.IconUrl };
+                            await command.Channel.SendMessageAsync("", false, embed.Build()); 
                         }
                         else
                         {
-                            var guild = discordSocketClient.GetGuild((ulong)command.GuildId);
-                            publicServers.Add((ulong)command.GuildId, guild.Name);
-                            var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Done", "This server is now public on http://beatsaberbot.com/CupOfTheDay").Build());
+                            await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Server doesn't have a cupoftheday", "This server doesn't have a cupoftheday leaderboard. The owner needs to make one by using the `/cupoftheday settings make_server_public` command.").Build());
                         }
                     }
-
-                    var serversJson = JsonConvert.SerializeObject(publicServers);
-                    System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDPublicServers.json", serversJson);
-
-                    return;
+                    else
+                    {
+                        var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Not Linked", "To join the cupoftheday, you need to be linked with your scoresaber account. please use the command /link").Build());
+                    }
                 }
-                else
+            }
+
+            if (command.Data.Options.FirstOrDefault(x => x.Name.ToString() == "settings") != null)
+            {
+                var option = command.Data.Options.FirstOrDefault(x => x.Name.ToString() == "settings").Options.First();
+
+                if(option.Name == "make_server_public")
                 {
-                    var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Permissions", "Only the server owner has access to this command").Build());
-                    return;
+                    var shouldBePublic = (bool) option.Value;
+                    if (discordSocketClient.GetGuild((ulong)command.GuildId).OwnerId == command.User.Id || command.User.Id == 138439306774577152)
+                    {
+                        CupOfTheDayHandler.MakeServerPrivateOrPublic(discordSocketClient, command);
+                        return;
+                    }
+                    else
+                    {
+                        var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Permissions", "Only the server owner has access to this command").Build());
+                        return;
+                    }
                 }
-            }
 
-            if (command.Data.Options.FirstOrDefault(x => x.Value.ToString() == "CreateChannel") != null)
-            {
-                //Create leaderboard embed that updates 
-                //Create pop up messages for the last event that happened                 
-            }
+                if (option.Name == "upload_playlist")
+                {
+                    //upload playlist map info to a json linked to discord server id
+                    if (discordSocketClient.GetGuild((ulong)command.GuildId).OwnerId == command.User.Id || command.User.Id == 138439306774577152)
+                    {
+                        var attachment = (IAttachment) option.Value;
+                        //if attachment is valid
+                        var type = attachment.Filename.Split(".")[^1];
+                        if (type == "bplist" || type == "json")
+                        {                            
+                            CupOfTheDayHandler.UploadServerPlaylist(attachment, command.GuildId.ToString());
+                            var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Playlist has been uploaded", "Your CupOfTheDay Maps from this server will now rotate through this playlist, starting from the first map. **Notice: tracking scores can take up to 30 min after upload**").Build());
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Permissions", "Only the server owner has access to this command").Build());
+                        return;
+                    }
+                }
 
-            var r = new RoleAssignment(discordSocketClient);
-            if (await r.CheckIfDiscordIdIsLinked(command.User.Id.ToString()))
-            {
-                var guild = discordSocketClient.GetGuild((ulong)command.GuildId);
-                var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
-                var scoresaberplayer = await new ScoreSaberClient().Api.Players.GetPlayer(Convert.ToInt64(scoresaberID));
-                var player = new CupOfTheDayHandler.Player() { ScoreSaberID = scoresaberplayer.Id, Name = scoresaberplayer.Name };
-                CupOfTheDayHandler.StorePlayer(player, guild.Id.ToString());
-
-                var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Done!", "You have joined the cup of the day. for the leaderboard, check out http://beatsaberbot.com/CupOfTheDay").Build());
-            }
-            else
-            {
-                var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Not Linked", "To join the cupoftheday, you need to be linked with your scoresaber account. please use the command /link").Build());
+                if (option.Name == "create_feed_channel")
+                {
+                    if (discordSocketClient.GetGuild((ulong)command.GuildId).OwnerId == command.User.Id || command.User.Id == 138439306774577152)
+                    {
+                        var channel = (ITextChannel)option.Value;
+                        await CupOfTheDayHandler.SetFeedChannel(command, channel);
+                    }
+                    else
+                    {
+                        var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Permissions", "Only the server owner has access to this command").Build());
+                        return;
+                    }    
+                }
             }
         }
 
@@ -455,7 +532,7 @@ namespace DiscordBeatSaberBot.Commands
             }
             else
             {
-                command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Scoresaber linked", "You have not linked your scoresaber with discord. Use '!bs link [ScoresaberId]' to link your account.").Build());
+                command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Scoresaber linked", "You have not linked your scoresaber with discord. Use '/link [ScoresaberId]' to link your account.").Build());
             }
         }
 

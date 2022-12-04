@@ -102,7 +102,7 @@ namespace DiscordBeatSaberBot
                 else if (nr <= top1000)
                 {
                     rangeBegin = 500;
-                    rangeEnd = 999;
+                    rangeEnd = 1000;
                 }
 
                 var random = new Random();
@@ -310,6 +310,24 @@ namespace DiscordBeatSaberBot
                 else if (nr < top50) cardCreator.AddImage("../../../Resources/img/FIFA_Card_effect_50.png", 0, 0, 735, 1211, isLocalFile: true);
                 else if (nr < top100) cardCreator.AddImage("../../../Resources/img/FIFA_Card_effect_100.png", 0, 0, 735, 1211, isLocalFile: true);
 
+                //EVENT ZONE -------------
+                var startDate = DateTime.ParseExact("2022-12-05", "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                var endDate = DateTime.ParseExact("2022-12-27", "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                if (DateTime.UtcNow > startDate && DateTime.UtcNow < endDate)
+                {
+                    var eventNr = random.Next(0, 100);
+                    if (eventNr <= 5) //Chance
+                    {
+                        //Give event specials
+                        var bordertypenr = random.Next(1, 4);
+                        if(bordertypenr == 1) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_0.png", 0, 0, 735, 1211, isLocalFile: true);
+                        else if (bordertypenr == 2) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_1.png", 0, 0, 735, 1211, isLocalFile: true);
+                        else if (bordertypenr == 3) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_2.png", 0, 0, 735, 1211, isLocalFile: true);
+                    }
+                }
+
+                //------------------------
+
                 cardCreator.AddTextCenter("Drawn by: " + command.User.Username, Color.Black, 22, 380 + 5, 1170 + 5);
                 var size = cardCreator.AddTextCenter("Drawn by: " + command.User.Username, Color.FromArgb(103, 90, 55), 22, 380, 1170);
                 //cardCreator.DrawRectangle(380 / 2 - 10, 1170, Convert.ToInt32(size.Width), Convert.ToInt32(size.Height), Color.FromArgb(80, 123, 90, 55));
@@ -401,13 +419,13 @@ namespace DiscordBeatSaberBot
             if (playerTimeOuts.FirstOrDefault(x => x.DiscordID == command.User.Id.ToString()) != null)
             {
                 var player = playerTimeOuts.FirstOrDefault(x => x.DiscordID == command.User.Id.ToString());
-                if (player.PacksLeft > 1)
+                if (player.PacksLeft > 1) // Has packs, no timer
                 {
                     player.PacksLeft--;
                     System.IO.File.WriteAllText($"../../../Resources/DrawCardTimeOut.json", JsonConvert.SerializeObject(playerTimeOuts));
                     return false;
                 }
-                if (player.PacksLeft == 1)
+                if (player.PacksLeft == 1) // Last pack, add timer
                 {
                     player.PacksLeft--;
                     var timeTillTimeOut = timeOfRequest.AddHours(23);
@@ -415,23 +433,23 @@ namespace DiscordBeatSaberBot
                     System.IO.File.WriteAllText($"../../../Resources/DrawCardTimeOut.json", JsonConvert.SerializeObject(playerTimeOuts));
                     return false;
                 }
-                if (player.PacksLeft == 0)
+                if (player.PacksLeft == 0) //No packs 
                 {
-                    if (player.TimeOutTill == null)
+                    if (player.TimeOutTill == null) // No timer
                     {
                         player.PacksLeft += 3;
                         System.IO.File.WriteAllText($"../../../Resources/DrawCardTimeOut.json", JsonConvert.SerializeObject(playerTimeOuts));
                         return false;
                     }
                     TimeSpan timeToWait = (DateTime)player.TimeOutTill - timeOfRequest;
-                    if (timeToWait.TotalSeconds < 0)
+                    if (timeToWait.TotalSeconds < 0) //Has timer but ran out
                     {
                         player.TimeOutTill = null;
                         player.PacksLeft += 3;
                         System.IO.File.WriteAllText($"../../../Resources/DrawCardTimeOut.json", JsonConvert.SerializeObject(playerTimeOuts));
                         return false;
                     }
-                    else
+                    else // Has timer
                     {
                         command.Channel.SendMessageAsync($"No remaining packs. You will get new packs in {timeToWait.Hours} hours, {timeToWait.Minutes} minutes and {timeToWait.Seconds} seconds.");
                         if (timeToWait.TotalHours > 7) command.Channel.SendMessageAsync("Reminder: you can get pack notifications in DM by using the `/tradingcards settings` command.");
@@ -1200,21 +1218,33 @@ namespace DiscordBeatSaberBot
                     var tradeJson = JsonConvert.SerializeObject(tradelimits);
                     File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/TradeLimit.json", tradeJson);
 
+                    var scoresaberIDPlayerOne = await RoleAssignment.GetScoresaberIdWithDiscordId(arguments.User.Id.ToString());
+                    var scoresaberIDPlayerTwo = await RoleAssignment.GetScoresaberIdWithDiscordId(userToStakeWith.Id.ToString());
+
+                    var scoresaberPlayerOne = await new ScoreSaberClient().Api.Players.GetPlayer(Convert.ToInt64(scoresaberIDPlayerOne));                    
+                    var scoresaberPlayerTwo = await new ScoreSaberClient().Api.Players.GetPlayer(Convert.ToInt64(scoresaberIDPlayerTwo));
+                    long playerOneRank = 0;
+                    long playerTwoRank = 0;
+                    if (scoresaberPlayerOne != null) playerOneRank = scoresaberPlayerOne.Rank;
+                    if (scoresaberPlayerTwo != null) playerTwoRank = scoresaberPlayerTwo.Rank;
+
                     //Create stake in database 
                     var stakeMatch = new StakeMatch()
                     {
                         PlayerOneDiscordID = arguments.User.Id.ToString(),
                         PlayerOneUsername = arguments.User.Username,
                         PlayerOneProfileUrl = arguments.User.GetAvatarUrl(),
-                        PlayerOneScoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(arguments.User.Id.ToString()),
+                        PlayerOneScoresaberID = scoresaberIDPlayerOne,
                         PlayerOneCardsStaked = cardListUserOne,
                         PlayerOneCurrentScore = 0,
+                        PlayerOneRank = playerOneRank,
                         PlayerTwoDiscordID = userToStakeWith.Id.ToString(),
                         PlayerTwoUsername = userToStakeWith.Username,
                         PlayerTwoProfileUrl = userToStakeWith.GetAvatarUrl(),
-                        PlayerTwoScoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(userToStakeWith.Id.ToString()),
+                        PlayerTwoScoresaberID = scoresaberIDPlayerTwo,
                         PlayerTwoCardsStaked = cardListUserTwo,
                         PlayerTwoCurrentScore = 0,
+                        PlayerTwoRank = playerTwoRank,
                         EndDate = endDate,
                         mapDiff = stakeDifficulty,
                         mapKey = mapToPlay.Id,
@@ -1697,8 +1727,10 @@ namespace DiscordBeatSaberBot
                 {
                     if (packAmount <= 0) return false;
 
-                    var playerToGive = playerTimeOuts.FirstOrDefault(x => x.DiscordID.ToLower() == discordID.ToString().ToLower());
-                    if (playerToGive.TimeOutTill != null && playerToGive.TimeOutTill < DateTime.UtcNow.AddHours(-23)) playerToGive.PacksLeft = 4;
+                    var playerToGive = playerTimeOuts.FirstOrDefault(x => x.DiscordID.ToLower() == discordID.ToString().ToLower());       
+                    
+
+                    if (playerToGive.TimeOutTill != null && playerToGive.TimeOutTill < DateTime.Now) playerToGive.PacksLeft = 4;
                     playerToGive.PacksLeft += packAmount;
                     playerToGive.TimeOutTill = null;
                     System.IO.File.WriteAllText($"../../../Resources/DrawCardTimeOut.json", JsonConvert.SerializeObject(playerTimeOuts));
@@ -1706,9 +1738,9 @@ namespace DiscordBeatSaberBot
                     var user = await _discord.GetUserAsync(Convert.ToUInt64(discordID));
                     var dm = await user.CreateDMChannelAsync();
 
-                    if (message == null) message = $"You have gained **{packAmount}** extra card packs for some reason";
+                    if (message == null) message = $"For somem magical reason.";
 
-                    await dm.SendMessageAsync(message);
+                    await dm.SendMessageAsync(message + $" You gained **{packAmount}** extra card packs.");
 
                     return true;
                 }
@@ -1895,12 +1927,14 @@ namespace DiscordBeatSaberBot
             public string PlayerOneProfileUrl { get; set; }
             public string PlayerOneScoresaberID { get; set; }
             public double PlayerOneCurrentScore { get; set; }
+            public long PlayerOneRank { get; set; }
             public List<string> PlayerOneCardsStaked { get; set; }
             public string PlayerTwoDiscordID { get; set; }
             public string PlayerTwoUsername { get; set; }
             public string PlayerTwoProfileUrl { get; set; }
             public string PlayerTwoScoresaberID { get; set; }
             public double PlayerTwoCurrentScore { get; set; }
+            public long PlayerTwoRank { get; set; }
             public List<string> PlayerTwoCardsStaked { get; set; }
             public string mapKey { get; set; }
             public string mapDiff { get; set; }

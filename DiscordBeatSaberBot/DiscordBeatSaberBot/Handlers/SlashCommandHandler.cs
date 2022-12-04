@@ -248,15 +248,23 @@ namespace DiscordBeatSaberBot.Handlers
                     .AddOption("sides", ApplicationCommandOptionType.Integer, "how many sides? 6 is standard", false)
                     .Build());
                 //join cup of the day
-                var cotdChoices = new List<ApplicationCommandOptionChoiceProperties>();
-                cotdChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Join", Value = "Join" });
-                cotdChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Make Server Public/Private On Website", Value = "MakePublicPrivate" });
-                cotdChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "Make THIS channel a leaderboard feed", Value = "CreateChannel" });
-                await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
-                    .WithName("cupoftheday")
-                    .WithDescription("cup of the day is a daily tourney based around the concept of playing one map each day")
-                    .AddOption("actions", ApplicationCommandOptionType.String, "Let you join the current cup of the day. this will influence your MMR if you set a score.", true, choices: cotdChoices.ToArray())
-                    .Build());
+                var cotdSlashBuilder = new SlashCommandBuilder().WithName("cupoftheday").WithDescription("Cup of the day is a daily tourney where you have 24 hours to set the best score on a map.");
+
+                var cotdOptionBuilderDraw = new SlashCommandOptionBuilder().WithName("join").WithDescription("Join the daily Cup of the day").WithType(ApplicationCommandOptionType.SubCommandGroup);
+                cotdOptionBuilderDraw.AddOption("global", ApplicationCommandOptionType.SubCommand, "Join the global cup of the day", false);
+                cotdOptionBuilderDraw.AddOption("local", ApplicationCommandOptionType.SubCommand, "Join the local cup of the day", false);
+                cotdSlashBuilder.AddOption(cotdOptionBuilderDraw);
+
+                var cotdOptionBuilderSettings = new SlashCommandOptionBuilder().WithName("settings").WithDescription("Configure trading card settings").WithType(ApplicationCommandOptionType.SubCommand);
+
+                cotdOptionBuilderSettings.AddOption("make_server_public", ApplicationCommandOptionType.Boolean, "Toggle the server to be private or public", false);
+                cotdOptionBuilderSettings.AddOption("upload_playlist", ApplicationCommandOptionType.Attachment, "Upload a playlist to rotate through on the local cotd", false);
+                cotdOptionBuilderSettings.AddOption("create_feed_channel", ApplicationCommandOptionType.Channel, "Makes a leaderboard board from the chosen channel", false);
+                
+                cotdSlashBuilder.AddOption(cotdOptionBuilderSettings);
+
+                await _discord.CreateGlobalApplicationCommandAsync(cotdSlashBuilder.Build());
+
                 //link
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()
                     .WithName("link")

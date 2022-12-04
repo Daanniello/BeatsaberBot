@@ -18,6 +18,7 @@ using DiscordBeatSaberBot.Security;
 using DiscordBeatSaberBot.Handlers.RankTrackerHandler;
 using DiscordBeatSaberBot.Services;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace DiscordBeatSaberBot
 {
@@ -142,15 +143,17 @@ namespace DiscordBeatSaberBot
         {
 
             var updater = new UpdateTimer(discordSocketClient);
-            var cupOfTheDayHandler = new CupOfTheDayHandler();            
+            var cupOfTheDayHandler = new CupOfTheDayHandler(discordSocketClient);
+
             new BeatSaberCardCollection(discordSocketClient).NotifyUsersOnNewCardPacks();
-            updater.UpdateAtTimeOfDay(() => cupOfTheDayHandler.ResetDailyMap(), "Reset Daily Map Map of the day", 24, 0, 0);
+            updater.UpdateAtTimeOfDay(() => cupOfTheDayHandler.ResetDailyMap(discordSocketClient), "Reset Daily Map Map of the day", 24, 0, 0);
             updater.UpdateAtTimeOfDay(() => BeatSaberCardCollection.GiveAllUsersDailyTrades(), "Give all users Daily trade", 24, 0, 0);
             updater.UpdateAtTimeOfDay(() => DataCollectionService.UpdateData(), "Data Collection Update", 24, 0, 0);
             updater.Start(() => UpdateSilverhazeDiscordRank(), "SilverhazeDiscordRankUpdate", 0, 30, 0);
             updater.Start(() => new RankTrackerHandler(discordSocketClient).CheckForAllRankChanges(), "RankTrackerUpdate", 0, 15, 0); ;
             updater.Start(() => _countryUpdateHandler.UpdateRanks(), "UpdateRolesInCountryDiscords", 0, 5, 0);
             updater.Start(() => updateServersAndUsersCount(), "Discord server and user count", 1, 0, 0);
+            updater.Start(() => updateBotStatistics(), "Update bot stats", 1, 0, 0);
             updater.Start(async () =>
             {
                 using (var httpClient = new HttpClient())
@@ -180,6 +183,21 @@ namespace DiscordBeatSaberBot
 
                 guild.GetTextChannel(821918821076959232).ModifyAsync(x => x.Name = $"Calls-each-hour: {_slashCommandHandler.TotalCommandsUsed}");
                 _slashCommandHandler.TotalCommandsUsed = 0;
+                return Task.CompletedTask;
+            }
+
+            Task updateBotStatistics()
+            {
+                var userCount = 0;
+                foreach (var g in discordSocketClient.Guilds) userCount += g.MemberCount;
+                var stats = new Dictionary<string, object>();
+
+                stats.Add("usercount", userCount);
+                stats.Add("servercount", discordSocketClient.Guilds.Count);
+
+                var json = JsonConvert.SerializeObject(stats);
+                File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/statistics.json", json);
+
                 return Task.CompletedTask;
             }
         }

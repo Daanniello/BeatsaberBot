@@ -1,5 +1,6 @@
 ﻿using DiscordBeatSaberBot.Api.BeatSaverApi.Models;
 using DiscordBeatSaberBot.Api.BeatSaverApi.Models.NewMaps;
+using DiscordBeatSaberBot.Api.BeatSaverApi.Models.v2;
 using DiscordBeatSaberBot.Models;
 using Newtonsoft.Json;
 using System;
@@ -102,10 +103,55 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
             if (data == null) return null;
             try
             {
-
-
                 var recentSongsInfoBeatSaver = JsonConvert.DeserializeObject<Api.BeatSaverApi.Models.New2.MapsBySearchModel>(data);
                 return recentSongsInfoBeatSaver;
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return null;
+        }
+
+        public static async Task<BeatSaverMapSearchModelv2> GetMapForCupOfTheDayFocus(int page)
+        {
+            var data = await Get($"search/text/{page}?sortOrder=Relevance&curated=true&verified=true&tags=accuracy");
+            if (data == null) return null;
+            try
+            {
+                var cotdMaps = JsonConvert.DeserializeObject<BeatSaverMapSearchModelv2>(data);
+                return cotdMaps;
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return null;
+        }
+        public static async Task<BeatSaverMapSearchModelv2> GetMapForCupOfTheDayStandard(int page)
+        {
+            var data = await Get($"search/text/{page}?sortOrder=Relevance&curated=true&verified=true&maxNps=9&minNps=5.5&tags=alternative|ambient|classical-orchestral|comedy-meme|drum-and-bass|dubstep|hardcore|funk-disco|folk-acoustic|electronic|hip-hop-rap|holiday|house|indie|instrumental|jazz|pop|nightcore|punk|rb|rock|soul|speedcore|video-game-soundtrack|trance|techno|tv-movie-soundtrack|swing");
+            if (data == null) return null;
+            try
+            {
+                var cotdMaps = JsonConvert.DeserializeObject<BeatSaverMapSearchModelv2>(data);
+                return cotdMaps;
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return null;
+        }
+
+        public static async Task<BeatSaverMapSearchModelv2> GetMapForCupOfTheDayHardcore(int page)
+        {
+            var data = await Get($"search/text/{page}?sortOrder=Relevance&curated=true&verified=true&minNps=8&tags=challenge|speed|tech");
+            if (data == null) return null;
+            try
+            {
+                var cotdMaps = JsonConvert.DeserializeObject<BeatSaverMapSearchModelv2>(data);
+                return cotdMaps;
             }
             catch (Exception ex)
             {

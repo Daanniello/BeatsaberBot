@@ -16,7 +16,7 @@ namespace DiscordBeatSaberBot.Handlers
             _program = program;
             if (message.Author.IsBot) return false;
 
-            MessageDelete.DeleteMessageCheck(message, discordSocketClient);
+            if(message.Author.Id != 138439306774577152) MessageDelete.DeleteMessageCheck(message, discordSocketClient);
 
             if (message.Content.Length <= 3) return false;
 

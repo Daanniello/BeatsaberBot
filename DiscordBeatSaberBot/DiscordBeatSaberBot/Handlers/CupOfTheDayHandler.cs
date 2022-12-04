@@ -1,5 +1,9 @@
-﻿using DiscordBeatSaberBot.Api.BeatSaverApi;
+﻿using Discord;
+using Discord.Rest;
+using Discord.WebSocket;
+using DiscordBeatSaberBot.Api.BeatSaverApi;
 using DiscordBeatSaberBot.Api.BeatSaverApi.Models.New;
+using DiscordBeatSaberBot.Api.BeatSaverApi.Models.v2;
 using Newtonsoft.Json;
 using ScoreSaberLib;
 using ScoreSaberLib.Models;
@@ -7,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,20 +21,20 @@ namespace DiscordBeatSaberBot.Handlers
 {
     public class CupOfTheDayHandler
     {
-        private LeaderboardInfoModel.Leaderboard currentLeaderboard = null;
+        private List<LeaderboardInfoModel.Leaderboard> serverDailyMaps = null;
         private ScoreSaberClient scoresaberClient;
+        private DiscordSocketClient _discord;
 
-        public CupOfTheDayHandler()
+        public CupOfTheDayHandler(DiscordSocketClient discord)
         {
+            _discord = discord;
+
             scoresaberClient = new ScoreSaberClient();
             scoresaberClient.Api.ScoreFeed.WebSocket.SslConfiguration.EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12;
             scoresaberClient.Api.ScoreFeed.Connect();
             WebsocketTimer();
+            RefreshDailyMaps();
             scoresaberClient.Api.ScoreFeed.OnPlayReceived += Feed_OnPlayReceived;
-
-            var json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/CupOfTheDayMapInfo.json");
-            var map = JsonConvert.DeserializeObject<ScoreSaberLib.Models.LeaderboardInfoModel.Leaderboard>(json);
-            if (map != null) currentLeaderboard = map;
         }
 
         private void Feed_OnDisconnect(object sender, EventArgs e)
@@ -38,6 +43,42 @@ namespace DiscordBeatSaberBot.Handlers
             scoresaberClient.Api.ScoreFeed.Connect();
             scoresaberClient.Api.ScoreFeed.OnPlayReceived += Feed_OnPlayReceived;
             scoresaberClient.Api.ScoreFeed.OnDisconnect += Feed_OnDisconnect;
+        }
+
+        private async void RefreshDailyMaps()
+        {
+            while (true)
+            {
+                var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+                var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+                serverDailyMaps = new List<LeaderboardInfoModel.Leaderboard>();
+                foreach (var server in cotdServers)
+                {
+                    RefreshLiveMMRPoints(server);
+                }
+                var cotdServersNewJson = JsonConvert.SerializeObject(cotdServers);
+                System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json", cotdServersNewJson);
+
+                setAllDailyMaps();
+
+                await Task.Delay(1000 * 60 * 30);
+            }
+        }
+
+        private void setAllDailyMaps()
+        {
+            var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+            var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+
+            foreach (var server in cotdServers)
+            {
+                if (server.TodaysMap != null) serverDailyMaps.Add(server.TodaysMap);
+                if (server.ServerID == "0")
+                {
+                    if (server.TodaysMapFocus != null) serverDailyMaps.Add(server.TodaysMapFocus);
+                    if (server.TodaysMapHardcore != null) serverDailyMaps.Add(server.TodaysMapHardcore);
+                }
+            }
         }
 
         private async void WebsocketTimer()
@@ -52,29 +93,104 @@ namespace DiscordBeatSaberBot.Handlers
             }
         }
 
-        private void Feed_OnPlayReceived(object sender, ScoreSaberLib.Models.ScoreFeedModel e)
+        private async void Feed_OnPlayReceived(object sender, ScoreSaberLib.Models.ScoreFeedModel e)
         {
-            if (currentLeaderboard != null)
+            //COTD
+            if (serverDailyMaps != null)
             {
-                if (e.CommandData.Leaderboard.SongHash == currentLeaderboard.SongHash && e.CommandData.Leaderboard.Difficulty.DifficultyRaw == currentLeaderboard.Difficulty.DifficultyRaw)
+                var playedMap = e.CommandData;
+                try
                 {
-                    //Replace score value 
-                    var json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/TodaysCupOfTheDayPlayers.json");
-                    List<Player> players = null;
-                    if (json != "" && json != null) players = JsonConvert.DeserializeObject<List<Player>>(json);
-                    if (players != null && players.Count > 0)
+                    if (serverDailyMaps.FirstOrDefault(x => x.SongHash == playedMap.Leaderboard.SongHash && x.Difficulty.DifficultyRaw == playedMap.Leaderboard.Difficulty.DifficultyRaw) != null)
                     {
-                        var player = players.FirstOrDefault(x => x.ScoreSaberID == e.CommandData.Score.LeaderboardPlayerInfo.Id);
-                        if (player != null)
+                        var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+                        var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+
+                        var todaysMaps = serverDailyMaps.FirstOrDefault(x => x.SongHash == playedMap.Leaderboard.SongHash);
+
+                        var serversThatHasThisMap = new List<COTDServer>();
+
+                        var focus = cotdServers.Where(x => x.TodaysPlayersFocus != null && x.TodaysMapFocus != null && x.TodaysMapFocus.SongHash == todaysMaps.SongHash && x.TodaysPlayersFocus.FirstOrDefault(i => i.ScoreSaberID == playedMap.Score.LeaderboardPlayerInfo.Id.ToString()) != null).ToList();
+                        var standard = cotdServers.Where(x => x.TodaysPlayers != null && x.TodaysMap != null && x.TodaysMap.SongHash == todaysMaps.SongHash && x.TodaysPlayers.FirstOrDefault(i => i.ScoreSaberID == playedMap.Score.LeaderboardPlayerInfo.Id.ToString()) != null).ToList();
+                        var hardcore = cotdServers.Where(x => x.TodaysPlayersHardcore != null && x.TodaysMapHardcore != null && x.TodaysMapHardcore.SongHash == todaysMaps.SongHash && x.TodaysPlayersHardcore.FirstOrDefault(i => i.ScoreSaberID == playedMap.Score.LeaderboardPlayerInfo.Id.ToString()) != null).ToList();
+
+                        if (focus.Count() > 0) serversThatHasThisMap.AddRange(focus);
+                        if (standard.Count() > 0) serversThatHasThisMap.AddRange(standard);
+                        if (hardcore.Count() > 0) serversThatHasThisMap.AddRange(hardcore);
+
+                        foreach (var serverMapPlayed in serversThatHasThisMap)
                         {
-                            player.TodaysScore = e.CommandData.Score.BaseScore;
-                            var newJson = JsonConvert.SerializeObject(players);
-                            System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/TodaysCupOfTheDayPlayers.json", newJson);
+                            COTDPlayer player = null;
+
+                            if (serverMapPlayed.ServerID == "0")
+                            {
+                                
+                                if(serverMapPlayed.TodaysMapFocus.Id == playedMap.Leaderboard.Id) player = serverMapPlayed.TodaysPlayersFocus.FirstOrDefault(x => x.ScoreSaberID == playedMap.Score.LeaderboardPlayerInfo.Id.ToString());
+                                if (serverMapPlayed.TodaysMap.Id == playedMap.Leaderboard.Id) player = serverMapPlayed.TodaysPlayers.FirstOrDefault(x => x.ScoreSaberID == playedMap.Score.LeaderboardPlayerInfo.Id.ToString());
+                                if (serverMapPlayed.TodaysMapHardcore.Id == playedMap.Leaderboard.Id) player = serverMapPlayed.TodaysPlayersHardcore.FirstOrDefault(x => x.ScoreSaberID == playedMap.Score.LeaderboardPlayerInfo.Id.ToString());
+                                if (player.TodaysScore < e.CommandData.Score.BaseScore && player != null)
+                                {
+                                    player.TodaysScore = e.CommandData.Score.BaseScore;
+                                }
+                            }
+                            else
+                            {
+                                player = serverMapPlayed.TodaysPlayers.FirstOrDefault(x => x.ScoreSaberID == playedMap.Score.LeaderboardPlayerInfo.Id.ToString());
+                                if (player.TodaysScore < e.CommandData.Score.BaseScore)
+                                {
+                                    player.TodaysScore = e.CommandData.Score.BaseScore;
+                                }
+                            }                           
+
+
+                            RefreshLiveMMRPoints(serverMapPlayed);
+
+                            try
+                            {
+                                if (serverMapPlayed.DiscordFeedChannelID != null)
+                                {
+                                    var channel = (ITextChannel)await _discord.GetChannelAsync(Convert.ToUInt64(serverMapPlayed.DiscordFeedChannelID));
+                                    if (channel == null)
+                                    {
+                                        serverMapPlayed.DiscordFeedChannelID = null;
+                                    }
+                                    else
+                                    {
+                                        var messages = await channel.GetMessagesAsync(10).FlattenAsync();
+                                        if (messages != null && messages.Count() >= 2)
+                                        {
+                                            var leaderboardRaw = messages.FirstOrDefault(x => x.Embeds.First().Footer.Value.Text == "001");
+                                            var newPlayRaw = messages.FirstOrDefault(x => x.Embeds.First().Footer.Value.Text == "002");
+                                            var leaderboard = (RestUserMessage)leaderboardRaw;
+                                            var newPlay = (RestUserMessage)newPlayRaw;
+
+                                            await leaderboard.ModifyAsync(x => x.Embed = GetMapFeed(serverMapPlayed).Build());
+                                            await newPlay.ModifyAsync(x => x.Embed = GetNewPlayFeed(player.Name, Math.Round((double)player.TodaysScore * 100 / serverMapPlayed.TodaysMap.MaxScore, 2).ToString(), player.MMR.ToString(), player.TotalWins.ToString(), player.ScoreSaberID).Build());
+
+                                            var fakeMsg = await channel.SendMessageAsync("yeet");
+                                            await fakeMsg.DeleteAsync();
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                var f = ex;
+                            }
                         }
+
+                        var cotdServersNewJson = JsonConvert.SerializeObject(cotdServers);
+                        System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json", cotdServersNewJson);
                     }
+                }
+                catch (Exception ex)
+                {
+                    var f = ex;
                 }
             }
 
+
+            //STAKING
             var currentStakeMatches = JsonConvert.DeserializeObject<List<StakeMatch>>(System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/StakeMatches.json"));
 
             if (currentStakeMatches != null)
@@ -87,9 +203,9 @@ namespace DiscordBeatSaberBot.Handlers
                     var maphash = e.CommandData.Leaderboard.SongHash.ToLower();
                     var playerOne = playerOneList.FirstOrDefault(x => x.mapDiff.ToLower() == diff && x.mapHash.ToLower() == maphash && x.EndDate > DateTime.UtcNow);
                     var playerTwo = playerTwoList.FirstOrDefault(x => x.mapDiff.ToLower() == diff && x.mapHash.ToLower() == maphash && x.EndDate > DateTime.UtcNow);
-                        
+
                     if (playerOne != null)
-                    {                        
+                    {
                         double percentage = Convert.ToDouble(e.CommandData.Score.BaseScore) / playerOne.mapMaxScore * 100;
                         if (percentage > playerOne.PlayerOneCurrentScore)
                         {
@@ -118,155 +234,511 @@ namespace DiscordBeatSaberBot.Handlers
             }
         }
 
-        public async Task ResetDailyMap()
+        public enum DailyMapMode
         {
+            Focus,
+            Standard,
+            Hardcore
+        }
+        public static async Task<LeaderboardInfoModel.Leaderboard> GenerateGlobalDailyMap(string hashFromMapBefore, DailyMapMode mode)
+        {
+            if (hashFromMapBefore == null) hashFromMapBefore = "";
+            var maps = new List<Maps>();
+            var validMaps = new List<Maps>();
 
-            //Pick a new map and replace it            
-            var leaderboards = await new ScoreSaberClient().Api.Leaderboards.GetLeaderboardsByFilter(category: Leaderboards.Category.trending);
-            var withStar = await new ScoreSaberClient().Api.Leaderboards.GetLeaderboardsByFilter(category: Leaderboards.Category.trending, minStar: 5);
-            leaderboards.Leaderboards.AddRange(withStar.Leaderboards);
+            if (mode == DailyMapMode.Focus) //Focus pool
+            {
+                var maps1 = await BeatSaverApi.GetMapForCupOfTheDayFocus(0);
+                var maps2 = await BeatSaverApi.GetMapForCupOfTheDayFocus(1);
+                maps.AddRange(maps1.Docs);
+                maps.AddRange(maps2.Docs);
+
+                validMaps = maps.Where(x => x.Stats.Score > 0.75 && x.Metadata.Duration < 2000 && x.Stats.Upvotes > 20 && x.Versions.First().Diffs.Where(x => x.Characteristic == "Standard").Count() > 0 && x.Versions.First().Diffs.Where(x => x.Characteristic == "Standard").Last().Nps < 3.5).ToList();
+            }
+            if (mode == DailyMapMode.Standard) //Standard pool
+            {
+                var maps1 = await BeatSaverApi.GetMapForCupOfTheDayStandard(0);
+                var maps2 = await BeatSaverApi.GetMapForCupOfTheDayStandard(1);
+                maps.AddRange(maps1.Docs);
+                maps.AddRange(maps2.Docs);
+
+                validMaps = maps.Where(x => x.Stats.Score > 0.70 && x.Metadata.Duration < 2000 && x.Stats.Upvotes > 20 && x.Versions.First().Diffs.Where(x => x.Characteristic == "Standard").Count() > 0 && x.Versions.First().Diffs.Where(x => x.Characteristic == "Standard").Last().Nps > 5.5 && x.Versions.First().Diffs.Where(x => x.Characteristic == "Standard").Last().Nps < 9).ToList();
+            }
+            if (mode == DailyMapMode.Hardcore) //Hardcore pool
+            {
+                var maps1 = await BeatSaverApi.GetMapForCupOfTheDayHardcore(0);
+                var maps2 = await BeatSaverApi.GetMapForCupOfTheDayHardcore(1);
+                maps.AddRange(maps1.Docs);
+                maps.AddRange(maps2.Docs);
+
+                validMaps = maps.Where(x => x.Stats.Score > 0.40 && x.Metadata.Duration < 2000 && x.Stats.Upvotes > 3 && x.Versions.First().Diffs.Where(x => x.Characteristic == "Standard").Count() > 0 && x.Versions.First().Diffs.Where(x => x.Characteristic == "Standard").Last().Nps > 8).ToList();
+            }
+
+            LeaderboardInfoModel.Leaderboard chosenMap;
             var random = new Random();
-            leaderboards.Leaderboards = leaderboards.Leaderboards.OrderBy(x => random.Next(0, leaderboards.Leaderboards.Count)).ToList();
-            LeaderboardInfoModel.Leaderboard board;
-            BeatSaverMapModelNew result;
-            var count = 0;
             do
             {
-                board = leaderboards.Leaderboards[count];
-                result = await BeatSaverApi.GetMapByHash(board.SongHash);
-                var diff = result.Versions.First().Diffs.FirstOrDefault(x => x.Difficulty == "ExpertPlus");
-                if (diff == null) continue;
-                board.MaxScore = diff.MaxScore;
-                count++;
-            } while (result.Stats.Upvotes < 20 || (result.Stats.Upvotes * 100 / result.Stats.Upvotes + result.Stats.Downvotes) < 80 || result.Metadata.Duration < 30 || currentLeaderboard.SongHash == board.SongHash && count < leaderboards.Leaderboards.Count);
+                var mapInfo = validMaps.ToList()[random.Next(0, validMaps.Count())].Versions.First();
 
-            var json = JsonConvert.SerializeObject(board);
-            File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/CupOfTheDayMapInfo.json", json);
-
-            currentLeaderboard = board;
-
-            var jsonGlobal = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/AllCupOfTheDayPlayers.json");
-            List<Player> playersGlobal = null;
-            if (json != "" && json != null) playersGlobal = JsonConvert.DeserializeObject<List<Player>>(jsonGlobal);
-
-            //Reward the top player with the win
-            var jsonDaily = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/TodaysCupOfTheDayPlayers.json");
-            List<Player> playersDaily = null;
-            if (json != "" && json != null) playersDaily = JsonConvert.DeserializeObject<List<Player>>(jsonDaily);
-            if (playersDaily != null && playersDaily.Count > 0)
-            {
-                //Give top player a win
-                if (playersGlobal != null && playersGlobal.Count > 0)
+                var diffnr = 9;
+                switch (mapInfo.Diffs.Where(x => x.Characteristic == "Standard").Last().Difficulty.ToString())
                 {
-                    var globalWinner = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == playersDaily.OrderByDescending(x => x.TodaysScore).First().ScoreSaberID);
-                    globalWinner.TotalWinsGlobal += 1;
+                    case "Easy":
+                        diffnr = 1;
+                        break;
+                    case "Normal":
+                        diffnr = 3;
+                        break;
+                    case "Hard":
+                        diffnr = 5;
+                        break;
+                    case "Expert":
+                        diffnr = 7;
+                        break;
+                    case "ExpertPlus":
+                        diffnr = 9;
+                        break;
+                    default:
+                        diffnr = 9;
+                        break;
+                }
+                chosenMap = await new ScoreSaberClient().Api.Leaderboards.GetLeaderboardInfoByHashcode(mapInfo.Hash.ToUpper(), (Leaderboards.Difficulty)diffnr);
+
+                if (chosenMap != null) chosenMap.MaxScore = mapInfo.Diffs.Where(x => x.Characteristic == "Standard").Last().MaxScore;
+
+            } while (chosenMap == null || hashFromMapBefore.ToLower() == chosenMap.SongHash.ToLower());
+
+            return chosenMap;
+        }
+
+        private void RefreshLiveMMRPoints(COTDServer server)
+        {
+            if (server.TodaysPlayers != null)
+            {
+                foreach (var player in server.TodaysPlayers)
+                {
+                    //TODO Make mmr change for focus mode and hardcore mode
+                    player.TodaysMMRChange = CalculateMMRPoints(player, server, server.TodaysPlayers);
+                }
+            }
+            if (server.TodaysPlayersFocus != null)
+            {
+                foreach (var player in server.TodaysPlayersFocus)
+                {
+                    //TODO Make mmr change for focus mode and hardcore mode
+                    player.TodaysMMRChange = CalculateMMRPoints(player, server, server.TodaysPlayersFocus);
+                }
+            }
+            if (server.TodaysPlayersHardcore != null)
+            {
+                foreach (var player in server.TodaysPlayersHardcore)
+                {
+                    //TODO Make mmr change for focus mode and hardcore mode
+                    player.TodaysMMRChange = CalculateMMRPoints(player, server, server.TodaysPlayersHardcore);
+                }
+            }
+        }
+
+        private double CalculateMMRPoints(COTDPlayer player, COTDServer server, List<COTDPlayer> todaysPlayers)
+        {
+            if (player.TodaysScore <= 0 || todaysPlayers.Where(x => x.TodaysScore > 0).Count() <= 1) return 0;
+            var mmr = player.MMR;
+            var playersAbove = todaysPlayers.Where(x => x.TodaysScore >= player.TodaysScore && x.TodaysScore > 0 && x.MMR <= player.MMR);
+            var playersBelow = todaysPlayers.Where(x => x.TodaysScore <= player.TodaysScore && x.TodaysScore > 0 && x.MMR >= player.MMR);
+            double avgMmrAboveWhereMmrIsLower = player.MMR;
+            double avgMmrBelowWhereMmrIsHigher = player.MMR;
+            if (playersAbove.Count() > 0) avgMmrAboveWhereMmrIsLower = playersAbove.Average(x => x.MMR);
+            if (playersBelow.Count() > 0) avgMmrBelowWhereMmrIsHigher = playersBelow.Average(x => x.MMR);
+
+            var mmrPointsplus = avgMmrAboveWhereMmrIsLower - player.MMR;
+            var mmrPointsMin = avgMmrBelowWhereMmrIsHigher - player.MMR;
+
+            var mmrPointsRaw = mmrPointsplus + mmrPointsMin;
+            var mmrPoints = mmrPointsRaw * 100 / player.MMR;
+            if (mmrPoints == 0) mmrPoints = 5;
+
+            return mmrPoints;
+        }
+
+        public async Task ResetDailyMap(DiscordSocketClient discord)
+        {
+            var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+            var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);            
+
+            foreach (var server in cotdServers)
+            {
+                if (server.TodaysPlayers == null) continue;
+                foreach (var player in server.TodaysPlayers)
+                {
+                    var allTimePlayer = server.AllTimePlayers.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == player.DiscordID);
+
+                    var mmrPointsStandard = CalculateMMRPoints(player, server, server.TodaysPlayers);
+                    allTimePlayer.MMR += mmrPointsStandard;
+
+                    if (server.ServerID == "0")
+                    {
+                        if (server.TodaysPlayersFocus != null)
+                        {
+                            var mmrPointsFocus = CalculateMMRPoints(server.TodaysPlayersFocus.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == player.DiscordID), server, server.TodaysPlayersFocus);
+                            allTimePlayer.MMR += mmrPointsFocus;
+                            if (mmrPointsFocus > 0) await new BeatSaberCardCollection(discord).GivePacks(Convert.ToInt64(allTimePlayer.DiscordID), 1, $"Congrats on gaining +{mmrPointsFocus} mmr points on the cup of the day in Focus Mode! here is a reward.");
+                        }
+
+                        if (server.TodaysPlayersHardcore != null)
+                        {
+                            var mmrPointsHardcore = CalculateMMRPoints(server.TodaysPlayersHardcore.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == player.DiscordID), server, server.TodaysPlayersFocus);
+                            allTimePlayer.MMR += mmrPointsHardcore;
+                            if (mmrPointsHardcore > 0) await new BeatSaberCardCollection(discord).GivePacks(Convert.ToInt64(allTimePlayer.DiscordID), 1, $"Congrats on gaining +{mmrPointsHardcore} mmr points on the cup of the day in Hardcore Mode! here is a reward.");
+                        }
+
+                        if (mmrPointsStandard > 0) await new BeatSaberCardCollection(discord).GivePacks(Convert.ToInt64(allTimePlayer.DiscordID), 1, $"Congrats on gaining +{mmrPointsStandard} mmr points on the cup of the day in Standard Mode! here is a reward.");
+                    }
                 }
 
-                //Give Everyone their MMR
-                foreach (var player in playersDaily)
+                //Give winner points 
+                var winner = server.TodaysPlayers.OrderByDescending(x => x.TodaysScore).First();
+                var allTimePlayerWinner = server.AllTimePlayers.FirstOrDefault(x => x.ScoreSaberID == winner.ScoreSaberID && x.DiscordID == winner.DiscordID);
+                if (winner.TodaysScore != 0)
                 {
-                    //TODO: give MMR
-                    if (player.TodaysScore == 0) continue;
+                    if (server.TodaysPlayers.Where(x => x.TodaysScore > 0).Count() > 1)
+                        allTimePlayerWinner.TotalWins += 1;
+                }
+            }
 
+            foreach (var server in cotdServers)
+            {
+                server.TodaysPlayersFocus = null;
+                server.TodaysPlayers = null;
+                server.TodaysPlayersHardcore = null;
+            }
 
-                    var playerCurrentMMR = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).MMRGlobal;
-                    var avgMMRFromAll = playersGlobal.Average(x => x.MMRGlobal);
-                    var avgMMRFromBelowPlayer = playersDaily.OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore <= player.TodaysScore).Average(x => x.MMRGlobal);
-                    var avgMMRFromAbovePlayer = playersDaily.OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore >= player.TodaysScore).Average(x => x.MMRGlobal);
-                    double mmrWin = 20;
-                    var mmrDiff = (200 * avgMMRFromAbovePlayer / playerCurrentMMR) - 100;
-                    mmrWin += mmrDiff;
-                    playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).MMRGlobal += (int)Math.Round(mmrWin);
+            var cotdServersNewJson = JsonConvert.SerializeObject(cotdServers);
+            System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json", cotdServersNewJson);
 
-                    if (player.Servers != null)
+            await ResetDailyMapFromAllServer();
+            setAllDailyMaps();
+            await ResetDiscordServerFeeds(discord);
+        }
+
+        private async Task ResetDiscordServerFeeds(DiscordSocketClient discord)
+        {
+            var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+            var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+
+            foreach (var server in cotdServers)
+            {
+                //Reset discord feed 
+                try
+                {
+                    if (server.DiscordFeedChannelID != null)
                     {
-                        foreach (var server in player.Servers)
+                        var channel = (ITextChannel)await _discord.GetChannelAsync(Convert.ToUInt64(server.DiscordFeedChannelID));
+                        if (channel == null)
                         {
-                            if (server.id == null) continue;
-                            try
+                            server.DiscordFeedChannelID = null;
+                        }
+                        else
+                        {
+                            var messages = await channel.GetMessagesAsync(10).FlattenAsync();
+                            if (messages != null && messages.Count() >= 2)
                             {
-                                var serverPlayers = playersDaily.Where(x => x.Servers != null && x.Servers.FirstOrDefault(x => x.id == server.id) != null).ToList();
+                                var leaderboardRaw = messages.FirstOrDefault(x => x.Embeds.First().Footer.Value.Text == "001");
+                                var newPlayRaw = messages.FirstOrDefault(x => x.Embeds.First().Footer.Value.Text == "002");
+                                var leaderboard = (RestUserMessage)leaderboardRaw;
+                                var newPlay = (RestUserMessage)newPlayRaw;
 
-                                if (serverPlayers.Count() >= 1)
-                                {
-                                    var serverPlayersGlobal = playersGlobal.Where(x => x.Servers.FirstOrDefault(x => x.id == server.id) != null).ToList();
-                                    var playerCurrentServerMMR = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).Servers.First(x => x.id == server.id).MMR;
-                                    var avgMMRServerFromAll = serverPlayersGlobal.Average(x => x.Servers.First(x => x.id == server.id).MMR);
-                                    var avgMMRServerFromBelowPlayer = playersDaily.Where(x => x.Servers != null && x.Servers.FirstOrDefault(x => x.id == server.id) != null).OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore <= player.TodaysScore).Average(x => x.Servers.First(x => x.id == server.id).MMR);
-                                    var avgMMRServerFromAbovePlayer = playersDaily.Where(x => x.Servers != null && x.Servers.FirstOrDefault(x => x.id == server.id) != null).OrderByDescending(x => x.TodaysScore).Where(x => x.TodaysScore >= player.TodaysScore).Average(x => x.Servers.First(x => x.id == server.id).MMR);
-                                    double mmrServerWin = 20;
-                                    var mmrServerDiff = (200 * avgMMRServerFromAbovePlayer / playerCurrentServerMMR) - 100;
-                                    mmrServerWin += mmrServerDiff;
-                                    playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).Servers.FirstOrDefault(x => x.id == server.id).MMR += (int)Math.Round(mmrServerWin);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                var f = 2;
+                                await leaderboard.ModifyAsync(x => x.Embed = GetMapFeed(server).Build());
+                                await newPlay.ModifyAsync(x => x.Embed = GetNewPlayFeed("", "", "", "", "").Build());
+
+                                var fakeMsg = await channel.SendMessageAsync("yeet");
+                                await fakeMsg.DeleteAsync();
                             }
                         }
                     }
                 }
-                var newJson = JsonConvert.SerializeObject(playersGlobal);
-                File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/AllCupOfTheDayPlayers.json", newJson);
+                catch (Exception ex)
+                {
+                    var f = ex;
+                }
             }
-
-
-            //Remove all players from the daily leaderboard
-            File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/TodaysCupOfTheDayPlayers.json", "");
+            var cotdServersNewJson = JsonConvert.SerializeObject(cotdServers);
+            System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json", cotdServersNewJson);
         }
 
-        public static void StorePlayer(Player player, string serverName)
+        public static async void CreateGlobalServer()
         {
-            //Add player to todays list if he is not already
-            var json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\TodaysCupOfTheDayPlayers.json");
-            var playersDaily = JsonConvert.DeserializeObject<List<Player>>(json);
-            if (playersDaily == null) playersDaily = new List<Player>();
-
-
-            //Add player to global list if it is his first appearance
-            json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\AllCupOfTheDayPlayers.json");
-            var playersGlobal = JsonConvert.DeserializeObject<List<Player>>(json);
-            if (playersGlobal == null) playersGlobal = new List<Player>();
-            if (playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID) == null)
+            var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+            var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+            if (cotdServers.FirstOrDefault(x => x.ServerID == "0" && x.ServerName == "Global") == null)
             {
-                player.TotalWinsGlobal = 0;
-                player.MMRGlobal = 600;
-                var l = new List<Player.ServerStats>();
-                l.Add(new Player.ServerStats() { id = serverName, MMR = 600, TotalWins = 0 });
-                player.Servers = l;
-                playersGlobal.Add(player);
+                var map = await GenerateGlobalDailyMap("", DailyMapMode.Standard);
+                cotdServers.Add(new COTDServer() { ServerID = "0", ServerName = "Global", IsPublic = true, TodaysMap = map });
             }
-            else
+            var cotdServersNewJson = JsonConvert.SerializeObject(cotdServers);
+            System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json", cotdServersNewJson);
+        }
+
+        public static async void MakeServerPrivateOrPublic(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
+        {
+            //Make server private / public 
+            var json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+            if (json != "")
             {
-                player = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID);
-                if (player.Servers != null)
+                var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(json);
+                var server = cotdServers.FirstOrDefault(x => x.ServerID == command.GuildId.ToString());
+                if (server != null)
                 {
-                    var list = player.Servers;
-                    list.Add(new Player.ServerStats() { id = serverName, MMR = 600, TotalWins = 0 });
-                    player.Servers = list;
+                    if (server.IsPublic) server.IsPublic = false;
+                    else server.IsPublic = true;
                 }
                 else
                 {
-                    var l = new List<Player.ServerStats>();
-                    l.Add(new Player.ServerStats() { id = serverName });
-                    player.Servers = l;
+                    var guild = discordSocketClient.GetGuild((ulong)command.GuildId);
+                    server = new COTDServer() { ServerID = command.GuildId.ToString(), ServerName = guild.Name, IsPublic = true, TodaysMap = cotdServers.FirstOrDefault(x => x.ServerName == "Global" && x.ServerID == "0").TodaysMap };
+                    cotdServers.Add(server);
                 }
-                playersGlobal.Remove(playersGlobal.First(x => x.ScoreSaberID == player.ScoreSaberID));
-                playersGlobal.Add(player);
+
+                var cotdServersJson = JsonConvert.SerializeObject(cotdServers);
+                System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json", cotdServersJson);
+                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"This server is now {(server.IsPublic ? "public" : "private")}", $"{(server.IsPublic ? "Everyone can now see the leaderboard on" : "This server has been removed from")} https://beatsaberbot.com/CupOfTheDay").Build());
             }
-            var globalJson = JsonConvert.SerializeObject(playersGlobal);
-            System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\AllCupOfTheDayPlayers.json", globalJson);
-
-
-            if (playersDaily.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID) == null)
+            else
             {
-                if (playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID) != null) player.MMRGlobal = playersGlobal.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID).MMRGlobal;
-                playersDaily.Add(player);
-            };
-            var dailyJson = JsonConvert.SerializeObject(playersDaily);
-            System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\TodaysCupOfTheDayPlayers.json", dailyJson);
+                var cotdServers = new List<COTDServer>();
+                var guild = discordSocketClient.GetGuild((ulong)command.GuildId);
+                cotdServers.Add(new COTDServer() { ServerID = command.GuildId.ToString(), ServerName = guild.Name, IsPublic = true, TodaysMap = cotdServers.FirstOrDefault(x => x.ServerName == "Global" && x.ServerID == "0").TodaysMap });
+                var cotdServersJson = JsonConvert.SerializeObject(cotdServers);
+                System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json", cotdServersJson);
+                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("This server is now public", "Everyone can now see the leaderboard on https://beatsaberbot.com/CupOfTheDay").Build());
+            }
+        }
 
+        public static async Task SetFeedChannel(SocketSlashCommand command, ITextChannel channel)
+        {
+            var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+            var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+
+            var channelID = channel.Id;
+            var server = cotdServers.FirstOrDefault(x => x.ServerID == command.GuildId.ToString());
+            if (server != null)
+            {
+                server.DiscordFeedChannelID = channelID.ToString();
+
+                //Send Main message + new score message
+
+                var leaderboardEmbed = GetMapFeed(server);
+                await channel.SendMessageAsync("", false, leaderboardEmbed.Build());
+
+                await channel.SendMessageAsync("", false, GetNewPlayFeed("", "", "", "", "").Build());
+
+                var cotdServersJsonNew = JsonConvert.SerializeObject(cotdServers);
+                System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json", cotdServersJsonNew);
+            }
+            else await command.Channel.SendMessageAsync("Server is not made yet, First use the command `/cupoftheday settings make public`");
+        }
+
+        public static EmbedBuilder GetNewPlayFeed(string username, string acc, string mmr, string wins, string id)
+        {
+            var newPlayEmbed = new EmbedBuilder();
+
+            var title = "No one has set a score yet.";
+            if (username != "") title = $"{username} set a new score! ({acc}%)";
+
+            newPlayEmbed.Title = title;
+
+            var desc = "be the first one to set a score";
+            if (username != "") desc = $"MMR: {mmr}\nWins: {wins}";
+
+            newPlayEmbed.Description = desc;
+
+            var thumbnail = "https://cdn.scoresaber.com/avatars/steam.png";
+            if (id != "") thumbnail = $"https://cdn.scoresaber.com/avatars/{id}.jpg";
+            newPlayEmbed.ThumbnailUrl = thumbnail;
+
+            newPlayEmbed.Footer = new EmbedFooterBuilder() { Text = "002" };
+
+            return newPlayEmbed;
+        }
+
+        public static EmbedBuilder GetMapFeed(COTDServer server)
+        {
+            var desc = "";
+            for (var x = 1; x <= 8; x++)
+            {
+                if (server.TodaysPlayers != null && x <= server.TodaysPlayers.Count())
+                {
+                    var player = server.TodaysPlayers[x - 1];
+                    desc += $"#{x}  **{player.Name}**         Acc: **{Math.Round((double)player.TodaysScore * 100 / server.TodaysMap.MaxScore, 2)}%** - MMR: **{player.MMR}** \n\n";
+                }
+                else
+                {
+                    desc += $"#{x} ...\n\n";
+                }
+            }
+
+            var leaderboardEmbed = new EmbedBuilder();
+            leaderboardEmbed.Title = "Cup Of The Day (Daily Leaderboard)";
+            leaderboardEmbed.Url = "https://beatsaberbot.com/CupOfTheDay";
+            leaderboardEmbed.Author = new EmbedAuthorBuilder { Name = server.ServerName };
+            leaderboardEmbed.ThumbnailUrl = $"https://cdn.scoresaber.com/covers/{server.TodaysMap.SongHash}.png";
+            leaderboardEmbed.Footer = new EmbedFooterBuilder() { Text = "001" };
+            leaderboardEmbed.Fields.Add(new EmbedFieldBuilder() { Name = server.TodaysMap.SongName + " by " + server.TodaysMap.SongAuthorName + $"({server.TodaysMap.Difficulty.DifficultyRaw.Replace("_", " ")})", Value = "Made by: " + server.TodaysMap.LevelAuthorName });
+            leaderboardEmbed.Description = desc;
+
+            return leaderboardEmbed;
+        }
+
+        public static async void UploadServerPlaylist(IAttachment attachment, string serverID)
+        {
+            try
+            {
+                // Create scoresaber map list 
+                var json = "";
+                using (WebClient wc = new WebClient())
+                {
+                    json = wc.DownloadString(attachment.Url);
+                }
+
+                var playlist = JsonConvert.DeserializeObject<Models.PlaylistMapsModel>(json);
+                if (playlist == null) return;
+
+                var maps = new List<LeaderboardInfoModel.Leaderboard>();
+                var scoresaberClient = new ScoreSaberClient();
+                foreach (var song in playlist.Songs)
+                {
+                    var map = await BeatSaverApi.GetMapByKey(song.Key);
+                    if (map == null) map = await BeatSaverApi.GetMapByHash(song.Hash);
+                    if (map == null) return;
+                    var diff = map.Versions.First().Diffs.Last().Difficulty;
+                    var diffnr = 9;
+                    switch (diff)
+                    {
+                        case "Easy":
+                            diffnr = 1;
+                            break;
+                        case "Normal":
+                            diffnr = 3;
+                            break;
+                        case "Hard":
+                            diffnr = 5;
+                            break;
+                        case "Expert":
+                            diffnr = 7;
+                            break;
+                        case "ExpertPlus":
+                            diffnr = 9;
+                            break;
+                        default:
+                            diffnr = 9;
+                            break;
+                    }
+                    var leaderboard = await scoresaberClient.Api.Leaderboards.GetLeaderboardInfoByHashcode(song.Hash, (Leaderboards.Difficulty)diffnr);
+                    maps.Add(leaderboard);
+                }
+
+                if (maps.Count <= 0) return;
+
+                //Add playlist to server
+                var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+                var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+
+                if (cotdServers.FirstOrDefault(x => x.ServerID == serverID) == null) return;
+                else
+                {
+                    var server = cotdServers.FirstOrDefault(x => x.ServerID == serverID);
+                    server.Playlist = maps;
+                    server.TodaysMap = maps.First();
+                    foreach (var player in server.TodaysPlayers)
+                    {
+                        player.TodaysScore = 0;
+                    }
+
+                    var cotdServersNewJson = JsonConvert.SerializeObject(cotdServers);
+                    System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json", cotdServersNewJson);
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }           
+        }
+
+        private async Task ResetDailyMapFromAllServer()
+        {
+            var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+            if (cotdServersJson != "")
+            {
+                var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+                foreach (var server in cotdServers)
+                {
+                    if (server.ServerName == "Global" && server.ServerID == "0")
+                    {
+                        var standardFocus = await GenerateGlobalDailyMap(server.TodaysMapFocus.SongHash, DailyMapMode.Focus);
+                        var standardMap = await GenerateGlobalDailyMap(server.TodaysMap.SongHash, DailyMapMode.Standard); //TODO replace todaysmap with specific
+                        var standardHardcore = await GenerateGlobalDailyMap(server.TodaysMapHardcore.SongHash, DailyMapMode.Hardcore);
+
+                        server.TodaysMapFocus = standardFocus;
+                        server.TodaysMap = standardMap;
+                        server.TodaysMapHardcore = standardHardcore;
+
+                        continue;
+                    }
+
+                    var playlist = server.Playlist.Where(x => x != null).ToList();
+                    var index = 0;
+                    if (server.TodaysMap != null) index = playlist.IndexOf(playlist.FirstOrDefault(x => x.SongHash == server.TodaysMap.SongHash));
+                    if (index + 1 >= playlist.Count) index = 0;
+                    else index += 1;
+                    server.TodaysMap = playlist[index];
+                }
+                var newJson = JsonConvert.SerializeObject(cotdServers);
+                File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/COTDServerPlayer.json", newJson);
+            }
+        }
+
+        public static void ServerPlayerJoin(Player player, string discordID, string serverID)
+        {
+            var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+            var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+            var server = cotdServers.FirstOrDefault(x => x.ServerID == serverID);
+            if (server == null) return;
+            else
+            {
+                if (server.AllTimePlayers == null) server.AllTimePlayers = new List<COTDPlayer>();
+                if (server.TodaysPlayers == null) server.TodaysPlayers = new List<COTDPlayer>();
+                if (server.TodaysPlayersFocus == null) server.TodaysPlayersFocus = new List<COTDPlayer>();
+                if (server.TodaysPlayersHardcore == null) server.TodaysPlayersHardcore = new List<COTDPlayer>();
+
+                if (server.AllTimePlayers.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == discordID) == null)//First time join
+                {
+                    var newPlayer = new COTDPlayer { DiscordID = discordID, ScoreSaberID = player.ScoreSaberID, MMR = 600, Name = player.Name, TodaysScore = 0, TotalWins = 0 };
+                    server.AllTimePlayers.Add(newPlayer);
+                    server.TodaysPlayers.Add(newPlayer);
+
+                    if (server.ServerID == "0")
+                    {
+                        server.TodaysPlayersFocus.Add(newPlayer);
+                        server.TodaysPlayersHardcore.Add(newPlayer);
+                    }
+                }
+                else
+                {
+                    if (server.TodaysPlayers.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == discordID) == null) //already existing
+                    {
+                        var allTimePlayer = server.AllTimePlayers.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == discordID);
+                        server.TodaysPlayers.Add(allTimePlayer);
+
+                        if (server.ServerID == "0")
+                        {
+                            server.TodaysPlayersFocus.Add(allTimePlayer);
+                            server.TodaysPlayersHardcore.Add(allTimePlayer);
+                        }
+                    }
+                }
+
+                var cotdServersNewJson = JsonConvert.SerializeObject(cotdServers);
+                System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json", cotdServersNewJson);
+            }
         }
 
         public class Player
@@ -290,6 +762,33 @@ namespace DiscordBeatSaberBot.Handlers
 
                 public int TotalWins { get; set; }
             }
+        }
+
+        public class COTDServer
+        {
+            public string ServerName;
+            public string ServerID;
+            public bool IsPublic;
+            public string DiscordFeedChannelID;
+            public LeaderboardInfoModel.Leaderboard TodaysMap;
+            public LeaderboardInfoModel.Leaderboard TodaysMapFocus;
+            public LeaderboardInfoModel.Leaderboard TodaysMapHardcore;
+            public List<LeaderboardInfoModel.Leaderboard> Playlist;
+            public List<COTDPlayer> TodaysPlayers;
+            public List<COTDPlayer> TodaysPlayersFocus;
+            public List<COTDPlayer> TodaysPlayersHardcore;
+            public List<COTDPlayer> AllTimePlayers;
+        }
+
+        public class COTDPlayer
+        {
+            public string Name { get; set; }
+            public string ScoreSaberID { get; set; }
+            public string DiscordID { get; set; }
+            public double MMR { get; set; }
+            public double TodaysMMRChange { get; set; }
+            public int TotalWins { get; set; }
+            public long TodaysScore { get; set; }
         }
     }
 }
