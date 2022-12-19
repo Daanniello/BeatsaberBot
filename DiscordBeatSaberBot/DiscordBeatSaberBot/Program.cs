@@ -59,6 +59,7 @@ namespace DiscordBeatSaberBot
 
         public async Task MainAsync()
         {
+
             try
             {
                 discordSocketClient = new DiscordSocketClient(new DiscordSocketConfig()

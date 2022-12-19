@@ -4,6 +4,7 @@ using DiscordBeatSaberBot.Api.ScoreberAPI.Models.ScoresaberRankedRequestModel;
 using DiscordBeatSaberBot.Api.ScoreberAPI.Models.ScoresaberRankedTopRequestsModel;
 using DiscordBeatSaberBot.Models.ScoreberAPI;
 using Newtonsoft.Json;
+using ScoreSaberLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;

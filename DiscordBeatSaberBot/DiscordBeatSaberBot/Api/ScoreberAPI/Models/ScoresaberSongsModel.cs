@@ -25,6 +25,9 @@ namespace DiscordBeatSaberBot.Models.ScoreberAPI
         [JsonProperty("unmodififiedScore")]
         public long UScore { get; set; }
 
+        [JsonProperty("missedNotes")]
+        public long MissedNotes { get; set; }
+
         [JsonProperty("mods")]
         public string Mods { get; set; }
 

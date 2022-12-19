@@ -26,6 +26,9 @@ namespace DiscordBeatSaberBot.Commands
     {
         public static System.IDisposable triggerState = null;
 
+        public static Dictionary<string, DateTime> ShopWaitList = new Dictionary<string, DateTime>();
+
+
         [Help("Search", "Get info about a scoresaber user", "/search [DiscordTag]/[ScoresaberID]/[Username]", HelpAttribute.Catergories.General)]
         public static async Task SearchUserCommand(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
         {
@@ -71,7 +74,7 @@ namespace DiscordBeatSaberBot.Commands
             ////Draw TEST ZONE
             //if (command.Data.Options.FirstOrDefault(x => x.Name == "draw") != null && command.User.Id == 138439306774577152)
             //{
-            //    BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
+            //    BeatSaberCardCollection.DrawAndSendRandomFifaCard(discordSocketClient, command);
             //    return;
             //}
             //else
@@ -85,11 +88,11 @@ namespace DiscordBeatSaberBot.Commands
             {
                 if (command.Data.Options.FirstOrDefault().Options.FirstOrDefault().Name == "all")
                 {
-                    if (BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command) == false) BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
+                    if (BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command) == false) BeatSaberCardCollection.DrawAndSendRandomFifaCard(discordSocketClient, command);
                     await Task.Delay(1000);
                     for (var x = BeatSaberCardCollection.CheckPlayerPackAmount(command.User.Id.ToString()); x > 0; x--)
                     {
-                        if (!BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command)) BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
+                        if (!BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command)) BeatSaberCardCollection.DrawAndSendRandomFifaCard(discordSocketClient, command);
                         await Task.Delay(1000);
                     }
 
@@ -109,7 +112,7 @@ namespace DiscordBeatSaberBot.Commands
                 }
                 if (command.Data.Options.FirstOrDefault().Options.FirstOrDefault().Name == "one")
                 {
-                    if (!BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command)) BeatSaberCardCollection.DrawAndSendRandomFifaCard(command);
+                    if (!BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command)) BeatSaberCardCollection.DrawAndSendRandomFifaCard(discordSocketClient, command);
                 }
 
 
@@ -144,6 +147,63 @@ namespace DiscordBeatSaberBot.Commands
                 {
                     BeatSaberCardCollection.ToggleCardDrawDMNotification(command);
                 }
+                return;
+            }
+
+            //Settings
+            if (command.Data.Options.FirstOrDefault(x => x.Name == "shop") != null)
+            {
+                var beatShardsJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\BSTCBeatShards.json");
+                var playersBeatShardsList = JsonConvert.DeserializeObject<Dictionary<string, long>>(beatShardsJson);
+                var userID = command.User.Id.ToString();
+                var item = command.Data.Options.FirstOrDefault(x => x.Name == "shop").Options.FirstOrDefault().Value.ToString();
+                
+
+                if (item == "1packs" || item == "10packs")
+                {
+                    //Make sure to delay the user when buy spamming
+                    if (ShopWaitList.ContainsKey(userID) && ShopWaitList[userID] > DateTime.Now)
+                    {
+                        //deny
+                        await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"Wait a little bit before buying another item", $"{Math.Round((ShopWaitList[userID] - DateTime.Now).TotalSeconds, 0)} seconds left").Build());
+                        return;
+                    }
+                    else
+                    {
+                        if (ShopWaitList.ContainsKey(userID)) ShopWaitList.Remove(userID);
+                    }
+                    ShopWaitList.Add(userID, DateTime.Now.AddSeconds(10));
+
+                    var value = 99999;
+                    if (item == "1packs") value = 150;
+                    if (item == "10packs") value = 1500;
+
+                    var playerShards = playersBeatShardsList.First(x => x.Key == userID);
+                    if (playerShards.Key == userID)
+                    {
+                        if (playerShards.Value >= value)
+                        {
+                            playersBeatShardsList[userID] = playerShards.Value - value;
+
+                            if (item == "1packs") await new BeatSaberCardCollection(discordSocketClient).GivePacks(Convert.ToInt64(userID), 1, "Here is your extra pack!"); ;
+                            if (item == "10packs") await new BeatSaberCardCollection(discordSocketClient).GivePacks(Convert.ToInt64(userID), 10, "Here is your 10 extra packs!"); ;
+
+                            await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"You bought {item}", $"You now have **{playersBeatShardsList[userID]}** Beat Shards left.").Build());
+                        }
+                        else
+                        {
+                            await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"You do not have enough to buy {item}", $"You have {playersBeatShardsList[userID]} Beat Shards.").Build());
+                        }
+
+                        var newJson = JsonConvert.SerializeObject(playersBeatShardsList);
+                        System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection/BSTCBeatShards.json", newJson);
+                    }
+                    else
+                    {
+                        await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"You do not have enough to buy {item}", $"You have 0 Beat Shards. \nYou can gain Beat Shards by converting your cards that you don't want into shards on the website. (https://beatsaberbot.com/BeatSaberCards)").Build());
+                    }
+                }
+
                 return;
             }
 
@@ -233,7 +293,7 @@ namespace DiscordBeatSaberBot.Commands
                         }
 
                         var beatsavermap = await BeatSaverApi.GetMapByHash(globalServer.TodaysMap.SongHash);
-                        var embed = EmbedBuilderExtension.NullEmbed("You joined the Global Cup of the day", $"**{globalServer.TodaysMap.SongName} by {globalServer.TodaysMap.SongAuthorName}**\nmapped by {globalServer.TodaysMap.LevelAuthorName}\n\n**What to do?**\n- Download the map [here](https://beatsaberbot.com/CupOfTheDay) with one-click\n Or search the map in-game with [bsr](https://beatsaver.com/maps/{beatsavermap.Id}) code: {beatsavermap.Id}\n- Make sure to set a score. You have **{(DateTime.Now.AddDays(1).Date - DateTime.Now).Hours}H** left. \n- Set a score on the **{globalServer.TodaysMap.Difficulty.DifficultyRaw.Replace("_", " ")}** difficulty\n\n**Current Stats**\nUsername: ***{player.Name}***\nGlobal MMR: ***{mmr}***\nGlobal Wins: ***{wins}***");
+                        var embed = EmbedBuilderExtension.NullEmbed("You joined the Global Cup of the day", $"**{globalServer.TodaysMap.SongName} by {globalServer.TodaysMap.SongAuthorName}**\nmapped by {globalServer.TodaysMap.LevelAuthorName}\n\n**What to do?**\n- Download the map [here](https://beatsaberbot.com/CupOfTheDay) with one-click\n Or search the map in-game with [bsr](https://beatsaver.com/maps/{beatsavermap.Id}) code: {beatsavermap.Id}\n- Make sure to set a score. You have **{(DateTime.Now.AddDays(1).Date - DateTime.Now).Hours}H** left. \n- Set a score on the **{globalServer.TodaysMap.Difficulty.DifficultyRaw.Replace("_", " ")}** difficulty\n\n**Current Stats**\nUsername: ***{player.Name}***\nGlobal MMR: ***{Math.Round(mmr, 2)}***\nGlobal Wins: ***{wins}***");
                         embed.ThumbnailUrl = $"https://eu.cdn.beatsaver.com/{globalServer.TodaysMap.SongHash.ToLower()}.jpg";
                         embed.Author = new EmbedAuthorBuilder() { Name = globalServer.ServerName, IconUrl = "https://beatsaberbot.com/img/Logo.png" };
                         var msg = await command.Channel.SendMessageAsync("", false, embed.Build());
@@ -270,10 +330,10 @@ namespace DiscordBeatSaberBot.Commands
                                 wins = existingPlayer.TotalWins;
                             }
 
-                            var embed = EmbedBuilderExtension.NullEmbed("You joined the Local Cup of the day", $"**{server.TodaysMap.SongName} by {server.TodaysMap.SongAuthorName}**\nmapped by {server.TodaysMap.LevelAuthorName}\n\n**What to do?**\n- Download the map [here](https://beatsaberbot.com/CupOfTheDay) with one-click\n- Make sure to set a score. You have **{(DateTime.Now.AddDays(1).Date - DateTime.Now).Hours}H** left. \n- Set a score on the **{server.TodaysMap.Difficulty.DifficultyRaw.Replace("_", " ")}** difficulty\n\n**Current Stats**\nUsername: ***{player.Name}***\nGlobal MMR: ***{mmr}***\nGlobal Wins: ***{wins}***");
+                            var embed = EmbedBuilderExtension.NullEmbed("You joined the Local Cup of the day", $"**{server.TodaysMap.SongName} by {server.TodaysMap.SongAuthorName}**\nmapped by {server.TodaysMap.LevelAuthorName}\n\n**What to do?**\n- Download the map [here](https://beatsaberbot.com/CupOfTheDay) with one-click\n- Make sure to set a score. You have **{(DateTime.Now.AddDays(1).Date - DateTime.Now).Hours}H** left. \n- Set a score on the **{server.TodaysMap.Difficulty.DifficultyRaw.Replace("_", " ")}** difficulty\n\n**Current Stats**\nUsername: ***{player.Name}***\nGlobal MMR: ***{Math.Round(mmr, 2)}***\nGlobal Wins: ***{wins}***");
                             embed.ThumbnailUrl = server.TodaysMap.CoverImage.AbsoluteUri;
                             embed.Author = new EmbedAuthorBuilder() { Name = server.ServerName, IconUrl = guild.IconUrl };
-                            await command.Channel.SendMessageAsync("", false, embed.Build()); 
+                            await command.Channel.SendMessageAsync("", false, embed.Build());
                         }
                         else
                         {
@@ -291,9 +351,9 @@ namespace DiscordBeatSaberBot.Commands
             {
                 var option = command.Data.Options.FirstOrDefault(x => x.Name.ToString() == "settings").Options.First();
 
-                if(option.Name == "make_server_public")
+                if (option.Name == "make_server_public")
                 {
-                    var shouldBePublic = (bool) option.Value;
+                    var shouldBePublic = (bool)option.Value;
                     if (discordSocketClient.GetGuild((ulong)command.GuildId).OwnerId == command.User.Id || command.User.Id == 138439306774577152)
                     {
                         CupOfTheDayHandler.MakeServerPrivateOrPublic(discordSocketClient, command);
@@ -311,11 +371,11 @@ namespace DiscordBeatSaberBot.Commands
                     //upload playlist map info to a json linked to discord server id
                     if (discordSocketClient.GetGuild((ulong)command.GuildId).OwnerId == command.User.Id || command.User.Id == 138439306774577152)
                     {
-                        var attachment = (IAttachment) option.Value;
+                        var attachment = (IAttachment)option.Value;
                         //if attachment is valid
                         var type = attachment.Filename.Split(".")[^1];
                         if (type == "bplist" || type == "json")
-                        {                            
+                        {
                             CupOfTheDayHandler.UploadServerPlaylist(attachment, command.GuildId.ToString());
                             var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Playlist has been uploaded", "Your CupOfTheDay Maps from this server will now rotate through this playlist, starting from the first map. **Notice: tracking scores can take up to 30 min after upload**").Build());
                             return;
@@ -339,7 +399,7 @@ namespace DiscordBeatSaberBot.Commands
                     {
                         var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Permissions", "Only the server owner has access to this command").Build());
                         return;
-                    }    
+                    }
                 }
             }
         }
@@ -566,7 +626,7 @@ namespace DiscordBeatSaberBot.Commands
                 randomMaxNumber = Convert.ToInt32(type.Value);
             }
 
-            var randomNumber = new Random().Next(0, randomMaxNumber);
+            var randomNumber = new Random().Next(1, randomMaxNumber + 1);
             await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"{randomNumber}", $"You rolled a {randomNumber} with a {randomMaxNumber} sided dice").Build());
         }
 

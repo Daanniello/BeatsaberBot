@@ -23,7 +23,7 @@ namespace DiscordBeatSaberBot.Commands
                 var componentBuilder = new ComponentBuilder();
                 componentBuilder.WithButton(emote: Emote.Parse("<:leftarrow:923182957798244402>"), customId: "leftHelpButton", style: ButtonStyle.Primary);                
                 componentBuilder.WithButton("Website", style: ButtonStyle.Link, url: "http://beatsaberbot.com/");
-                componentBuilder.WithButton("Github", style: ButtonStyle.Link, url: "https://github.com/Daanniello/BeatsaberBot");
+                componentBuilder.WithButton("Patreon❤️", style: ButtonStyle.Link, url: "https://www.patreon.com/Silverhaze");
                 componentBuilder.WithButton("Discord Server", style: ButtonStyle.Link, url: "https://discord.gg/S3D3Yyu");
                 componentBuilder.WithButton(emote: Emote.Parse("<:rightArrow:923182974638358528>"), customId: "rightHelpButton", style: ButtonStyle.Primary);
                 var currentMessage = await command.Channel.SendMessageAsync("", false, DiscordBeatSaberBot.Help.GetHelpList(discordSocketClient), components: componentBuilder.Build());

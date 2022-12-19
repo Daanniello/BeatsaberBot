@@ -26,6 +26,7 @@ using System.IO;
 using DiscordBeatSaberBot.Api.BeatSaverApi;
 using DiscordBeatSaberBot.Api.BeatSaviourApi;
 using DiscordBeatSaberBot.Commands.Functions;
+using ScoreSaberLib;
 
 namespace DiscordBeatSaberBot.Extensions
 {
@@ -140,16 +141,16 @@ namespace DiscordBeatSaberBot.Extensions
                     $"\n[Mapper: {mapInfoBeatSaver.Uploader.Name}](https://beatsaver.com/uploader/{mapInfoBeatSaver.Uploader.Id})" +
                     $"\n[Image](https://beatsaver.com/{mapInfoBeatSaver.Versions.First().CoverUrl})");
 
-             
 
-                embedBuilder.AddField( "Description", "\n" +
+
+                embedBuilder.AddField("Description", "\n" +
                   //$"Available Difficulties: " +
                   //$"{(mapInfoBeatSaver.Metadata.Difficulties.Easy.ToString() == "False" ? "" : "Easy - ")}" +
                   //$"{(mapInfoBeatSaver.Metadata.Difficulties.Normal.ToString() == "False" ? "" : "Normal - ")}" +
                   //$"{(mapInfoBeatSaver.Metadata.Difficulties.Hard.ToString() == "False" ? "" : "Hard - ")}" +
                   //$"{(mapInfoBeatSaver.Metadata.Difficulties.Expert.ToString() == "False" ? "" : "Expert - ")}" +
                   //$"{(mapInfoBeatSaver.Metadata.Difficulties.ExpertPlus.ToString() == "False" ? "" : "Expert+")}" +
-                  mapInfoBeatSaver.Description + 
+                  mapInfoBeatSaver.Description +
                   "\n" +
                   $"[Download Map](https://beatsaver.com{mapInfoBeatSaver?.Versions.First().DownloadUrl}) - " +
                   $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={mapInfoBeatSaver?.Id}) - " +
@@ -160,7 +161,7 @@ namespace DiscordBeatSaberBot.Extensions
                 await command.Channel.SendFileAsync($"../../../Resources/img/EmbedBackground-{key}.png", embed: embedBuilder.Build());
                 File.Delete($"../../../Resources/img/EmbedBackground-{key}.png");
             }
-        }    
+        }
 
         public static async Task<(string, string)> RankedNeighbours(string playerName, int playerRank,
             int recursionLoop = 0)
@@ -529,7 +530,7 @@ namespace DiscordBeatSaberBot.Extensions
 
             var cardId = await BeatSaberInfoExtension.GetAndCreateCompareImage(player1Info, player2Info);
             await command.Channel.SendMessageAsync($"{GlobalConfiguration.BotImageStorageLink}CompareCard_{player1}_{player2ScoresaberID}_{cardId}.png");
-            
+
             return null;
         }
         public static async Task<EmbedBuilder> GetComparedEmbedBuilder(string message, SocketMessage socketMessage, DiscordSocketClient discordSocketClient)
@@ -843,12 +844,12 @@ namespace DiscordBeatSaberBot.Extensions
             var rankingCardCreator = new ImageCreator("../../../Resources/img/UserCard-Template.png");
 
             //Add player main info
-            rankingCardCreator.AddText(player.Name.ToUpper(), System.Drawing.Color.White, 20, 120, 10);
-            rankingCardCreator.AddText(player.Country.ToUpper(), System.Drawing.Color.White, 12, 120, 45);
-            var rankWidth = rankingCardCreator.AddText($"#{player.rank}", System.Drawing.Color.White, 12, 120, 68).Width;
-            rankingCardCreator.AddText($"#{player.CountryRank}", System.Drawing.Color.FromArgb(176, 176, 176), 8, 120 + rankWidth, 72);
-            rankingCardCreator.AddText($"{player.Pp}PP", System.Drawing.Color.White, 15, 120, 88);
-            rankingCardCreator.AddTextFloatRight(topic, System.Drawing.Color.White, 15, 10, 88);
+            rankingCardCreator.AddText(player.Name.ToUpper(), System.Drawing.Color.White, 20, 120, 10, "Poppins");
+            rankingCardCreator.AddText(player.Country.ToUpper(), System.Drawing.Color.White, 12, 120, 45, "Poppins");
+            var rankWidth = rankingCardCreator.AddText($"#{player.rank}", System.Drawing.Color.White, 12, 120, 68, "Poppins").Width;
+            rankingCardCreator.AddText($"#{player.CountryRank}", System.Drawing.Color.FromArgb(176, 176, 176), 8, 120 + rankWidth, 72, "Poppins");
+            rankingCardCreator.AddText($"{player.Pp}PP", System.Drawing.Color.White, 15, 120, 88, "Poppins");
+            rankingCardCreator.AddTextFloatRight(topic, System.Drawing.Color.White, 15, 10, 88, "Poppins");
 
             rankingCardCreator.AddImage($"https://flagpedia.net/data/flags/w580/{player.Country.ToLower()}.png", 150, 50, 20, 15);
             rankingCardCreator.AddImage($"https://new.scoresaber.com{player.Avatar}", 15, 13, 100, 100);
@@ -859,10 +860,12 @@ namespace DiscordBeatSaberBot.Extensions
 
         public static async Task<Guid> GetAndCreateRecentsongsCardImage(string scoresaberId, int page = 1, bool isTopsong = false)
         {
-            var playerRaw = new ScoresaberAPI(scoresaberId);
-            var playerRecentScores = isTopsong ? await playerRaw.GetTopScores(page) : await playerRaw.GetScoresRecent(page);
+            var api = new ScoreSaberClient().Api;
 
-            if(playerRecentScores == null)
+            var playerRaw = new ScoresaberAPI(scoresaberId);
+            var playerRecentScores = isTopsong ? await api.Players.GetPlayerScores(Convert.ToInt64(scoresaberId), limit: 10, Players.sort.top, page: page) :  await api.Players.GetPlayerScores(Convert.ToInt64(scoresaberId), limit: 10, Players.sort.recent, page: page);
+
+            if (playerRecentScores == null)
             {
                 return Guid.Empty;
             }
@@ -873,102 +876,107 @@ namespace DiscordBeatSaberBot.Extensions
             var marigin = 0;
             for (var x = 0; x < 8; x++)
             {
-                rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerRecentScores.Scores[x].Id}.png", 190, 10 + marigin, 1370, 180, 0.1f);
+                //rankingCardCreator.AddImage($"https://new.scoresaber.com/api/static/covers/{playerRecentScores.Scores[x].Id}.png", 190, 10 + marigin, 1370, 180, 0.1f, blurItensity: 5);
 
                 var fontsize = 50;
-                if (playerRecentScores.Scores[x].Name.Count() > 20) fontsize = 50;
-                if (playerRecentScores.Scores[x].Name.Count() > 30) fontsize = 40;
-                if (playerRecentScores.Scores[x].Name.Count() > 40) fontsize = 30;
-                if (playerRecentScores.Scores[x].Name.Count() > 50) fontsize = 20;
+                if (playerRecentScores[x].Leaderboard.SongName.Count() > 20) fontsize = 50;
+                if (playerRecentScores[x].Leaderboard.SongName.Count() > 30) fontsize = 40;
+                if (playerRecentScores[x].Leaderboard.SongName.Count() > 40) fontsize = 30;
+                if (playerRecentScores[x].Leaderboard.SongName.Count() > 50) fontsize = 20;
 
-                var rankcolor = System.Drawing.Color.LightGray;
-                if (playerRecentScores.Scores[x].Rank == 1) rankcolor = System.Drawing.Color.Goldenrod;
-                if (playerRecentScores.Scores[x].Rank == 2) rankcolor = System.Drawing.Color.White;
-                if (playerRecentScores.Scores[x].Rank == 3) rankcolor = System.Drawing.Color.SandyBrown;
+                var rankcolor = System.Drawing.Color.White;
+                if (playerRecentScores[x].Score.Rank == 1) rankcolor = System.Drawing.Color.FromArgb(255, 173, 0);
+                if (playerRecentScores[x].Score.Rank == 2) rankcolor = System.Drawing.Color.FromArgb(200, 209, 247);
+                if (playerRecentScores[x].Score.Rank == 3) rankcolor = System.Drawing.Color.FromArgb(150, 116, 68);
 
-                if (rankcolor != System.Drawing.Color.LightGray) rankingCardCreator.DrawRectangle(1555, marigin, 600, 180, rankcolor, opacity: 180);
-                rankingCardCreator.AddText($"{playerRecentScores.Scores[x].Name}", rankcolor, fontsize, 200, marigin + 0);
+                if (rankcolor != System.Drawing.Color.White) rankingCardCreator.DrawRectangle(20, marigin, 2080, 3, rankcolor);
+                if (rankcolor != System.Drawing.Color.White) rankingCardCreator.DrawRectangle(20, marigin + 185, 2080, 3, rankcolor);
 
-                var rankTextSize = rankingCardCreator.AddText($"#{playerRecentScores.Scores[x].Rank}", rankcolor, 50, 200, marigin + 110);
+                rankingCardCreator.AddText($"{playerRecentScores[x].Leaderboard.SongName.ToUpper()}", rankcolor, fontsize, 220, marigin + 0, "Poppins");
 
-                if (playerRecentScores.Scores[x].Pp > 0)
-                {
-                    double percentage = Convert.ToDouble(playerRecentScores.Scores[x].UScore) / Convert.ToDouble(playerRecentScores.Scores[x].MaxScoreEx) * 100;
-                    var acc = Math.Round(percentage, 2);
-                    rankingCardCreator.AddText($"{acc}%", rankcolor, 50, 350 + rankTextSize.Width, marigin + 110);
-                }
+                var extraSpaceForNonPP = 375;
+                if (playerRecentScores[x].Score.Pp == 0) extraSpaceForNonPP = 375;
+
+                //Rank
+                rankingCardCreator.AddTextCenter($"#{playerRecentScores[x].Score.Rank}", System.Drawing.Color.Black, 73, 1435 + extraSpaceForNonPP, marigin - 5, "Poppins");
+                var rankTextSize = rankingCardCreator.AddTextCenter($"#{playerRecentScores[x].Score.Rank}", rankcolor, 70, 1440 + extraSpaceForNonPP, marigin + 0, "Poppins");
+
+                //Acc
+                double percentage = Convert.ToDouble(playerRecentScores[x].Score.BaseScore) / Convert.ToDouble(playerRecentScores[x].Leaderboard.MaxScore) * 100;
+                var acc = Math.Round(percentage, 2);
+                rankingCardCreator.AddTextCenter($"{String.Format("{0:n}", acc)}%", rankcolor, 50, 1450 + extraSpaceForNonPP, marigin + 100, "Poppins");
+
+                //Miss
+                var misses = playerRecentScores[x].Score.MissedNotes + playerRecentScores[x].Score.BadCuts;
+                rankingCardCreator.AddTextFloatRight($"{(misses > 0 ? misses.ToString() + " miss" : "Full Combo")}", rankcolor, 50, 350, marigin + 100, "Poppins");
 
 
-                var ppfontsize = 50;
-                if (playerRecentScores.Scores[x].Pp > 300) ppfontsize = 50;
-                if (playerRecentScores.Scores[x].Pp > 400) ppfontsize = 55;
-                if (playerRecentScores.Scores[x].Pp > 500) ppfontsize = 60;
+                var ppfontsize = 60;
 
-                if (playerRecentScores.Scores[x].Pp != 0) rankingCardCreator.AddTextFloatRight($"+ {Math.Round(playerRecentScores.Scores[x].Pp, 2)}PP", System.Drawing.Color.LightBlue, ppfontsize, 20, marigin + 10);
-                
-                rankingCardCreator.AddText($"Time set: {playerRecentScores.Scores[x].Timeset.DateTime.ToShortDateString()} {playerRecentScores.Scores[x].Timeset.DateTime.ToShortTimeString()}", System.Drawing.Color.Gray, 30, 1040, marigin + 120);
-                rankingCardCreator.AddTextFloatRight($"{Math.Round((DateTime.Now - playerRecentScores.Scores[x].Timeset).TotalDays, 1)} days ago", rankcolor == System.Drawing.Color.LightGray ? System.Drawing.Color.Gray : System.Drawing.Color.FromArgb(33, 33, 33), 30, 10, marigin + 120);
+                if (playerRecentScores[x].Score.Pp != 0) rankingCardCreator.AddTextFloatRight($"{String.Format("{0:n}", playerRecentScores[x].Score.Pp)}PP", System.Drawing.Color.FromArgb(124, 252, 0), ppfontsize, 350, marigin + 0, "Poppins");
 
-                rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerRecentScores.Scores[x].Id}.png", 15, 10 + marigin, 180, 180);
-                
-                rankingCardCreator.AddText($"{playerRecentScores.Scores[x].GetDifficulty()}", rankcolor, 30, 205, marigin + 70);
+                rankingCardCreator.AddText($"{Math.Round((DateTime.Now - (DateTimeOffset) playerRecentScores[x].Score.TimeSet).TotalDays, 1)} days ago", System.Drawing.Color.Gray, 30, 225, marigin + 130, "Poppins");
+
+                rankingCardCreator.AddImageRounded($"{playerRecentScores[x].Leaderboard.CoverImage}", 15, 0 + marigin, 190, 190);
+
+                rankingCardCreator.AddText($"{playerRecentScores[x].Leaderboard.Difficulty.DifficultyRaw.Replace("_", " ").Trim().Split(" ").First().ToUpper()}", rankcolor, 30, 225, marigin + 70, "Poppins");
 
                 marigin += 210 - (x + 1 * 1);
             }
 
             //Finish Card
             var cardID = Guid.NewGuid();
-            if(!isTopsong) await rankingCardCreator.Create($"{GlobalConfiguration.BotImageStoragePath}RecentsongsCard_{scoresaberId}_{cardID}.png");
+            if (!isTopsong) await rankingCardCreator.Create($"{GlobalConfiguration.BotImageStoragePath}RecentsongsCard_{scoresaberId}_{cardID}.png");
             else await rankingCardCreator.Create($"{GlobalConfiguration.BotImageStoragePath}TopsongsCard_{scoresaberId}_{cardID}.png");
             return cardID;
         }
 
-        public static async Task GetAndCreateTopsongsCardImage(string scoresaberId, int page = 1)
-        {
-            var playerRaw = new ScoresaberAPI(scoresaberId);
-            var playerTopScores = await playerRaw.GetTopScores(page);
+        //public static async Task GetAndCreateTopsongsCardImage(string scoresaberId, int page = 1)
+        //{
+        //    var playerRaw = new ScoresaberAPI(scoresaberId);
+        //    var playerTopScores = await playerRaw.GetTopScores(page);
 
 
-            var rankingCardCreator = new ImageCreator("../../../Resources/img/RecentsongsCard-Template.png");
+        //    var rankingCardCreator = new ImageCreator("../../../Resources/img/RecentsongsCard-Template.png");
 
-            //Add SongInfo
-            var marigin = 0;
-            for (var x = 0; x < 5; x++)
-            {
-                rankingCardCreator.AddText($"{playerTopScores.Scores[x].Name}", System.Drawing.Color.White, 50, 320, marigin + 40);
+        //    //Add SongInfo
+        //    var marigin = 0;
+        //    for (var x = 0; x < 5; x++)
+        //    {
+        //        rankingCardCreator.AddText($"{playerTopScores.Scores[x].Name}", System.Drawing.Color.White, 50, 320, marigin + 40);
 
-                var rankcolor = System.Drawing.Color.Gray;
-                if (playerTopScores.Scores[x].Rank == 1) rankcolor = System.Drawing.Color.Goldenrod;
-                if (playerTopScores.Scores[x].Rank == 2) rankcolor = System.Drawing.Color.Silver;
-                if (playerTopScores.Scores[x].Rank == 3) rankcolor = System.Drawing.Color.SaddleBrown;
+        //        var rankcolor = System.Drawing.Color.Gray;
+        //        if (playerTopScores.Scores[x].Rank == 1) rankcolor = System.Drawing.Color.Goldenrod;
+        //        if (playerTopScores.Scores[x].Rank == 2) rankcolor = System.Drawing.Color.Silver;
+        //        if (playerTopScores.Scores[x].Rank == 3) rankcolor = System.Drawing.Color.SaddleBrown;
 
-                var rankTextSize = rankingCardCreator.AddText($"#{playerTopScores.Scores[x].Rank}", rankcolor, 50, 320, marigin + 135);
+        //        var rankTextSize = rankingCardCreator.AddText($"#{playerTopScores.Scores[x].Rank}", rankcolor, 50, 320, marigin + 135);
 
-                if (playerTopScores.Scores[x].Pp > 0)
-                {
-                    double percentage = Convert.ToDouble(playerTopScores.Scores[x].UScore) / Convert.ToDouble(playerTopScores.Scores[x].MaxScoreEx) * 100;
-                    var acc = Math.Round(percentage, 2);
-                    rankingCardCreator.AddText($"{acc}%", rankcolor, 50, 350 + rankTextSize.Width, marigin + 135);
-                }
+        //        if (playerTopScores.Scores[x].Pp > 0)
+        //        {
+        //            double percentage = Convert.ToDouble(playerTopScores.Scores[x].UScore) / Convert.ToDouble(playerTopScores.Scores[x].MaxScoreEx) * 100;
+        //            var acc = Math.Round(percentage, 2);
+        //            rankingCardCreator.AddText($"{acc}%", rankcolor, 50, 350 + rankTextSize.Width, marigin + 135);
+        //        }
 
 
-                var ppfontsize = 60;
-                if (playerTopScores.Scores[x].Pp > 300) ppfontsize = 65;
-                if (playerTopScores.Scores[x].Pp > 400) ppfontsize = 70;
-                if (playerTopScores.Scores[x].Pp > 500) ppfontsize = 80;
+        //        var ppfontsize = 60;
+        //        if (playerTopScores.Scores[x].Pp > 300) ppfontsize = 65;
+        //        if (playerTopScores.Scores[x].Pp > 400) ppfontsize = 70;
+        //        if (playerTopScores.Scores[x].Pp > 500) ppfontsize = 80;
 
-                if (playerTopScores.Scores[x].Pp != 0) rankingCardCreator.AddText($"+ {Math.Round(playerTopScores.Scores[x].Pp, 2)}PP", System.Drawing.Color.Green, ppfontsize, 1320, marigin + 120);
-                rankingCardCreator.AddText($"{playerTopScores.Scores[x].GetDifficulty()}", System.Drawing.Color.White, 30, 80, marigin + 255);
-                rankingCardCreator.AddText($"Time set: {playerTopScores.Scores[x].Timeset.DateTime.ToShortDateString()} {playerTopScores.Scores[x].Timeset.DateTime.ToShortTimeString()}", System.Drawing.Color.Gray, 30, 1000, marigin + 260);
-                rankingCardCreator.AddTextFloatRight($"{Math.Round((DateTime.Now - playerTopScores.Scores[x].Timeset).TotalDays, 1)} days ago", System.Drawing.Color.Gray, 30, 50, marigin + 260);
+        //        if (playerTopScores.Scores[x].Pp != 0) rankingCardCreator.AddText($"+ {Math.Round(playerTopScores.Scores[x].Pp, 2)}PP", System.Drawing.Color.Green, ppfontsize, 1320, marigin + 120);
+        //        rankingCardCreator.AddText($"{playerTopScores.Scores[x].GetDifficulty()}", System.Drawing.Color.White, 30, 80, marigin + 255);
+        //        rankingCardCreator.AddText($"Time set: {playerTopScores.Scores[x].Timeset.DateTime.ToShortDateString()} {playerTopScores.Scores[x].Timeset.DateTime.ToShortTimeString()}", System.Drawing.Color.Gray, 30, 1000, marigin + 260);
+        //        rankingCardCreator.AddTextFloatRight($"{Math.Round((DateTime.Now - playerTopScores.Scores[x].Timeset).TotalDays, 1)} days ago", System.Drawing.Color.Gray, 30, 50, marigin + 260);
 
-                rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerTopScores.Scores[x].Id}.png", 15, marigin, 250, 250);
-                marigin += 330 - (x * 3);
-            }
+        //        rankingCardCreator.AddImageRounded($"https://new.scoresaber.com/api/static/covers/{playerTopScores.Scores[x].Id}.png", 15, marigin, 250, 250);
+        //        marigin += 330 - (x * 3);
+        //    }
 
-            //Finish Card
-            await rankingCardCreator.Create($"{GlobalConfiguration.BotImageStoragePath}TopsongsCard_{scoresaberId}.png");
-        }
+        //    //Finish Card
+        //    await rankingCardCreator.Create($"{GlobalConfiguration.BotImageStoragePath}TopsongsCard_{scoresaberId}.png");
+        //}
 
         public static async Task<Guid> GetAndCreateProfileImage(string scoresaberId)
         {

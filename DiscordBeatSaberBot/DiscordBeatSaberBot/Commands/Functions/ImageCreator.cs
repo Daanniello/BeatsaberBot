@@ -1,4 +1,7 @@
 ﻿using AnimatedGif;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -8,6 +11,12 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Color = System.Drawing.Color;
+using ColorMatrix = System.Drawing.Imaging.ColorMatrix;
+using Image = System.Drawing.Image;
+using PointF = System.Drawing.PointF;
+using Rectangle = System.Drawing.Rectangle;
+using SizeF = System.Drawing.SizeF;
 
 namespace DiscordBeatSaberBot
 {
@@ -23,7 +32,7 @@ namespace DiscordBeatSaberBot
         }
 
         public Task Create(string path)
-        {            
+        {
             _bitmap.Save(path);
             return Task.CompletedTask;
         }
@@ -39,16 +48,16 @@ namespace DiscordBeatSaberBot
             {
                 var fadeImage = DownloadImage(path, 200, 200);
                 gif.AddFrame(ResizeImage(fadeImage, 200, 200));
-                gif.AddFrame(ResizeImage(fadeImage, 300, 300));                       
+                gif.AddFrame(ResizeImage(fadeImage, 300, 300));
             }
             return savePath;
         }
 
-        public SizeF AddText(string text, Color color, int fontsize, float x, float y)
+        public SizeF AddText(string text, Color color, int fontsize, float x, float y, string fontstyle = "Tourmaline")
         {
             PointF firstLocation = new PointF(x, y);
 
-            using (Font arialFont = new Font("Tourmaline", fontsize))
+            using (Font arialFont = new Font(fontstyle, fontsize))
             using (Graphics graphics = Graphics.FromImage(_bitmap))
             {
                 graphics.DrawString(text, arialFont, new SolidBrush(color), firstLocation);
@@ -71,11 +80,11 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public SizeF AddTextCenter(string text, Color color, int fontsize, float x, float y)
+        public SizeF AddTextCenter(string text, Color color, int fontsize, float x, float y, string fontstyle = "Tourmaline")
         {
 
 
-            using (Font arialFont = new Font("Tourmaline", fontsize))
+            using (Font arialFont = new Font(fontstyle, fontsize))
             using (Graphics graphics = Graphics.FromImage(_bitmap))
             {
                 var length = graphics.MeasureString(text, arialFont);
@@ -86,7 +95,7 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public SizeF AddTextFloatRight(string text, Color color, int fontsize, float x, float y)
+        public SizeF AddTextFloatRight(string text, Color color, int fontsize, float x, float y, string fontstyle = "Tourmaline")
         {
             using (Font arialFont = new Font("Tourmaline", fontsize))
             using (Graphics graphics = Graphics.FromImage(_bitmap))
@@ -137,7 +146,7 @@ namespace DiscordBeatSaberBot
 
         }
 
-        public void AddImage(string path, float x, float y, int width, int height, float opacity = 1, bool isLocalFile = false)
+        public void AddImage(string path, float x, float y, int width, int height, float opacity = 1, bool isLocalFile = false, int blurItensity = 0)
         {
             Image overlayImage = null;
             if (isLocalFile)
@@ -153,10 +162,12 @@ namespace DiscordBeatSaberBot
                     using (var response = request.GetResponse())
                     using (var stream = response.GetResponseStream())
                     {
-                        overlayImage = Bitmap.FromStream(stream);
+                        var bitmap = Bitmap.FromStream(stream);
+                        if (blurItensity != 0) bitmap = AddBlur(new Bitmap(stream), blurItensity);
+                        overlayImage = bitmap;
                     }
                 }
-                catch
+                catch(Exception ex)
                 {
                     request = WebRequest.Create("https://www.thermaxglobal.com/wp-content/uploads/2020/05/image-not-found.jpg");
                     using (var response = request.GetResponse())
@@ -205,7 +216,7 @@ namespace DiscordBeatSaberBot
 
 
             //Remove pixels in image from mask
-            Bitmap OrgImg = (Bitmap) overlayImage;
+            Bitmap OrgImg = (Bitmap)overlayImage;
             Bitmap NewImg = _bitmap;
             for (int yy = 0; yy <= OrgImg.Height - 1; yy++)
             {
@@ -290,20 +301,20 @@ namespace DiscordBeatSaberBot
             // Create rectangle.
             Rectangle rect = new Rectangle(x, y, with, height);
 
-            if(cornerRadius != 0)
+            if (cornerRadius != 0)
             {
-               
+
             }
 
             // Draw rectangle to screen.
             using (Graphics graphics = Graphics.FromImage(_bitmap))
-            {                
-                graphics.FillRectangle(brush, rect);               
-                if(outerColor != null) graphics.DrawRectangle(pen, rect);
+            {
+                graphics.FillRectangle(brush, rect);
+                if (outerColor != null) graphics.DrawRectangle(pen, rect);
             }
         }
 
-        public void AddImageRounded(string path, float x, float y, int width, int height, float opacity = 1, int blurSize = 0)
+        public void AddImageRounded(string path, float x, float y, int width, int height, float opacity = 1, int blurSize = 0, int cornerRadius = 25)
         {
             Image overlayImage = null;
 
@@ -331,7 +342,7 @@ namespace DiscordBeatSaberBot
 
             if (blurSize > 0) overlayImage = Blur((Bitmap)overlayImage, blurSize);
 
-            var imageRounded = RoundCorners(overlayImage, 25, Color.FromArgb(0, 32, 32, 32));
+            var imageRounded = RoundCorners(overlayImage, cornerRadius, Color.FromArgb(0, 32, 32, 32));
             g.DrawImage(SetImageOpacity(imageRounded, opacity), x, y, width, height);
 
         }
@@ -517,8 +528,34 @@ namespace DiscordBeatSaberBot
             }
 
             return destImage;
-        }    
-        
+        }
+
+        public static Bitmap AddBlur(Bitmap bitmap, int itensity = 5)
+        {
+
+            using (SixLabors.ImageSharp.Image<Rgba32> image = new SixLabors.ImageSharp.Image<Rgba32>(bitmap.Width, bitmap.Height))
+            {
+                // Copy the pixel data from the bitmap into the ImageSharp image
+                for (int x = 0; x < bitmap.Width; x++)
+                {
+                    for (int y = 0; y < bitmap.Height; y++)
+                    {
+                        Color pixel = bitmap.GetPixel(x, y);
+                        image[x, y] = new Rgba32(pixel.R, pixel.G, pixel.B, pixel.A);
+                    }
+                }
+
+                // Apply a Gaussian blur filter to the image
+                image.Mutate(x => x.GaussianBlur(itensity));
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    image.SaveAsBmp(stream);
+                    Bitmap output = new Bitmap(stream);
+                    return output;
+                }
+            }
+        }
+
 
     }
 }

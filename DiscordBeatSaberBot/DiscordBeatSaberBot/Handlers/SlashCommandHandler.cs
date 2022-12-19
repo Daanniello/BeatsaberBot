@@ -371,6 +371,18 @@ namespace DiscordBeatSaberBot.Handlers
                 tradinCardsOptionBuilderSettings.AddOption("options", ApplicationCommandOptionType.String, "create a better experience", false, choices: tradingCardsSettingsChoices.ToArray());
                 tradingCardsSlashBuilder.AddOption(tradinCardsOptionBuilderSettings);
 
+                var tradingCardsShopChoices = new List<ApplicationCommandOptionChoiceProperties>();
+                tradingCardsShopChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "1 Packs (150 Beat Shards)", Value = "1packs" });
+                tradingCardsShopChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "10 Packs (1500 Beat Shards)", Value = "10packs" });
+
+                var tradingCardsCardsChoices = new List<ApplicationCommandOptionChoiceProperties>();
+                tradingCardsCardsChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "No cards to buy yet", Value = "nocards" });
+
+                var tradinCardsOptionBuilderShop= new SlashCommandOptionBuilder().WithName("shop").WithDescription("exchange beat shards for cool items").WithType(ApplicationCommandOptionType.SubCommand);
+                tradinCardsOptionBuilderShop.AddOption("packs", ApplicationCommandOptionType.String, "buy extra packs to open up", false, choices: tradingCardsShopChoices.ToArray());
+                tradinCardsOptionBuilderShop.AddOption("cards", ApplicationCommandOptionType.String, "buy special type of cards", false, choices: tradingCardsCardsChoices.ToArray());
+                tradingCardsSlashBuilder.AddOption(tradinCardsOptionBuilderShop);
+
                 await _discord.CreateGlobalApplicationCommandAsync(tradingCardsSlashBuilder.Build());
 
                 //removebg

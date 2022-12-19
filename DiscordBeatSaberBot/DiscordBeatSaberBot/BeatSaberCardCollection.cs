@@ -38,9 +38,10 @@ namespace DiscordBeatSaberBot
         public BeatSaberCardCollection(DiscordSocketClient discord)
         {
             _discord = discord;
+            _discord.ButtonExecuted += DiscordButtonConvert;
         }
 
-        public static async Task<bool> DrawAndSendRandomFifaCard(SocketSlashCommand command)
+        public static async Task<bool> DrawAndSendRandomFifaCard(DiscordSocketClient discord, SocketSlashCommand command)
         {
 
             try
@@ -316,11 +317,11 @@ namespace DiscordBeatSaberBot
                 if (DateTime.UtcNow > startDate && DateTime.UtcNow < endDate)
                 {
                     var eventNr = random.Next(0, 100);
-                    if (eventNr <= 5) //Chance
+                    if (eventNr <= 10) //Chance
                     {
                         //Give event specials
                         var bordertypenr = random.Next(1, 4);
-                        if(bordertypenr == 1) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_0.png", 0, 0, 735, 1211, isLocalFile: true);
+                        if (bordertypenr == 1) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_0.png", 0, 0, 735, 1211, isLocalFile: true);
                         else if (bordertypenr == 2) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_1.png", 0, 0, 735, 1211, isLocalFile: true);
                         else if (bordertypenr == 3) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_2.png", 0, 0, 735, 1211, isLocalFile: true);
                     }
@@ -359,8 +360,18 @@ namespace DiscordBeatSaberBot
                 //Create the card
                 await cardCreator.Create($"F:\\BeatSaberTradingCards/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png");
 
+                //Make components for on the message
+                var componentBuilder = new ComponentBuilder();
+                var beatshardAmount = (1000 - player.Rank) * total / 1000;
+                var multiplier = 1;
+                if (player.Rank <= 100) multiplier = 5;
+                if (player.Rank <= 50) multiplier = 10;
+                if (player.Rank <= 10) multiplier = 30;
+                beatshardAmount = beatshardAmount * multiplier;
+                componentBuilder.WithButton(label: $"Convert to Beat Shards ({beatshardAmount})", customId: $"{command.User.Id}_ConvertCardButton_{beatshardAmount}", style: ButtonStyle.Secondary);
+
                 //send card in discord
-                await command.Channel.SendFileAsync($"F:\\BeatSaberTradingCards/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png");
+                await command.Channel.SendFileAsync($"F:\\BeatSaberTradingCards/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png", components: componentBuilder.Build());
                 return true;
             }
             catch (Exception ex)
@@ -369,6 +380,64 @@ namespace DiscordBeatSaberBot
                 await ErrorCase(command, "An unexpected error occurred.");
                 return false;
             }
+        }
+
+        private async Task DiscordButtonConvert(SocketMessageComponent button)
+        {
+            if (button.Data.CustomId.Contains("ConvertCardButton"))
+            {
+                if (button.User.Id.ToString() == button.Message.Components.First().Components.First().CustomId.Split("_").First()) //Check if user is the one that got the card
+                {
+                    var cardName = button.Message.Attachments.FirstOrDefault().Filename;
+                    var allCards = GetAllCards();
+                    var card = allCards.FirstOrDefault(x => x.Name == "/BeatSaberTradingCards/" + cardName);
+
+                    if (card != null)
+                    {
+                        if (card.OwnerDiscordID == button.User.Id.ToString())
+                        {
+                            var shards = button.Data.CustomId.Split("_").Last();
+                            var beatShardsJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/BSTCBeatShards.json");
+                            var playersBeatShardsList = JsonConvert.DeserializeObject<Dictionary<string, long>>(beatShardsJson);
+
+                            if (playersBeatShardsList != null)
+                            {
+                                if (playersBeatShardsList.ContainsKey(button.User.Id.ToString()))
+                                {
+                                    //Get and add points
+                                    var playerShards = playersBeatShardsList[button.User.Id.ToString()];
+                                    playersBeatShardsList[button.User.Id.ToString()] = playerShards + Convert.ToInt64(shards);
+                                    //Delete card
+                                    System.IO.File.Delete("F://" + card.Name);
+
+                                }
+                                else //First time converting
+                                {
+                                    playersBeatShardsList.Add(button.User.Id.ToString(), Convert.ToInt64(shards));
+                                    //Delete card
+                                    System.IO.File.Delete("F://" + card.Name);
+                                }
+
+                                var newJson = JsonConvert.SerializeObject(playersBeatShardsList);
+                                System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/BSTCBeatShards.json", newJson);
+                            }
+                            else
+                            {
+                                return;
+                            }
+
+                            await button.UpdateAsync(x => x.Content = $"This card has been converted into **{shards}** beat shards. You now have **{playersBeatShardsList[button.User.Id.ToString()]}** Beat Shards. `/Shop`");
+                            await button.ModifyOriginalResponseAsync(x => x.Components = new ComponentBuilder().Build());
+                        }
+                    }
+                    else
+                    {
+                        await button.UpdateAsync(x => x.Content = $"This card doesn't exist anymore");
+                        await button.ModifyOriginalResponseAsync(x => x.Components = new ComponentBuilder().Build());
+                    }
+                }
+            }
+            return;
         }
 
         public async static Task ErrorCase(SocketSlashCommand command, string message)
@@ -428,8 +497,11 @@ namespace DiscordBeatSaberBot
                 if (player.PacksLeft == 1) // Last pack, add timer
                 {
                     player.PacksLeft--;
-                    var timeTillTimeOut = timeOfRequest.AddHours(23);
-                    player.TimeOutTill = timeTillTimeOut;
+                    if (/*player.TimeOutTill < DateTime.Now ||*/ player.TimeOutTill == null)
+                    {
+                        var timeTillTimeOut = timeOfRequest.AddHours(23);
+                        player.TimeOutTill = timeTillTimeOut;
+                    }
                     System.IO.File.WriteAllText($"../../../Resources/DrawCardTimeOut.json", JsonConvert.SerializeObject(playerTimeOuts));
                     return false;
                 }
@@ -452,7 +524,7 @@ namespace DiscordBeatSaberBot
                     else // Has timer
                     {
                         command.Channel.SendMessageAsync($"No remaining packs. You will get new packs in {timeToWait.Hours} hours, {timeToWait.Minutes} minutes and {timeToWait.Seconds} seconds.");
-                        if (timeToWait.TotalHours > 7) command.Channel.SendMessageAsync("Reminder: you can get pack notifications in DM by using the `/tradingcards settings` command.");
+                        if (timeToWait.TotalHours > 7) command.Channel.SendMessageAsync("Reminder: you can get pack notifications in DM by using the `/tradingcards settings` command. \nYou could also compete in the Cup of the day (https://beatsaberbot.com/CupOfTheDay) and earn free packs. Additionally, you can convert cards and buy new packs in `/shop`");
                         return true;
                     }
                 }
@@ -476,9 +548,8 @@ namespace DiscordBeatSaberBot
             public int PacksLeft { get; set; }
         }
 
-        public async void ShowInventory(SocketSlashCommand command)
+        public static List<Card> GetAllCards()
         {
-            _command = command;
             string[] files = Directory.GetFiles(@$"F:\\BeatSaberTradingCards");
             var cards = new List<Card>();
             foreach (var file in files)
@@ -500,9 +571,17 @@ namespace DiscordBeatSaberBot
                 }
                 catch (Exception ex)
                 {
-
                 }
             }
+
+            return cards;
+        }
+
+        public async void ShowInventory(SocketSlashCommand command)
+        {
+            _command = command;
+
+            var cards = GetAllCards();
 
             if (cards.Where(x => x.OwnerDiscordID == command.User.Id.ToString()).Count() > 0)
             {
@@ -944,30 +1023,7 @@ namespace DiscordBeatSaberBot
                 var cardListUserOne = new List<string>();
                 var cardListUserTwo = new List<string>();
 
-                string[] files = Directory.GetFiles(@$"F:\\BeatSaberTradingCards");
-                var cards = new List<Card>();
-                foreach (var file in files)
-                {
-                    var parameters = file.Split("-");
-                    try
-                    {
-                        var card = new Card()
-                        {
-                            Name = file.Replace("F:\\", "").Replace("\\", "/"),
-                            DiscordID = parameters[1],
-                            OwnerDiscordID = parameters[2],
-                            ScoresaberID = parameters[3],
-                            Score = Convert.ToInt32(parameters[4]),
-                            rank = Convert.ToInt32(parameters[5]),
-                            luckNumber = Convert.ToInt32(parameters[6].Replace(".png", ""))
-                        };
-                        cards.Add(card);
-                    }
-                    catch (Exception ex)
-                    {
-
-                    }
-                }
+                var cards = GetAllCards();
 
                 var startTime = DateTime.Now;
                 var endTime = startTime.AddMinutes(10);
@@ -1221,7 +1277,7 @@ namespace DiscordBeatSaberBot
                     var scoresaberIDPlayerOne = await RoleAssignment.GetScoresaberIdWithDiscordId(arguments.User.Id.ToString());
                     var scoresaberIDPlayerTwo = await RoleAssignment.GetScoresaberIdWithDiscordId(userToStakeWith.Id.ToString());
 
-                    var scoresaberPlayerOne = await new ScoreSaberClient().Api.Players.GetPlayer(Convert.ToInt64(scoresaberIDPlayerOne));                    
+                    var scoresaberPlayerOne = await new ScoreSaberClient().Api.Players.GetPlayer(Convert.ToInt64(scoresaberIDPlayerOne));
                     var scoresaberPlayerTwo = await new ScoreSaberClient().Api.Players.GetPlayer(Convert.ToInt64(scoresaberIDPlayerTwo));
                     long playerOneRank = 0;
                     long playerTwoRank = 0;
@@ -1314,29 +1370,7 @@ namespace DiscordBeatSaberBot
                 var cardListUserTwo = new List<string>();
 
                 string[] files = Directory.GetFiles(@$"F:\\BeatSaberTradingCards");
-                var cards = new List<Card>();
-                foreach (var file in files)
-                {
-                    var parameters = file.Split("-");
-                    try
-                    {
-                        var card = new Card()
-                        {
-                            Name = file.Replace("F:\\", "").Replace("\\", "/"),
-                            DiscordID = parameters[1],
-                            OwnerDiscordID = parameters[2],
-                            ScoresaberID = parameters[3],
-                            Score = Convert.ToInt32(parameters[4]),
-                            rank = Convert.ToInt32(parameters[5]),
-                            luckNumber = Convert.ToInt32(parameters[6].Replace(".png", ""))
-                        };
-                        cards.Add(card);
-                    }
-                    catch (Exception ex)
-                    {
-
-                    }
-                }
+                var cards = GetAllCards();
 
                 var startTime = DateTime.Now;
                 var endTime = startTime.AddMinutes(10);
@@ -1681,8 +1715,9 @@ namespace DiscordBeatSaberBot
                     await Task.Delay(Convert.ToInt32(timeLeft.TotalSeconds) * 1000);
                     try
                     {
-                        var dm = await _discord.GetUser(Convert.ToUInt64(player.DiscordID)).CreateDMChannelAsync();
-                        await dm.SendMessageAsync("You have received new Beat Saber card packs!");
+                        var user = await _discord.GetUserAsync(Convert.ToUInt64(player.DiscordID));
+                        var dm = await user.CreateDMChannelAsync();
+                        await dm.SendMessageAsync("You received new Beat Saber card packs!");
                     }
                     catch (Exception x)
                     {
@@ -1727,12 +1762,16 @@ namespace DiscordBeatSaberBot
                 {
                     if (packAmount <= 0) return false;
 
-                    var playerToGive = playerTimeOuts.FirstOrDefault(x => x.DiscordID.ToLower() == discordID.ToString().ToLower());       
-                    
+                    var playerToGive = playerTimeOuts.FirstOrDefault(x => x.DiscordID.ToLower() == discordID.ToString().ToLower());
 
-                    if (playerToGive.TimeOutTill != null && playerToGive.TimeOutTill < DateTime.Now) playerToGive.PacksLeft = 4;
+                    if (playerToGive.TimeOutTill != null && playerToGive.TimeOutTill < DateTime.Now)
+                    {
+                        playerToGive.PacksLeft = 4;
+                        var timeTill = (DateTime) playerToGive.TimeOutTill;
+                        playerToGive.TimeOutTill = timeTill.AddHours(23);
+                    }
+
                     playerToGive.PacksLeft += packAmount;
-                    playerToGive.TimeOutTill = null;
                     System.IO.File.WriteAllText($"../../../Resources/DrawCardTimeOut.json", JsonConvert.SerializeObject(playerTimeOuts));
 
                     var user = await _discord.GetUserAsync(Convert.ToUInt64(discordID));
@@ -1754,30 +1793,7 @@ namespace DiscordBeatSaberBot
 
         public async void TransferAllCards(string userFrom, string userTo)
         {
-            string[] files = Directory.GetFiles(@$"F:\\BeatSaberTradingCards");
-            var cards = new List<Card>();
-            foreach (var file in files)
-            {
-                var parameters = file.Split("-");
-                try
-                {
-                    var card = new Card()
-                    {
-                        Name = file.Replace("F:\\", "").Replace("\\", "/"),
-                        DiscordID = parameters[1],
-                        OwnerDiscordID = parameters[2],
-                        ScoresaberID = parameters[3],
-                        Score = Convert.ToInt32(parameters[4]),
-                        rank = Convert.ToInt32(parameters[5]),
-                        luckNumber = Convert.ToInt32(parameters[6].Replace(".png", ""))
-                    };
-                    cards.Add(card);
-                }
-                catch (Exception ex)
-                {
-
-                }
-            }
+            var cards = GetAllCards();
 
             var userCards = cards.Where(x => x.OwnerDiscordID == userFrom).ToList();
 
@@ -1799,30 +1815,7 @@ namespace DiscordBeatSaberBot
 
         public static void RemoveCheaterCards(string discordID)
         {
-            string[] files = Directory.GetFiles(@$"F:\\BeatSaberTradingCards");
-            var cards = new List<Card>();
-            foreach (var file in files)
-            {
-                var parameters = file.Split("-");
-                try
-                {
-                    var card = new Card()
-                    {
-                        Name = file.Replace("F:\\", "").Replace("\\", "/"),
-                        DiscordID = parameters[1],
-                        OwnerDiscordID = parameters[2],
-                        ScoresaberID = parameters[3],
-                        Score = Convert.ToInt32(parameters[4]),
-                        rank = Convert.ToInt32(parameters[5]),
-                        luckNumber = Convert.ToInt32(parameters[6].Replace(".png", ""))
-                    };
-                    cards.Add(card);
-                }
-                catch (Exception ex)
-                {
-
-                }
-            }
+            var cards = GetAllCards();
 
             var userCards = cards.Where(x => x.OwnerDiscordID == discordID);
 
@@ -1859,66 +1852,6 @@ namespace DiscordBeatSaberBot
                 File.Delete("F://" + c.Name);
             }
         }
-
-        //public static async void MakeOlderCardsAlpha()
-        //{
-        //    string[] files = Directory.GetFiles(@$"F:\\BeatSaberTradingCards");
-        //    var cards = new List<Card>();
-        //    var c = 0;
-        //    foreach (var file in files)
-        //    {
-        //        var parameters = file.Split("-");
-        //        try
-        //        {
-        //            var card = new Card()
-        //            {
-        //                Name = file.Replace("F:\\", "").Replace("\\", "/"),
-        //                CreationDate = DateTime.ParseExact(parameters[parameters.Count() - 1].Replace(".png", ""), "dd_M_yyyy_HH_mm", CultureInfo.InvariantCulture)
-        //            };
-        //            cards.Add(card);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            var f = 2;
-        //        }
-        //        c++;
-        //    }
-
-        //    var date = DateTime.Now.AddDays(-6).AddHours(-8);
-        //    var allcards = cards.Where(x => x.CreationDate < date).ToList();
-        //    foreach (var card in allcards)
-        //    {
-        //        try
-        //        {
-        //            var cardCreator = new ImageCreator("F:\\" + card.Name);
-        //            cardCreator.AddTextCenter("ALPHA", Color.FromArgb(103, 90, 55), 36, 375, 140);                    
-        //            await cardCreator.Create("F:\\" + card.Name.Replace("/", "\\").Replace("BeatSaberTradingCards", "BeatSaberTradingCardsTest2"));
-
-        //        }
-        //        catch(Exception ex)
-        //        {
-        //            var f = ex;
-        //        }
-
-        //    }
-        //    var d = 2;
-        //}
-
-        //public static void TempAddHistory()
-        //{
-        //    string[] files = Directory.GetFiles(@$"F:\\BeatSaberTradingCards");
-        //    var cards = new List<Card>();
-        //    foreach (var file in files)
-        //    {
-        //        var creationTime = File.GetCreationTimeUtc(file);
-        //        var timeToAdd = "-" + creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":","_");
-        //        var parts = file.Split(".");
-        //        var newName = parts[0] + timeToAdd + "." + parts[1];
-        //        File.Move(file, newName);
-        //    }
-        //    var f = 2;
-
-        //}
 
         public class StakeMatch
         {

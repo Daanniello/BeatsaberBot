@@ -124,8 +124,8 @@ namespace DiscordBeatSaberBot.Handlers
 
                             if (serverMapPlayed.ServerID == "0")
                             {
-                                
-                                if(serverMapPlayed.TodaysMapFocus.Id == playedMap.Leaderboard.Id) player = serverMapPlayed.TodaysPlayersFocus.FirstOrDefault(x => x.ScoreSaberID == playedMap.Score.LeaderboardPlayerInfo.Id.ToString());
+
+                                if (serverMapPlayed.TodaysMapFocus.Id == playedMap.Leaderboard.Id) player = serverMapPlayed.TodaysPlayersFocus.FirstOrDefault(x => x.ScoreSaberID == playedMap.Score.LeaderboardPlayerInfo.Id.ToString());
                                 if (serverMapPlayed.TodaysMap.Id == playedMap.Leaderboard.Id) player = serverMapPlayed.TodaysPlayers.FirstOrDefault(x => x.ScoreSaberID == playedMap.Score.LeaderboardPlayerInfo.Id.ToString());
                                 if (serverMapPlayed.TodaysMapHardcore.Id == playedMap.Leaderboard.Id) player = serverMapPlayed.TodaysPlayersHardcore.FirstOrDefault(x => x.ScoreSaberID == playedMap.Score.LeaderboardPlayerInfo.Id.ToString());
                                 if (player.TodaysScore < e.CommandData.Score.BaseScore && player != null)
@@ -140,7 +140,7 @@ namespace DiscordBeatSaberBot.Handlers
                                 {
                                     player.TodaysScore = e.CommandData.Score.BaseScore;
                                 }
-                            }                           
+                            }
 
 
                             RefreshLiveMMRPoints(serverMapPlayed);
@@ -274,6 +274,26 @@ namespace DiscordBeatSaberBot.Handlers
                 validMaps = maps.Where(x => x.Stats.Score > 0.40 && x.Metadata.Duration < 2000 && x.Stats.Upvotes > 3 && x.Versions.First().Diffs.Where(x => x.Characteristic == "Standard").Count() > 0 && x.Versions.First().Diffs.Where(x => x.Characteristic == "Standard").Last().Nps > 8).ToList();
             }
 
+            //Get the last 5 map days of map hashes from all modes
+            var historyData = GetHistoryData();
+            var mapsThatHaveBeenPlayedRecently = new List<string>();
+            for (var i = 0; i > -5; i--)
+            {
+                var day = DateTime.Now.AddDays(i);
+                if (historyData.ContainsKey(day.Date))
+                {
+                    var historyDay = historyData[day.Date];
+                    if (historyData != null)
+                    {
+                        var globalServer = historyDay.FirstOrDefault(x => x.ServerID == "0");
+                        mapsThatHaveBeenPlayedRecently.Add(globalServer.TodaysMap.SongHash.ToLower());
+                        mapsThatHaveBeenPlayedRecently.Add(globalServer.TodaysMapFocus.SongHash.ToLower());
+                        mapsThatHaveBeenPlayedRecently.Add(globalServer.TodaysMapHardcore.SongHash.ToLower());
+                    }
+                }                
+            }
+            
+
             LeaderboardInfoModel.Leaderboard chosenMap;
             var random = new Random();
             do
@@ -306,7 +326,7 @@ namespace DiscordBeatSaberBot.Handlers
 
                 if (chosenMap != null) chosenMap.MaxScore = mapInfo.Diffs.Where(x => x.Characteristic == "Standard").Last().MaxScore;
 
-            } while (chosenMap == null || hashFromMapBefore.ToLower() == chosenMap.SongHash.ToLower());
+            } while (chosenMap == null || hashFromMapBefore.ToLower() == chosenMap.SongHash.ToLower() || mapsThatHaveBeenPlayedRecently.Contains(chosenMap.SongHash.ToLower()));
 
             return chosenMap;
         }
@@ -356,18 +376,49 @@ namespace DiscordBeatSaberBot.Handlers
             var mmrPointsRaw = mmrPointsplus + mmrPointsMin;
             var mmrPoints = mmrPointsRaw * 100 / player.MMR;
             if (mmrPoints == 0) mmrPoints = 5;
+            if (todaysPlayers.OrderByDescending(x => x.TodaysScore).First().TodaysScore == player.TodaysScore) mmrPoints += 5;
 
             return mmrPoints;
         }
 
+        //public async Task NotifyGlobalPlayersWhoHasNotSetAScoreYet(DiscordSocketClient discord)
+        //{
+        //    var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+        //    var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+        //    var globalServer = cotdServers.FirstOrDefault(x => x.ServerID == "0");
+
+        //    var listToMessage = new List<string>();
+        //    if (globalServer.TodaysPlayersFocus != null) foreach (var player in globalServer.TodaysPlayersFocus) if (player.TodaysScore <= 0) if (!listToMessage.Contains(player.DiscordID)) listToMessage.Add(player.DiscordID);
+        //    if (globalServer.TodaysPlayers != null) foreach (var player in globalServer.TodaysPlayersFocus) if (player.TodaysScore <= 0) if (!listToMessage.Contains(player.DiscordID)) listToMessage.Add(player.DiscordID);
+        //    if (globalServer.TodaysPlayersHardcore != null) foreach (var player in globalServer.TodaysPlayersFocus) if (player.TodaysScore <= 0) if (!listToMessage.Contains(player.DiscordID)) listToMessage.Add(player.DiscordID);
+
+        //    foreach(var id in listToMessage)
+        //    {
+        //        try
+        //        {
+        //            var user = await discord.GetUserAsync(Convert.ToUInt64(id));
+        //            var dm = await user.CreateDMChannelAsync();
+        //            dm.SendMessageAsync("Reminder: You have 1 hour left on the cup of the day ");
+        //        }
+        //        catch (Exception ex)
+        //        {
+
+        //        }
+        //    }
+        //}
+
         public async Task ResetDailyMap(DiscordSocketClient discord)
         {
+            StoreHistoryData();
+
             var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
-            var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);            
+            var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
 
             foreach (var server in cotdServers)
             {
-                if (server.TodaysPlayers == null) continue;
+                if (server.TodaysPlayers == null || server.TodaysPlayers.Count() <= 0) continue;
+                if (server.AllTimePlayers == null || server.AllTimePlayers.Count() <= 0) continue;
+
                 foreach (var player in server.TodaysPlayers)
                 {
                     var allTimePlayer = server.AllTimePlayers.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == player.DiscordID);
@@ -377,31 +428,55 @@ namespace DiscordBeatSaberBot.Handlers
 
                     if (server.ServerID == "0")
                     {
-                        if (server.TodaysPlayersFocus != null)
+                        if (server.TodaysPlayersFocus != null && server.TodaysPlayersFocus.Count() >= 2)
                         {
                             var mmrPointsFocus = CalculateMMRPoints(server.TodaysPlayersFocus.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == player.DiscordID), server, server.TodaysPlayersFocus);
                             allTimePlayer.MMR += mmrPointsFocus;
-                            if (mmrPointsFocus > 0) await new BeatSaberCardCollection(discord).GivePacks(Convert.ToInt64(allTimePlayer.DiscordID), 1, $"Congrats on gaining +{mmrPointsFocus} mmr points on the cup of the day in Focus Mode! here is a reward.");
+                            if (mmrPointsFocus > 0) await new BeatSaberCardCollection(discord).GivePacks(Convert.ToInt64(allTimePlayer.DiscordID), 1, $"Congrats on gaining +{Math.Round(mmrPointsFocus)} mmr points on the cup of the day in Focus Mode! here is a reward.");
                         }
 
-                        if (server.TodaysPlayersHardcore != null)
+                        if (server.TodaysPlayersHardcore != null && server.TodaysPlayersHardcore.Count() >= 2)
                         {
-                            var mmrPointsHardcore = CalculateMMRPoints(server.TodaysPlayersHardcore.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == player.DiscordID), server, server.TodaysPlayersFocus);
+                            var mmrPointsHardcore = CalculateMMRPoints(server.TodaysPlayersHardcore.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == player.DiscordID), server, server.TodaysPlayersHardcore);
                             allTimePlayer.MMR += mmrPointsHardcore;
-                            if (mmrPointsHardcore > 0) await new BeatSaberCardCollection(discord).GivePacks(Convert.ToInt64(allTimePlayer.DiscordID), 1, $"Congrats on gaining +{mmrPointsHardcore} mmr points on the cup of the day in Hardcore Mode! here is a reward.");
+                            if (mmrPointsHardcore > 0) await new BeatSaberCardCollection(discord).GivePacks(Convert.ToInt64(allTimePlayer.DiscordID), 1, $"Congrats on gaining +{Math.Round(mmrPointsHardcore)} mmr points on the cup of the day in Hardcore Mode! here is a reward.");
                         }
 
-                        if (mmrPointsStandard > 0) await new BeatSaberCardCollection(discord).GivePacks(Convert.ToInt64(allTimePlayer.DiscordID), 1, $"Congrats on gaining +{mmrPointsStandard} mmr points on the cup of the day in Standard Mode! here is a reward.");
+                        if (mmrPointsStandard > 0) await new BeatSaberCardCollection(discord).GivePacks(Convert.ToInt64(allTimePlayer.DiscordID), 1, $"Congrats on gaining +{Math.Round(mmrPointsStandard, 2)} mmr points on the cup of the day in Standard Mode! here is a reward.");
                     }
                 }
 
-                //Give winner points 
-                var winner = server.TodaysPlayers.OrderByDescending(x => x.TodaysScore).First();
-                var allTimePlayerWinner = server.AllTimePlayers.FirstOrDefault(x => x.ScoreSaberID == winner.ScoreSaberID && x.DiscordID == winner.DiscordID);
-                if (winner.TodaysScore != 0)
+                //Give standard winner points 
+                if (server.TodaysPlayers != null && server.TodaysPlayers.Count() >= 2)
                 {
-                    if (server.TodaysPlayers.Where(x => x.TodaysScore > 0).Count() > 1)
-                        allTimePlayerWinner.TotalWins += 1;
+                    var winner = server.TodaysPlayers.OrderByDescending(x => x.TodaysScore).First();
+                    var allTimePlayerWinner = server.AllTimePlayers.FirstOrDefault(x => x.ScoreSaberID == winner.ScoreSaberID && x.DiscordID == winner.DiscordID);
+                    if (winner.TodaysScore != 0)
+                    {
+                        if (server.TodaysPlayers.Where(x => x.TodaysScore > 0).Count() > 1) allTimePlayerWinner.TotalWins += 1;
+                    }
+                }
+
+                //Give Focus winner points 
+                if (server.TodaysPlayersFocus != null && server.TodaysPlayersFocus.Count() >= 2)
+                {
+                    var winner = server.TodaysPlayersFocus.OrderByDescending(x => x.TodaysScore).First();
+                    var allTimePlayerWinner = server.AllTimePlayers.FirstOrDefault(x => x.ScoreSaberID == winner.ScoreSaberID && x.DiscordID == winner.DiscordID);
+                    if (winner.TodaysScore != 0)
+                    {
+                        if (server.TodaysPlayersFocus.Where(x => x.TodaysScore > 0).Count() > 1) allTimePlayerWinner.TotalWins += 1;
+                    }
+                }
+
+                //Give Hardcore winner points 
+                if (server.TodaysPlayersHardcore != null && server.TodaysPlayersHardcore.Count() >= 2)
+                {
+                    var winner = server.TodaysPlayersHardcore.OrderByDescending(x => x.TodaysScore).First();
+                    var allTimePlayerWinner = server.AllTimePlayers.FirstOrDefault(x => x.ScoreSaberID == winner.ScoreSaberID && x.DiscordID == winner.DiscordID);
+                    if (winner.TodaysScore != 0)
+                    {
+                        if (server.TodaysPlayersHardcore.Where(x => x.TodaysScore > 0).Count() > 1) allTimePlayerWinner.TotalWins += 1;
+                    }
                 }
             }
 
@@ -418,6 +493,36 @@ namespace DiscordBeatSaberBot.Handlers
             await ResetDailyMapFromAllServer();
             setAllDailyMaps();
             await ResetDiscordServerFeeds(discord);
+        }
+
+        public void StoreHistoryData()
+        {
+            var cotdHistoryRaw = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDHistoryData.json");
+            var cotdHistory = JsonConvert.DeserializeObject<Dictionary<DateTime,List<COTDServer>>>(cotdHistoryRaw);
+
+            var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
+            var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
+
+            var cotdHistoryNew = cotdHistory;
+            if (cotdHistory == null)
+            {
+                cotdHistoryNew = new Dictionary<DateTime, List<COTDServer>>();
+                cotdHistoryNew.Add(DateTime.Now.Date, cotdServers);
+            }
+            if (cotdHistory != null)
+            {
+                if(!cotdHistoryNew.ContainsKey(DateTime.Now.Date)) cotdHistoryNew.Add(DateTime.Now.Date, cotdServers);
+            }
+
+            var cotdServersNewJson = JsonConvert.SerializeObject(cotdHistoryNew);
+            System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDHistoryData.json", cotdServersNewJson);
+        }
+
+        public static Dictionary<DateTime, List<COTDServer>> GetHistoryData()
+        {
+            var cotdHistoryRaw = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDHistoryData.json");
+            var cotdHistory = JsonConvert.DeserializeObject<Dictionary<DateTime, List<COTDServer>>>(cotdHistoryRaw);
+            return cotdHistory;
         }
 
         private async Task ResetDiscordServerFeeds(DiscordSocketClient discord)
@@ -657,10 +762,10 @@ namespace DiscordBeatSaberBot.Handlers
                     System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json", cotdServersNewJson);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
-            }           
+            }
         }
 
         private async Task ResetDailyMapFromAllServer()
@@ -684,12 +789,19 @@ namespace DiscordBeatSaberBot.Handlers
                         continue;
                     }
 
-                    var playlist = server.Playlist.Where(x => x != null).ToList();
-                    var index = 0;
-                    if (server.TodaysMap != null) index = playlist.IndexOf(playlist.FirstOrDefault(x => x.SongHash == server.TodaysMap.SongHash));
-                    if (index + 1 >= playlist.Count) index = 0;
-                    else index += 1;
-                    server.TodaysMap = playlist[index];
+                    if (server.Playlist != null)
+                    {
+                        var playlist = server.Playlist.Where(x => x != null).ToList();
+                        var index = 0;
+                        if (server.TodaysMap != null) index = playlist.IndexOf(playlist.FirstOrDefault(x => x.SongHash == server.TodaysMap.SongHash));
+                        if (index + 1 >= playlist.Count) index = 0;
+                        else index += 1;
+                        server.TodaysMap = playlist[index];
+                    }
+                    else
+                    {
+                        server.TodaysMap = cotdServers.FirstOrDefault(x => x.ServerID == "0").TodaysMap;
+                    }
                 }
                 var newJson = JsonConvert.SerializeObject(cotdServers);
                 File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/COTDServerPlayer.json", newJson);
