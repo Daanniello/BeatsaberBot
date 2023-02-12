@@ -248,7 +248,7 @@ namespace DiscordBeatSaberBot
             await GiveRole(scoresaberId, roleName);
         }
 
-        public static async Task GiveRoleWithRank(int rank, string scoresaberId, DiscordSocketClient discord = null)
+        public static async Task GiveRoleWithRank(long rank, string scoresaberId, DiscordSocketClient discord = null)
         {
             if (_discord == null) _discord = discord;
 

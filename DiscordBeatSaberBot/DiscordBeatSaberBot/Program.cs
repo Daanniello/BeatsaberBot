@@ -82,7 +82,7 @@ namespace DiscordBeatSaberBot
                 _countryUpdateHandler.SubscribeToScoreLiveFeed();
 
                 //activate update handlers 
-                var beatSaberCardCollection = new BeatSaberCardCollection(discordSocketClient).CheckFinishedMatches();
+                var beatSaberCardCollection = new BeatSaberCardCollection(discordSocketClient, shouldInitButtonExecuted: true).CheckFinishedMatches();
 
                 await Task.Delay(-1);
             }

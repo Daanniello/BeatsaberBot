@@ -8,6 +8,7 @@ using DiscordBeatSaberBot.Api.BeatSaviourApi.Models;
 using DiscordBeatSaberBot.Api.Spotify;
 using DiscordBeatSaberBot.Models.ScoreberAPI;
 using ScoreSaberLib;
+using ScoreSaberLib.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -61,7 +62,6 @@ namespace DiscordBeatSaberBot.Commands.Functions
         public async Task<EmbedBuilder> CreateCardAndGetPlaythroughStatsEmbed(string playerId, int scoreNr = 1, bool isTopSong = false)
         {
             //Getting Data from api's
-            var scoresaberApi = new ScoresaberAPI(playerId);
             var beatSaviourApi = new BeatSaviourApi(playerId);
             _scoresaberClient = new ScoreSaberLib.ScoreSaberClient();
 
@@ -73,26 +73,24 @@ namespace DiscordBeatSaberBot.Commands.Functions
             var beatSaverMapInfo = await BeatSaverApi.GetMapByHash(recentSong.Leaderboard.SongHash);
 
             //Download scoresaber full player data
-            var playerFullData = await scoresaberApi.GetPlayerFull();
-            if (playerFullData == null) return null;
-            var playerInfo = playerFullData.playerInfo;
+            var playerInfo = await _scoresaberClient.Api.Players.GetPlayer(Convert.ToInt64(playerId));
             _countryCode = playerInfo.Country;
 
             //Download BeatSaviour livedata 
             var playerMostRecentLiveData = await beatSaviourApi.GetMostRecentLiveData(recentSong.Leaderboard.SongHash, recentSong.Leaderboard.Difficulty.DifficultyRaw.Replace("_", " ").Trim().Split(" ")[0]);
-            await CreateCard(recentSong, beatSaverMapInfo, playerMostRecentLiveData, playerInfo);
+            await CreateCard(recentSong, beatSaverMapInfo, playerMostRecentLiveData);
             
             
             var embedBuilder = await CreateEmbedBuilder(recentSong, playerInfo, beatSaverMapInfo);
             return embedBuilder;
         }
 
-        private async Task CreateCard(PlayerScore recentSong, BeatSaverMapModelNew beatSaverMapInfo, BeatSaviourLivedataModel playerMostRecentLiveData, ScoresaberPlayerFullModel.PlayerInfoModel playerInfo)
+        private async Task CreateCard(PlayerScore recentSong, BeatSaverMapModelNew beatSaverMapInfo, BeatSaviourLivedataModel playerMostRecentLiveData)
         {
             var hasBeatSaviour = playerMostRecentLiveData == null ? false : true;
             
             var cardCreator = new ImageCreator("../../../Resources/img/EmbedBackground-Template.png");
-            cardCreator.AddImage($"https://scoresaber.com/imports/images/songs/{recentSong.Leaderboard.SongHash}.png", 0, 0, 1080, 720, hasBeatSaviour ? 0.4f : 0.4f);
+            cardCreator.AddImage($"https://scoresaber.com/imports/images/songs/{recentSong.Leaderboard.SongHash}.png", 0, 0, 1080, 720, hasBeatSaviour ? 0.4f : 0.4f, blurItensity: 8);
 
             var diff = recentSong.Leaderboard.Difficulty.DifficultyRaw.Replace("_", " ").Trim().Split(" ")[0];
 
@@ -376,7 +374,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
 
         }
 
-        private async Task<EmbedBuilder> CreateEmbedBuilder(PlayerScore recentSong, ScoresaberPlayerFullModel.PlayerInfoModel playerInfo, BeatSaverMapModelNew beatSaverMapInfo)
+        private async Task<EmbedBuilder> CreateEmbedBuilder(PlayerScore recentSong, PlayerInfoModel.Player playerInfo, BeatSaverMapModelNew beatSaverMapInfo)
         {
             var embedBuilder = new EmbedBuilder();
             embedBuilder = new EmbedBuilder
@@ -389,7 +387,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
                 Footer = new EmbedFooterBuilder() { Text = $"Time Set: {recentSong.Score.TimeSet.Value.DateTime.ToShortDateString() + " | " + recentSong.Score.TimeSet.Value.DateTime.ToShortTimeString()} UTC" }
             };
 
-            embedBuilder.Author = new EmbedAuthorBuilder() { IconUrl = playerInfo.Avatar.Contains("oculus") ? $"https://cdn.scoresaber.com/avatars/oculus.png" : $"https://new.scoresaber.com{playerInfo.Avatar}", Name = $"{ playerInfo.Name}", Url = $"https://scoresaber.com/u/{playerInfo.PlayerId}" };
+            embedBuilder.Author = new EmbedAuthorBuilder() { IconUrl = playerInfo.ProfilePicture.AbsoluteUri.Contains("oculus") ? $"https://cdn.scoresaber.com/avatars/oculus.png" : $"{playerInfo.ProfilePicture.AbsoluteUri}", Name = $"{ playerInfo.Name}", Url = $"https://scoresaber.com/u/{playerInfo.Id}" };
             try
             {
                 var spotify = await new Spotify().SearchItem(recentSong.Leaderboard.SongName, recentSong.Leaderboard.SongAuthorName);
@@ -397,7 +395,7 @@ namespace DiscordBeatSaberBot.Commands.Functions
               "\n" +
               $"- [Beatsaver](https://beatsaver.com/maps/{beatSaverMapInfo?.Id}) - " +
               $"[Preview Map](https://skystudioapps.com/bs-viewer/?id={beatSaverMapInfo?.Id}) - " +
-              $"{(beatSaverMapInfo.Ranked ? $"[Replay](https://www.replay.beatleader.xyz/?id={beatSaverMapInfo.Id}&difficulty={recentSong.Leaderboard.Difficulty.DifficultyRaw.Replace("_", " ").Trim().Split(" ")[0]}&playerID={playerInfo.PlayerId}) - " : "")}" +
+              $"{(beatSaverMapInfo.Ranked ? $"[Replay](https://www.replay.beatleader.xyz/?id={beatSaverMapInfo.Id}&difficulty={recentSong.Leaderboard.Difficulty.DifficultyRaw.Replace("_", " ").Trim().Split(" ")[0]}&playerID={playerInfo.Id}) - " : "")}" +
               $"{(spotify != null ? $"[Spotify]({spotify}) - " : "")}";
                 embedBuilder.AddField(recentSong.Leaderboard.Difficulty.DifficultyRaw.Replace("_", " "), clickables);
             }
@@ -425,7 +423,14 @@ namespace DiscordBeatSaberBot.Commands.Functions
             //embedBuilder.ImageUrl = $"{GlobalConfiguration.BotImageStorageLink}newyear.gif";
             ////------------
 
-            _msg = await command.Channel.SendMessageAsync("", false, embedBuilder.Build(), components: componentBuilder.Build());
+            try
+            {
+                _msg = await command.Channel.SendMessageAsync("", false, embedBuilder.Build(), components: componentBuilder.Build());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }         
 
             ////XMAS--------
             //embedBuilder.ImageUrl = originalImg;

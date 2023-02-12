@@ -42,13 +42,14 @@ namespace DiscordBeatSaberBot.Commands
 
             if (parameter.Name == "username")
             {
-                var player = await ScoresaberAPI.GetPlayerByName(parameter.Value.ToString());
+                var players = await new ScoreSaberClient().Api.Players.GetPlayers(search: parameter.Value.ToString());
+                var player = players.Players.First();
                 if (player == null)
                 {
                     await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Username not found.", "Could not find a user with this name on scoresaber.").Build());
                     return;
                 }
-                await new Search(discordSocketClient).CreateUserSearchEmbedWithScoresaberIDAndSend(player.Players[0].PlayerId, command, discordSocketClient);
+                await new Search(discordSocketClient).CreateUserSearchEmbedWithScoresaberIDAndSend(player.Id, command, discordSocketClient);
             }
             else if (parameter.Name == "scoresaber_id")
             {
@@ -86,6 +87,12 @@ namespace DiscordBeatSaberBot.Commands
 
             if (command.Data.Options.FirstOrDefault(x => x.Name == "draw") != null)
             {
+                if(command.User.Id.ToString() == "138439306774577152")
+                {
+                    BeatSaberCardCollection.DrawBeatSaberTradingCard(discordSocketClient, command);
+                    return;
+                }
+
                 if (command.Data.Options.FirstOrDefault().Options.FirstOrDefault().Name == "all")
                 {
                     if (BeatSaberCardCollection.IsPlayerTimedOut(DateTime.Now, command) == false) BeatSaberCardCollection.DrawAndSendRandomFifaCard(discordSocketClient, command);
@@ -157,7 +164,7 @@ namespace DiscordBeatSaberBot.Commands
                 var playersBeatShardsList = JsonConvert.DeserializeObject<Dictionary<string, long>>(beatShardsJson);
                 var userID = command.User.Id.ToString();
                 var item = command.Data.Options.FirstOrDefault(x => x.Name == "shop").Options.FirstOrDefault().Value.ToString();
-                
+
 
                 if (item == "1packs" || item == "10packs")
                 {
@@ -277,7 +284,7 @@ namespace DiscordBeatSaberBot.Commands
                         var scoresaberID = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
                         var scoresaberplayer = await new ScoreSaberClient().Api.Players.GetPlayer(Convert.ToInt64(scoresaberID));
                         var player = new CupOfTheDayHandler.Player() { ScoreSaberID = scoresaberplayer.Id, Name = scoresaberplayer.Name };
-                        CupOfTheDayHandler.ServerPlayerJoin(player, command.User.Id.ToString(), "0");
+                        await CupOfTheDayHandler.ServerPlayerJoin(player, command.User.Id.ToString(), "0");
 
                         var cotdServersJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTDServerPlayer.json");
                         var cotdServers = JsonConvert.DeserializeObject<List<COTDServer>>(cotdServersJson);
@@ -319,7 +326,7 @@ namespace DiscordBeatSaberBot.Commands
 
                         if (server != null)
                         {
-                            CupOfTheDayHandler.ServerPlayerJoin(player, command.User.Id.ToString(), guild.Id.ToString());
+                            await CupOfTheDayHandler.ServerPlayerJoin(player, command.User.Id.ToString(), guild.Id.ToString());
 
                             var existingPlayer = server.AllTimePlayers.FirstOrDefault(x => x.ScoreSaberID == player.ScoreSaberID && x.DiscordID == command.User.Id.ToString());
                             double mmr = 600;
@@ -400,6 +407,44 @@ namespace DiscordBeatSaberBot.Commands
                         var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("No Permissions", "Only the server owner has access to this command").Build());
                         return;
                     }
+                }
+                if (option.Name == "toggle_dm_mute")
+                {
+                    var muteDataJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTD_DiscordID_hasMutedDM.json");
+                    var muteData = new Dictionary<string, bool>();
+                    if (muteDataJson != "") muteData = JsonConvert.DeserializeObject<Dictionary<string, bool>>(muteDataJson);
+                    muteData[command.User.Id.ToString()] = (bool) option.Value;
+                    var muteDataJsonNew = JsonConvert.SerializeObject(muteData);
+                    System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTD_DiscordID_hasMutedDM.json", muteDataJsonNew);
+
+                    var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"DM has been {(muteData[command.User.Id.ToString()] ? "muted" : "unmuted")}", ":)").Build());
+                }
+                if (option.Name == "toggle_automatic_join")
+                {
+                    var automaticJoinDataJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTD_DiscordID_hasAutomaticJoin.json");
+                    var automaticJoinData = new Dictionary<string, bool>();
+                    if (automaticJoinDataJson != "") automaticJoinData = JsonConvert.DeserializeObject<Dictionary<string, bool>>(automaticJoinDataJson);
+                    automaticJoinData[command.User.Id.ToString()] = (bool)option.Value;
+                    var automaticJoinDataJsonNew = JsonConvert.SerializeObject(automaticJoinData);
+                    System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\COTD_DiscordID_hasAutomaticJoin.json", automaticJoinDataJsonNew);
+
+                    var msg = await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed($"You will {(automaticJoinData[command.User.Id.ToString()] ? "automatically" : "not automatically")} join cup of the day now", ":)").Build());                    
+                }
+            }
+
+            if (command.Data.Options.FirstOrDefault(x => x.Name.ToString() == "reupload") != null)
+            {
+
+                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
+                if(scoresaberId != null)
+                {
+                    var hasUploaded = await new CupOfTheDayHandler(discordSocketClient, false).ReuploadDailyMapScores(scoresaberId);
+                    if (hasUploaded) await command.Channel.SendMessageAsync("Your daily maps have been uploaded, if they have not. Make sure you have joined with `/join`");
+                    else await command.Channel.SendMessageAsync("No maps have been uploaded. They need to be played within the daily map time limit");
+                }
+                else
+                {
+                    await command.Channel.SendMessageAsync("You have not linked your discord with scoresaber. Use `/Link`");
                 }
             }
         }
@@ -532,22 +577,22 @@ namespace DiscordBeatSaberBot.Commands
             NewRecentSong(discordSocketClient, command, true);
         }
 
-        [Help("Improve", "Gives you a list of scoresaber maps to improve on", "`/improve [WishedAcc]`", HelpAttribute.Catergories.General)]
-        public static async Task Improve(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
-        {
-            var r = new RoleAssignment(discordSocketClient);
-            if (await r.CheckIfDiscordIdIsLinked(command.User.Id.ToString()))
-            {
-                var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
-                var doubleAcc = (double)command.Data.Options.First().Value;
-                var embedBuilder = await BeatSaberInfoExtension.GetImprovableMapsByAccFromToplist(scoresaberId, doubleAcc);
-                await command.Channel.SendMessageAsync("", false, embedBuilder.Build());
-            }
-            else
-            {
-                await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Discord not linked", "For this command you have to link your discord account with scoresaber. You can do this by using the `/link` command").Build());
-            }
-        }
+        //[Help("Improve", "Gives you a list of scoresaber maps to improve on", "`/improve [WishedAcc]`", HelpAttribute.Catergories.General)]
+        //public static async Task Improve(DiscordSocketClient discordSocketClient, SocketSlashCommand command)
+        //{
+        //    var r = new RoleAssignment(discordSocketClient);
+        //    if (await r.CheckIfDiscordIdIsLinked(command.User.Id.ToString()))
+        //    {
+        //        var scoresaberId = await RoleAssignment.GetScoresaberIdWithDiscordId(command.User.Id.ToString());
+        //        var doubleAcc = (double)command.Data.Options.First().Value;
+        //        var embedBuilder = await BeatSaberInfoExtension.GetImprovableMapsByAccFromToplist(scoresaberId, doubleAcc);
+        //        await command.Channel.SendMessageAsync("", false, embedBuilder.Build());
+        //    }
+        //    else
+        //    {
+        //        await command.Channel.SendMessageAsync("", false, EmbedBuilderExtension.NullEmbed("Discord not linked", "For this command you have to link your discord account with scoresaber. You can do this by using the `/link` command").Build());
+        //    }
+        //}
 
         [Help("Profile", "Creates a profile from your linked scoresaber as png", "/profile", HelpAttribute.Catergories.General)]
         public static async Task Profile(DiscordSocketClient discordSocketClient, SocketSlashCommand command)

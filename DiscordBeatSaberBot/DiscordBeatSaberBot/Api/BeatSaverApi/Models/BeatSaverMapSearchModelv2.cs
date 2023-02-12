@@ -11,8 +11,11 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi.Models.v2
         public List<Maps> Docs { get; set; }
     }
 
-    public partial class Maps
+    public class Maps
     {
+        public string HashKey { get; set; }
+        public string DifficultyRaw { get; set; }
+
         [JsonProperty("id")]
         public string Id { get; set; }
 
@@ -61,7 +64,7 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi.Models.v2
         [JsonProperty("lastPublishedAt")]
         public DateTimeOffset LastPublishedAt { get; set; }
 
-        [JsonProperty("tags", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("tags")]
         public List<string> Tags { get; set; }
     }
 

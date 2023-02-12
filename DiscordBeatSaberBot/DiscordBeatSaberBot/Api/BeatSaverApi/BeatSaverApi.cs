@@ -3,8 +3,10 @@ using DiscordBeatSaberBot.Api.BeatSaverApi.Models.NewMaps;
 using DiscordBeatSaberBot.Api.BeatSaverApi.Models.v2;
 using DiscordBeatSaberBot.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -95,6 +97,48 @@ namespace DiscordBeatSaberBot.Api.BeatSaverApi
             if (mapJsonDataBeatSaver == null) return null;
             var mapInfoBeatSaver = JsonConvert.DeserializeObject<dynamic>(mapJsonDataBeatSaver);
             return mapInfoBeatSaver;
+        }
+
+        public async Task<List<Maps>> GetMapsByHashes(List<string> hasheswithdiffs)
+        {
+            var hashesString = "";
+            foreach (var hash in hasheswithdiffs)
+            {
+                hashesString += hash.Split("_")[0] + ",";
+            }
+
+            var mapJsonDataBeatSaver = await Get($"maps/hash/{hashesString}");
+            JObject tokens = JsonConvert.DeserializeObject<dynamic>(mapJsonDataBeatSaver);
+            var childs = tokens.Children();
+
+            if (mapJsonDataBeatSaver == null) return null;
+
+            var maps = new List<Maps>();
+            var count = 0;
+            foreach(var map in childs)
+            {
+                var json = map.Children().First().ToString();
+                var obj = JsonConvert.DeserializeObject<Maps>(json);
+                if (obj != null)
+                {
+                    if(obj.Versions.First() != null)
+                    {                                          
+                        var hashdiff = hasheswithdiffs.FirstOrDefault(x => x.Split("_")[0].ToLower() == obj.Versions.First().Hash.ToLower());
+                        if(hashdiff != null)
+                        {
+                            obj.DifficultyRaw = hashdiff.Split("__")[1].Split("_")[0];
+                            obj.HashKey = obj.Versions.First().Hash;
+                            if (obj.Versions.First().Diffs != null)
+                            {
+                                if (obj.Versions.First().Diffs.FirstOrDefault(x => obj.DifficultyRaw == x.Difficulty) != null) maps.Add(obj);
+                            }
+                        }
+                    }
+                }
+                count++;
+            }
+
+            return maps;
         }
 
         public static async Task<Api.BeatSaverApi.Models.New2.MapsBySearchModel> GetMapsBySearch(string searchText)

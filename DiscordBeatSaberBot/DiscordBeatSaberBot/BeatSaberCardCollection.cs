@@ -16,6 +16,7 @@ using System.Globalization;
 using Discord.Rest;
 using DiscordBeatSaberBot.Api.BeatSaverApi.Models.New;
 using System.Net;
+using DiscordBeatSaberBot.Api.BeatSaverApi.Models.v2;
 
 namespace DiscordBeatSaberBot
 {
@@ -35,15 +36,14 @@ namespace DiscordBeatSaberBot
         private string stakeDifficulty;
         private SocketSlashCommand _command;
 
-        public BeatSaberCardCollection(DiscordSocketClient discord)
+        public BeatSaberCardCollection(DiscordSocketClient discord, bool shouldInitButtonExecuted = false)
         {
             _discord = discord;
-            _discord.ButtonExecuted += DiscordButtonConvert;
+            if (shouldInitButtonExecuted) _discord.ButtonExecuted += DiscordButtonConvert;
         }
 
         public static async Task<bool> DrawAndSendRandomFifaCard(DiscordSocketClient discord, SocketSlashCommand command)
         {
-
             try
             {
                 //Send opening message to channel
@@ -312,20 +312,20 @@ namespace DiscordBeatSaberBot
                 else if (nr < top100) cardCreator.AddImage("../../../Resources/img/FIFA_Card_effect_100.png", 0, 0, 735, 1211, isLocalFile: true);
 
                 //EVENT ZONE -------------
-                var startDate = DateTime.ParseExact("2022-12-05", "yyyy-MM-dd", CultureInfo.InvariantCulture);
-                var endDate = DateTime.ParseExact("2022-12-27", "yyyy-MM-dd", CultureInfo.InvariantCulture);
-                if (DateTime.UtcNow > startDate && DateTime.UtcNow < endDate)
-                {
-                    var eventNr = random.Next(0, 100);
-                    if (eventNr <= 10) //Chance
-                    {
-                        //Give event specials
-                        var bordertypenr = random.Next(1, 4);
-                        if (bordertypenr == 1) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_0.png", 0, 0, 735, 1211, isLocalFile: true);
-                        else if (bordertypenr == 2) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_1.png", 0, 0, 735, 1211, isLocalFile: true);
-                        else if (bordertypenr == 3) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_2.png", 0, 0, 735, 1211, isLocalFile: true);
-                    }
-                }
+                //var startDate = DateTime.ParseExact("2022-12-05", "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                //var endDate = DateTime.ParseExact("2022-12-27", "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                //if (DateTime.UtcNow > startDate && DateTime.UtcNow < endDate)
+                //{
+                //    var eventNr = random.Next(0, 100);
+                //    if (eventNr <= 10) //Chance
+                //    {
+                //        //Give event specials
+                //        var bordertypenr = random.Next(1, 4);
+                //        if (bordertypenr == 1) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_0.png", 0, 0, 735, 1211, isLocalFile: true);
+                //        else if (bordertypenr == 2) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_1.png", 0, 0, 735, 1211, isLocalFile: true);
+                //        else if (bordertypenr == 3) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_2.png", 0, 0, 735, 1211, isLocalFile: true);
+                //    }
+                //}
 
                 //------------------------
 
@@ -357,6 +357,9 @@ namespace DiscordBeatSaberBot
                     File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/CardCollectionVotes.json", newJson);
                 }
 
+                //Create gif when shiny chance 
+
+
                 //Create the card
                 await cardCreator.Create($"F:\\BeatSaberTradingCards/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png");
 
@@ -382,59 +385,446 @@ namespace DiscordBeatSaberBot
             }
         }
 
+        public static async Task<bool> DrawBeatSaberTradingCard(DiscordSocketClient discord, SocketSlashCommand command)
+        {
+            try
+            {
+                //Send opening message to channel
+                var playerTimeout = GetPlayerTimeout(command.User.Id.ToString());
+                if (playerTimeout.PacksLeft == 0) await command.Channel.SendMessageAsync($"Opening a pack... this is your last pack!");
+                else await command.Channel.SendMessageAsync($"Opening a pack... Remaining packs: {playerTimeout.PacksLeft}");
+
+                //Get all top 1000 players and pick out a random one
+                var players = new List<ScoreSaberLib.Models.PlayerInfoModel.Player>();
+                var amount = 20;
+                for (var i = 1; i <= amount; i++)
+                {
+                    var playersData = await new ScoreSaberClient().Api.Players.GetPlayers(page: i);
+                    if (playersData != null) players.AddRange(playersData.Players);
+                }
+                if (players.Count != 1000)
+                {
+                    await ErrorCase(command, "An unexpected error with Scoresaber occurred.");
+                    return false;
+                }
+                players = players.OrderBy(x => x.Rank).ToList();
+                var top1 = 5;
+                var top10 = 50;
+                var top50 = 500;
+                var top100 = 2200;
+                var top250 = 20000;
+                var top500 = 50000;
+                var top1000 = 100000;
+                var nr = new Random().Next(0, 100000);
+                var rangeBegin = 0;
+                var rangeEnd = 0;
+
+                if (nr <= top1)
+                {
+                    rangeBegin = 0;
+                    rangeEnd = 1;
+                }
+                else if (nr < top10)
+                {
+                    rangeBegin = 1;
+                    rangeEnd = 10;
+                }
+                else if (nr < top50)
+                {
+                    rangeBegin = 10;
+                    rangeEnd = 50;
+                }
+                else if (nr < top100)
+                {
+                    rangeBegin = 50;
+                    rangeEnd = 100;
+                }
+                else if (nr < top250)
+                {
+                    rangeBegin = 100;
+                    rangeEnd = 250;
+                }
+                else if (nr < top500)
+                {
+                    rangeBegin = 250;
+                    rangeEnd = 500;
+                }
+                else if (nr <= top1000)
+                {
+                    rangeBegin = 500;
+                    rangeEnd = 1000;
+                }
+
+                var random = new Random();
+                var player = players[random.Next(rangeBegin, rangeEnd)];
+
+                //TEST ZONE
+                //player = players.FirstOrDefault(x => x.Id == "76561198390456206");
+                //nr = 2000;
+
+                //Prevent banned people from showing up. 
+                if (BanList.Contains(player.Id))
+                {
+                    do
+                    {
+                        player = players[random.Next(rangeBegin, rangeEnd)];
+                    } while (BanList.Contains(player.Id));
+                }
+
+                //Get the player scoresaber info
+
+                var playerFull = await new ScoreSaberClient().Api.Players.GetPlayer(Convert.ToInt64(player.Id));
+                if (playerFull == null)
+                {
+                    await ErrorCase(command, "An unexpected error with Scoresaber occurred.");
+                    return false;
+                }
+
+                //Get all scores data needed from the player
+                var hashList = new List<string>();
+                var scores = new List<ScoreSaberLib.Models.PlayerScoresModel.PlayerScore>();
+                var scores100 = await new ScoreSaberClient().Api.Players.GetPlayerScores(Convert.ToInt64(player.Id), 100, sort: Players.sort.top, page: 1);
+                var scores200 = await new ScoreSaberClient().Api.Players.GetPlayerScores(Convert.ToInt64(player.Id), 100, sort: Players.sort.top, page: 2);
+                var scores100recent = await new ScoreSaberClient().Api.Players.GetPlayerScores(Convert.ToInt64(player.Id), 100, sort: Players.sort.recent, page: 1);
+                scores.AddRange(scores100);
+                scores.AddRange(scores200);
+                scores.AddRange(scores100recent);
+                foreach (var score in scores100) hashList.Add(score.Leaderboard.SongHash + "_" + score.Leaderboard.Difficulty.DifficultyRaw);
+                foreach (var score in scores200) hashList.Add(score.Leaderboard.SongHash + "_" + score.Leaderboard.Difficulty.DifficultyRaw);
+                foreach (var score in scores100recent) hashList.Add(score.Leaderboard.SongHash + "_" + score.Leaderboard.Difficulty.DifficultyRaw);
+
+                //Get all scores that qualify for being looked at their stats
+                var beatSaverMaps = new List<Maps>();
+
+                if (hashList.Count >= 50)
+                {
+                    var maps = await new BeatSaverApi("").GetMapsByHashes(hashList.GetRange(0, 49));
+                    beatSaverMaps.AddRange(maps);
+                }
+                if (hashList.Count >= 100)
+                {
+                    var maps = await new BeatSaverApi("").GetMapsByHashes(hashList.GetRange(51, 49));
+                    beatSaverMaps.AddRange(maps);
+                }
+                if (hashList.Count >= 150)
+                {
+                    var maps = await new BeatSaverApi("").GetMapsByHashes(hashList.GetRange(101, 49));
+                    beatSaverMaps.AddRange(maps);
+                }
+                if (hashList.Count >= 200)
+                {
+                    var maps = await new BeatSaverApi("").GetMapsByHashes(hashList.GetRange(151, 49));
+                    beatSaverMaps.AddRange(maps);
+                }
+                if (hashList.Count >= 250)
+                {
+                    var maps = await new BeatSaverApi("").GetMapsByHashes(hashList.GetRange(201, 49));
+                    beatSaverMaps.AddRange(maps);
+                }
+                if (hashList.Count >= 300)
+                {
+                    var maps = await new BeatSaverApi("").GetMapsByHashes(hashList.GetRange(251, 49));
+                    beatSaverMaps.AddRange(maps);
+                }
+
+                //Calculate every skill based on the qualified scores from the player 
+                var speed = 0;
+                var tech = 0;
+                var stamina = 0;
+                var accuracy = 0;
+                var total = 0;
+
+                var mapsWithTags = beatSaverMaps.Where(x => x != null && x.Tags != null && x.Tags.Count > 0).ToList();
+
+                var speedMaps = mapsWithTags.Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps > 10).ToList();
+                var accuracyMaps = mapsWithTags.Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps < 4).ToList();
+                var staminaMaps = mapsWithTags.Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Notes > 1800).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Seconds > 60 * 5).ToList();
+                var techMaps = mapsWithTags.Where(x => x.Tags.Contains("tech")).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps > 6).ToList();
+
+                speed = CalculateStatPoints(speedMaps);
+                accuracy = CalculateStatPoints(accuracyMaps);
+                stamina = CalculateStatPoints(staminaMaps);
+                tech = CalculateStatPoints(techMaps);
+
+                int CalculateStatPoints(List<Maps> statHashes)
+                {
+                    if (statHashes.Count < 3) return 0;
+
+                    var count = 0;
+                    var stat = 0;
+                    foreach (var stathash in statHashes)
+                    {
+                        if (stathash.Versions != null)
+                        {
+                            var score = scores.FirstOrDefault(x => x.Leaderboard.SongHash.ToLower() == stathash.Versions.First().Hash.ToLower() && x.Leaderboard.Plays > 5);
+                            if (score != null)
+                            {
+                                var totalPlays = score.Leaderboard.Plays;
+                                var playerRank = score.Score.Rank;
+                                var points = ((double)totalPlays - playerRank) * 100 / (totalPlays - 1);
+                                var pointloss = (double)player.Rank / 2000;
+                                var newpoints = (double)points - pointloss * (double)points;
+                                points = (int)newpoints;
+                                count++;
+                                stat += (int) points;
+                            }
+                        }
+                    }
+                    if (count > 0) stat = stat / count;
+
+                    return stat;
+                }
+
+                var amountOfStats = 4;
+                if (speed == 0) amountOfStats--;
+                if (accuracy == 0) amountOfStats--;
+                if (tech == 0) amountOfStats--;
+                if (stamina == 0) amountOfStats--;
+
+                total = amountOfStats == 0 ? 0 : (speed + accuracy + tech + stamina) / amountOfStats;
+
+                speed = expandStat(speed, total);
+                stamina = expandStat(stamina, total);
+                accuracy = expandStat(accuracy, total);
+                tech = expandStat(tech, total);
+
+                int expandStat(int stat, int statTotal)
+                {
+                    if(stat != 0) {
+                        if (statTotal < stat)
+                        {
+                            var diff = statTotal - stat;
+                            diff += 1;
+                            var extra = diff * 3;
+                            stat = stat + extra;
+                        }
+                        else if(statTotal > stat)
+                        {
+                            var diff = stat - statTotal;
+                            diff -= 1;
+                            var extra = diff * 3;
+                            stat = stat - extra;
+                        }
+                    }
+                    if (stat > 99) stat = 99;
+                     return stat;
+                }
+
+                if (nr <= 5) total += 1;
+
+                //All data is finished. Create the card.
+                var cardCreator = new ImageCreator("../../../Resources/img/TradingCardsv2_template.png");
+                cardCreator.AddImage(player.ProfilePicture.ToString(), 0, -0, 735 * 8, 1211, blurItensity: 15);
+                var backgroundImage = cardCreator.AddImage(player.ProfilePicture.ToString(), 285, 250, 400, 400, cornerRadius: 25);
+                //cardCreator.AddImage("../../../Resources/img/TradingCardsv2_template.png", 0, 0, 735, 1211, isLocalFile: true);
+
+                //Calculate the average image pixel
+
+
+                var fontType = "Poppins";
+                var averageColor = cardCreator.GetAverageImagePixel(backgroundImage);
+                var frontcolor = averageColor;
+                var backcolor = cardCreator.GetBackgroundContrast(averageColor);
+                var highlightColor = cardCreator.GetHighlightColor(frontcolor);
+                var shadowDistance = 5;
+
+                cardCreator.AddMask("../../../Resources/img/TradingCardsv2_mask.png", isLocalFile: true);
+
+                if (nr <= top1) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_1.png", 0, 0, 735, 1211, isLocalFile: true);
+                else if (nr < top10) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_10.png", 0, 0, 735, 1211, isLocalFile: true);
+                else if (nr < top50) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_50.png", 0, 0, 735, 1211, isLocalFile: true);
+                else if (nr < top100) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_100.png", 0, 0, 735, 1211, isLocalFile: true);
+                else if (nr < top250) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_250.png", 0, 0, 735, 1211, isLocalFile: true);
+                else if (nr < top500) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_500.png", 0, 0, 735, 1211, isLocalFile: true);
+                else if (nr < top1000) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_1000.png", 0, 0, 735, 1211, isLocalFile: true);
+
+                if (playerFull.Badges != null)
+                {
+                    var badges = (JArray)playerFull.Badges;
+                    if (badges.Count > 0)
+                    {
+                        var url = badges.Children().Last().Children().Last().Children().First().ToString();
+                        cardCreator.AddImage(url, 150, 485, 100, 35);
+                    }
+                }
+
+                cardCreator.AddTextCenter(total.ToString(), backcolor, 72, 200 + shadowDistance, 175 + shadowDistance, fontstyle: fontType);
+                cardCreator.AddTextCenter(total.ToString(), frontcolor, 72, 200, 175, fontstyle: fontType, textStrokeColor: highlightColor);
+
+                cardCreator.AddTextCenter(player.Country, backcolor, 48, 200 + shadowDistance, 285 + shadowDistance, fontstyle: fontType);
+                cardCreator.AddTextCenter(player.Country, frontcolor, 48, 200, 285, fontstyle: fontType, textStrokeColor: highlightColor);
+
+                cardCreator.AddImageRounded($"https://flagpedia.net/data/flags/w580/{player.Country.ToLower()}.png", 150, 390, 100, 60);
+
+                cardCreator.AddTextCenter(speed == 0 ? "?" : speed.ToString(), backcolor, 42, 200 + shadowDistance, 825 + shadowDistance, fontstyle: fontType);
+                cardCreator.AddTextCenter(stamina == 0 ? "?" : stamina.ToString(), backcolor, 42, 200 + shadowDistance, 945 + shadowDistance, fontstyle: fontType);
+                cardCreator.AddTextCenter(tech == 0 ? "?" : tech.ToString(), backcolor, 42, 530 + shadowDistance, 825 + shadowDistance, fontstyle: fontType);
+                cardCreator.AddTextCenter(accuracy == 0 ? "?" : accuracy.ToString(), backcolor, 42, 530 + shadowDistance, 945 + shadowDistance, fontstyle: fontType);
+
+                cardCreator.AddTextCenter(speed == 0 ? "?" : speed.ToString(), frontcolor, 42, 200, 825, fontstyle: fontType, textStrokeColor: highlightColor);
+                cardCreator.AddTextCenter(stamina == 0 ? "?" : stamina.ToString(), frontcolor, 42, 200, 945, fontstyle: fontType, textStrokeColor: highlightColor);
+                cardCreator.AddTextCenter(tech == 0 ? "?" : tech.ToString(), frontcolor, 42, 530, 825, fontstyle: fontType, textStrokeColor: highlightColor);
+                cardCreator.AddTextCenter(accuracy == 0 ? "?" : accuracy.ToString(), frontcolor, 42, 530, 945, fontstyle: fontType, textStrokeColor: highlightColor);
+
+                cardCreator.AddTextCenter("SPEED", frontcolor, 27, 200 + 3, 825 - 40 + 3, fontstyle: fontType);
+                cardCreator.AddTextCenter("STAMINA", frontcolor, 27, 202 + 3, 945 - 40 + 3, fontstyle: fontType);
+                cardCreator.AddTextCenter("TECH", frontcolor, 27, 530 + 3, 825 - 40 + 3, fontstyle: fontType);
+                cardCreator.AddTextCenter("ACCURACY", frontcolor, 27, 530 + 3, 945 - 40 + 3, fontstyle: fontType);
+
+                cardCreator.AddTextCenter("SPEED", backcolor, 27, 200, 825 - 40, fontstyle: fontType, textStrokeColor: highlightColor);
+                cardCreator.AddTextCenter("STAMINA", backcolor, 27, 202, 945 - 40, fontstyle: fontType, textStrokeColor: highlightColor);
+                cardCreator.AddTextCenter("TECH", backcolor, 27, 530, 825 - 40, fontstyle: fontType, textStrokeColor: highlightColor);
+                cardCreator.AddTextCenter("ACCURACY", backcolor, 27, 530, 945 - 40, fontstyle: fontType, textStrokeColor: highlightColor);
+
+                cardCreator.AddTextCenter(player.Name.ToUpper(), backcolor, 58, 370 + shadowDistance, 655 + shadowDistance, fontstyle: fontType, maxWidth: 500);
+                cardCreator.AddTextCenter(player.Name.ToUpper(), frontcolor, 58, 370, 655, fontstyle: fontType, textStrokeColor: highlightColor, maxWidth: 500);              
+
+                cardCreator.AddTextCenter("Drawn by: " + command.User.Username, Color.Black, 22, 380 + 5, 1170 + 5, fontstyle: fontType);
+                var size = cardCreator.AddTextCenter("Drawn by: " + command.User.Username, Color.FromArgb(103, 90, 55), 22, 380, 1170, fontstyle: fontType);
+
+                //EVENT ZONE -------------
+                //var startDate = DateTime.ParseExact("2022-12-05", "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                //var endDate = DateTime.ParseExact("2022-12-27", "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                //if (DateTime.UtcNow > startDate && DateTime.UtcNow < endDate)
+                //{
+                //    var eventNr = random.Next(0, 100);
+                //    if (eventNr <= 10) //Chance
+                //    {
+                //        //Give event specials
+                //        var bordertypenr = random.Next(1, 4);
+                //        if (bordertypenr == 1) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_0.png", 0, 0, 735, 1211, isLocalFile: true);
+                //        else if (bordertypenr == 2) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_1.png", 0, 0, 735, 1211, isLocalFile: true);
+                //        else if (bordertypenr == 3) cardCreator.AddImage("../../../Resources/img/christmas_border_2022_2.png", 0, 0, 735, 1211, isLocalFile: true);
+                //    }
+                //}
+
+                //------------------------
+
+                //cardCreator.DrawRectangle(380 / 2 - 10, 1170, Convert.ToInt32(size.Width), Convert.ToInt32(size.Height), Color.FromArgb(80, 123, 90, 55));
+
+                var today = DateTime.Now;
+                var creationTime = DateTime.UtcNow;
+
+                //Updates user collection vote list and usernames                 
+                var json = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/CardCollectionVotes.json");
+                var collectionVotes = JsonConvert.DeserializeObject<List<CardCollectionVotes>>(json);
+                if (collectionVotes != null)
+                {
+                    if (collectionVotes.FirstOrDefault(x => x.DiscordID == command.User.Id.ToString()) == null)
+                    {
+                        var voted = new List<string>();
+                        voted.Add(command.User.Id.ToString());
+                        collectionVotes.Add(new CardCollectionVotes { DiscordID = command.User.Id.ToString(), Username = command.User.Username, AmountOfVotes = 1, DiscordIDsWhoVoted = voted });
+
+                    }
+                    else
+                    {
+                        var collection = collectionVotes.FirstOrDefault(x => x.DiscordID == command.User.Id.ToString());
+                        collection.Username = command.User.Username;
+                    }
+                    var newJson = JsonConvert.SerializeObject(collectionVotes);
+                    File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/CardCollectionVotes.json", newJson);
+                }
+
+                //Create gif when shiny chance 
+                var isShiny = true;
+
+                //Store the card in the database
+                if(isShiny) await cardCreator.CreateAsGifWithShine($"F:\\Test/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.gif");
+                else await cardCreator.Create($"F:\\Test/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png");
+
+
+                //Make component buttons for on the message
+                var componentBuilder = new ComponentBuilder();
+                var beatshardAmount = (1000 - player.Rank) * total / 1000;
+                double multiplier = 1;
+                if (player.Rank <= 500) multiplier = 1.5;
+                if (player.Rank <= 250) multiplier = 1.8;
+                if (player.Rank <= 100) multiplier = 5;
+                if (player.Rank <= 50) multiplier = 10;
+                if (player.Rank <= 10) multiplier = 30;
+                if (player.Rank <= 1) multiplier = 60;
+                beatshardAmount = beatshardAmount * (int)multiplier;
+                if (beatshardAmount <= 3) beatshardAmount = 3;
+
+                componentBuilder.WithButton(label: $"Convert to Beat Shards ({beatshardAmount})", customId: $"{command.User.Id}_ConvertCardButton_{beatshardAmount}", style: ButtonStyle.Secondary);
+
+                //send card in discord
+                if(isShiny) await command.Channel.SendFileAsync($"F:\\Test/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.gif", components: componentBuilder.Build());
+                else await command.Channel.SendFileAsync($"F:\\Test/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png", components: componentBuilder.Build());
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                var ohoh = ex;
+                await ErrorCase(command, "An unexpected error occurred.");
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
         private async Task DiscordButtonConvert(SocketMessageComponent button)
         {
             if (button.Data.CustomId.Contains("ConvertCardButton"))
             {
-                if (button.User.Id.ToString() == button.Message.Components.First().Components.First().CustomId.Split("_").First()) //Check if user is the one that got the card
+                try
                 {
-                    var cardName = button.Message.Attachments.FirstOrDefault().Filename;
-                    var allCards = GetAllCards();
-                    var card = allCards.FirstOrDefault(x => x.Name == "/BeatSaberTradingCards/" + cardName);
-
-                    if (card != null)
+                    if (button.User.Id.ToString() == button.Message.Components.First().Components.First().CustomId.Split("_").First()) //Check if user is the one that got the card
                     {
-                        if (card.OwnerDiscordID == button.User.Id.ToString())
+                        var cardName = button.Message.Attachments.FirstOrDefault().Filename;
+                        var allCards = GetAllCards();
+                        var card = allCards.FirstOrDefault(x => x.Name == "/BeatSaberTradingCards/" + cardName);
+
+                        if (card != null)
                         {
-                            var shards = button.Data.CustomId.Split("_").Last();
-                            var beatShardsJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/BSTCBeatShards.json");
-                            var playersBeatShardsList = JsonConvert.DeserializeObject<Dictionary<string, long>>(beatShardsJson);
-
-                            if (playersBeatShardsList != null)
+                            if (card.OwnerDiscordID == button.User.Id.ToString())
                             {
-                                if (playersBeatShardsList.ContainsKey(button.User.Id.ToString()))
+                                var shards = button.Data.CustomId.Split("_").Last();
+                                var beatShardsJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/BSTCBeatShards.json");
+                                var playersBeatShardsList = JsonConvert.DeserializeObject<Dictionary<string, long>>(beatShardsJson);
+
+                                if (playersBeatShardsList != null)
                                 {
-                                    //Get and add points
-                                    var playerShards = playersBeatShardsList[button.User.Id.ToString()];
-                                    playersBeatShardsList[button.User.Id.ToString()] = playerShards + Convert.ToInt64(shards);
-                                    //Delete card
-                                    System.IO.File.Delete("F://" + card.Name);
+                                    if (playersBeatShardsList.ContainsKey(button.User.Id.ToString()))
+                                    {
+                                        //Get and add points
+                                        var playerShards = playersBeatShardsList[button.User.Id.ToString()];
+                                        playersBeatShardsList[button.User.Id.ToString()] = playerShards + Convert.ToInt64(shards);
+                                        //Delete card
+                                        System.IO.File.Delete("F://" + card.Name);
 
+                                    }
+                                    else //First time converting
+                                    {
+                                        playersBeatShardsList.Add(button.User.Id.ToString(), Convert.ToInt64(shards));
+                                        //Delete card
+                                        System.IO.File.Delete("F://" + card.Name);
+                                    }
+
+                                    var newJson = JsonConvert.SerializeObject(playersBeatShardsList);
+                                    System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/BSTCBeatShards.json", newJson);
                                 }
-                                else //First time converting
+                                else
                                 {
-                                    playersBeatShardsList.Add(button.User.Id.ToString(), Convert.ToInt64(shards));
-                                    //Delete card
-                                    System.IO.File.Delete("F://" + card.Name);
+                                    return;
                                 }
 
-                                var newJson = JsonConvert.SerializeObject(playersBeatShardsList);
-                                System.IO.File.WriteAllText(GlobalConfiguration.WebsiteRoot + "DataCollection/BSTCBeatShards.json", newJson);
+                                await button.UpdateAsync(x => x.Content = $"This card has been converted into **{shards}** beat shards. You now have **{playersBeatShardsList[button.User.Id.ToString()]}** Beat Shards. `/Shop`");
+                                await button.ModifyOriginalResponseAsync(x => x.Components = new ComponentBuilder().Build());
                             }
-                            else
-                            {
-                                return;
-                            }
-
-                            await button.UpdateAsync(x => x.Content = $"This card has been converted into **{shards}** beat shards. You now have **{playersBeatShardsList[button.User.Id.ToString()]}** Beat Shards. `/Shop`");
+                        }
+                        else
+                        {
+                            await button.UpdateAsync(x => x.Content = $"This card doesn't exist anymore");
                             await button.ModifyOriginalResponseAsync(x => x.Components = new ComponentBuilder().Build());
                         }
                     }
-                    else
-                    {
-                        await button.UpdateAsync(x => x.Content = $"This card doesn't exist anymore");
-                        await button.ModifyOriginalResponseAsync(x => x.Components = new ComponentBuilder().Build());
-                    }
+                }
+                catch
+                {
+                    Console.WriteLine("Card Convert Button Handle error!!!");
+                    return;
                 }
             }
             return;
@@ -565,7 +955,7 @@ namespace DiscordBeatSaberBot
                         ScoresaberID = parameters[3],
                         Score = Convert.ToInt32(parameters[4]),
                         rank = Convert.ToInt32(parameters[5]),
-                        luckNumber = Convert.ToInt32(parameters[6].Replace(".png", ""))
+                        luckNumber = Convert.ToInt32(parameters[6].Replace(".png", "").Replace(".gif", ""))
                     };
                     cards.Add(card);
                 }
@@ -738,11 +1128,14 @@ namespace DiscordBeatSaberBot
                     {
                         new BeatSaberCardCollection(_discord).StartStakeProcess(_command, _command.User, arg.User);
                     }
+
+                    _discord.ButtonExecuted -= VoteButtonExecute;
                 }
                 return;
             }
             catch (Exception ex)
             {
+                _discord.ButtonExecuted -= VoteButtonExecute;
                 return;
             }
         }
@@ -1767,7 +2160,7 @@ namespace DiscordBeatSaberBot
                     if (playerToGive.TimeOutTill != null && playerToGive.TimeOutTill < DateTime.Now)
                     {
                         playerToGive.PacksLeft = 4;
-                        var timeTill = (DateTime) playerToGive.TimeOutTill;
+                        var timeTill = (DateTime)playerToGive.TimeOutTill;
                         playerToGive.TimeOutTill = timeTill.AddHours(23);
                     }
 

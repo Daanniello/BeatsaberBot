@@ -7,6 +7,8 @@ using System.Net;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using DiscordBeatSaberBot.Models.ScoreberAPI;
+using ScoreSaberLib;
+using System;
 
 namespace DiscordBeatSaberBot
 {
@@ -25,56 +27,32 @@ namespace DiscordBeatSaberBot
 
         public static async Task<bool> IsDutch(string ID)
         {
-            string url = $"https://new.scoresaber.com/api/player/{ID}/full";
-            using (var client = new HttpClient())
+            var scoresaberClient = new ScoreSaberClient();
+            var player = await scoresaberClient.Api.Players.GetPlayer(Convert.ToInt64(ID));
+            if(player != null)
             {
-                var playerInfoRaw = await client.GetAsync(url);
-                if (playerInfoRaw.StatusCode != HttpStatusCode.OK) return false;
-                var playerInfo = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
-
-
-                if (playerInfo.playerInfo.Country == "NL")
-                {
-                    return true;
-                }
+                if (player.Country.ToLower() == "nl") return true;
+                else return false;
             }
+            else
+            {
                 return false;
-        }
-
-        public static async Task<bool> IsDanish(string ID)
-        {
-            string url = $"https://new.scoresaber.com/api/player/{ID}/full";
-            using (var client = new HttpClient())
-            {
-                var playerInfoRaw = await client.GetAsync(url);
-                if (playerInfoRaw.StatusCode != HttpStatusCode.OK) return false;
-                var playerInfo = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
-
-
-                if (playerInfo.playerInfo.Country == "DK")
-                {
-                    return true;
-                }
             }
-            return false;
         }
 
         public static async Task<bool> IsNotDutch(string ID)
         {
-            string url = $"https://new.scoresaber.com/api/player/{ID}/full";
-            using (var client = new HttpClient())
+            var scoresaberClient = new ScoreSaberClient();
+            var player = await scoresaberClient.Api.Players.GetPlayer(Convert.ToInt64(ID));
+            if (player != null)
             {
-                var playerInfoRaw = await client.GetAsync(url);
-                if (playerInfoRaw.StatusCode != HttpStatusCode.OK) return false;
-                var playerInfo = JsonConvert.DeserializeObject<ScoresaberPlayerFullModel>(playerInfoRaw.Content.ReadAsStringAsync().Result);
-
-
-                if (playerInfo.playerInfo.Country != "NL")
-                {
-                    return true;
-                }
+                if (player.Country.ToLower() != "nl") return true;
+                else return false;
             }
-            return false;
+            else
+            {
+                return false;
+            }
         }
 
         public static bool IsOwner(ulong Id)

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using DiscordBeatSaberBot.Extensions;
+using ScoreSaberLib;
 
 namespace DiscordBeatSaberBot.Handlers
 {
@@ -218,10 +219,10 @@ namespace DiscordBeatSaberBot.Handlers
                             await casted.RemoveAllReactionsAsync();
                         }
 
-                        var player = await new ScoresaberAPI(scoresaberId).GetPlayerFull();
+                        var player = await new ScoreSaberClient().Api.Players.GetPlayer(Convert.ToInt64(scoresaberId));
 
 
-                        DutchRankFeed.GiveRoleWithRank(player.playerInfo.CountryRank, scoresaberId, discordSocketClient);
+                        await DutchRankFeed.GiveRoleWithRank(player.CountryRank, scoresaberId, discordSocketClient);
                         var dutchGuild = new GuildService(discordSocketClient, 505485680344956928);
                         IUser linkingUser = dutchGuild.Guild.GetUser(await new RoleAssignment(discordSocketClient).GetDiscordIdWithScoresaberId(scoresaberId));
                         await dutchGuild.AddRole("Verified", linkingUser);

@@ -30,9 +30,9 @@ namespace DiscordBeatSaberBot.Handlers
                 case "randomgif":
                     HandleTaskException(GlobalScoresaberCommands.RandomGif(_discord, command), command);
                     break;
-                case "improve":
-                    HandleTaskException(GlobalScoresaberCommands.Improve(_discord, command), command);
-                    break;
+                //case "improve":
+                //    HandleTaskException(GlobalScoresaberCommands.Improve(_discord, command), command);
+                //    break;
                 case "ranktracker":
                     HandleTaskException(GlobalScoresaberCommands.RankTracker(_discord, command), command);
                     break;
@@ -257,11 +257,14 @@ namespace DiscordBeatSaberBot.Handlers
 
                 var cotdOptionBuilderSettings = new SlashCommandOptionBuilder().WithName("settings").WithDescription("Configure trading card settings").WithType(ApplicationCommandOptionType.SubCommand);
 
-                cotdOptionBuilderSettings.AddOption("make_server_public", ApplicationCommandOptionType.Boolean, "Toggle the server to be private or public", false);
-                cotdOptionBuilderSettings.AddOption("upload_playlist", ApplicationCommandOptionType.Attachment, "Upload a playlist to rotate through on the local cotd", false);
-                cotdOptionBuilderSettings.AddOption("create_feed_channel", ApplicationCommandOptionType.Channel, "Makes a leaderboard board from the chosen channel", false);
-                
+                cotdOptionBuilderSettings.AddOption("toggle_dm_mute", ApplicationCommandOptionType.Boolean, "Toggle if the bot should DM you", false);
+                cotdOptionBuilderSettings.AddOption("toggle_automatic_join", ApplicationCommandOptionType.Boolean, "Toggle automatic join cup of the day", false);
+                cotdOptionBuilderSettings.AddOption("make_server_public", ApplicationCommandOptionType.Boolean, "Toggle the server to be private or public (Admin only)", false);
+                cotdOptionBuilderSettings.AddOption("upload_playlist", ApplicationCommandOptionType.Attachment, "Upload a playlist to rotate through on the local cotd (Admin only)", false);
+                cotdOptionBuilderSettings.AddOption("create_feed_channel", ApplicationCommandOptionType.Channel, "Makes a leaderboard board from the chosen channel (Admin only)", false);
                 cotdSlashBuilder.AddOption(cotdOptionBuilderSettings);
+
+                cotdSlashBuilder.AddOption(new SlashCommandOptionBuilder().WithName("reupload").WithDescription("Reupload daily scores. Only works if the maps have been played within the daily map time").WithType(ApplicationCommandOptionType.SubCommand));
 
                 await _discord.CreateGlobalApplicationCommandAsync(cotdSlashBuilder.Build());
 
@@ -396,9 +399,10 @@ namespace DiscordBeatSaberBot.Handlers
                     .WithName("search")
                     .WithDescription("Searches a player and displays commands that can be used on that player")
                     .AddOption("username", ApplicationCommandOptionType.String, "Example: silverhaze, cerret", false)
-                    .AddOption("scoresaber_id", ApplicationCommandOptionType.String, "Example: 76561198187936410", false)
+                    .AddOption("scoresaber_id", ApplicationCommandOptionType.Number, "Example: 76561198187936410", false)
                     .AddOption("discord_tag", ApplicationCommandOptionType.Mentionable, "Example: @silverhaze", false)
-                    .AddOption("discord_id", ApplicationCommandOptionType.String, "Example: 5345345234324", false)
+                    .AddOption("discord_id", ApplicationCommandOptionType.Number, "Example: 5345345234324", false)
+                    .AddOption("discord_id2", ApplicationCommandOptionType.Number, "Example: 5345345234324", false)
                     .Build());
                 //topsongs
                 await _discord.CreateGlobalApplicationCommandAsync(new SlashCommandBuilder()

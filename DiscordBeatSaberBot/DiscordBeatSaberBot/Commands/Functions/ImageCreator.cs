@@ -17,6 +17,7 @@ using Image = System.Drawing.Image;
 using PointF = System.Drawing.PointF;
 using Rectangle = System.Drawing.Rectangle;
 using SizeF = System.Drawing.SizeF;
+using SixLabors.ImageSharp.Formats.Gif;
 
 namespace DiscordBeatSaberBot
 {
@@ -35,6 +36,53 @@ namespace DiscordBeatSaberBot
         {
             _bitmap.Save(path);
             return Task.CompletedTask;
+        }
+
+        public Task CreateAsGifWithShine(string path)
+        {
+            //Create a gif with the shine elements on it.
+            // 3000ms, each 100ms shine 
+            //Create all frames 
+
+            var frame1 = AddImageToFrame((Bitmap)_bitmap.Clone(), (Bitmap)Image.FromFile("../../../Resources/img/frame1.png"));
+            var frame2 = AddImageToFrame((Bitmap)_bitmap.Clone(), (Bitmap)Image.FromFile("../../../Resources/img/frame2.png"));
+            var frame3 = AddImageToFrame((Bitmap)_bitmap.Clone(), (Bitmap)Image.FromFile("../../../Resources/img/frame3.png"));
+            var frame4 = AddImageToFrame((Bitmap)_bitmap.Clone(), (Bitmap)Image.FromFile("../../../Resources/img/frame4.png"));
+            var frame5 = AddImageToFrame((Bitmap)_bitmap.Clone(), (Bitmap)Image.FromFile("../../../Resources/img/frame5.png"));
+            var frame6 = AddImageToFrame((Bitmap)_bitmap.Clone(), (Bitmap)Image.FromFile("../../../Resources/img/frame6.png"));
+
+            //using (var gif = new AnimatedGifCreator(path, delay: 1000, repeat: 0))
+            //{
+            //    gif.AddFrame(frame1, 2000);
+            //    gif.AddFrame(frame2, 100);
+            //    gif.AddFrame(frame3, 100, GifQuality.Bit8);
+            //    gif.AddFrame(frame4, 100, GifQuality.Bit8);
+            //    gif.AddFrame(frame5, 100, GifQuality.Bit8);
+            //    gif.AddFrame(frame6, 100, GifQuality.Bit8);
+            //}
+
+            var list = new List<Image>();
+            list.Add(frame1);
+            list.Add(frame2);
+            list.Add(frame3);
+            list.Add(frame4);
+            list.Add(frame5);
+            list.Add(frame6);
+
+
+
+            return Task.CompletedTask;
+        }
+      
+
+        public Image AddImageToFrame(Bitmap frame, Bitmap image, int x = 0, int y = 0)
+        {
+            using (Graphics g = Graphics.FromImage(frame))
+            {
+                g.DrawImage(image, x, y, image.Width, image.Height);
+            }
+
+            return frame;
         }
 
         public Bitmap GetBitmap()
@@ -80,9 +128,28 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public SizeF AddTextCenter(string text, Color color, int fontsize, float x, float y, string fontstyle = "Tourmaline")
+        public SizeF AddTextCenter(string text, Color color, int fontsize, float x, float y, string fontstyle = "Tourmaline", Color? textStrokeColor = null, int? maxWidth = null)
         {
-
+            if (maxWidth != null)
+            {
+                var firstTextHeight = 0f;
+                for (var i = fontsize; i > 10; i--)
+                {
+                    using (Font arialFont = new Font(fontstyle, i))
+                    using (Graphics graphics = Graphics.FromImage(_bitmap))
+                    {
+                        var length = graphics.MeasureString(text, arialFont);
+                        if (i == fontsize) firstTextHeight = length.Height;
+                        if (length.Width > maxWidth) continue;
+                        else
+                        {
+                            fontsize = i;
+                            y += (firstTextHeight - length.Height) / 2;
+                            break;
+                        }
+                    }
+                }
+            }
 
             using (Font arialFont = new Font(fontstyle, fontsize))
             using (Graphics graphics = Graphics.FromImage(_bitmap))
@@ -90,7 +157,18 @@ namespace DiscordBeatSaberBot
                 var length = graphics.MeasureString(text, arialFont);
                 PointF firstLocation = new PointF(x - (length.Width / 2), y);
 
+                if (textStrokeColor != null) graphics.DrawString(text, arialFont, new SolidBrush((Color)textStrokeColor), new PointF { X = firstLocation.X - 1, Y = firstLocation.Y - 1 });
                 graphics.DrawString(text, arialFont, new SolidBrush(color), firstLocation);
+                return length;
+            }
+        }
+
+        public SizeF GetTextSize(string text, string fontstyle, int fontsize)
+        {
+            using (Font arialFont = new Font(fontstyle, fontsize))
+            using (Graphics graphics = Graphics.FromImage(_bitmap))
+            {
+                var length = graphics.MeasureString(text, arialFont);
                 return length;
             }
         }
@@ -146,7 +224,7 @@ namespace DiscordBeatSaberBot
 
         }
 
-        public void AddImage(string path, float x, float y, int width, int height, float opacity = 1, bool isLocalFile = false, int blurItensity = 0)
+        public Bitmap AddImage(string path, float x, float y, int width, int height, float opacity = 1, bool isLocalFile = false, int blurItensity = 0, int cornerRadius = 0)
         {
             Image overlayImage = null;
             if (isLocalFile)
@@ -163,12 +241,19 @@ namespace DiscordBeatSaberBot
                     using (var stream = response.GetResponseStream())
                     {
                         var bitmap = Bitmap.FromStream(stream);
-                        if (blurItensity != 0) bitmap = AddBlur(new Bitmap(stream), blurItensity);
+                        if (blurItensity != 0)
+                        {
+                            var streamBitmap = new Bitmap(bitmap);
+                            bitmap = AddBlur(streamBitmap, blurItensity);
+                        }
                         overlayImage = bitmap;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
+                    // An error occurred while trying to download the image
+                    Console.WriteLine("An error occurred while trying to download the image: {0}", ex.Message);
+
                     request = WebRequest.Create("https://www.thermaxglobal.com/wp-content/uploads/2020/05/image-not-found.jpg");
                     using (var response = request.GetResponse())
                     using (var stream = response.GetResponseStream())
@@ -180,7 +265,13 @@ namespace DiscordBeatSaberBot
 
             Graphics g = Graphics.FromImage(_bitmap);
 
-            g.DrawImage(SetImageOpacity(overlayImage, opacity), x, y, width, height);
+            if (cornerRadius > 0) overlayImage = RoundCorners(overlayImage, cornerRadius, Color.FromArgb(0, 32, 32, 32));
+
+            overlayImage = SetImageOpacity(overlayImage, opacity);
+
+            g.DrawImage(overlayImage, x, y, width, height);
+
+            return (Bitmap)overlayImage;
         }
 
         public void AddMask(string path, bool isLocalFile = false)
@@ -556,6 +647,105 @@ namespace DiscordBeatSaberBot
             }
         }
 
+        public Color GetAverageImagePixel(Bitmap image)
+        {
+            int totalRed = 0;
+            int totalGreen = 0;
+            int totalBlue = 0;
+            int pixelCount = 0;
 
+            for (int x = 0; x < image.Width; x++)
+            {
+                for (int y = 0; y < image.Height; y++)
+                {
+                    Color pixelColor = image.GetPixel(x, y);
+                    totalRed += pixelColor.R;
+                    totalGreen += pixelColor.G;
+                    totalBlue += pixelColor.B;
+                    pixelCount++;
+                }
+            }
+
+            int averageRed = totalRed / pixelCount;
+            int averageGreen = totalGreen / pixelCount;
+            int averageBlue = totalBlue / pixelCount;
+
+            return Color.FromArgb(averageRed, averageGreen, averageBlue);
+        }
+
+        public Color GetBackgroundContrast(Color color)
+        {
+            var temp = new HSV();
+            temp.h = color.GetHue();
+            double contrastingHue = temp.h - 40;
+            temp.h = (float)contrastingHue;
+            temp.s = color.GetSaturation();
+            temp.v = getBrightness(color);
+            if (temp.v > 0.1)
+            {
+                var contrastingBrightness = 0.0f;
+                if (temp.v <= 0.3) contrastingBrightness = temp.v - 0.2f;
+                else if (temp.v > 0.3 && temp.v <= 0.5) contrastingBrightness = temp.v - 0.25f;
+                else if (temp.v > 0.5 && temp.v <= 0.8) contrastingBrightness = temp.v - 0.3f;
+                else if (temp.v > 0.8) contrastingBrightness = temp.v - 0.4f;
+
+                if (contrastingBrightness < 0) contrastingBrightness = 0.0f;
+                temp.v = contrastingBrightness;
+            }
+            else
+            {
+                temp.v += 0.2f;
+            }
+
+            return ColorFromHSL(temp);
+        }
+
+        public Color GetHighlightColor(Color color)
+        {
+            var temp = new HSV();
+            temp.h = color.GetHue();
+            temp.s = color.GetSaturation();
+            temp.v = getBrightness(color);
+            temp.v = temp.v + 0.3f;
+            if (temp.v > 1) temp.v = 1;
+
+            return ColorFromHSL(temp);
+        }
+
+        // A common triple float struct for both HSL & HSV
+        // Actually this should be immutable and have a nice constructor!!
+        public struct HSV { public float h; public float s; public float v; }
+
+        // the Color Converter
+        static public Color ColorFromHSL(HSV hsl)
+        {
+            if (hsl.s == 0)
+            { int L = (int)hsl.v; return Color.FromArgb(255, L, L, L); }
+
+            double min, max, h;
+            h = hsl.h / 360d;
+
+            max = hsl.v < 0.5d ? hsl.v * (1 + hsl.s) : (hsl.v + hsl.s) - (hsl.v * hsl.s);
+            min = (hsl.v * 2d) - max;
+
+            Color c = Color.FromArgb(255, (int)(255 * RGBChannelFromHue(min, max, h + 1 / 3d)),
+                                          (int)(255 * RGBChannelFromHue(min, max, h)),
+                                          (int)(255 * RGBChannelFromHue(min, max, h - 1 / 3d)));
+            return c;
+        }
+
+        // color brightness as perceived:
+        float getBrightness(Color c)
+        { return (c.R * 0.299f + c.G * 0.587f + c.B * 0.114f) / 256f; }
+        static double RGBChannelFromHue(double m1, double m2, double h)
+        {
+            h = (h + 1d) % 1d;
+            if (h < 0) h += 1;
+            if (h * 6 < 1) return m1 + (m2 - m1) * 6 * h;
+            else if (h * 2 < 1) return m2;
+            else if (h * 3 < 2) return m1 + (m2 - m1) * 6 * (2d / 3d - h);
+            else return m1;
+
+        }
     }
 }
