@@ -411,8 +411,8 @@ namespace DiscordBeatSaberBot
                 var top1 = 5;
                 var top10 = 50;
                 var top50 = 500;
-                var top100 = 2200;
-                var top250 = 20000;
+                var top100 = 2600;
+                var top250 = 15000;
                 var top500 = 50000;
                 var top1000 = 100000;
                 var nr = new Random().Next(0, 100000);
@@ -459,7 +459,7 @@ namespace DiscordBeatSaberBot
                 var player = players[random.Next(rangeBegin, rangeEnd)];
 
                 //TEST ZONE
-                //player = players.FirstOrDefault(x => x.Id == "76561198390456206");
+                //player = players.FirstOrDefault(x => x.Id == "76561198186151129");
                 //nr = 2000;
 
                 //Prevent banned people from showing up. 
@@ -527,6 +527,8 @@ namespace DiscordBeatSaberBot
                     beatSaverMaps.AddRange(maps);
                 }
 
+                scores = scores.Where(x => x.Score.Modifiers == "").ToList();
+
                 //Calculate every skill based on the qualified scores from the player 
                 var speed = 0;
                 var tech = 0;
@@ -536,17 +538,22 @@ namespace DiscordBeatSaberBot
 
                 var mapsWithTags = beatSaverMaps.Where(x => x != null && x.Tags != null && x.Tags.Count > 0).ToList();
 
-                var speedMaps = mapsWithTags.Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps > 10).ToList();
-                var accuracyMaps = mapsWithTags.Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps < 4).ToList();
+                var speedMaps = mapsWithTags.Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps > 10).Where(x => x.Metadata.Bpm >= 300).ToList();
+                var accuracyMaps = mapsWithTags.Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps < 5).ToList();
                 var staminaMaps = mapsWithTags.Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Notes > 1800).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Seconds > 60 * 5).ToList();
-                var techMaps = mapsWithTags.Where(x => x.Tags.Contains("tech")).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps > 6).ToList();
+                var techMaps = mapsWithTags.Where(x => x.Tags.Contains("tech")).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps > 6).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps < 10).ToList();
 
                 speed = CalculateStatPoints(speedMaps);
                 accuracy = CalculateStatPoints(accuracyMaps);
                 stamina = CalculateStatPoints(staminaMaps);
                 tech = CalculateStatPoints(techMaps);
 
-                int CalculateStatPoints(List<Maps> statHashes)
+                var speedNormalised = CalculateStatPoints(speedMaps, true);
+                var accuracyNormalised = CalculateStatPoints(accuracyMaps, true);
+                var staminaNormalised = CalculateStatPoints(staminaMaps, true);
+                var techNormalised = CalculateStatPoints(techMaps, true);
+
+                int CalculateStatPoints(List<Maps> statHashes, bool normalize = false)
                 {
                     if (statHashes.Count < 3) return 0;
 
@@ -556,15 +563,18 @@ namespace DiscordBeatSaberBot
                     {
                         if (stathash.Versions != null)
                         {
-                            var score = scores.FirstOrDefault(x => x.Leaderboard.SongHash.ToLower() == stathash.Versions.First().Hash.ToLower() && x.Leaderboard.Plays > 5);
+                            var score = scores.FirstOrDefault(x => x.Leaderboard.SongHash.ToLower() == stathash.Versions.First().Hash.ToLower() && x.Leaderboard.Plays > 150);
                             if (score != null)
                             {
                                 var totalPlays = score.Leaderboard.Plays;
                                 var playerRank = score.Score.Rank;
                                 var points = ((double)totalPlays - playerRank) * 100 / (totalPlays - 1);
-                                var pointloss = (double)player.Rank / 2000;
-                                var newpoints = (double)points - pointloss * (double)points;
-                                points = (int)newpoints;
+                                if (normalize)
+                                {
+                                    var pointloss = (double)player.Rank / 2000;
+                                    var newpoints = (double)points - pointloss * (double)points;
+                                    points = (int)newpoints;
+                                }
                                 count++;
                                 stat += (int) points;
                             }
@@ -575,46 +585,63 @@ namespace DiscordBeatSaberBot
                     return stat;
                 }
 
+                if(speed != 0) speed = normalise(speed);
+                if (accuracy != 0) accuracy = normalise(accuracy);
+                if (stamina != 0) stamina = normalise(stamina);
+                if (tech != 0) tech = normalise(tech);
+
+                int normalise(int stat)
+                {
+                    var diff = (double)(100 - stat);
+                    var min = (diff / 100 * 30);
+                    var final = stat - min;
+                    return (int) Math.Round(final);
+                }
+
                 var amountOfStats = 4;
                 if (speed == 0) amountOfStats--;
                 if (accuracy == 0) amountOfStats--;
                 if (tech == 0) amountOfStats--;
                 if (stamina == 0) amountOfStats--;
 
-                total = amountOfStats == 0 ? 0 : (speed + accuracy + tech + stamina) / amountOfStats;
+                total = amountOfStats == 0 ? 0 : (speedNormalised + accuracyNormalised + techNormalised + staminaNormalised) / amountOfStats;
 
-                speed = expandStat(speed, total);
-                stamina = expandStat(stamina, total);
-                accuracy = expandStat(accuracy, total);
-                tech = expandStat(tech, total);
+                //speed = expandStat(speed, total);
+                //stamina = expandStat(stamina, total);
+                //accuracy = expandStat(accuracy, total);
+                //tech = expandStat(tech, total);
 
-                int expandStat(int stat, int statTotal)
-                {
-                    if(stat != 0) {
-                        if (statTotal < stat)
-                        {
-                            var diff = statTotal - stat;
-                            diff += 1;
-                            var extra = diff * 3;
-                            stat = stat + extra;
-                        }
-                        else if(statTotal > stat)
-                        {
-                            var diff = stat - statTotal;
-                            diff -= 1;
-                            var extra = diff * 3;
-                            stat = stat - extra;
-                        }
-                    }
-                    if (stat > 99) stat = 99;
-                     return stat;
-                }
+                //int expandStat(int stat, int statTotal)
+                //{
+                //    if(stat != 0) {
+                //        if (statTotal < stat)
+                //        {
+                //            var diff = statTotal - stat;
+                //            diff += 1;
+                //            var extra = diff * 2;
+                //            stat = stat + extra;
+                //        }
+                //        else if(statTotal > stat)
+                //        {
+                //            var diff = stat - statTotal;
+                //            diff -= 1;
+                //            var extra = diff * 2;
+                //            stat = stat - extra;
+                //        }
+                //    }
+                //    if (stat > 99) stat = 99;
+                //     return stat;
+                //}
 
                 if (nr <= 5) total += 1;
 
+                var isShiny = false;
+                if (random.Next(0, 100000) <= 750) isShiny = true;
+
                 //All data is finished. Create the card.
                 var cardCreator = new ImageCreator("../../../Resources/img/TradingCardsv2_template.png");
-                cardCreator.AddImage(player.ProfilePicture.ToString(), 0, -0, 735 * 8, 1211, blurItensity: 15);
+                cardCreator.AddImage(player.ProfilePicture.ToString(), 0, -0, 735 * 6, (int) (1211 * 1.3), blurItensity: 12);
+                if (isShiny) cardCreator.ApplyShinyEffect();
                 var backgroundImage = cardCreator.AddImage(player.ProfilePicture.ToString(), 285, 250, 400, 400, cornerRadius: 25);
                 //cardCreator.AddImage("../../../Resources/img/TradingCardsv2_template.png", 0, 0, 735, 1211, isLocalFile: true);
 
@@ -630,10 +657,10 @@ namespace DiscordBeatSaberBot
 
                 cardCreator.AddMask("../../../Resources/img/TradingCardsv2_mask.png", isLocalFile: true);
 
-                if (nr <= top1) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_1.png", 0, 0, 735, 1211, isLocalFile: true);
-                else if (nr < top10) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_10.png", 0, 0, 735, 1211, isLocalFile: true);
-                else if (nr < top50) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_50.png", 0, 0, 735, 1211, isLocalFile: true);
-                else if (nr < top100) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_100.png", 0, 0, 735, 1211, isLocalFile: true);
+                if (nr <= top1) cardCreator.AddImage($"../../../Resources/img/TradingCardsv2_1{(isShiny ? "_noglow": "")}.png", 0, 0, 735, 1211, isLocalFile: true);
+                else if (nr < top10) cardCreator.AddImage($"../../../Resources/img/TradingCardsv2_10{(isShiny ? "_noglow" : "")}.png", 0, 0, 735, 1211, isLocalFile: true);
+                else if (nr < top50) cardCreator.AddImage($"../../../Resources/img/TradingCardsv2_50{(isShiny ? "_noglow" : "")}.png", 0, 0, 735, 1211, isLocalFile: true);
+                else if (nr < top100) cardCreator.AddImage($"../../../Resources/img/TradingCardsv2_100{(isShiny ? "_noglow" : "")}.png", 0, 0, 735, 1211, isLocalFile: true);
                 else if (nr < top250) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_250.png", 0, 0, 735, 1211, isLocalFile: true);
                 else if (nr < top500) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_500.png", 0, 0, 735, 1211, isLocalFile: true);
                 else if (nr < top1000) cardCreator.AddImage("../../../Resources/img/TradingCardsv2_1000.png", 0, 0, 735, 1211, isLocalFile: true);
@@ -648,36 +675,36 @@ namespace DiscordBeatSaberBot
                     }
                 }
 
-                cardCreator.AddTextCenter(total.ToString(), backcolor, 72, 200 + shadowDistance, 175 + shadowDistance, fontstyle: fontType);
-                cardCreator.AddTextCenter(total.ToString(), frontcolor, 72, 200, 175, fontstyle: fontType, textStrokeColor: highlightColor);
+                cardCreator.AddTextCenter(total.ToString(), backcolor, 72, 200 + shadowDistance, 175 + shadowDistance, fontstyle: fontType, useAntiAlias: true);
+                cardCreator.AddTextCenter(total.ToString(), frontcolor, 72, 200, 175, fontstyle: fontType, textStrokeColor: highlightColor, useAntiAlias: true);
 
-                cardCreator.AddTextCenter(player.Country, backcolor, 48, 200 + shadowDistance, 285 + shadowDistance, fontstyle: fontType);
-                cardCreator.AddTextCenter(player.Country, frontcolor, 48, 200, 285, fontstyle: fontType, textStrokeColor: highlightColor);
+                cardCreator.AddTextCenter(player.Country, backcolor, 48, 200 + shadowDistance, 285 + shadowDistance, fontstyle: fontType, useAntiAlias: true);
+                cardCreator.AddTextCenter(player.Country, frontcolor, 48, 200, 285, fontstyle: fontType, textStrokeColor: highlightColor, useAntiAlias: true);
 
                 cardCreator.AddImageRounded($"https://flagpedia.net/data/flags/w580/{player.Country.ToLower()}.png", 150, 390, 100, 60);
 
-                cardCreator.AddTextCenter(speed == 0 ? "?" : speed.ToString(), backcolor, 42, 200 + shadowDistance, 825 + shadowDistance, fontstyle: fontType);
-                cardCreator.AddTextCenter(stamina == 0 ? "?" : stamina.ToString(), backcolor, 42, 200 + shadowDistance, 945 + shadowDistance, fontstyle: fontType);
-                cardCreator.AddTextCenter(tech == 0 ? "?" : tech.ToString(), backcolor, 42, 530 + shadowDistance, 825 + shadowDistance, fontstyle: fontType);
-                cardCreator.AddTextCenter(accuracy == 0 ? "?" : accuracy.ToString(), backcolor, 42, 530 + shadowDistance, 945 + shadowDistance, fontstyle: fontType);
+                cardCreator.AddTextCenter(speed == 0 ? "?" : speed.ToString(), backcolor, 42, 200 + shadowDistance, 825 + shadowDistance, fontstyle: fontType, useAntiAlias: true);
+                cardCreator.AddTextCenter(stamina == 0 ? "?" : stamina.ToString(), backcolor, 42, 200 + shadowDistance, 945 + shadowDistance, fontstyle: fontType, useAntiAlias: true);
+                cardCreator.AddTextCenter(tech == 0 ? "?" : tech.ToString(), backcolor, 42, 530 + shadowDistance, 825 + shadowDistance, fontstyle: fontType, useAntiAlias: true);
+                cardCreator.AddTextCenter(accuracy == 0 ? "?" : accuracy.ToString(), backcolor, 42, 530 + shadowDistance, 945 + shadowDistance, fontstyle: fontType, useAntiAlias: true);
 
-                cardCreator.AddTextCenter(speed == 0 ? "?" : speed.ToString(), frontcolor, 42, 200, 825, fontstyle: fontType, textStrokeColor: highlightColor);
-                cardCreator.AddTextCenter(stamina == 0 ? "?" : stamina.ToString(), frontcolor, 42, 200, 945, fontstyle: fontType, textStrokeColor: highlightColor);
-                cardCreator.AddTextCenter(tech == 0 ? "?" : tech.ToString(), frontcolor, 42, 530, 825, fontstyle: fontType, textStrokeColor: highlightColor);
-                cardCreator.AddTextCenter(accuracy == 0 ? "?" : accuracy.ToString(), frontcolor, 42, 530, 945, fontstyle: fontType, textStrokeColor: highlightColor);
+                cardCreator.AddTextCenter(speed == 0 ? "?" : speed.ToString(), frontcolor, 42, 200, 825, fontstyle: fontType, textStrokeColor: highlightColor, useAntiAlias: true);
+                cardCreator.AddTextCenter(stamina == 0 ? "?" : stamina.ToString(), frontcolor, 42, 200, 945, fontstyle: fontType, textStrokeColor: highlightColor, useAntiAlias: true);
+                cardCreator.AddTextCenter(tech == 0 ? "?" : tech.ToString(), frontcolor, 42, 530, 825, fontstyle: fontType, textStrokeColor: highlightColor, useAntiAlias: true);
+                cardCreator.AddTextCenter(accuracy == 0 ? "?" : accuracy.ToString(), frontcolor, 42, 530, 945, fontstyle: fontType, textStrokeColor: highlightColor, useAntiAlias: true);
 
-                cardCreator.AddTextCenter("SPEED", frontcolor, 27, 200 + 3, 825 - 40 + 3, fontstyle: fontType);
-                cardCreator.AddTextCenter("STAMINA", frontcolor, 27, 202 + 3, 945 - 40 + 3, fontstyle: fontType);
-                cardCreator.AddTextCenter("TECH", frontcolor, 27, 530 + 3, 825 - 40 + 3, fontstyle: fontType);
-                cardCreator.AddTextCenter("ACCURACY", frontcolor, 27, 530 + 3, 945 - 40 + 3, fontstyle: fontType);
+                cardCreator.AddTextCenter("SPEED", frontcolor, 27, 200 + 3, 825 - 40 + 3, fontstyle: fontType, useAntiAlias: true);
+                cardCreator.AddTextCenter("STAMINA", frontcolor, 27, 202 + 3, 945 - 40 + 3, fontstyle: fontType, useAntiAlias: true);
+                cardCreator.AddTextCenter("TECH", frontcolor, 27, 530 + 3, 825 - 40 + 3, fontstyle: fontType, useAntiAlias: true);
+                cardCreator.AddTextCenter("ACCURACY", frontcolor, 27, 530 + 3, 945 - 40 + 3, fontstyle: fontType, useAntiAlias: true);
 
-                cardCreator.AddTextCenter("SPEED", backcolor, 27, 200, 825 - 40, fontstyle: fontType, textStrokeColor: highlightColor);
-                cardCreator.AddTextCenter("STAMINA", backcolor, 27, 202, 945 - 40, fontstyle: fontType, textStrokeColor: highlightColor);
-                cardCreator.AddTextCenter("TECH", backcolor, 27, 530, 825 - 40, fontstyle: fontType, textStrokeColor: highlightColor);
-                cardCreator.AddTextCenter("ACCURACY", backcolor, 27, 530, 945 - 40, fontstyle: fontType, textStrokeColor: highlightColor);
+                cardCreator.AddTextCenter("SPEED", backcolor, 27, 200, 825 - 40, fontstyle: fontType, textStrokeColor: highlightColor, useAntiAlias: true);
+                cardCreator.AddTextCenter("STAMINA", backcolor, 27, 202, 945 - 40, fontstyle: fontType, textStrokeColor: highlightColor, useAntiAlias: true);
+                cardCreator.AddTextCenter("TECH", backcolor, 27, 530, 825 - 40, fontstyle: fontType, textStrokeColor: highlightColor, useAntiAlias: true);
+                cardCreator.AddTextCenter("ACCURACY", backcolor, 27, 530, 945 - 40, fontstyle: fontType, textStrokeColor: highlightColor, useAntiAlias: true);
 
-                cardCreator.AddTextCenter(player.Name.ToUpper(), backcolor, 58, 370 + shadowDistance, 655 + shadowDistance, fontstyle: fontType, maxWidth: 500);
-                cardCreator.AddTextCenter(player.Name.ToUpper(), frontcolor, 58, 370, 655, fontstyle: fontType, textStrokeColor: highlightColor, maxWidth: 500);              
+                cardCreator.AddTextCenter(player.Name.ToUpper(), backcolor, 58, 370 + shadowDistance, 655 + shadowDistance, fontstyle: fontType, maxWidth: 500, useAntiAlias: true);
+                cardCreator.AddTextCenter(player.Name.ToUpper(), frontcolor, 58, 370, 655, fontstyle: fontType, textStrokeColor: highlightColor, maxWidth: 500, useAntiAlias: true);              
 
                 cardCreator.AddTextCenter("Drawn by: " + command.User.Username, Color.Black, 22, 380 + 5, 1170 + 5, fontstyle: fontType);
                 var size = cardCreator.AddTextCenter("Drawn by: " + command.User.Username, Color.FromArgb(103, 90, 55), 22, 380, 1170, fontstyle: fontType);
@@ -727,10 +754,9 @@ namespace DiscordBeatSaberBot
                 }
 
                 //Create gif when shiny chance 
-                var isShiny = true;
 
                 //Store the card in the database
-                if(isShiny) await cardCreator.CreateAsGifWithShine($"F:\\Test/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.gif");
+                if(isShiny) await cardCreator.CreateAsGifWithShine($"F:\\Test/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.gif", frontcolor);
                 else await cardCreator.Create($"F:\\Test/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png");
 
 

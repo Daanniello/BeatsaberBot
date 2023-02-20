@@ -18,6 +18,8 @@ using PointF = System.Drawing.PointF;
 using Rectangle = System.Drawing.Rectangle;
 using SizeF = System.Drawing.SizeF;
 using SixLabors.ImageSharp.Formats.Gif;
+using GifskiNet;
+using Discord;
 
 namespace DiscordBeatSaberBot
 {
@@ -38,12 +40,12 @@ namespace DiscordBeatSaberBot
             return Task.CompletedTask;
         }
 
-        public Task CreateAsGifWithShine(string path)
+        public Task CreateAsGifWithShine(string path, Color averageColor)
         {
             //Create a gif with the shine elements on it.
             // 3000ms, each 100ms shine 
             //Create all frames 
-
+            //_bitmap = ApplyOverlayEffect(_bitmap);
             var frame1 = AddImageToFrame((Bitmap)_bitmap.Clone(), (Bitmap)Image.FromFile("../../../Resources/img/frame1.png"));
             var frame2 = AddImageToFrame((Bitmap)_bitmap.Clone(), (Bitmap)Image.FromFile("../../../Resources/img/frame2.png"));
             var frame3 = AddImageToFrame((Bitmap)_bitmap.Clone(), (Bitmap)Image.FromFile("../../../Resources/img/frame3.png"));
@@ -61,19 +63,89 @@ namespace DiscordBeatSaberBot
             //    gif.AddFrame(frame6, 100, GifQuality.Bit8);
             //}
 
-            var list = new List<Image>();
-            list.Add(frame1);
-            list.Add(frame2);
-            list.Add(frame3);
-            list.Add(frame4);
-            list.Add(frame5);
-            list.Add(frame6);
+            //var list = new List<Image>();
+            //list.Add(frame1);
+            //list.Add(frame2);
+            //list.Add(frame3);
+            //list.Add(frame4);
+            //list.Add(frame5);
+            //list.Add(frame6);
+            var guid = Guid.NewGuid();
+
+            frame1.Save($"../../../Resources/TempFiles/frame1-{guid}.png");
+            frame2.Save($"../../../Resources/TempFiles/frame2-{guid}.png");
+            frame3.Save($"../../../Resources/TempFiles/frame3-{guid}.png");
+            frame4.Save($"../../../Resources/TempFiles/frame4-{guid}.png");
+            frame5.Save($"../../../Resources/TempFiles/frame5-{guid}.png");
+            frame6.Save($"../../../Resources/TempFiles/frame6-{guid}.png");
 
 
+            using var gifski = Gifski.Create("../../../Resources/DLL/gifski.dll", settings =>
+            {
+                settings.Quality = 100;
+                settings.LossyQuality = 100;
+                settings.MotionQuality = 100;
+                settings.Width = 735;
+                settings.Height = 1211;
+                settings.Extra = true;
+                settings.Fast = true;
+            });
+
+            // Sets the output file of the gif
+            gifski.SetFileOutput(path);
+            gifski.AddFramePngFile(frameNumber: 0, presentationTimestamp: 2.08, filePath: $"../../../Resources/TempFiles/frame1-{guid}.png");
+            gifski.AddFramePngFile(frameNumber: 8, presentationTimestamp: 2.16, filePath: $"../../../Resources/TempFiles/frame2-{guid}.png");
+            gifski.AddFramePngFile(frameNumber: 16, presentationTimestamp: 2.24, filePath: $"../../../Resources/TempFiles/frame3-{guid}.png");
+            gifski.AddFramePngFile(frameNumber: 24, presentationTimestamp: 2.32, filePath: $"../../../Resources/TempFiles/frame4-{guid}.png");
+            gifski.AddFramePngFile(frameNumber: 32, presentationTimestamp: 2.40, filePath: $"../../../Resources/TempFiles/frame5-{guid}.png");
+            gifski.AddFramePngFile(frameNumber: 40, presentationTimestamp: 2.48, filePath: $"../../../Resources/TempFiles/frame6-{guid}.png");
+            gifski.AddFramePngFile(frameNumber: 48, presentationTimestamp: 2.56, filePath: $"../../../Resources/TempFiles/frame1-{guid}.png");
+            gifski.AddFramePngFile(frameNumber: 56, presentationTimestamp: 2.64, filePath: $"../../../Resources/TempFiles/frame1-{guid}.png");
+            gifski.Finish();
+
+            File.Delete($"../../../Resources/TempFiles/frame1-{guid}.png");
+            File.Delete($"../../../Resources/TempFiles/frame2-{guid}.png");
+            File.Delete($"../../../Resources/TempFiles/frame3-{guid}.png");
+            File.Delete($"../../../Resources/TempFiles/frame4-{guid}.png");
+            File.Delete($"../../../Resources/TempFiles/frame5-{guid}.png");
+            File.Delete($"../../../Resources/TempFiles/frame6-{guid}.png");
 
             return Task.CompletedTask;
         }
-      
+
+        public void ApplyShinyEffect()
+        {
+            var bottomImage = _bitmap;
+            var topImage = (Bitmap)Image.FromFile("../../../Resources/img/shine1.png");
+            Bitmap resultImage = new Bitmap(bottomImage.Width, bottomImage.Height);
+            for (int x = 0; x < bottomImage.Width; x++)
+            {
+                for (int y = 0; y < bottomImage.Height; y++)
+                {
+                    Color bottomColor = bottomImage.GetPixel(x, y);
+                    Color topColor = topImage.GetPixel(x, y);
+
+                    int r = bottomColor.R + topColor.R - 255;
+                    int g = bottomColor.G + topColor.G - 255;
+                    int b = bottomColor.B + topColor.B - 255;
+
+                    if (r > 255) r = 255;
+                    if (g > 255) g = 255;
+                    if (b > 255) b = 255;
+
+                    if (r < 0) r = 0;
+                    if (g < 0) g = 0;
+                    if (b < 0) b = 0;
+
+                    int a = bottomColor.A;
+
+                    var color = Color.FromArgb(a, r, g, b);
+
+                    resultImage.SetPixel(x, y, color);
+                }
+            }
+            _bitmap = resultImage;
+        }
 
         public Image AddImageToFrame(Bitmap frame, Bitmap image, int x = 0, int y = 0)
         {
@@ -128,7 +200,7 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public SizeF AddTextCenter(string text, Color color, int fontsize, float x, float y, string fontstyle = "Tourmaline", Color? textStrokeColor = null, int? maxWidth = null)
+        public SizeF AddTextCenter(string text, Color color, int fontsize, float x, float y, string fontstyle = "Tourmaline", Color? textStrokeColor = null, int? maxWidth = null, bool useAntiAlias = false)
         {
             if (maxWidth != null)
             {
@@ -154,6 +226,8 @@ namespace DiscordBeatSaberBot
             using (Font arialFont = new Font(fontstyle, fontsize))
             using (Graphics graphics = Graphics.FromImage(_bitmap))
             {
+                if (useAntiAlias) graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
                 var length = graphics.MeasureString(text, arialFont);
                 PointF firstLocation = new PointF(x - (length.Width / 2), y);
 
@@ -697,6 +771,14 @@ namespace DiscordBeatSaberBot
                 temp.v += 0.2f;
             }
 
+            //If color is black
+            if(color.R < 10 && color.G < 10 && color.B < 10)
+            {
+                temp.h = color.GetHue();
+                temp.s = 0.05f;
+                temp.v = 0.8f;
+            }
+
             return ColorFromHSL(temp);
         }
 
@@ -708,6 +790,14 @@ namespace DiscordBeatSaberBot
             temp.v = getBrightness(color);
             temp.v = temp.v + 0.3f;
             if (temp.v > 1) temp.v = 1;
+
+            //If color is black
+            if (color.R < 10 && color.G < 10 && color.B < 10)
+            {
+                temp.h = color.GetHue();
+                temp.s = 0.05f;
+                temp.v = 0.8f;
+            }
 
             return ColorFromHSL(temp);
         }

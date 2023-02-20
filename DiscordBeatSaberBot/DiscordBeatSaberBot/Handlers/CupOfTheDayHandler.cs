@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using BeatLeaderLib;
+using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
 using DiscordBeatSaberBot.Api.BeatSaverApi;
@@ -23,6 +24,7 @@ namespace DiscordBeatSaberBot.Handlers
     {
         private List<LeaderboardInfoModel.Leaderboard> serverDailyMaps = null;
         private ScoreSaberClient scoresaberClient;
+        private BeatLeaderClient beatleaderClient;
         private DiscordSocketClient _discord;
 
         public CupOfTheDayHandler(DiscordSocketClient discord, bool startScoresaberWebsocket = true)
@@ -30,6 +32,7 @@ namespace DiscordBeatSaberBot.Handlers
             _discord = discord;
 
             scoresaberClient = new ScoreSaberClient();
+            //beatleaderClient = new BeatLeaderClient();
 
             RefreshDailyMaps();
 
@@ -39,6 +42,10 @@ namespace DiscordBeatSaberBot.Handlers
                 scoresaberClient.Api.ScoreFeed.Connect();
                 WebsocketTimer();
                 scoresaberClient.Api.ScoreFeed.OnPlayReceived += Feed_OnPlayReceived;
+
+                //var beatleaderWebsocket = beatleaderClient.GetWebsocket();
+                //beatleaderWebsocket.OnPlayReceived += BeatleaderWebsocket_OnPlayReceived;
+                //beatleaderWebsocket.Connect();
             }
         }
 
@@ -98,9 +105,20 @@ namespace DiscordBeatSaberBot.Handlers
             }
         }
 
+        //private async void BeatleaderWebsocket_OnPlayReceived(object sender, BeatLeaderLibWebSocket.ScoreFeedModel e)
+        //{
+        //    //COTD BeatLeader
+        //    if (serverDailyMaps != null)
+        //    {
+        //        var leaderboard = e.Leaderboard;
+        //        var diffRaw = $"_{leaderboard.Difficulty.DifficultyName}_Solo{leaderboard.Difficulty.ModeName}";
+        //        await UploadDailyMapScore(leaderboard.Song.Hash, diffRaw, Convert.ToInt64(leaderboard.Id), e.Player.Id, e.BaseScore);
+        //    }
+        //}
+
         private async void Feed_OnPlayReceived(object sender, ScoreSaberLib.Models.ScoreFeedModel e)
         {
-            //COTD
+            //COTD Scoresaber
             if (serverDailyMaps != null)
             {
                 var playedMap = e.CommandData;
