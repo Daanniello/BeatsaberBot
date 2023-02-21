@@ -459,8 +459,8 @@ namespace DiscordBeatSaberBot
                 var player = players[random.Next(rangeBegin, rangeEnd)];
 
                 //TEST ZONE
-                player = await new ScoreSaberClient().Api.Players.GetPlayer(76561198988695829);
-                //nr = 2000;
+                player = await new ScoreSaberClient().Api.Players.GetPlayer(76561198196072407);
+                nr = 80000;
 
                 //Prevent banned people from showing up. 
                 if (BanList.Contains(player.Id))
@@ -486,7 +486,7 @@ namespace DiscordBeatSaberBot
                 var scores100 = await new ScoreSaberClient().Api.Players.GetPlayerScores(Convert.ToInt64(player.Id), 100, sort: Players.sort.top, page: 1);
                 var scores200 = await new ScoreSaberClient().Api.Players.GetPlayerScores(Convert.ToInt64(player.Id), 100, sort: Players.sort.top, page: 2);
                 var scores100recent = await new ScoreSaberClient().Api.Players.GetPlayerScores(Convert.ToInt64(player.Id), 100, sort: Players.sort.recent, page: 1);
-                var scores200recent = await new ScoreSaberClient().Api.Players.GetPlayerScores(Convert.ToInt64(player.Id), 100, sort: Players.sort.recent, page: 2);
+                var scores200recent = await new ScoreSaberClient().Api.Players.GetPlayerScores(Convert.ToInt64(player.Id), 100, sort: Players.sort.recent, page: 2);                
                 scores.AddRange(scores100);
                 scores.AddRange(scores200);
                 scores.AddRange(scores100recent);
@@ -497,11 +497,14 @@ namespace DiscordBeatSaberBot
                 foreach (var score in scores200recent) hashList.Add(score.Leaderboard.SongHash + "_" + score.Leaderboard.Difficulty.DifficultyRaw);
 
                 //Get all scores that qualify for being looked at their stats
+                var topPageMaps = new List<Maps>();
+                var recentPageMaps = new List<Maps>();
                 var beatSaverMaps = new List<Maps>();
 
                 if (hashList.Count >= 50)
                 {
                     var maps = await new BeatSaverApi("").GetMapsByHashes(hashList.GetRange(0, 49));
+                    topPageMaps.AddRange(maps.GetRange(0, 20));
                     beatSaverMaps.AddRange(maps);
                 }
                 if (hashList.Count >= 100)
@@ -522,6 +525,7 @@ namespace DiscordBeatSaberBot
                 if (hashList.Count >= 250)
                 {
                     var maps = await new BeatSaverApi("").GetMapsByHashes(hashList.GetRange(201, 49));
+                    recentPageMaps.AddRange(maps.GetRange(0, 40));
                     beatSaverMaps.AddRange(maps);
                 }
                 if (hashList.Count >= 300)
@@ -553,22 +557,22 @@ namespace DiscordBeatSaberBot
 
                 var speedMaps = mapsWithTags.Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps > 10).Where(x => x.Metadata.Bpm >= 300).ToList();
                 var accuracyMaps = mapsWithTags.Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps < 5).ToList();
-                var staminaMaps = mapsWithTags.Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Notes > 1800).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Seconds > 60 * 5.5).ToList();
-                var techMaps = mapsWithTags.Where(x => x.Tags != null && x.Tags.Contains("tech")).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps > 6).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps < 10).Where(x => x.Metadata.Bpm < 300).ToList();
+                var staminaMaps = mapsWithTags.Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Notes > 1800).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Seconds > 60 * 5).ToList();
+                var techMaps = mapsWithTags.Where(x => x.Tags != null && x.Tags.Contains("tech")).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps > 6).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps <= 10).Where(x => x.Metadata.Bpm >= 180).Where(x => x.Metadata.Bpm <= 300).ToList();
 
-                speed = CalculateStatPoints(speedMaps, minPlays: 50, maxPlays: 2500);
-                accuracy = CalculateStatPoints(accuracyMaps, minPlays: 200, maxPlays: 2500);
-                stamina = CalculateStatPoints(staminaMaps, maxPlays: 1500);
-                tech = CalculateStatPoints(techMaps, maxPlays: 1500);
+                speed = CalculateStatPoints(speedMaps, minPlays: 100);
+                accuracy = CalculateStatPoints(accuracyMaps, minPlays: 150, maxPlays: 4000);
+                stamina = CalculateStatPoints(staminaMaps);
+                tech = CalculateStatPoints(techMaps, maxPlays: 4000);
 
-                var speedNormalised = CalculateStatPoints(speedMaps, true, minPlays: 50, maxPlays: 2500);
-                var accuracyNormalised = CalculateStatPoints(accuracyMaps, true, minPlays: 200, maxPlays: 2500);
-                var staminaNormalised = CalculateStatPoints(staminaMaps, true, maxPlays: 1500);
-                var techNormalised = CalculateStatPoints(techMaps, true, maxPlays: 1500);
+                var speedNormalised = CalculateStatPoints(speedMaps, true, minPlays: 100);
+                var accuracyNormalised = CalculateStatPoints(accuracyMaps, true, minPlays: 150, maxPlays: 4000);
+                var staminaNormalised = CalculateStatPoints(staminaMaps, true);
+                var techNormalised = CalculateStatPoints(techMaps, true, maxPlays: 4000);
 
-                int CalculateStatPoints(List<Maps> statHashes, bool normalize = false, int minPlays = 150, int maxPlays = 99999)
+                int CalculateStatPoints(List<Maps> statHashes, bool normalize = false, int minPlays = 50, int maxPlays = 99999)
                 {
-                    if (statHashes.Count < 5) return 0;
+                    if (statHashes.Count <= 5) return 0;
 
                     var count = 0;
                     var stat = 0;
@@ -614,20 +618,36 @@ namespace DiscordBeatSaberBot
                 }
 
                 //Look at what stat has the most plays and give bonus
-                int maxMaps = Math.Max(Math.Max(speedMaps.Count, accuracyMaps.Count), Math.Max(staminaMaps.Count, techMaps.Count));
-                if (maxMaps == speedMaps.Count)
+                var averageTopPageNps = topPageMaps.Average(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps);
+                var averageTopPageBpm = topPageMaps.Average(x => x.Metadata.Bpm);
+                var averageRecentPageNps = recentPageMaps.Average(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps);
+                var averageRecentPageDuration = recentPageMaps.Average(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Seconds);
+
+                var speedCount = averageTopPageNps > 10 && averageTopPageBpm >= 280 ? speedMaps.Count + 30 : speedMaps.Count;
+                var accuracyCount = accuracyMaps.Count;
+                var staminaCount = staminaMaps.Count;
+                var techCount = averageTopPageNps < 12 && averageTopPageBpm < 250 ? techMaps.Count + 30 : techMaps.Count;
+
+                if (averageRecentPageNps <= 6) accuracy = applyBonus(accuracy);
+                if (averageRecentPageDuration < 3.5 * 60) stamina = applyNegativeBonus(stamina);
+
+                int maxMaps = Math.Max(Math.Max(speedCount, accuracyCount), Math.Max(staminaCount, techCount));
+                int minMaps = Math.Min(Math.Min(speedCount, accuracyCount), Math.Min(staminaCount <= 5 ? staminaCount + 10 : staminaCount, techCount));
+
+                if (maxMaps == speedCount)
                 {
                     speed = applyBonus(speed);
+                    if (minMaps == techCount) tech = applyNegativeBonus(tech);
                 }
-                else if (maxMaps == accuracyMaps.Count)
+                else if (maxMaps == accuracyCount)
                 {
                     accuracy = applyBonus(accuracy);
                 }
-                else if (maxMaps == staminaMaps.Count)
+                else if (maxMaps == staminaCount)
                 {
                     stamina = applyBonus(stamina);
                 }
-                else if (maxMaps == techMaps.Count)
+                else if (maxMaps == techCount)
                 {
                     tech = applyBonus(tech);
                 }
@@ -637,6 +657,13 @@ namespace DiscordBeatSaberBot
                     var bonusStat = stat * 1.04;
                     if (bonusStat > 100) bonusStat = 100;
                     return (int) bonusStat;
+                }
+
+                int applyNegativeBonus(int stat)
+                {
+                    var bonusStat = stat * 0.96;
+                    if (bonusStat > 100) bonusStat = 100;
+                    return (int)bonusStat;
                 }
 
                 var amountOfStats = 4;
