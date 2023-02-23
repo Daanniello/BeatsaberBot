@@ -20,6 +20,7 @@ using SizeF = System.Drawing.SizeF;
 using SixLabors.ImageSharp.Formats.Gif;
 using GifskiNet;
 using Discord;
+using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 
 namespace DiscordBeatSaberBot
 {
@@ -755,6 +756,11 @@ namespace DiscordBeatSaberBot
             temp.h = (float)contrastingHue;
             temp.s = color.GetSaturation();
             temp.v = getBrightness(color);
+
+            if (temp.s == 1)
+            {
+                temp.s = 0.5f;
+            }
             if (temp.v > 0.1)
             {
                 var contrastingBrightness = 0.0f;

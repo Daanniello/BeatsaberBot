@@ -163,7 +163,10 @@ namespace DiscordBeatSaberBot.Commands
                 var beatShardsJson = System.IO.File.ReadAllText(GlobalConfiguration.WebsiteRoot + @"DataCollection\BSTCBeatShards.json");
                 var playersBeatShardsList = JsonConvert.DeserializeObject<Dictionary<string, long>>(beatShardsJson);
                 var userID = command.User.Id.ToString();
-                var item = command.Data.Options.FirstOrDefault(x => x.Name == "shop").Options.FirstOrDefault().Value.ToString();
+
+                var shopCommand = command.Data.Options.FirstOrDefault(x => x.Name == "shop");
+                if (shopCommand.Options.FirstOrDefault().Value == null) return;
+                var item = shopCommand.Options.FirstOrDefault().Value.ToString();
 
 
                 if (item == "1packs" || item == "10packs")
