@@ -416,7 +416,7 @@ namespace DiscordBeatSaberBot
                 var top250 = 15000;
                 var top500 = 50000;
                 var top1000 = 100000;
-                var nr = new Random().Next(0, 100000);
+                var nr = new Random().Next(0, 500);
                 var rangeBegin = 0;
                 var rangeEnd = 0;
 
@@ -460,8 +460,8 @@ namespace DiscordBeatSaberBot
                 var player = players[random.Next(rangeBegin, rangeEnd)];
 
                 //TEST ZONE
-                player = await new ScoreSaberClient().Api.Players.GetPlayer(76561198187170453);
-                nr = 60000;
+                //player = await new ScoreSaberClient().Api.Players.GetPlayer(76561198301082541);
+                //nr = 60000;
 
                 //Prevent banned people from showing up. 
                 if (BanList.Contains(player.Id))
@@ -562,27 +562,34 @@ namespace DiscordBeatSaberBot
                 var techMaps = mapsWithTags.Where(x => x.Tags != null && x.Tags.Contains("tech")).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps >= 6).Where(x => x.Versions.First().Diffs.FirstOrDefault(y => x.DifficultyRaw == y.Difficulty).Nps <= 10).Where(x => x.Metadata.Bpm >= 180).Where(x => x.Metadata.Bpm <= 280).ToList();
 
                 var debugList = new List<string>();
+                var starRatingBoostList = new List<double>();
 
-                speed = CalculateStatPoints(speedMaps, minPlays: 100);
-                accuracy = CalculateStatPoints(accuracyMaps, minPlays: 100, maxPlays: 4000, minAcc: 96);
-                stamina = CalculateStatPoints(staminaMaps);
-                tech = CalculateStatPoints(techMaps, maxPlays: 4000);
+                speed = CalculateStatPoints(speedMaps, minPlays: 100, withStarBoost: true);
+                accuracy = CalculateStatPoints(accuracyMaps, minPlays: 100, maxPlays: 4000, minAcc: 96, withStarBoost: true);
+                stamina = CalculateStatPoints(staminaMaps, withStarBoost: true);
+                tech = CalculateStatPoints(techMaps, maxPlays: 4000, withStarBoost: true);
 
                 var speedNormalised = CalculateStatPoints(speedMaps, true, minPlays: 100);
                 var accuracyNormalised = CalculateStatPoints(accuracyMaps, true, minPlays: 100, maxPlays: 4000, minAcc: 96);
                 var staminaNormalised = CalculateStatPoints(staminaMaps, true);
                 var techNormalised = CalculateStatPoints(techMaps, true, maxPlays: 4000);
 
-                int CalculateStatPoints(List<Maps> statHashes, bool normalize = false, int minPlays = 50, int maxPlays = 99999, double? minAcc = null)
+                int CalculateStatPoints(List<Maps> statHashes, bool normalize = false, int minPlays = 50, int maxPlays = 99999, double? minAcc = null, bool withStarBoost = false)
                 {
                     debugList.Add("--");
-                    if (statHashes.Count <= 5) return 0;
+                    if (statHashes.Count <= 5)
+                    {
+                        if (withStarBoost) starRatingBoostList.Add(0);
+                        return 0;
+                    }
 
                     var count = 0;
                     double stat = 0;
+                    var starMapCount = 0;
 
                     long totalAllPlays = 0;
                     long totalAllRank = 0;
+                    double totalStars = 0;
                     statHashes = statHashes.GroupBy(x => x.Id).Select(group => group.First()).ToList();
                     foreach (var stathash in statHashes)
                     {
@@ -599,7 +606,7 @@ namespace DiscordBeatSaberBot
                                 }
 
                                 var totalPlays = score.Leaderboard.Plays;
-                                var playerRank = score.Score.Rank;                                
+                                var playerRank = score.Score.Rank;                                         
 
                                 totalAllPlays += totalPlays;
                                 totalAllRank += playerRank;
@@ -612,24 +619,79 @@ namespace DiscordBeatSaberBot
                                     var newpoints = (double)points - pointloss * (double)points;
                                     points = (int)newpoints;
                                 }
-                                count++;
 
+                                if (score.Leaderboard.Stars > 0)
+                                {
+                                    totalStars += score.Leaderboard.Stars;
+                                    starMapCount++;
+                                }
+
+
+                                count++;
                                 stat += points;
                             }
                         }
                     }
+
                     if(count != 0) debugList.Add($"{totalAllRank / count} - - - {totalAllPlays / count}");
 
-                    if (count < 5) return 0;
+                    if (count < 5)
+                    {
+                        if (withStarBoost) starRatingBoostList.Add(0);
+                        return 0;
+                    }
                     if (count > 0) stat = stat / count;
+
+                    if (withStarBoost && totalStars > 0 && starMapCount > 0)
+                    {
+                        var avgStarRating = totalStars / starMapCount;
+                        var boost = (((100 - stat) / 100) + 1) * avgStarRating;
+                        boost = boost * boost / 10;
+                        starRatingBoostList.Add(boost * 8);
+                    }
+                    else
+                    {
+                        starRatingBoostList.Add(0);
+                    }
 
                     return (int) Math.Round(stat);
                 }
 
-                if(speed != 0) speed = normalise(speed);
-                if (accuracy != 0) accuracy = normalise(accuracy);
-                if (stamina != 0) stamina = normalise(stamina);
-                if (tech != 0) tech = normalise(tech);
+                var avgStarBoost = starRatingBoostList.Where(x => x != 0).ToList().Average();                                               
+
+                if (speed != 0)
+                {
+                    var avg = avgStarBoost * makeRelative((double)speed);
+                    var starboost = starRatingBoostList[0] * makeRelative((double)speed);
+                    speed = (int)((double)speed - avg + starboost);
+                    speed = normalise(speed);
+                }
+                if (accuracy != 0)
+                {
+                    var avg = avgStarBoost * makeRelative((double)accuracy);
+                    var starboost = starRatingBoostList[1] * makeRelative((double)accuracy);
+                    accuracy = (int)((double)accuracy - avg + starboost);
+                    accuracy = normalise(accuracy);
+                }
+                if (stamina != 0)
+                {
+                    var avg = avgStarBoost * makeRelative((double)stamina);
+                    var starboost = starRatingBoostList[2] * makeRelative((double)stamina);
+                    stamina = (int)((double)stamina - avg + starboost);
+                    stamina = normalise(stamina);
+                }
+                if (tech != 0)
+                {
+                    var avg = avgStarBoost * makeRelative((double)tech);
+                    var starboost = starRatingBoostList[3] * makeRelative((double)tech);
+                    tech = (int)((double)tech - avg + starboost);
+                    tech = normalise(tech);
+                }
+
+                double makeRelative(double stat)
+                {                    
+                    return ((1 - stat / 100));
+                }
 
                 int normalise(int stat, double multiplier = 1)
                 {
@@ -651,30 +713,30 @@ namespace DiscordBeatSaberBot
                 var staminaCount = staminaMaps.Count;
                 var techCount = averageTopPageNps < 12 && averageTopPageBpm < 250 ? techMaps.Count + 30 : techMaps.Count;
 
-                if (averageRecentPageNps <= 5) accuracy = applyBonus(accuracy);
-                if(averageTopPageNps > 10 && averageTopPageBpm >= 250) speed = applyBonus(speed);
+                //if (averageRecentPageNps <= 5) accuracy = applyBonus(accuracy);
+                ////if(averageTopPageNps > 10 && averageTopPageBpm >= 250) speed = applyBonus(speed);
                 if (averageRecentPageDuration < 3.5 * 60) stamina = applyNegativeBonus(stamina);
 
-                int maxMaps = Math.Max(Math.Max(speedCount, accuracyCount), Math.Max(staminaCount, techCount));
-                int minMaps = Math.Min(Math.Min(speedCount, accuracyCount), Math.Min(staminaCount <= 5 ? staminaCount + 10 : staminaCount, techCount));
+                //int maxMaps = Math.Max(Math.Max(speedCount, accuracyCount), Math.Max(staminaCount, techCount));
+                //int minMaps = Math.Min(Math.Min(speedCount, accuracyCount), Math.Min(staminaCount <= 5 ? staminaCount + 10 : staminaCount, techCount));
 
-                if (maxMaps == speedCount)
-                {
-                    speed = applyBonus(speed);
-                    if (minMaps == techCount) tech = applyNegativeBonus(tech);
-                }
-                else if (maxMaps == accuracyCount)
-                {
-                    accuracy = applyBonus(accuracy);
-                }
-                else if (maxMaps == staminaCount)
-                {
-                    stamina = applyBonus(stamina);
-                }
-                else if (maxMaps == techCount)
-                {
-                    tech = applyBonus(tech);
-                }
+                //if (maxMaps == speedCount)
+                //{
+                //    speed = applyBonus(speed);
+                //    if (minMaps == techCount) tech = applyNegativeBonus(tech);
+                //}
+                //else if (maxMaps == accuracyCount)
+                //{
+                //    accuracy = applyBonus(accuracy);
+                //}
+                //else if (maxMaps == staminaCount)
+                //{
+                //    stamina = applyBonus(stamina);
+                //}
+                //else if (maxMaps == techCount)
+                //{
+                //    tech = applyBonus(tech);
+                //}
 
                 int applyBonus(int stat)
                 {
@@ -857,12 +919,12 @@ namespace DiscordBeatSaberBot
                 else await command.Channel.SendFileAsync($"F:\\Test/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png", components: componentBuilder.Build());
 
                 //debug
-                var debugString = "";
-                foreach (var stat in debugList) debugString += stat + "\n";
-                await command.Channel.SendMessageAsync($"```{debugString.Split("--")[1]}```");
-                await command.Channel.SendMessageAsync($"```{debugString.Split("--")[2]}```");
-                await command.Channel.SendMessageAsync($"```{debugString.Split("--")[3]}```");
-                await command.Channel.SendMessageAsync($"```{debugString.Split("--")[4]}```");
+                //var debugString = "";
+                //foreach (var stat in debugList) debugString += stat + "\n";
+                //await command.Channel.SendMessageAsync($"```{debugString.Split("--")[1]}```");
+                //await command.Channel.SendMessageAsync($"```{debugString.Split("--")[2]}```");
+                //await command.Channel.SendMessageAsync($"```{debugString.Split("--")[3]}```");
+                //await command.Channel.SendMessageAsync($"```{debugString.Split("--")[4]}```");
 
                 return true;
             }

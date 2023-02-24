@@ -134,14 +134,14 @@ namespace DiscordBeatSaberBot.Commands
             }
 
             //Trade
-            if (command.Data.Options.FirstOrDefault(x => x.Name == "trade") != null)
+            if (command.Data.Options.FirstOrDefault(x => x.Name == "trade") != null && command.Data.Options.FirstOrDefault(x => x.Name == "trade").Value != null)
             {
                 new BeatSaberCardCollection(discordSocketClient).StartTradeProcess(command, (SocketUser)command.Data.Options.FirstOrDefault(x => x.Name == "trade").Options.FirstOrDefault(x => x.Name == "mention").Value, command.User);
                 return;
             }
 
             //Stake
-            if (command.Data.Options.FirstOrDefault(x => x.Name == "stake") != null)
+            if (command.Data.Options.FirstOrDefault(x => x.Name == "stake") != null && command.Data.Options.FirstOrDefault(x => x.Name == "stake").Value != null)
             {
                 new BeatSaberCardCollection(discordSocketClient).StartStakeProcess(command, (SocketUser)command.Data.Options.FirstOrDefault(x => x.Name == "stake").Options.FirstOrDefault(x => x.Name == "mention").Value, command.User);
                 return;
