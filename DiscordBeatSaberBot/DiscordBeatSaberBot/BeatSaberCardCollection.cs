@@ -416,7 +416,7 @@ namespace DiscordBeatSaberBot
                 var top250 = 15000;
                 var top500 = 50000;
                 var top1000 = 100000;
-                var nr = new Random().Next(0, 500);
+                var nr = new Random().Next(0, 100000);
                 var rangeBegin = 0;
                 var rangeEnd = 0;
 
@@ -460,7 +460,7 @@ namespace DiscordBeatSaberBot
                 var player = players[random.Next(rangeBegin, rangeEnd)];
 
                 //TEST ZONE
-                //player = await new ScoreSaberClient().Api.Players.GetPlayer(76561198301082541);
+                //player = await new ScoreSaberClient().Api.Players.GetPlayer(76561198023909718);
                 //nr = 60000;
 
                 //Prevent banned people from showing up. 
@@ -766,10 +766,10 @@ namespace DiscordBeatSaberBot
                 total = amountOfStats == 0 ? 0 : (speedNormalised + accuracyNormalised + techNormalised + staminaNormalised) / amountOfStats;
 
                 //lower stats based on total one last time
-                speed = (int) (speed * (1 - ((100 - (double) total) / 100 / 11)));
-                accuracy = (int)(accuracy * (1 - ((100 - (double)total) / 100 / 11)));
-                stamina = (int)(stamina * (1 - ((100 - (double)total) / 100 / 11)));
-                tech = (int)(tech * (1 - ((100 - (double)total) / 100 / 11)));
+                speed = (int) (speed * (1 - ((100 - (double) total) / 100 / 6)));
+                accuracy = (int)(accuracy * (1 - ((100 - (double)total) / 100 / 6)));
+                stamina = (int)(stamina * (1 - ((100 - (double)total) / 100 / 6)));
+                tech = (int)(tech * (1 - ((100 - (double)total) / 100 / 6)));
 
 
                 if (nr <= 5) total += 1;

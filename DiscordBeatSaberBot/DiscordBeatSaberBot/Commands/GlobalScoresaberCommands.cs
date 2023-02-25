@@ -165,7 +165,7 @@ namespace DiscordBeatSaberBot.Commands
                 var userID = command.User.Id.ToString();
 
                 var shopCommand = command.Data.Options.FirstOrDefault(x => x.Name == "shop");
-                if (shopCommand.Options.FirstOrDefault().Value == null) return;
+                if (shopCommand.Options.FirstOrDefault() == null || shopCommand.Options.FirstOrDefault().Value == null) return;
                 var item = shopCommand.Options.FirstOrDefault().Value.ToString();
 
 
