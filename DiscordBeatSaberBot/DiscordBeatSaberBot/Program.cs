@@ -19,6 +19,7 @@ using DiscordBeatSaberBot.Handlers.RankTrackerHandler;
 using DiscordBeatSaberBot.Services;
 using System.IO;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Hosting;
 
 namespace DiscordBeatSaberBot
 {
@@ -38,8 +39,19 @@ namespace DiscordBeatSaberBot
 
         public static void Main(string[] args)
         {
-            try { new Program().MainAsync().GetAwaiter().GetResult(); } catch (Exception ex) { Console.WriteLine(ex); }
+            using IHost host = CreateHostBuilder(args).Build();
+            host.Start();            
+
+            try { new Program().MainAsync().GetAwaiter().GetResult(); } catch (Exception ex) { Console.WriteLine(ex); host.StopAsync(); }
         }
+
+        static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureServices((hostContext, services) =>
+            {
+                // Configure services here
+                services.AddHttpClient();
+            });
 
         public async void Unhandled_Exception(object sender, dynamic e)
         {
@@ -66,6 +78,8 @@ namespace DiscordBeatSaberBot
                 {
                     GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers
                 });
+
+                
 
                 var loginCode = await DatabaseContext.ExecuteSelectQuery("Select * from Settings");
                 await discordSocketClient.LoginAsync(TokenType.Bot, loginCode[0][0].ToString());

@@ -515,7 +515,7 @@ namespace DiscordBeatSaberBot.Handlers
             if (mmrPoints > 30 && allTimePlayer.MMR == 600) mmrPoints = 30;
 
             //standarize points
-            if (calculateSubstractPoints)
+            if (calculateSubstractPoints && todaysPlayersWhoHaveScores.Count() != 0)
             {
                 var totalMmr = 0.0;
                 foreach (var p in todaysPlayersWhoHaveScores)

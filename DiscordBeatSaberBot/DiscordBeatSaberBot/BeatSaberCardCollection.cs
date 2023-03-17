@@ -18,6 +18,7 @@ using DiscordBeatSaberBot.Api.BeatSaverApi.Models.New;
 using System.Net;
 using DiscordBeatSaberBot.Api.BeatSaverApi.Models.v2;
 using Microsoft.EntityFrameworkCore.Query;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace DiscordBeatSaberBot
 {
@@ -376,6 +377,8 @@ namespace DiscordBeatSaberBot
 
                 //send card in discord
                 await command.Channel.SendFileAsync($"F:\\BeatSaberTradingCards/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png", components: componentBuilder.Build());
+                Console.WriteLine($"{command.User.Username} ({command.User.Id}) drew score: {total}, luck: {nr}");
+
                 return true;
             }
             catch (Exception ex)
@@ -386,14 +389,17 @@ namespace DiscordBeatSaberBot
             }
         }
 
-        public static async Task<bool> DrawBeatSaberTradingCard(DiscordSocketClient discord, SocketSlashCommand command)
+        public static async Task<bool> DrawBeatSaberTradingCard(DiscordSocketClient discord, SocketSlashCommand command, bool bypassTimeout = false, bool guaranteeShiny = false)
         {
             try
             {
-                //Send opening message to channel
-                var playerTimeout = GetPlayerTimeout(command.User.Id.ToString());
-                if (playerTimeout.PacksLeft == 0) await command.Channel.SendMessageAsync($"Opening a pack... this is your last pack!");
-                else await command.Channel.SendMessageAsync($"Opening a pack... Remaining packs: {playerTimeout.PacksLeft}");
+                if (!bypassTimeout)
+                {
+                    //Send opening message to channel
+                    var playerTimeout = GetPlayerTimeout(command.User.Id.ToString());
+                    if (playerTimeout.PacksLeft == 0) await command.Channel.SendMessageAsync($"Opening a pack... this is your last pack!");
+                    else await command.Channel.SendMessageAsync($"Opening a pack... Remaining packs: {playerTimeout.PacksLeft}");
+                }
 
                 //Get all top 1000 players and pick out a random one
                 var players = new List<ScoreSaberLib.Models.PlayerInfoModel.Player>();
@@ -411,8 +417,8 @@ namespace DiscordBeatSaberBot
                 players = players.OrderBy(x => x.Rank).ToList();
                 var top1 = 5;
                 var top10 = 50;
-                var top50 = 500;
-                var top100 = 2600;
+                var top50 = 400;
+                var top100 = 2500;
                 var top250 = 15000;
                 var top500 = 50000;
                 var top1000 = 100000;
@@ -460,7 +466,7 @@ namespace DiscordBeatSaberBot
                 var player = players[random.Next(rangeBegin, rangeEnd)];
 
                 //TEST ZONE
-                //player = await new ScoreSaberClient().Api.Players.GetPlayer(76561198023909718);
+                //player = await new ScoreSaberClient().Api.Players.GetPlayer(76561199230638041);
                 //nr = 60000;
 
                 //Prevent banned people from showing up. 
@@ -766,16 +772,22 @@ namespace DiscordBeatSaberBot
                 total = amountOfStats == 0 ? 0 : (speedNormalised + accuracyNormalised + techNormalised + staminaNormalised) / amountOfStats;
 
                 //lower stats based on total one last time
-                speed = (int) (speed * (1 - ((100 - (double) total) / 100 / 6)));
-                accuracy = (int)(accuracy * (1 - ((100 - (double)total) / 100 / 6)));
-                stamina = (int)(stamina * (1 - ((100 - (double)total) / 100 / 6)));
-                tech = (int)(tech * (1 - ((100 - (double)total) / 100 / 6)));
+                speed = (int)(speed * (1 - ((100 - (double)speed) / 100 / 2)));
+                accuracy = (int)(accuracy * (1 - ((100 - (double)accuracy) / 100 / 2)));
+                stamina = (int)(stamina * (1 - ((100 - (double)stamina) / 100 / 2)));
+                tech = (int)(tech * (1 - ((100 - (double)tech) / 100 / 2)));
+
+                if (speed < 20 && speed != 0) speed = 20;
+                if (accuracy < 20 && accuracy != 0) accuracy = 20;
+                if (stamina < 20 && stamina != 0) stamina = 20;
+                if (tech < 20 && tech != 0) tech = 20;
 
 
                 if (nr <= 5) total += 1;
 
                 var isShiny = false;
-                if (random.Next(0, 100000) <= 750) isShiny = true;
+                if (random.Next(0, 100000) <= 500) isShiny = true;
+                if (guaranteeShiny) isShiny = true;
 
                 //All data is finished. Create the card.
                 var cardCreator = new ImageCreator("../../../Resources/img/TradingCardsv2_template.png");
@@ -895,8 +907,8 @@ namespace DiscordBeatSaberBot
                 //Create gif when shiny chance 
 
                 //Store the card in the database
-                if(isShiny) await cardCreator.CreateAsGifWithShine($"F:\\Test/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.gif", frontcolor);
-                else await cardCreator.Create($"F:\\Test/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png");
+                if(isShiny) await cardCreator.CreateAsGifWithShine($"F:\\BeatSaberTradingCards/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.gif", frontcolor);
+                else await cardCreator.Create($"F:\\BeatSaberTradingCards/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png");
 
 
                 //Make component buttons for on the message
@@ -915,8 +927,8 @@ namespace DiscordBeatSaberBot
                 componentBuilder.WithButton(label: $"Convert to Beat Shards ({beatshardAmount})", customId: $"{command.User.Id}_ConvertCardButton_{beatshardAmount}", style: ButtonStyle.Secondary);
 
                 //send card in discord
-                if(isShiny) await command.Channel.SendFileAsync($"F:\\Test/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.gif", components: componentBuilder.Build());
-                else await command.Channel.SendFileAsync($"F:\\Test/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png", components: componentBuilder.Build());
+                if(isShiny) await command.Channel.SendFileAsync($"F:\\BeatSaberTradingCards/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.gif", components: componentBuilder.Build());
+                else await command.Channel.SendFileAsync($"F:\\BeatSaberTradingCards/BeatSaber_Card-{command.User.Id}-{command.User.Id}-{player.Id}-{total}-{player.Rank}-{nr}-{creationTime.ToShortDateString().Replace("-", "_") + "_" + creationTime.ToShortTimeString().Replace(":", "_")}.png", components: componentBuilder.Build());
 
                 //debug
                 //var debugString = "";
@@ -925,11 +937,14 @@ namespace DiscordBeatSaberBot
                 //await command.Channel.SendMessageAsync($"```{debugString.Split("--")[2]}```");
                 //await command.Channel.SendMessageAsync($"```{debugString.Split("--")[3]}```");
                 //await command.Channel.SendMessageAsync($"```{debugString.Split("--")[4]}```");
+                Console.WriteLine($"{command.User.Username} ({command.User.Id}) drew score: {total}, luck: {nr}");
 
                 return true;
             }
             catch (Exception ex)
             {
+                if (bypassTimeout) return false;
+
                 var ohoh = ex;
                 await ErrorCase(command, "An unexpected error occurred.");
                 Console.WriteLine(ex.Message);
@@ -1168,7 +1183,7 @@ namespace DiscordBeatSaberBot
                     $"Amount of collection votes: **{(hasVotes ? collectionVotes.FirstOrDefault(x => x.DiscordID == command.User.Id.ToString()).AmountOfVotes : 0)}**" +
                     $"\n\n\n" +
                     $"-Best card-");
-                embed.Url = $"http://beatsaberbot.com/BeatSaberCards?rankingPageSelectRanking=OwnedDiscordID&searchinput={command.User.Id}#inventory";
+                embed.Url = $"https://beatsaberbot.com/TradingCards?subpage=inventory&subpageparameters=discordid={command.User.Id}";
                 embed.ImageUrl = inventoryLink;
                 embed.ThumbnailUrl = command.User.GetAvatarUrl();
 
@@ -2125,6 +2140,9 @@ namespace DiscordBeatSaberBot
                             File.Move(trade.Key, trade.Value);
                         }
 
+
+                        Console.WriteLine($"Trade: {arguments.User.Username}({arguments.User.Id}) - {userToTradeWith.Username}({userToTradeWith.Id}). count: {cardListUserOne.Count} - {cardListUserTwo.Count}");
+
                         await userToTradeWithDM.SendMessageAsync("You have accepted the trade offer and the trade has been completed!");
                         await arguments.Channel.SendMessageAsync($"Your trade offer for {userToTradeWith.Username} has been accepted! Your cards have been traded!");
                     }
@@ -2346,6 +2364,8 @@ namespace DiscordBeatSaberBot
                     if (message == null) message = $"For somem magical reason.";
 
                     await dm.SendMessageAsync(message + $" You gained **{packAmount}** extra card packs.");
+
+                    Console.WriteLine($"{user.Username}({user.Id}) gained {packAmount} packs");
 
                     return true;
                 }

@@ -375,8 +375,9 @@ namespace DiscordBeatSaberBot.Handlers
                 tradingCardsSlashBuilder.AddOption(tradinCardsOptionBuilderSettings);
 
                 var tradingCardsShopChoices = new List<ApplicationCommandOptionChoiceProperties>();
-                tradingCardsShopChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "1 Packs (150 Beat Shards)", Value = "1packs" });
+                tradingCardsShopChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "1 Pack (150 Beat Shards)", Value = "1packs" });
                 tradingCardsShopChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "10 Packs (1500 Beat Shards)", Value = "10packs" });
+                tradingCardsShopChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "1 Shiny Pack (12.000 Beat Shards)", Value = "1shinypacks" });
 
                 var tradingCardsCardsChoices = new List<ApplicationCommandOptionChoiceProperties>();
                 tradingCardsCardsChoices.Add(new ApplicationCommandOptionChoiceProperties() { Name = "No cards to buy yet", Value = "nocards" });
